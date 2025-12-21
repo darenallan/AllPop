@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurum - L'Excellence à Votre Portée</title>
+  <meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
+  
+  <!-- Google Fonts - Luxury Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="preload" href="assets/css/styles.css" as="style" />
+  
+  <!-- Lucide Icons (outline style, lightweight) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  
+  <!-- App Configuration -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/img/placeholder-product-1.svg" />
+  
+  <!-- Scripts -->
+  <script defer src="assets/js/utils.js"></script>
+  <script defer src="assets/js/data.js"></script>
+  <script defer src="assets/js/icons.js"></script>
+  <script defer src="assets/js/app.js"></script>
+  <script defer src="assets/js/auth.js"></script>
+</head>
+
+<body>
+  <header id="app-header" class="header"></header>
+  
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <h1>L'Excellence à Votre Portée</h1>
+        <p>Start-up résiliente, créée par des Burkinabè pour les Burkinabè.</p>
+        <div class="cta">
+          <a href="catalogue.html" class="btn btn-gold">Découvrir la collection</a>
+          <a href="seller.html" class="btn btn-outline">Espace vendeur</a>
+        </div>
+      </div>
+      <div class="hero-img"></div>
+    </section>
+
+    <!-- Category Carousel - Glovo style -->
+    <section class="section container">
+      <h2 class="section-title">Qu'est-ce qui vous intéresse aujourd'hui ?</h2>
+      <div class="category-carousel-wrapper">
+        <button class="carousel-arrow carousel-prev" aria-label="Précédent">
+          <i data-lucide="chevron-left" class="lucide-icon"></i>
+        </button>
+        <div class="category-carousel" id="category-carousel">
+          <!-- Catégories injectées par JS -->
+        </div>
+        <button class="carousel-arrow carousel-next" aria-label="Suivant">
+          <i data-lucide="chevron-right" class="lucide-icon"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="section container">
+      <h2 class="section-title">Catégories phares</h2>
+      <div id="home-categories" class="grid grid-4"></div>
+    </section>
+
+    <!-- New Products -->
+    <section class="section container">
+      <h2 class="section-title">Nouveautés</h2>
+      <div id="home-new" class="grid grid-4"></div>
+    </section>
+
+    <!-- Promotions -->
+    <section class="section container">
+      <h2 class="section-title">Promotions</h2>
+      <div id="home-promos" class="grid grid-4"></div>
+    </section>
+
+    <!-- Testimonials - Section Premium -->
+    <section class="section testimonials-section">
+      <div class="container">
+        <h2 class="section-title">Ils nous font confiance</h2>
+        <p class="section-subtitle">Découvrez les avis de notre communauté</p>
+        
+        <div class="testimonials-grid" id="testimonials-grid">
+          <!-- Témoignage 1 -->
+          <article class="testimonial-card">
+            <div class="testimonial-header">
+              <div class="testimonial-avatar">
+                <span class="avatar-initial">M</span>
+              </div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Mariam Ouédraogo</h4>
+                <span class="testimonial-role">Cliente fidèle</span>
+              </div>
+            </div>
+            <blockquote class="testimonial-content">
+              « Service impeccable et produits de qualité exceptionnelle. Une vraie référence pour le luxe accessible. »
+            </blockquote>
+            <div class="testimonial-rating">
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+            </div>
+          </article>
+
+          <!-- Témoignage 2 -->
+          <article class="testimonial-card">
+            <div class="testimonial-header">
+              <div class="testimonial-avatar">
+                <span class="avatar-initial">I</span>
+              </div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Issa Compaoré</h4>
+                <span class="testimonial-role">Vendeur vérifié</span>
+              </div>
+            </div>
+            <blockquote class="testimonial-content">
+              « Plateforme intuitive et professionnelle. Mes ventes ont augmenté de 200% en 3 mois. »
+            </blockquote>
+            <div class="testimonial-rating">
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+            </div>
+          </article>
+
+          <!-- Témoignage 3 -->
+          <article class="testimonial-card">
+            <div class="testimonial-header">
+              <div class="testimonial-avatar">
+                <span class="avatar-initial">A</span>
+              </div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Aminata Traoré</h4>
+                <span class="testimonial-role">Créatrice mode</span>
+              </div>
+            </div>
+            <blockquote class="testimonial-content">
+              « Enfin une marketplace qui met en valeur l'artisanat africain avec élégance et modernité. »
+            </blockquote>
+            <div class="testimonial-rating">
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon"></i>
+            </div>
+          </article>
+
+          <!-- Témoignage 4 -->
+          <article class="testimonial-card">
+            <div class="testimonial-header">
+              <div class="testimonial-avatar">
+                <span class="avatar-initial">K</span>
+              </div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Karim Sawadogo</h4>
+                <span class="testimonial-role">Client premium</span>
+              </div>
+            </div>
+            <blockquote class="testimonial-content">
+              « Livraison rapide, emballage soigné et service client réactif. Je recommande vivement. »
+            </blockquote>
+            <div class="testimonial-rating">
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+            </div>
+          </article>
+
+          <!-- Témoignage 5 -->
+          <article class="testimonial-card">
+            <div class="testimonial-header">
+              <div class="testimonial-avatar">
+                <span class="avatar-initial">F</span>
+              </div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Fatou Diallo</h4>
+                <span class="testimonial-role">Restauratrice</span>
+              </div>
+            </div>
+            <blockquote class="testimonial-content">
+              « Grâce à Aurum, mon restaurant touche une clientèle plus large. Une vraie révolution ! »
+            </blockquote>
+            <div class="testimonial-rating">
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+            </div>
+          </article>
+
+          <!-- Témoignage 6 -->
+          <article class="testimonial-card">
+            <div class="testimonial-header">
+              <div class="testimonial-avatar">
+                <span class="avatar-initial">O</span>
+              </div>
+              <div class="testimonial-meta">
+                <h4 class="testimonial-name">Omar Kaboré</h4>
+                <span class="testimonial-role">Entrepreneur</span>
+              </div>
+            </div>
+            <blockquote class="testimonial-content">
+              « L'interface admin est claire et les statistiques m'aident à prendre de meilleures décisions. »
+            </blockquote>
+            <div class="testimonial-rating">
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon filled"></i>
+              <i data-lucide="star" class="star-icon"></i>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="section container">
+      <h2 class="section-title">Newsletter</h2>
+      <form id="newsletter-form" class="grid grid-3">
+        <input class="input" type="email" placeholder="Votre email" required />
+        <button class="btn btn-gold" type="submit">S'inscrire</button>
+        <small class="text-muted">Nous respectons votre vie privée.</small>
+      </form>
+    </section>
+  </main>
+
+  <footer id="app-footer" class="footer"></footer>
+  <div class="toast-container" id="toast-container"></div>
+</body>
+</html>
