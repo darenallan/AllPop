@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurum - Wishlist</title>
+  <meta name="description" content="Votre liste de souhaits Aurum." />
+  <!-- Google Fonts - Luxury Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preload" as="image" href="assets/img/placeholder-product-1.svg">
+</head>
+<body>
+  <header id="app-header" class="header"></header>
+  <main class="container wishlist-page">
+    <section class="section">
+      <h1>Votre Wishlist</h1>
+      <div class="wishlist-grid">
+        <div>
+          <div id="wishlist-items"></div>
+          <div class="mt-4">
+            <button class="btn" id="clear-wishlist-btn">Tout retirer</button>
+            <a href="catalogue.html" class="btn btn-outline">Continuer vos achats</a>
+          </div>
+        </div>
+        <aside>
+          <div class="card">
+            <div class="info">
+              <h3>Astuce</h3>
+              <p class="text-muted">Cliquez sur « Ajouter au panier » pour préparer votre commande.</p>
+              <p class="text-muted">Vous pouvez gérer vos favoris ici.</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <footer id="app-footer" class="footer"></footer>
+  <div class="toast-container" id="toast-container"></div>
+  <script src="assets/js/utils.js" defer></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/icons.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/auth.js" defer></script>
+  <script src="assets/js/whishlist.js" defer></script>
+</body>
+</html>

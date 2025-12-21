@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aurum - L'Excellence à Votre Portée</title>
+<meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
+<!-- Google Fonts - Luxury Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css" />
+<link rel="preload" href="assets/css/styles.css" as="style" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="assets/img/placeholder-product-1.svg" />
+<script defer src="assets/js/utils.js"></script>
+<script defer src="assets/js/data.js"></script>
+<script defer src="assets/js/icons.js"></script>
+<script defer src="assets/js/app.js"></script>
+<script defer src="assets/js/auth.js"></script>
+
+</head>
+<body>
+<header id="app-header" class="header"></header>
+<main class="container">
+  <section class="section">
+    <h1>Connexion</h1>
+    <form id="login-form" class="grid grid-2" autocomplete="off">
+      <input class="input" name="email" type="email" placeholder="Email" required />
+      <input class="input" name="password" type="password" placeholder="Mot de passe" required />
+      <button class="btn btn-gold" type="submit">Se connecter</button>
+      <a class="btn btn-outline" href="register.html">Créer un compte</a>
+    </form>
+    <div id="password-help" class="password-help-message hidden">
+      <p><strong>Mot de passe oublié ?</strong></p>
+      <p>Veuillez contacter notre support sur WhatsApp :</p>
+      <a href="https://wa.me/22664502626" target="_blank" class="whatsapp-link">
+        <i data-lucide="message-circle"></i>
+        +226 64502626 (WhatsApp)
+      </a>
+    </div>
+  </section>
+</main>
+<footer id="app-footer" class="footer"></footer>
+<div class="toast-container" id="toast-container"></div>
+</body>
+</html>

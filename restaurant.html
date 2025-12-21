@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Restaurant - Aurum</title>
+<meta name="description" content="Commandez vos plats préférés sur Aurum Marketplace" />
+<link rel="stylesheet" href="assets/css/styles.css" />
+<link rel="preload" href="assets/css/styles.css" as="style" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="assets/img/placeholder-product-1.svg" />
+<script defer src="assets/js/utils.js"></script>
+<script defer src="assets/js/data.js"></script>
+<script defer src="assets/js/icons.js"></script>
+<script defer src="assets/js/app.js"></script>
+<script defer src="assets/js/auth.js"></script>
+
+</head>
+<body>
+<header id="app-header" class="header"></header>
+<main class="container resto-page">
+  <!-- Hero Restaurant -->
+  <section id="resto-hero" class="resto-hero">
+    <!-- Injecté par JS -->
+  </section>
+  
+  <!-- Navigation Menu (sticky) -->
+  <nav id="resto-menu-nav" class="resto-menu-nav">
+    <!-- Catégories du menu injectées par JS -->
+  </nav>
+  
+  <!-- Contenu principal -->
+  <div class="resto-layout">
+    <!-- Menu scrollable -->
+    <section id="resto-menu" class="resto-menu-section">
+      <!-- Menu injecté par JS -->
+    </section>
+    
+    <!-- Panier latéral (sticky sur desktop) -->
+    <aside id="resto-cart" class="resto-cart-sidebar">
+      <div class="resto-cart-header">
+        <h3><i data-lucide="shopping-bag" class="lucide-icon"></i> Votre commande</h3>
+      </div>
+      <div id="resto-cart-items" class="resto-cart-items">
+        <div class="resto-cart-empty">
+          <i data-lucide="utensils" class="lucide-icon lucide-lg"></i>
+          <p>Votre panier est vide</p>
+          <small>Ajoutez des articles pour commander</small>
+        </div>
+      </div>
+      <div id="resto-cart-summary" class="resto-cart-summary hidden">
+        <div class="resto-cart-row">
+          <span>Sous-total</span>
+          <span id="resto-subtotal">0 FCFA</span>
+        </div>
+        <div class="resto-cart-row">
+          <span>Frais de livraison</span>
+          <span id="resto-delivery-fee">0 FCFA</span>
+        </div>
+        <div class="resto-cart-row resto-cart-total">
+          <span>Total</span>
+          <span id="resto-total">0 FCFA</span>
+        </div>
+        <button id="resto-checkout-btn" class="btn btn-gold btn-block resto-checkout-btn">
+          <i data-lucide="check" class="lucide-icon"></i>
+          <span>Commander</span>
+        </button>
+      </div>
+    </aside>
+  </div>
+  
+  <!-- Bouton panier mobile (sticky bottom) -->
+  <div id="resto-cart-mobile-btn" class="resto-cart-mobile-btn hidden">
+    <button class="btn btn-gold btn-block">
+      <i data-lucide="shopping-bag" class="lucide-icon"></i>
+      <span>Voir le panier</span>
+      <span id="resto-cart-mobile-total" class="resto-cart-mobile-total">0 FCFA</span>
+    </button>
+  </div>
+</main>
+<footer id="app-footer" class="footer"></footer>
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ===== Page Restaurant =====
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const restoId = params.get('id');
+  
+  if(!restoId || !Store.restaurants) {
+    document.getElementById('resto-hero').innerHTML = '<div class="card"><div class="info">Restaurant non trouvé. <a href="catalogue.html?cat=Restauration%20%26%20Boissons">Retour</a></div></div>';
+    return;
+  }
+  
+  const restaurant = Store.restaurants.find(r => r.id === restoId);
+  if(!restaurant) {
+    document.getElementById('resto-hero').innerHTML = '<div class="card"><div class="info">Restaurant non trouvé. <a href="catalogue.html?cat=Restauration%20%26%20Boissons">Retour</a></div></div>';
+    return;
+  }
+  
+  // État du panier restaurant (lié à un seul restaurant)
+  let restoCart = JSON.parse(localStorage.getItem('ac_resto_cart') || '{"restaurantId":null,"items":[]}');
+  
+  // Si le panier est pour un autre restaurant, proposer de le vider
+  if(restoCart.restaurantId && restoCart.restaurantId !== restoId && restoCart.items.length > 0) {
+    const otherResto = Store.restaurants.find(r => r.id === restoCart.restaurantId);
+    if(confirm(`Vous avez déjà des articles de "${otherResto?.name || 'un autre restaurant'}". Voulez-vous vider votre panier pour commander ici ?`)) {
+      restoCart = { restaurantId: restoId, items: [] };
+      localStorage.setItem('ac_resto_cart', JSON.stringify(restoCart));
+    } else {
+      // Rediriger vers l'autre restaurant
+      window.location.href = `restaurant.html?id=${restoCart.restaurantId}`;
+      return;
+    }
+  }
+  restoCart.restaurantId = restoId;
+  
+  // Render Hero
+  renderHero(restaurant);
+  
+  // Render Menu Navigation
+  renderMenuNav(restaurant);
+  
+  // Render Menu
+  renderMenu(restaurant);
+  
+  // Render Cart
+  renderCart();
+  
+  // Init Lucide
+  if(typeof lucide !== 'undefined') lucide.createIcons();
+  
+  function renderHero(r) {
+    const isOpen = isRestaurantOpenLocal(r);
+    const heroEl = document.getElementById('resto-hero');
+    
+    heroEl.innerHTML = `
+      <div class="resto-hero-image" style="background-image: url('${r.image}')">
+        <div class="resto-hero-overlay"></div>
+        <a href="catalogue.html?cat=Restauration%20%26%20Boissons" class="resto-back-btn">
+          <i data-lucide="arrow-left" class="lucide-icon"></i>
+        </a>
+        ${!isOpen ? '<div class="resto-hero-closed">Fermé</div>' : ''}
+      </div>
+      <div class="resto-hero-content">
+        <div class="resto-hero-badges">
+          ${r.badges.map(b => {
+            if(b === 'populaire') return '<span class="resto-badge resto-badge-popular"><i data-lucide="flame" class="lucide-icon lucide-sm"></i> Populaire</span>';
+            if(b === 'livraison-rapide') return '<span class="resto-badge resto-badge-fast"><i data-lucide="zap" class="lucide-icon lucide-sm"></i> Rapide</span>';
+            if(b === 'promo') return '<span class="resto-badge resto-badge-promo"><i data-lucide="percent" class="lucide-icon lucide-sm"></i> -' + r.promoPercent + '%</span>';
+            return '';
+          }).join('')}
+        </div>
+        <h1 class="resto-hero-title">${r.name}</h1>
+        <div class="resto-hero-meta">
+          <span class="resto-rating">
+            <i data-lucide="star" class="lucide-icon lucide-sm star-filled"></i>
+            ${r.rating} (${r.reviewCount} avis)
+          </span>
+          <span class="resto-separator">•</span>
+          <span>${r.cuisineType}</span>
+          <span class="resto-separator">•</span>
+          <span>${r.priceRange.split(' ')[0]}</span>
+        </div>
+        <div class="resto-hero-info">
+          <div class="resto-info-item">
+            <i data-lucide="clock" class="lucide-icon lucide-sm"></i>
+            <span>${isOpen ? 'Ouvert' : 'Fermé'} • ${r.openHour}h - ${r.closeHour}h</span>
+          </div>
+          <div class="resto-info-item">
+            <i data-lucide="map-pin" class="lucide-icon lucide-sm"></i>
+            <span>${r.address}</span>
+          </div>
+          <div class="resto-info-item">
+            <i data-lucide="phone" class="lucide-icon lucide-sm"></i>
+            <span>${r.phone}</span>
+          </div>
+          ${r.deliveryEnabled ? `
+            <div class="resto-info-item">
+              <i data-lucide="bike" class="lucide-icon lucide-sm"></i>
+              <span>Livraison ${r.deliveryTime} min • ${r.deliveryFee === 0 ? 'Gratuite' : formatFCFA(r.deliveryFee)}</span>
+            </div>
+            <div class="resto-info-item">
+              <i data-lucide="wallet" class="lucide-icon lucide-sm"></i>
+              <span>Min. ${formatFCFA(r.minOrder)}</span>
+            </div>
+          ` : `
+            <div class="resto-info-item resto-no-delivery">
+              <i data-lucide="x" class="lucide-icon lucide-sm"></i>
+              <span>Pas de livraison (à emporter uniquement)</span>
+            </div>
+          `}
+        </div>
+        <div class="resto-hero-actions">
+          <label class="resto-delivery-toggle">
+            <input type="checkbox" id="delivery-toggle" ${r.deliveryEnabled ? 'checked' : ''} ${!r.deliveryEnabled ? 'disabled' : ''}>
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">Livraison</span>
+          </label>
+        </div>
+      </div>
+    `;
+  }
+  
+  function renderMenuNav(r) {
+    const navEl = document.getElementById('resto-menu-nav');
+    if(!r.menu || !r.menu.categories) return;
+    
+    navEl.innerHTML = r.menu.categories.map((cat, idx) => `
+      <a href="#menu-cat-${idx}" class="resto-menu-nav-item ${idx === 0 ? 'active' : ''}">${cat.name}</a>
+    `).join('');
+    
+    // Scroll spy
+    navEl.querySelectorAll('.resto-menu-nav-item').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        if(target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          navEl.querySelectorAll('.resto-menu-nav-item').forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+        }
+      });
+    });
+  }
+  
+  function renderMenu(r) {
+    const menuEl = document.getElementById('resto-menu');
+    if(!r.menu || !r.menu.categories) {
+      menuEl.innerHTML = '<p>Menu non disponible</p>';
+      return;
+    }
+    
+    menuEl.innerHTML = r.menu.categories.map((cat, idx) => `
+      <div id="menu-cat-${idx}" class="resto-menu-category">
+        <h2 class="resto-menu-category-title">${cat.name}</h2>
+        <div class="resto-menu-items">
+          ${cat.items.map(item => `
+            <div class="resto-menu-item ${!item.available ? 'resto-item-unavailable' : ''}" data-item-id="${item.id}">
+              <div class="resto-item-info">
+                <div class="resto-item-header">
+                  <h3 class="resto-item-name">${item.name}</h3>
+                  ${item.popular ? '<span class="resto-item-popular"><i data-lucide="flame" class="lucide-icon lucide-sm"></i></span>' : ''}
+                </div>
+                ${item.description ? `<p class="resto-item-desc">${item.description}</p>` : ''}
+                <div class="resto-item-price">${formatFCFA(item.price)}</div>
+              </div>
+              <div class="resto-item-action">
+                ${item.available ? `
+                  <button class="resto-add-btn" data-add-item='${JSON.stringify(item)}' aria-label="Ajouter ${item.name}">
+                    <i data-lucide="plus" class="lucide-icon"></i>
+                  </button>
+                ` : '<span class="resto-unavailable-label">Indisponible</span>'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+    
+    // Event listeners pour ajouter au panier
+    menuEl.querySelectorAll('.resto-add-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const itemData = JSON.parse(btn.getAttribute('data-add-item'));
+        addToRestoCart(itemData);
+      });
+    });
+  }
+  
+  function addToRestoCart(item) {
+    const existing = restoCart.items.find(i => i.id === item.id);
+    if(existing) {
+      existing.qty += 1;
+    } else {
+      restoCart.items.push({ ...item, qty: 1 });
+    }
+    saveRestoCart();
+    renderCart();
+    showToast(`${item.name} ajouté au panier`, 'success');
+    
+    // Animation du bouton
+    const btn = document.querySelector(`[data-add-item*='"id":"${item.id}"']`);
+    if(btn) {
+      btn.classList.add('pulse');
+      setTimeout(() => btn.classList.remove('pulse'), 400);
+    }
+  }
+  
+  function updateRestoCartQty(itemId, delta) {
+    const item = restoCart.items.find(i => i.id === itemId);
+    if(item) {
+      item.qty += delta;
+      if(item.qty <= 0) {
+        restoCart.items = restoCart.items.filter(i => i.id !== itemId);
+      }
+    }
+    saveRestoCart();
+    renderCart();
+  }
+  
+  function removeFromRestoCart(itemId) {
+    restoCart.items = restoCart.items.filter(i => i.id !== itemId);
+    saveRestoCart();
+    renderCart();
+  }
+  
+  function saveRestoCart() {
+    localStorage.setItem('ac_resto_cart', JSON.stringify(restoCart));
+  }
+  
+  function renderCart() {
+    const itemsEl = document.getElementById('resto-cart-items');
+    const summaryEl = document.getElementById('resto-cart-summary');
+    const mobileBtn = document.getElementById('resto-cart-mobile-btn');
+    
+    if(restoCart.items.length === 0) {
+      itemsEl.innerHTML = `
+        <div class="resto-cart-empty">
+          <i data-lucide="utensils" class="lucide-icon lucide-lg"></i>
+          <p>Votre panier est vide</p>
+          <small>Ajoutez des articles pour commander</small>
+        </div>
+      `;
+      summaryEl.classList.add('hidden');
+      mobileBtn.classList.add('hidden');
+      if(typeof lucide !== 'undefined') lucide.createIcons();
+      return;
+    }
+    
+    itemsEl.innerHTML = restoCart.items.map(item => `
+      <div class="resto-cart-item">
+        <div class="resto-cart-item-info">
+          <span class="resto-cart-item-name">${item.name}</span>
+          <span class="resto-cart-item-price">${formatFCFA(item.price)}</span>
+        </div>
+        <div class="resto-cart-item-controls">
+          <button class="resto-qty-btn" data-minus="${item.id}" aria-label="Diminuer">
+            <i data-lucide="minus" class="lucide-icon lucide-sm"></i>
+          </button>
+          <span class="resto-qty-value">${item.qty}</span>
+          <button class="resto-qty-btn" data-plus="${item.id}" aria-label="Augmenter">
+            <i data-lucide="plus" class="lucide-icon lucide-sm"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+    
+    // Calculs
+    const subtotal = restoCart.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    const deliveryEnabled = document.getElementById('delivery-toggle')?.checked && restaurant.deliveryEnabled;
+    const deliveryFee = deliveryEnabled ? restaurant.deliveryFee : 0;
+    let total = subtotal + deliveryFee;
+    
+    // Appliquer promo si existante
+    if(restaurant.promoPercent > 0) {
+      total = total * (1 - restaurant.promoPercent / 100);
+    }
+    
+    document.getElementById('resto-subtotal').textContent = formatFCFA(subtotal);
+    document.getElementById('resto-delivery-fee').textContent = deliveryEnabled ? formatFCFA(deliveryFee) : 'N/A';
+    document.getElementById('resto-total').textContent = formatFCFA(Math.round(total));
+    document.getElementById('resto-cart-mobile-total').textContent = formatFCFA(Math.round(total));
+    
+    summaryEl.classList.remove('hidden');
+    mobileBtn.classList.remove('hidden');
+    
+    // Event listeners
+    itemsEl.querySelectorAll('[data-minus]').forEach(btn => {
+      btn.addEventListener('click', () => updateRestoCartQty(btn.getAttribute('data-minus'), -1));
+    });
+    itemsEl.querySelectorAll('[data-plus]').forEach(btn => {
+      btn.addEventListener('click', () => updateRestoCartQty(btn.getAttribute('data-plus'), 1));
+    });
+    
+    // Minimum de commande
+    const checkoutBtn = document.getElementById('resto-checkout-btn');
+    if(subtotal < restaurant.minOrder && deliveryEnabled) {
+      checkoutBtn.disabled = true;
+      checkoutBtn.innerHTML = `<i data-lucide="alert-circle" class="lucide-icon"></i> Min. ${formatFCFA(restaurant.minOrder)}`;
+    } else {
+      checkoutBtn.disabled = false;
+      checkoutBtn.innerHTML = `<i data-lucide="check" class="lucide-icon"></i> Commander`;
+    }
+    
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+  }
+  
+  // Toggle livraison
+  document.addEventListener('change', (e) => {
+    if(e.target.id === 'delivery-toggle') {
+      renderCart();
+    }
+  });
+  
+  // Checkout
+  document.getElementById('resto-checkout-btn')?.addEventListener('click', () => {
+    if(restoCart.items.length === 0) return;
+    const subtotal = restoCart.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    if(subtotal < restaurant.minOrder && document.getElementById('delivery-toggle')?.checked) {
+      showToast(`Minimum de commande: ${formatFCFA(restaurant.minOrder)}`, 'warning');
+      return;
+    }
+    
+    // Créer la commande
+    const deliveryEnabled = document.getElementById('delivery-toggle')?.checked && restaurant.deliveryEnabled;
+    const deliveryFee = deliveryEnabled ? restaurant.deliveryFee : 0;
+    let total = subtotal + deliveryFee;
+    if(restaurant.promoPercent > 0) {
+      total = total * (1 - restaurant.promoPercent / 100);
+    }
+    
+    const order = {
+      id: 'OR' + Date.now(),
+      type: 'restaurant',
+      restaurantId: restaurant.id,
+      restaurantName: restaurant.name,
+      userEmail: currentUser?.email || 'guest',
+      date: Date.now(),
+      status: 'pending',
+      items: restoCart.items.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
+      subtotal,
+      deliveryFee,
+      discount: restaurant.promoPercent > 0 ? Math.round((subtotal + deliveryFee) * restaurant.promoPercent / 100) : 0,
+      total: Math.round(total),
+      deliveryEnabled,
+      address: null
+    };
+    
+    Store.orders.push(order);
+    localStorage.setItem('ac_orders', JSON.stringify(Store.orders));
+    
+    // Vider le panier resto
+    restoCart = { restaurantId: null, items: [] };
+    localStorage.setItem('ac_resto_cart', JSON.stringify(restoCart));
+    
+    showToast('Commande passée avec succès !', 'success');
+    setTimeout(() => window.location.href = 'order.html', 1500);
+  });
+  
+  // Mobile cart button
+  document.querySelector('#resto-cart-mobile-btn button')?.addEventListener('click', () => {
+    document.getElementById('resto-cart').classList.toggle('resto-cart-open');
+  });
+  
+  function isRestaurantOpenLocal(r) {
+    const now = new Date();
+    const hours = now.getHours();
+    return hours >= r.openHour && hours < r.closeHour;
+  }
+});
+</script>
+</body>
+</html>

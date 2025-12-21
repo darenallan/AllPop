@@ -1,0 +1,9 @@
+{
+  "name": "Aurum",
+  "short_name": "Aurum",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#F8F5E9",
+  "theme_color": "#C9A227",
+  "icons": []
+}

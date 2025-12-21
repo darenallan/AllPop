@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aurum - L'Excellence à Votre Portée</title>
+<meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
+<!-- Google Fonts - Luxury Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css" />
+<link rel="preload" href="assets/css/styles.css" as="style" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="assets/img/placeholder-product-1.svg" />
+<script defer src="assets/js/utils.js"></script>
+<script defer src="assets/js/data.js"></script>
+<script defer src="assets/js/icons.js"></script>
+<script defer src="assets/js/app.js"></script>
+<script defer src="assets/js/auth.js"></script>
+
+</head>
+<body>
+<header id="app-header" class="header"></header>
+<main class="container">
+  <section class="section">
+    <h1>Catalogue</h1>
+    <div class="filters">
+      <input id="search-input" class="input" placeholder="Recherche (auto-suggest)" />
+      <select id="filter-category"><option value="">Toutes catégories</option></select>
+      <select id="filter-shop" class="shop-filter"><option value="">Toutes les boutiques</option></select>
+      <select id="filter-color"><option value="">Toutes couleurs</option></select>
+      <select id="filter-size"><option value="">Toutes tailles</option></select>
+      <!-- Filtres Beauté (affichés dynamiquement) -->
+      <select id="filter-beauty-type" class="beauty-filter hidden"><option value="">Type de produit</option></select>
+      <select id="filter-skin-type" class="beauty-filter hidden"><option value="">Type de peau</option></select>
+      <select id="filter-brand" class="beauty-filter hidden"><option value="">Marque</option></select>
+      <!-- Filtres Électronique (affichés dynamiquement) -->
+      <select id="filter-tech-type" class="tech-filter hidden"><option value="">Type d'appareil</option></select>
+      <select id="filter-capacity" class="tech-filter hidden"><option value="">Capacité</option></select>
+      <select id="filter-condition" class="tech-filter hidden"><option value="">État</option></select>
+      <select id="filter-tech-brand" class="tech-filter hidden"><option value="">Marque</option></select>
+      <!-- Filtres Maison (affichés dynamiquement) -->
+      <select id="filter-home-type" class="home-filter hidden"><option value="">Type de meuble</option></select>
+      <select id="filter-material" class="home-filter hidden"><option value="">Matière</option></select>
+      <select id="filter-dimension" class="home-filter hidden"><option value="">Dimensions</option></select>
+      <select id="filter-home-style" class="home-filter hidden"><option value="">Style</option></select>
+      <!-- Filtres Bâtiment (affichés dynamiquement) -->
+      <select id="filter-btp-type" class="btp-filter hidden"><option value="">Type de produit</option></select>
+      <select id="filter-btp-unit" class="btp-filter hidden"><option value="">Unité</option></select>
+      <select id="filter-client-type" class="btp-filter hidden"><option value="">Type client</option></select>
+      <select id="filter-btp-brand" class="btp-filter hidden"><option value="">Marque</option></select>
+      <!-- Filtres Véhicules (affichés dynamiquement) -->
+      <select id="filter-vehicle-type" class="vehicle-filter hidden"><option value="">Type de véhicule</option></select>
+      <select id="filter-vehicle-condition" class="vehicle-filter hidden"><option value="">État</option></select>
+      <select id="filter-vehicle-year" class="vehicle-filter hidden"><option value="">Année</option></select>
+      <select id="filter-vehicle-fuel" class="vehicle-filter hidden"><option value="">Carburant</option></select>
+      <select id="filter-vehicle-brand" class="vehicle-filter hidden"><option value="">Marque</option></select>
+      <!-- Filtres Restauration (affichés dynamiquement) -->
+      <select id="filter-cuisine-type" class="resto-filter hidden"><option value="">Type de cuisine</option></select>
+      <select id="filter-price-range" class="resto-filter hidden"><option value="">Tous les prix</option></select>
+      <label class="resto-filter resto-checkbox hidden">
+        <input type="checkbox" id="filter-open-now" />
+        <span>Ouvert maintenant</span>
+      </label>
+      <label class="resto-filter resto-checkbox hidden">
+        <input type="checkbox" id="filter-delivery" />
+        <span>Livraison</span>
+      </label>
+      <select id="sort-select">
+        <option value="recent">Plus récent</option>
+        <option value="price-asc">Prix ↑</option>
+        <option value="price-desc">Prix ↓</option>
+      </select>
+    </div>
+    <div id="catalogue-list" class="product-list"></div>
+  </section>
+</main>
+<footer id="app-footer" class="footer"></footer>
+<div class="toast-container" id="toast-container"></div>
+</body>
+</html>

@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurum - Panier</title>
+  <meta name="description" content="Votre panier Aurum." />
+  <!-- Google Fonts - Luxury Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preload" as="image" href="assets/img/placeholder-product-1.svg">
+</head>
+<body>
+  <header id="app-header" class="header"></header>
+  <main class="container cart-page">
+    <section class="section">
+      <h1>Votre panier</h1>
+      <div class="cart-grid">
+        <div>
+          <div id="cart-items"></div>
+          <div class="mt-4">
+            <button class="btn" id="clear-cart-btn">Vider le panier</button>
+            <a href="catalogue.html" class="btn btn-outline">Continuer vos achats</a>
+          </div>
+        </div>
+        <aside>
+          <div class="summary-card">
+            <h3>Résumé</h3>
+            <div class="summary-row"><span>Articles</span><span id="summary-count">0</span></div>
+            <div class="summary-row"><span>Sous-total</span><span id="summary-subtotal">0 FCFA</span></div>
+            <div class="summary-row">
+              <span>Code promo</span>
+              <span>
+                <input id="promo-code" class="input" placeholder="Ex: AURUM10" style="width:140px" />
+                <button class="btn btn-dark mt-2" id="apply-promo-btn">Appliquer</button>
+              </span>
+            </div>
+            <div class="summary-row"><span>Réduction</span><span id="summary-discount">0 FCFA</span></div>
+            <div class="summary-row"><span>Livraison</span><span id="summary-shipping">Gratuite dès 20 000 FCFA</span></div>
+            <div class="summary-row summary-total"><span>Total</span><span id="summary-total">0 FCFA</span></div>
+            <button class="btn btn-gold btn-xl mt-4" id="checkout-btn">Procéder au paiement</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <footer id="app-footer" class="footer"></footer>
+  <div class="toast-container" id="toast-container"></div>
+  <script src="assets/js/utils.js" defer></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/icons.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/auth.js" defer></script>
+  <script src="assets/js/cart.js" defer></script>
+</body>
+</html>

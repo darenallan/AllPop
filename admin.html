@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aurum — L'Excellence à Votre Portée</title>
+<meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
+<!-- Google Fonts - Luxury Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css" />
+<link rel="preload" href="assets/css/styles.css" as="style" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="assets/img/placeholder-product-1.svg" />
+<script defer src="assets/js/utils.js"></script>
+<script defer src="assets/js/data.js"></script>
+<script defer src="assets/js/icons.js"></script>
+<script defer src="assets/js/app.js"></script>
+<script defer src="assets/js/auth.js"></script>
+
+<script defer src="assets/js/admin.js"></script>
+</head>
+<body>
+<header id="app-header" class="header"></header>
+<main class="container">
+  <section class="section">
+    <h1>Dashboard Admin</h1>
+    <div id="admin-guard" class="text-muted">Accès réservé a Allan.</div>
+    <div id="admin-dashboard" class="hidden">
+      <h2>Créer un compte vendeur</h2>
+      <form id="create-seller-form" class="seller-create-form">
+        <div class="form-row">
+          <input class="input" name="name" placeholder="Nom du vendeur" required />
+          <input class="input" name="email" type="email" placeholder="Email du vendeur" required />
+        </div>
+        <div class="form-row">
+          <input class="input" name="phone" type="tel" placeholder="Numéro de téléphone du vendeur" required />
+          <input class="input" name="password" type="password" placeholder="Mot de passe de connexion" required />
+        </div>
+        <button class="btn btn-gold btn-xl" type="submit">
+          <i data-lucide="user-plus"></i>
+          Créer le compte vendeur
+        </button>
+      </form>
+
+      <h2>Boutiques</h2>
+      <form id="shop-form" class="shop-create-form">
+        <div class="form-row">
+          <input class="input" name="name" placeholder="Nom de la boutique" required />
+          <input class="input" name="ownerEmail" type="email" placeholder="Email du propriétaire" required />
+        </div>
+        
+        <div class="form-group category-select-group">
+          <label class="form-label required-label">
+            <span class="category-icon-preview" id="cat-icon-preview">
+              <i data-lucide="shopping-bag" aria-hidden="true"></i>
+            </span>
+            Catégorie de la boutique
+          </label>
+          <select class="input category-select" name="categoryId" id="shop-category-select" required aria-label="Sélectionner une catégorie">
+            <option value="">— Sélectionner une catégorie —</option>
+          </select>
+          <span class="error-message hidden" id="category-error">Veuillez sélectionner une catégorie pour la boutique</span>
+        </div>
+        
+        <div class="form-row">
+          <textarea class="input" name="description" placeholder="Description de la boutique"></textarea>
+        </div>
+        
+        <div class="form-row">
+          <select class="input" name="duration">
+            <option value="30">30 jours</option>
+            <option value="60">60 jours</option>
+            <option value="90">90 jours</option>
+            <option value="180">6 mois</option>
+            <option value="365">1 an</option>
+          </select>
+          <input class="input" name="itemLimit" type="number" placeholder="Limite d'articles" value="50" />
+        </div>
+        
+        <button class="btn btn-gold btn-xl" type="submit">
+          <i data-lucide="plus-circle"></i>
+          Créer la boutique
+        </button>
+      </form>
+
+      <h3 class="mt-6">Liste des boutiques</h3>
+      <div class="shop-filters mb-4">
+        <select class="input" id="filter-shop-category">
+          <option value="">Toutes les catégories</option>
+        </select>
+        <select class="input" id="filter-shop-status">
+          <option value="">Tous les statuts</option>
+          <option value="active">Active</option>
+          <option value="blocked">Bloquée</option>
+          <option value="disabled">Désactivée</option>
+          <option value="suspended">Suspendue (catégorie)</option>
+        </select>
+      </div>
+      <div id="admin-shops" class="shops-grid"></div>
+
+      <div class="mt-4">
+        <button class="btn btn-dark" id="skip-shop-btn">
+          <i data-lucide="ban"></i>
+          SAUTER LA BOUTIQUE (désactiver immédiatement)
+        </button>
+        <p class="text-muted">Ce bouton désactive la boutique sélectionnée, masque ses produits, notifie le vendeur et conserve un backup interne.</p>
+      </div>
+
+      <h2 class="mt-6">Gestion des catégories</h2>
+      <p class="text-muted mb-4">Activez ou désactivez des catégories pour contrôler les types de boutiques autorisées.</p>
+      <div id="categories-management" class="categories-grid"></div>
+
+      <h2 class="mt-6">Gestion des comptes</h2>
+      <div id="admin-users"></div>
+
+      <h2 class="mt-6">Notifications</h2>
+      <div id="admin-notifications" class="notifications-list"></div>
+
+      <h2 class="mt-6">Factures</h2>
+      <div id="admin-invoices"></div>
+
+      <h2 class="mt-6">Gestion des promotions</h2>
+      <form id="promo-form" class="promo-form">
+        <div class="form-row">
+          <input class="input" name="code" placeholder="Code promo (ex: AURUM10)" required />
+          <input class="input" name="percent" type="number" min="1" max="100" placeholder="% de réduction" required />
+        </div>
+        <div class="form-row">
+          <input class="input" name="expires" type="number" min="1" placeholder="Validité (jours)" value="7" required />
+        </div>
+        <button class="btn btn-gold" type="submit">
+          <i data-lucide="plus-circle"></i>
+          Ajouter la promotion
+        </button>
+      </form>
+      <div id="admin-promos" class="promos-list mt-4"></div>
+
+      <h2 class="mt-6">Statistiques globales</h2>
+      <div id="admin-stats"></div>
+    </div>
+  </section>
+</main>
+<footer id="app-footer" class="footer"></footer>
+<div class="toast-container" id="toast-container"></div>
+</body>
+</html>

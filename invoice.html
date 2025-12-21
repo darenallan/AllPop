@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Générer une Facture - Aurum Events</title>
+<meta name="description" content="Générez votre facture Aurum Events en quelques clics" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="assets/img/placeholder-product-1.svg" />
+<script defer src="assets/js/utils.js"></script>
+<script defer src="assets/js/data.js"></script>
+<script defer src="assets/js/app.js"></script>
+<script defer src="assets/js/auth.js"></script>
+<script defer src="assets/js/invoice.js"></script>
+</head>
+<body>
+<header id="app-header" class="header"></header>
+
+<main class="container">
+  <section class="section">
+    <div class="invoice-header">
+      <h1>Générer une Facture</h1>
+      <p class="text-muted">Créez votre facture professionnelle Aurum Events</p>
+    </div>
+
+    <div class="invoice-form-container">
+      <form id="invoice-form" class="invoice-form">
+        <div class="form-section">
+          <h3>Informations Client</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required-label">Nom complet du client</label>
+              <input class="input" name="clientName" type="text" placeholder="Ex: Jean Dupont" required />
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required-label">Email</label>
+              <input class="input" name="clientEmail" type="email" placeholder="client@example.com" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label required-label">Téléphone</label>
+              <input class="input" name="clientPhone" type="tel" placeholder="+226 XX XX XX XX" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Détails du Service</h3>
+          <div class="form-group">
+            <label class="form-label required-label">Description du service / événement</label>
+            <textarea class="input" name="serviceDescription" rows="4" placeholder="Décrivez le service ou l'événement..." required></textarea>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required-label">Montant (FCFA)</label>
+              <input class="input" name="amount" type="number" min="0" placeholder="50000" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label required-label">Mode de paiement</label>
+              <select class="input" name="paymentMethod" required>
+                <option value="">-- Choisir --</option>
+                <option value="Orange Money">Orange Money</option>
+                <option value="Moov Money">Moov Money</option>
+                <option value="Wave">Wave</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required-label">Date</label>
+            <input class="input" name="invoiceDate" type="date" required />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-gold btn-xl" type="submit">
+            <i data-lucide="file-text"></i>
+            Générer la Facture
+          </button>
+        </div>
+      </form>
+
+      <!-- Prévisualisation et actions -->
+      <div id="invoice-preview" class="invoice-preview hidden">
+        <div class="invoice-preview-header">
+          <h3>Facture Générée</h3>
+          <div id="invoice-reference" class="invoice-ref"></div>
+        </div>
+
+        <div class="invoice-preview-content" id="invoice-preview-content">
+          <!-- Le contenu de la facture sera généré ici -->
+        </div>
+
+        <div class="invoice-actions">
+          <button class="btn btn-gold" id="download-invoice-btn">
+            <i data-lucide="download"></i>
+            Télécharger PDF
+          </button>
+          <button class="btn btn-success" id="whatsapp-invoice-btn">
+            <i data-lucide="message-circle"></i>
+            Envoyer via WhatsApp
+          </button>
+          <button class="btn btn-dark" id="snapchat-invoice-btn">
+            <i data-lucide="camera"></i>
+            Partager sur Snapchat
+          </button>
+        </div>
+
+        <div class="invoice-info-box">
+          <i data-lucide="info"></i>
+          <p>
+            <strong>Prochaine étape :</strong> votre facture est envoyée dans le tableau de bord admin avec son numéro. 
+            L'administrateur peut la valider, la rejeter ou la modifier. Vous serez notifié par email et dans l'espace vendeur dès validation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="app-footer" class="footer"></footer>
+<div class="toast-container" id="toast-container"></div>
+</body>
+</html>

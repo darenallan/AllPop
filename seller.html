@@ -1,0 +1,146 @@
+﻿
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aurum - L'Excellence à Votre Portée</title>
+<meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
+<!-- Google Fonts - Luxury Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css" />
+<link rel="preload" href="assets/css/styles.css" as="style" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="assets/img/placeholder-product-1.svg" />
+<script defer src="assets/js/utils.js"></script>
+<script defer src="assets/js/data.js"></script>
+<script defer src="assets/js/icons.js"></script>
+<script defer src="assets/js/app.js"></script>
+<script defer src="assets/js/auth.js"></script>
+
+<script defer src="assets/js/seller.js"></script>
+</head>
+<body>
+<header id="app-header" class="header"></header>
+<main class="container">
+  <section class="section">
+    <h1>Espace vendeur</h1>
+    <div id="seller-guard" class="text-muted">Seuls les vendeurs connectés peuvent gérer leur boutique.</div>
+    <div id="seller-dashboard" class="hidden">
+      <h2>Ma boutique</h2>
+      <div id="shop-meta"></div>
+
+      <h3 class="mt-4">Ajouter des produits</h3>
+      <form id="product-form" class="product-add-form">
+        <div class="form-row">
+          <input class="input" name="name" placeholder="Nom du produit" required />
+          <input class="input" name="price" type="number" step="100" placeholder="Prix (FCFA)" required />
+        </div>
+        <div class="form-row">
+          <input class="input" name="stock" type="number" placeholder="Stock total" required />
+          <input class="input" name="color" placeholder="Couleur principale" />
+        </div>
+        
+        <div class="form-row">
+          <div class="size-type-selector">
+            <label>Type de tailles :</label>
+            <select id="size-type" name="sizeType" class="input">
+              <option value="none">Pas de taille (accessoire)</option>
+              <option value="clothing">Vêtements (XS, S, M, L, XL...)</option>
+              <option value="shoes">Chaussures (pointures 36-46)</option>
+              <option value="pants">Pantalons (tailles 36-48)</option>
+              <option value="custom">Personnalisé</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tailles vêtements -->
+        <div id="sizes-clothing" class="sizes-container hidden">
+          <label>Sélectionnez les tailles disponibles :</label>
+          <div class="sizes-grid">
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="XXS"> XXS</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="XS"> XS</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="S"> S</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="M"> M</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="L"> L</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="XL"> XL</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="XXL"> XXL</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="3XL"> 3XL</label>
+          </div>
+        </div>
+
+        <!-- Pointures chaussures -->
+        <div id="sizes-shoes" class="sizes-container hidden">
+          <label>Sélectionnez les pointures disponibles :</label>
+          <div class="sizes-grid">
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="36"> 36</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="37"> 37</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="38"> 38</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="39"> 39</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="40"> 40</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="41"> 41</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="42"> 42</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="43"> 43</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="44"> 44</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="45"> 45</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="46"> 46</label>
+          </div>
+        </div>
+
+        <!-- Tailles pantalons -->
+        <div id="sizes-pants" class="sizes-container hidden">
+          <label>Sélectionnez les tailles disponibles :</label>
+          <div class="sizes-grid">
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="36"> 36</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="38"> 38</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="40"> 40</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="42"> 42</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="44"> 44</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="46"> 46</label>
+            <label class="size-checkbox"><input type="checkbox" name="sizes" value="48"> 48</label>
+          </div>
+        </div>
+
+        <!-- Tailles personnalisées -->
+        <div id="sizes-custom" class="sizes-container hidden">
+          <label>Entrez les tailles séparées par des virgules :</label>
+          <input class="input" id="custom-sizes" placeholder="Ex: Unique, 34, 36, 38 ou S, M, L" />
+        </div>
+
+        <textarea class="input" name="features" placeholder="Caractéristiques et description du produit"></textarea>
+        
+        <div class="form-row">
+          <input class="input" name="images" type="file" multiple accept="image/*" />
+        </div>
+        
+        <button class="btn btn-gold btn-xl" type="submit">Publier le produit</button>
+      </form>
+
+      <div class="mt-4">
+        <h3>Upload en masse (CSV + ZIP d'images)</h3>
+        <input id="csv-input" type="file" accept=".csv" />
+        <input id="zip-input" type="file" accept=".zip" />
+        <button class="btn btn-dark mt-2" id="bulk-upload-btn">Traiter le CSV (images liées via backend)</button>
+        <p class="text-muted">Le traitement du ZIP d'images nécessite le backend (voir documentation).</p>
+      </div>
+
+      <h3 class="mt-6">Mes produits</h3>
+      <table class="table" id="seller-products"></table>
+
+      <h3 class="mt-6">Statistiques</h3>
+      <div id="seller-stats"></div>
+
+      <h3 class="mt-6">Notifications</h3>
+      <div id="seller-notifications"></div>
+    </div>
+  </section>
+</main>
+<footer id="app-footer" class="footer"></footer>
+<div class="toast-container" id="toast-container"></div>
+</body>
+</html>
