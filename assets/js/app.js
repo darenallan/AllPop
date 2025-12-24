@@ -2,6 +2,113 @@
 // Logique générale (home, catalogue, newsletter, header search, wishlist/panier)
 let currentUser = JSON.parse(localStorage.getItem('ac_currentUser')||'null');
 
+// ========== HEADER INTERACTIVITY ==========
+window.addEventListener('DOMContentLoaded', () => {
+  // Search functionality
+  const searchBtn = document.querySelector('[data-search-btn]');
+  const searchOverlay = document.getElementById('search-overlay');
+  const searchContainer = document.querySelector('.search-container');
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  const searchCloseBtn = document.querySelector('.search-close-btn');
+
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      searchOverlay?.classList.add('active');
+      searchContainer?.classList.add('active');
+      searchInput?.focus();
+    });
+  }
+
+  function closeSearch() {
+    searchOverlay?.classList.remove('active');
+    searchContainer?.classList.remove('active');
+    searchResults?.classList.remove('active');
+    if (searchInput) searchInput.value = '';
+  }
+
+  searchCloseBtn?.addEventListener('click', closeSearch);
+  searchOverlay?.addEventListener('click', closeSearch);
+
+  // Search input - real-time product search
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      if (!query || query.length < 2) {
+        searchResults?.classList.remove('active');
+        return;
+      }
+
+      const matching = (Store.products || []).filter(p =>
+        (p.name || '').toLowerCase().includes(query) ||
+        (p.category || '').toLowerCase().includes(query)
+      ).slice(0, 8);
+
+      if (matching.length === 0) {
+        searchResults.innerHTML = `<div style=\"padding: var(--space-md); text-align: center; color: #999;\">Aucun résultat pour \"${query}\"</div>`;
+        searchResults?.classList.add('active');
+        return;
+      }
+
+      searchResults.innerHTML = matching.map(p => `
+        <div class=\"search-result-item\" onclick=\"location.href='product.html?id=${p.id}'\">
+          <div class=\"search-result-name\">${p.name}</div>
+          <div class=\"search-result-category\">${p.category}</div>
+        </div>
+      `).join('');
+      searchResults?.classList.add('active');
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSearch();
+    });
+  }
+
+  // Mobile menu toggle
+  const burgerBtn = document.querySelector('[data-burger-btn]');
+  const mobileMenu = document.querySelector('.mobile-menu');
+
+  if (burgerBtn && mobileMenu) {
+    burgerBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('active');
+      if (mobileMenu.classList.contains('active')) {
+        searchOverlay?.classList.add('active');
+      } else {
+        searchOverlay?.classList.remove('active');
+      }
+    });
+    
+    // Prevent ALL swipe/touch gestures from opening menu
+    document.addEventListener('touchmove', (e) => {
+      // If menu is NOT active and user tries to swipe, stop it
+      if (!mobileMenu.classList.contains('active')) {
+        const touch = e.changedTouches[0];
+        // Only prevent if it's a horizontal swipe
+        if (Math.abs(touch.clientX - touch.screenX) > 10) {
+          // Block horizontal movements
+          e.preventDefault();
+        }
+      }
+    }, {passive: false});
+  }
+
+  // Close mobile menu on overlay click
+  searchOverlay?.addEventListener('click', (e) => {
+    if (mobileMenu?.classList.contains('active') && e.target === searchOverlay) {
+      mobileMenu.classList.remove('active');
+      searchOverlay?.classList.remove('active');
+    }
+  });
+
+  // Close mobile menu on link click
+  document.querySelectorAll('.mobile-menu-item').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenu?.classList.remove('active');
+      searchOverlay?.classList.remove('active');
+    });
+  });
+});
+
 // Icônes Lucide pour les catégories principales (mapping nom -> icône Lucide)
 const categoryLucideIcons = {
   'Mode & Vêtements': 'shirt',
@@ -136,47 +243,54 @@ function renderHome(){
   const promos = document.getElementById('home-promos');
   if(promos){
     promos.innerHTML = Store.promos.map(pr=>`
-      <div class="card"><div class="info"><span class="badge badge-gold">Code: ${pr.code}</span>
-      <p class="mt-2">${pr.percent}% sur le catalogue (expiration: ${new Date(pr.expires).toLocaleDateString()})</p></div></div>`).join('');
+      <div class="card promo-card">
+        <div class="info promo-info">
+          <div>
+            <h3>${pr.percent}% de réduction</h3>
+            <p>Sur le catalogue • Expire le ${new Date(pr.expires).toLocaleDateString()}</p>
+          </div>
+          <span class="badge badge-gold">Code: ${pr.code}</span>
+        </div>
+      </div>`).join('');
   }
 }
 
 function cardProduct(p){
+  const img = p.images && p.images[0] ? p.images[0] : "assets/img/placeholder-product-1.svg";
   return `
-  <div class="card">
-    <img src="${p.images[0]}" alt="${p.name}" loading="lazy">
-    <div class="info">
-      <div>${p.name}</div>
-      <div class="price">${p.price.toFixed(2)} FCFA</div>
-      <div class="mt-2" style="display:flex;align-items:center;gap:8px">
-          <a class="btn btn-gold" href="product.html?id=${encodeURIComponent(p.id)}" title="Voir le produit">
-            <i data-lucide="eye" class="lucide-icon"></i>
-            <span class="icon-label">Voir</span>
-          </a>
-          <button class="icon-btn ${isInCart(p.id)?'active':''}" data-add="${p.id}" aria-label="Ajouter au panier" title="Ajouter au panier">
-            <i data-lucide="shopping-bag" class="lucide-icon"></i>
-            <span class="icon-label">Ajouter</span>
-          </button>
-        </div>
+  <a href="product.html?id=${encodeURIComponent(p.id)}" class="product-card">
+    <div class="product-image-wrap">
+      <img src="${img}" alt="${p.name}" loading="lazy">
+      <button class="quick-add-btn" data-quick-add="${p.id}" aria-label="Ajout rapide au panier" title="Ajout rapide">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1" fill="white"></circle>
+          <circle cx="20" cy="21" r="1" fill="white"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+      </button>
     </div>
-  </div>`;
+    <div class="product-info">
+      <h3 class="product-name">${p.name}</h3>
+      <div class="product-price">${p.price.toFixed(0)} <span>FCFA</span></div>
+    </div>
+  </a>`;
 }
 
-    // Délégation d'événements pour boutons "Ajouter" générés dynamiquement
+    // Délégation d'événements pour quick-add
     document.addEventListener('click', (e)=>{
-      const btn = e.target.closest('[data-add]');
-      if(btn){
-        const pid = btn.getAttribute('data-add');
-        if(pid) addToCart(pid);
-        // animate the button to provide feedback
-        animateIcon(btn);
-        // visual update
-        if(btn && typeof isInCart === 'function'){
-          // small delay: ensure addToCart persisted
-          setTimeout(()=>{
-            if(isInCart(pid)) btn.classList.add('active');
-            else btn.classList.remove('active');
-          }, 60);
+      const quickAddBtn = e.target.closest('[data-quick-add]');
+      if(quickAddBtn){
+        e.preventDefault();
+        e.stopPropagation();
+        const pid = quickAddBtn.getAttribute('data-quick-add');
+        if(pid) {
+          addToCart(pid);
+          showToast('Ajouté au panier ✓', 'success');
+          animateIcon(quickAddBtn);
+          // Update cart badge
+          updateCartBadge();
         }
       }
     });
@@ -201,6 +315,7 @@ function cardProduct(p){
         if(pid && isInCart(pid)) b.classList.add('active'); else b.classList.remove('active');
       });
     }
+
 
 function setupNewsletter(){
   const f = document.getElementById('newsletter-form');
