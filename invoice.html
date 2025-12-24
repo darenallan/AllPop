@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Générer une Facture - Aurum Events</title>
-<meta name="description" content="Générez votre facture Aurum Events en quelques clics" />
+<title>Générer une Facture - Aurum</title>
+<meta name="description" content="Générez votre facture Aurum en quelques clics" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -26,7 +26,17 @@
   <section class="section">
     <div class="invoice-header">
       <h1>Générer une Facture</h1>
-      <p class="text-muted">Créez votre facture professionnelle Aurum Events</p>
+    </div>
+
+    <!-- Message de bienvenue après commande -->
+    <div id="order-success-banner" class="hidden" style="background: linear-gradient(135deg, #C9A961 0%, #B89751 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);">
+      <div style="display: flex; align-items: flex-start; gap: 16px;">
+        <i data-lucide="check-circle" style="width: 40px; height: 40px; min-width: 40px; margin-top: 4px;"></i>
+        <div>
+          <h3 style="margin: 0 0 8px 0; color: white; font-size: 1.1rem;">Commande confirmée avec succès !</h3>
+          <p style="margin: 0; opacity: 0.95; font-size: 0.95rem;">Votre facture est en cours de génération. Veuillez la télécharger et nous la transmettre par WhatsApp pour procéder au paiement.</p>
+        </div>
+      </div>
     </div>
 
     <div class="invoice-form-container">
@@ -105,14 +115,22 @@
             <i data-lucide="download"></i>
             Télécharger PDF
           </button>
+          <button class="btn btn-primary" id="email-invoice-btn">
+            <i data-lucide="mail"></i>
+            Envoyer par Email
+          </button>
           <button class="btn btn-success" id="whatsapp-invoice-btn">
             <i data-lucide="message-circle"></i>
-            Envoyer via WhatsApp
+            WhatsApp
           </button>
           <button class="btn btn-dark" id="snapchat-invoice-btn">
             <i data-lucide="camera"></i>
-            Partager sur Snapchat
+            Snapchat
           </button>
+          <a href="order.html" class="btn btn-outline">
+            <i data-lucide="package"></i>
+            Voir mes commandes
+          </a>
         </div>
 
         <div class="invoice-info-box">
