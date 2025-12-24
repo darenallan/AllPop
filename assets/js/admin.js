@@ -811,28 +811,33 @@ window.addEventListener('DOMContentLoaded', ()=>{
   function renderPromos(){
     if(!promosDiv) return;
     if(!Store.promos || Store.promos.length === 0){
-      promosDiv.innerHTML = '<p class="text-muted">Aucune promotion active</p>';
+      promosDiv.innerHTML = '<p class="text-muted">Aucun code promo créé pour le moment. Utilisez le formulaire ci-dessus pour en créer un.</p>';
       return;
     }
 
-    promosDiv.innerHTML = Store.promos.map(promo=>{
+    // Trier par date d'expiration (les plus récents en premier)
+    const sortedPromos = [...Store.promos].sort((a, b) => b.expires - a.expires);
+
+    promosDiv.innerHTML = sortedPromos.map(promo=>{
       const expiresDate = new Date(promo.expires).toLocaleDateString('fr-FR');
       const now = Date.now();
       const isExpired = promo.expires < now;
       const statusClass = isExpired ? 'promo-expired' : 'promo-active';
-      const statusLabel = isExpired ? 'Expirée' : 'Active';
+      const statusLabel = isExpired ? 'Expiré' : 'Actif';
+      const daysLeft = Math.ceil((promo.expires - now) / 86400000);
+      const expiresInfo = isExpired ? `Expiré le ${expiresDate}` : `Expire dans ${daysLeft} jour${daysLeft > 1 ? 's' : ''} (${expiresDate})`;
 
       return `
         <div class="promo-card ${statusClass}">
           <div class="promo-info">
             <div class="promo-code">${promo.code}</div>
             <div class="promo-details">
-              <span class="promo-percent">${promo.percent}% de réduction</span>
-              <span class="promo-expires">Expire le ${expiresDate}</span>
+              <span class="promo-percent">-${promo.percent}% de réduction</span>
+              <span class="promo-expires">${expiresInfo}</span>
               <span class="promo-status">${statusLabel}</span>
             </div>
           </div>
-          <button class="btn btn-danger btn-sm" data-delete-promo="${promo.code}">
+          <button class="btn btn-danger btn-sm" data-delete-promo="${promo.code}" title="Supprimer ce code promo">
             <i data-lucide="trash-2"></i>
             Supprimer
           </button>
@@ -852,26 +857,41 @@ window.addEventListener('DOMContentLoaded', ()=>{
       const percent = parseInt(fd.get('percent'));
       const days = parseInt(fd.get('expires'));
 
+      // Validation
       if(!code || !percent || !days){
         showToast('Tous les champs sont requis', 'warning');
         return;
       }
 
+      if(percent < 1 || percent > 100){
+        showToast('Le pourcentage doit être entre 1 et 100', 'warning');
+        return;
+      }
+
+      if(days < 1){
+        showToast('La validité doit être d\'au moins 1 jour', 'warning');
+        return;
+      }
+
+      // Vérifier si le code existe déjà
       const exists = Store.promos.some(p => p.code === code);
       if(exists){
         showToast('Ce code promo existe déjà', 'danger');
         return;
       }
 
+      // Créer le code promo
       const newPromo = {
         code: code,
         percent: percent,
-        expires: Date.now() + days * 86400000
+        expires: Date.now() + days * 86400000,
+        createdAt: Date.now(),
+        createdBy: user.email
       };
 
       Store.promos.push(newPromo);
       saveStore();
-      showToast(`Promotion ${code} créée (${percent}%)`, 'success');
+      showToast(`Code promo ${code} créé avec succès ! (-${percent}% pendant ${days} jour${days > 1 ? 's' : ''})`, 'success');
       promoForm.reset();
       renderPromos();
     });
@@ -890,3 +910,56 @@ window.addEventListener('DOMContentLoaded', ()=>{
     });
   }
 });
+
+  // === Gestion des témoignages ===
+  const testimonialsDiv = document.getElementById('admin-testimonials');
+
+  function renderTestimonials(){
+    if(!testimonialsDiv) return;
+    if(!Store.testimonials || Store.testimonials.length === 0){
+      testimonialsDiv.innerHTML = '<p class="text-muted">Aucun témoignage pour le moment.</p>';
+      return;
+    }
+
+    testimonialsDiv.innerHTML = Store.testimonials.map((test, index)=>{
+      return `
+        <div class="card testimonial-admin-card">
+          <div class="testimonial-admin-header">
+            <div>
+              <strong>${test.name}</strong>
+              <div class="text-muted">${test.role || 'Client'}</div>
+              <div class="star-rating">
+                ${'★'.repeat(test.rating)}${'☆'.repeat(5-test.rating)}
+              </div>
+            </div>
+            <button class="btn btn-danger btn-sm" data-delete-testimonial="${index}" title="Supprimer ce témoignage">
+              <i data-lucide="trash-2"></i>
+              Supprimer
+            </button>
+          </div>
+          <div class="testimonial-admin-content">
+            <p>"${test.text}"</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+  }
+  renderTestimonials();
+
+  if(testimonialsDiv){
+    testimonialsDiv.addEventListener('click', (ev)=>{
+      const delBtn = ev.target.closest('[data-delete-testimonial]');
+      if(delBtn){
+        const index = parseInt(delBtn.getAttribute('data-delete-testimonial'));
+        const testName = Store.testimonials[index]?.name || 'Témoignage';
+        if(confirm(`Êtes-vous sûr de vouloir supprimer le témoignage de ${testName} ?`)){
+          Store.testimonials.splice(index, 1);
+          saveStore();
+          showToast(`Témoignage de ${testName} supprimé`, 'warning');
+          renderTestimonials();
+        }
+      }
+    });
+  }
