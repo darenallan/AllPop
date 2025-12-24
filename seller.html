@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -46,70 +46,30 @@
           <input class="input" name="color" placeholder="Couleur principale" />
         </div>
         
-        <div class="form-row">
-          <div class="size-type-selector">
-            <label>Type de tailles :</label>
-            <select id="size-type" name="sizeType" class="input">
-              <option value="none">Pas de taille (accessoire)</option>
-              <option value="clothing">Vêtements (XS, S, M, L, XL...)</option>
-              <option value="shoes">Chaussures (pointures 36-46)</option>
-              <option value="pants">Pantalons (tailles 36-48)</option>
-              <option value="custom">Personnalisé</option>
+        <div id="fashion-type-row" class="form-row hidden">
+          <div class="form-group">
+            <label class="form-label">Type d'article</label>
+            <select id="fashion-item-type" class="input">
+              <option value="">-- Choisir --</option>
+              <option value="clothing">Vêtements</option>
+              <option value="shoes">Chaussures</option>
+            </select>
+          </div>
+          <div class="form-group hidden" id="size-system-group">
+            <label class="form-label">Système de pointure</label>
+            <select id="size-system" class="input">
+              <option value="EU">EU</option>
+              <option value="US Homme">US Homme</option>
+              <option value="US Femme">US Femme</option>
+              <option value="UK">UK</option>
+              <option value="Enfants">Enfants</option>
             </select>
           </div>
         </div>
 
-        <!-- Tailles vêtements -->
-        <div id="sizes-clothing" class="sizes-container hidden">
-          <label>Sélectionnez les tailles disponibles :</label>
-          <div class="sizes-grid">
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="XXS"> XXS</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="XS"> XS</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="S"> S</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="M"> M</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="L"> L</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="XL"> XL</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="XXL"> XXL</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="3XL"> 3XL</label>
-          </div>
-        </div>
-
-        <!-- Pointures chaussures -->
-        <div id="sizes-shoes" class="sizes-container hidden">
-          <label>Sélectionnez les pointures disponibles :</label>
-          <div class="sizes-grid">
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="36"> 36</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="37"> 37</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="38"> 38</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="39"> 39</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="40"> 40</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="41"> 41</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="42"> 42</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="43"> 43</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="44"> 44</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="45"> 45</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="46"> 46</label>
-          </div>
-        </div>
-
-        <!-- Tailles pantalons -->
-        <div id="sizes-pants" class="sizes-container hidden">
-          <label>Sélectionnez les tailles disponibles :</label>
-          <div class="sizes-grid">
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="36"> 36</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="38"> 38</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="40"> 40</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="42"> 42</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="44"> 44</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="46"> 46</label>
-            <label class="size-checkbox"><input type="checkbox" name="sizes" value="48"> 48</label>
-          </div>
-        </div>
-
-        <!-- Tailles personnalisées -->
-        <div id="sizes-custom" class="sizes-container hidden">
-          <label>Entrez les tailles séparées par des virgules :</label>
-          <input class="input" id="custom-sizes" placeholder="Ex: Unique, 34, 36, 38 ou S, M, L" />
+        <div id="sizes-dynamic" class="sizes-container hidden">
+          <label class="form-label">Tailles disponibles :</label>
+          <div id="sizes-dynamic-grid" class="sizes-grid"></div>
         </div>
 
         <textarea class="input" name="features" placeholder="Caractéristiques et description du produit"></textarea>
