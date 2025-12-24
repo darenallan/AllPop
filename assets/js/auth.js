@@ -138,9 +138,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
       // Redirections selon rôles
       const role = Auth.user.role;
       setTimeout(()=>{
-        if(role === 'seller') location.href = '../seller.html';
-        else if(role === 'superadmin') location.href = '../admin.html';
-        else location.href = '../index.html';
+        if(role === 'seller') location.href = 'seller.html';
+        else if(role === 'superadmin') location.href = 'admin.html';
+        else location.href = 'index.html';
       }, 600);
     });
   }
@@ -173,7 +173,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
         Auth.requestStore();
       }
       // Après inscription, aller au login
-      setTimeout(()=> location.href='../login.html', 700);
+      setTimeout(()=> location.href='login.html', 700);
     });
   }
 
@@ -183,7 +183,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     logoutBtn.addEventListener('click', ()=>{
       Auth.logout();
       showToast('Déconnecté', 'success');
-      setTimeout(()=> location.href='../index.html', 500);
+      setTimeout(()=> location.href='index.html', 500);
     });
   }
 });
