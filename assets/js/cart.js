@@ -3,15 +3,22 @@
 window.addEventListener('DOMContentLoaded', () => {
   const itemsEl = document.getElementById('cart-items');
   const clearBtn = document.getElementById('clear-cart-btn');
+  const deliveryAddressInput = document.getElementById('delivery-address');
   const promoInput = document.getElementById('promo-code');
   const applyPromoBtn = document.getElementById('apply-promo-btn');
 
   const countEl = document.getElementById('summary-count');
   const subtotalEl = document.getElementById('summary-subtotal');
   const discountEl = document.getElementById('summary-discount');
+  const shippingEl = document.getElementById('summary-shipping');
   const totalEl = document.getElementById('summary-total');
 
   let appliedPromo = null; // {code, percent}
+  let deliveryAddress = ''; // Adresse saisie par l'utilisateur
+
+  function getShippingFee() {
+    return { name: 'Standard', fee: 0, msg: 'Déterminé par le livreur' };
+  }
 
   function render(){
     const items = getCartItems();
@@ -98,13 +105,16 @@ window.addEventListener('DOMContentLoaded', () => {
   function updateSummary(){
     const items = getCartItems();
     const count = items.reduce((s,it)=>s+it.quantity,0);
-    const subtotal = getSubtotal();
+    const subtotal = items.reduce((s,it)=> s + it.product.price*it.quantity, 0);
     const discount = computeDiscount(subtotal);
-    const total = Math.max(0, subtotal - discount);
+    const zone = getShippingFee();
+    const shipping = zone.fee;
+    const total = Math.max(0, subtotal - discount + shipping);
 
     countEl.textContent = count;
     subtotalEl.textContent = formatFCFA(subtotal);
     discountEl.textContent = formatFCFA(discount);
+    shippingEl.textContent = zone.msg;
     totalEl.textContent = formatFCFA(total);
   }
 
@@ -112,6 +122,15 @@ window.addEventListener('DOMContentLoaded', () => {
     clearCart();
     render();
   });
+
+  // Livraison: écouter les changements d'adresse
+  if (deliveryAddressInput) {
+    deliveryAddressInput.addEventListener('input', (e) => {
+      deliveryAddress = e.target.value;
+      updateSummary();
+    });
+  }
+
   // applyPromoBtn handled below (stores last applied promo in localStorage)
 
   // Paiement (placeholder)
@@ -140,15 +159,17 @@ window.addEventListener('DOMContentLoaded', () => {
   if(checkoutBtn){
     checkoutBtn.addEventListener('click', ()=>{
       const user = JSON.parse(localStorage.getItem('ac_currentUser')||'null');
-      if(!user){ showToast('Veuillez vous connecter pour continuer','warning'); return location.href='../login.html'; }
+      if(!user){ showToast('Veuillez vous connecter pour continuer','warning'); return location.href='login.html'; }
       const cartItems = getCartItems();
       if(cartItems.length===0) return showToast('Votre panier est vide','warning');
+      if(!deliveryAddress.trim()) return showToast('Veuillez entrer une adresse de livraison','warning');
 
       // Recalcule montants
       const subtotal = cartItems.reduce((s,it)=> s + it.product.price*it.quantity, 0);
       const promo = JSON.parse(localStorage.getItem('ac_last_promo')||'null');
       const discount = promo ? Math.round(subtotal * (promo.percent||0) / 100) : 0;
-      const shipping = 0; // logique simple : gratuite
+      const zone = getShippingFee();
+      const shipping = zone.fee;
       const total = Math.max(0, subtotal - discount + shipping);
 
       // Construire la commande
@@ -166,7 +187,8 @@ window.addEventListener('DOMContentLoaded', () => {
         })),
         subtotal, discount, shipping, total,
         promoCode: promo ? promo.code : null,
-        address: null,
+        address: deliveryAddress,
+        zone: zone.name,
         meta: { method:'Standard' }
       };
 
@@ -189,7 +211,8 @@ window.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('ac_last_promo');
 
       showToast('Commande créée avec succès','success');
-      setTimeout(()=> location.href='../order.html', 800);
+      // Rediriger vers la page de facture avec l'ID de commande pour génération automatique
+      setTimeout(()=> location.href=`invoice.html?orderId=${order.id}`, 800);
     });
   }
 });
