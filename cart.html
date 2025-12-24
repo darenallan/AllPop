@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
@@ -34,6 +34,12 @@
             <div class="summary-row"><span>Articles</span><span id="summary-count">0</span></div>
             <div class="summary-row"><span>Sous-total</span><span id="summary-subtotal">0 FCFA</span></div>
             <div class="summary-row">
+              <span>Adresse de livraison</span>
+              <span>
+                <input id="delivery-address" class="input" placeholder="Ex: Zone du Bois, Ouagadougou" style="width:100%;margin-top:8px" />
+              </span>
+            </div>
+            <div class="summary-row">
               <span>Code promo</span>
               <span>
                 <input id="promo-code" class="input" placeholder="Ex: AURUM10" style="width:140px" />
@@ -41,7 +47,7 @@
               </span>
             </div>
             <div class="summary-row"><span>Réduction</span><span id="summary-discount">0 FCFA</span></div>
-            <div class="summary-row"><span>Livraison</span><span id="summary-shipping">Gratuite dès 20 000 FCFA</span></div>
+            <div class="summary-row"><span>Livraison</span><span id="summary-shipping">Gratuite</span></div>
             <div class="summary-row summary-total"><span>Total</span><span id="summary-total">0 FCFA</span></div>
             <button class="btn btn-gold btn-xl mt-4" id="checkout-btn">Procéder au paiement</button>
           </div>
