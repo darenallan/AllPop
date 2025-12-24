@@ -54,52 +54,117 @@ window.addEventListener('DOMContentLoaded', ()=>{
     if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
-  // Gestion du sélecteur de type de tailles
-  const sizeTypeSelect = document.getElementById('size-type');
-  const sizesContainers = {
-    clothing: document.getElementById('sizes-clothing'),
-    shoes: document.getElementById('sizes-shoes'),
-    pants: document.getElementById('sizes-pants'),
-    custom: document.getElementById('sizes-custom')
+  // Gestion avancée des tailles pour Mode & Vêtements
+  const fashionTypeRow = document.getElementById('fashion-type-row');
+  const fashionItemType = document.getElementById('fashion-item-type');
+  const sizeSystemGroup = document.getElementById('size-system-group');
+  const sizeSystemSelect = document.getElementById('size-system');
+  const sizesDynamic = document.getElementById('sizes-dynamic');
+  const sizesDynamicGrid = document.getElementById('sizes-dynamic-grid');
+
+  const SIZE_CONFIG = {
+    "Mode & Vetements": {
+      clothing: ["XS","S","M","L","XL","XXL","XXXL"],
+      shoes: {
+        "EU": ["35","36","37","38","39","40","41","42","43","44","45","46"],
+        "US Homme": ["6","7","8","9","10","11","12","13"],
+        "US Femme": ["5","6","7","8","9","10","11"],
+        "UK": ["5","6","7","8","9","10","11"],
+        "Enfants": ["20","21","22","23","24","25","26","27","28","29","30","31","32","33","34"]
+      }
+    },
+    "Beauté & Hygiène": ["30ml","50ml","100ml","200ml","500ml"],
+    "Electronique": ["16GB","32GB","64GB","128GB","256GB","512GB","1TB"],
+    "Maison & Meubles": ["Small","Medium","Large","XL","2XL"],
+    "Bâtiment & Quincaillerie": ["1m","2m","3m","5m","10m"],
+    "Véhicules": ["Compact","Berline","SUV","4x4","Camion"],
+    "Restauration": ["Small","Medium","Large","XL (Family)"]
   };
 
-  function updateSizesVisibility() {
-    const type = sizeTypeSelect.value;
-    // Masquer tous les containers
-    Object.values(sizesContainers).forEach(c => c && c.classList.add('hidden'));
-    // Afficher le container correspondant
-    if (type !== 'none' && sizesContainers[type]) {
-      sizesContainers[type].classList.remove('hidden');
+  const isFashion = shop?.category && shop.category.toLowerCase().includes('mode');
+
+  function renderSizeOptions(options){
+    if(!sizesDynamicGrid) return;
+    sizesDynamicGrid.innerHTML = options.map(val => `
+      <label class="size-checkbox"><input type="checkbox" name="sizes" value="${val}"> ${val}</label>
+    `).join('');
+  }
+
+  function showSizes(options){
+    if(!sizesDynamic) return;
+    renderSizeOptions(options || []);
+    sizesDynamic.classList.toggle('hidden', !options || options.length===0);
+    // reset selections
+    sizesDynamic.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);
+  }
+
+  function handleFashionSelection(){
+    if(!isFashion){
+      if(fashionTypeRow) fashionTypeRow.classList.add('hidden');
+      showSizes([]);
+      return;
     }
-    // Décocher toutes les checkboxes quand on change de type
-    document.querySelectorAll('.sizes-container input[type="checkbox"]').forEach(cb => cb.checked = false);
+    if(fashionTypeRow) fashionTypeRow.classList.remove('hidden');
+
+    const itemType = fashionItemType.value;
+    if(itemType === 'clothing'){
+      if(sizeSystemGroup) sizeSystemGroup.classList.add('hidden');
+      const sizes = SIZE_CONFIG["Mode & Vetements"].clothing;
+      showSizes(sizes);
+    }else if(itemType === 'shoes'){
+      if(sizeSystemGroup) sizeSystemGroup.classList.remove('hidden');
+      const system = sizeSystemSelect.value || 'EU';
+      const sizes = SIZE_CONFIG["Mode & Vetements"].shoes[system] || [];
+      showSizes(sizes);
+    }else{
+      if(sizeSystemGroup) sizeSystemGroup.classList.add('hidden');
+      showSizes([]);
+    }
   }
 
-  if (sizeTypeSelect) {
-    sizeTypeSelect.addEventListener('change', updateSizesVisibility);
+  if(fashionItemType){
+    fashionItemType.addEventListener('change', handleFashionSelection);
+  }
+  if(sizeSystemSelect){
+    sizeSystemSelect.addEventListener('change', handleFashionSelection);
   }
 
-  // Récupérer les tailles sélectionnées
+  function updateSizesVisibility(){
+    handleFashionSelection();
+  }
+
+  // Initialisation de l'affichage des tailles
+  updateSizesVisibility();
+
   function getSelectedSizes() {
-    const type = sizeTypeSelect ? sizeTypeSelect.value : 'none';
-    
-    if (type === 'none') {
-      return { type: 'none', sizes: [] };
+    // Si la boutique n'est pas Mode & Vetements, on ignore les tailles
+    if(!isFashion){
+      return { type: 'none', system: null, sizes: [], itemType: null };
     }
-    
-    if (type === 'custom') {
-      const customInput = document.getElementById('custom-sizes');
-      const customSizes = customInput ? customInput.value.split(',').map(s => s.trim()).filter(s => s) : [];
-      return { type: 'custom', sizes: customSizes };
+
+    const itemType = fashionItemType ? fashionItemType.value : '';
+    if(!itemType){
+      return { type: 'invalid', message: 'Choisissez le type d\'article (Vêtements ou Chaussures)' };
     }
-    
-    // Pour clothing, shoes, pants - récupérer les checkboxes cochées
-    const container = sizesContainers[type];
-    if (!container) return { type, sizes: [] };
-    
-    const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
-    const sizes = Array.from(checkedBoxes).map(cb => cb.value);
-    return { type, sizes };
+
+    if(itemType === 'clothing'){
+      const options = SIZE_CONFIG["Mode & Vetements"].clothing;
+      const checked = sizesDynamic?.querySelectorAll('input[type="checkbox"]:checked') || [];
+      const sizes = Array.from(checked).map(cb=>cb.value).filter(v=>options.includes(v));
+      if(sizes.length===0) return { type: 'invalid', message: 'Sélectionnez au moins une taille de vêtement' };
+      return { type: 'clothing', system: null, sizes, itemType };
+    }
+
+    if(itemType === 'shoes'){
+      const system = sizeSystemSelect ? sizeSystemSelect.value : 'EU';
+      const options = (SIZE_CONFIG["Mode & Vetements"].shoes[system]) || [];
+      const checked = sizesDynamic?.querySelectorAll('input[type="checkbox"]:checked') || [];
+      const sizes = Array.from(checked).map(cb=>cb.value).filter(v=>options.includes(v));
+      if(sizes.length===0) return { type: 'invalid', message: 'Sélectionnez au moins une pointure' };
+      return { type: 'shoes', system, sizes, itemType };
+    }
+
+    return { type: 'invalid', message: 'Type d\'article non reconnu' };
   }
 
   // Formulaire produit
@@ -114,8 +179,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
       
       // Récupérer les tailles
       const sizeData = getSelectedSizes();
-      if (sizeData.type !== 'none' && sizeData.sizes.length === 0) {
-        return showToast('Veuillez sélectionner au moins une taille', 'warning');
+      if(sizeData.type === 'invalid'){
+        return showToast(sizeData.message || 'Tailles invalides', 'warning');
       }
       
       // Créer les variantes basées sur les tailles
@@ -161,6 +226,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
         stock: parseInt(fd.get('stock')||'0'),
         color: fd.get('color')||'', 
         sizeType: sizeData.type,
+        sizeItemType: sizeData.itemType || null,
+        sizeSystem: sizeData.system || null,
         sizes: sizeData.sizes,
         variants: variants,
         size: sizeData.sizes.length > 0 ? sizeData.sizes[0] : '', // Première taille par défaut
