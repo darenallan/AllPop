@@ -126,9 +126,10 @@
       <div id="admin-invoices"></div>
 
       <h2 class="mt-6">Gestion des promotions</h2>
+      <p class="text-muted mb-3">Créez des codes promo pour offrir des réductions à vos clients</p>
       <form id="promo-form" class="promo-form">
         <div class="form-row">
-          <input class="input" name="code" placeholder="Code promo (ex: AURUM10)" required />
+          <input class="input" name="code" placeholder="Code promo (ex: AURUM10)" required style="text-transform: uppercase;" />
           <input class="input" name="percent" type="number" min="1" max="100" placeholder="% de réduction" required />
         </div>
         <div class="form-row">
@@ -136,10 +137,15 @@
         </div>
         <button class="btn btn-gold" type="submit">
           <i data-lucide="plus-circle"></i>
-          Ajouter la promotion
+          Créer le code promo
         </button>
       </form>
-      <div id="admin-promos" class="promos-list mt-4"></div>
+      <h3 class="mt-4 mb-2">Codes promo actifs</h3>
+      <div id="admin-promos" class="promos-list"></div>
+
+      <h2 class="mt-6">Gestion des témoignages</h2>
+      <p class="text-muted mb-3">Gérez les témoignages clients affichés sur le site</p>
+      <div id="admin-testimonials" class="testimonials-admin-list"></div>
 
       <h2 class="mt-6">Statistiques globales</h2>
       <div id="admin-stats"></div>
