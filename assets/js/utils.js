@@ -118,87 +118,90 @@ function injectHeader(){
 
   const user = JSON.parse(localStorage.getItem('ac_currentUser') || 'null');
 
-  const sessionHTML = user ? `
-    <div class="user-session">
-      <a href="order.html" class="icon-btn user-btn" aria-label="Mon compte" title="Mon compte">
-        <i data-lucide="user" class="lucide-icon"></i>
-        <span class="icon-label">Compte</span>
-      </a>
-      <button class="btn btn-sm" id="logout-btn" aria-label="Déconnexion">
-        <i data-lucide="log-out" class="lucide-icon lucide-sm"></i>
-        <span class="btn-text">Déconnexion</span>
-      </button>
-    </div>
-  ` : `
-    <div class="auth-btns">
-      <a href="login.html" class="btn btn-outline btn-sm">
-        <i data-lucide="log-in" class="lucide-icon lucide-sm"></i>
-        <span class="btn-text">Connexion</span>
-      </a>
-      <a href="register.html" class="btn btn-gold btn-sm">
-        <i data-lucide="user-plus" class="lucide-icon lucide-sm"></i>
-        <span class="btn-text">Inscription</span>
-      </a>
-    </div>
-  `;
-
   h.innerHTML = `
-  <nav class="navbar" aria-label="Barre de navigation">
+  <nav class="navbar" aria-label="Barre de navigation principale">
     <a href="index.html" class="brand" aria-label="Accueil Aurum">
-      <div class="brand-logo-img" aria-hidden="true">
-        <img src="assets/img/logo.jpg" alt="" />
+      <div class="brand-logo-img">
+        <img src="assets/img/logo.jpg" alt="Logo Aurum" />
       </div>
       <div>
         <div class="brand-name">Aurum</div>
-        <div class="tagline">L'Excellence à Votre Portée</div>
+        <div class="tagline">Excellence à Votre Portée</div>
       </div>
     </a>
 
-    <button class="menu-toggle" aria-label="Ouvrir le menu" aria-expanded="false">
-      <i data-lucide="menu" class="lucide-icon menu-icon"></i>
-      <i data-lucide="x" class="lucide-icon close-icon"></i>
-    </button>
-
     <div class="nav-actions">
-      <a href="seller.html" class="icon-btn" aria-label="Espace vendeur" title="Espace vendeur">
-        <i data-lucide="store" class="lucide-icon"></i>
-        <span class="icon-label">Vendeur</span>
+      <button class="icon-btn" id="search-btn" data-search-btn aria-label="Rechercher" title="Rechercher">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+      </button>
+
+      <a href="cart.html" class="icon-btn" id="cart-btn" aria-label="Panier">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span class="badge" id="cart-badge" aria-label="Articles dans le panier">0</span>
       </a>
 
-      <a href="wishlist.html" class="icon-btn heart-btn" id="wl-btn" aria-label="Favoris" title="Favoris">
-        <i data-lucide="heart" class="lucide-icon heart-icon"></i>
-        <span class="badge heart-badge" id="wl-badge" aria-label="Nombre de favoris">0</span>
-        <span class="icon-label">Favoris</span>
-      </a>
-
-      <a href="cart.html" class="icon-btn cart-btn" id="cart-btn" aria-label="Panier" title="Panier">
-        <i data-lucide="shopping-bag" class="lucide-icon"></i>
-        <span class="badge cart-badge" id="cart-badge" aria-label="Articles dans le panier">0</span>
-        <span class="icon-label">Panier</span>
-      </a>
-
-      <a href="order.html" class="icon-btn orders-btn" aria-label="Mes commandes" title="Mes commandes">
-        <i data-lucide="package" class="lucide-icon"></i>
-        <span class="icon-label">Commandes</span>
-      </a>
-
-      ${sessionHTML}
+      <button class="icon-btn" id="burger-btn" data-burger-btn aria-label="Menu" title="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
     </div>
   </nav>
 
-  <div class="search-bar">
-    <form class="search-form" action="catalogue.html" method="get" role="search">
-      <button type="button" class="search-back-btn" aria-label="Retour">
-        <i data-lucide="arrow-left" class="lucide-icon"></i>
-      </button>
-      <input name="q" placeholder="Rechercher un produit ou une catégorie..." aria-label="Recherche" />
-      <button type="submit" class="search-submit-btn" aria-label="Rechercher">
-        <i data-lucide="search" class="lucide-icon"></i>
-      </button>
-    </form>
+  <!-- Search Overlay -->
+  <div id="search-overlay"></div>
+
+  <!-- Search Container -->
+  <div class="search-container">
+    <input type="text" id="search-input" placeholder="Rechercher un produit..." aria-label="Recherche produits" />
+    <button class="search-close-btn" aria-label="Fermer la recherche">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
   </div>
 
+  <!-- Search Results -->
+  <div id="search-results"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu">
+    <a href="index.html" class="mobile-menu-item">🏠 Accueil</a>
+    <a href="catalogue.html" class="mobile-menu-item">🛍️ Catalogue</a>
+    <a href="seller.html" class="mobile-menu-item">🏪 Espace Vendeur</a>
+    <a href="wishlist.html" class="mobile-menu-item">❤️ Favoris</a>
+    <a href="order.html" class="mobile-menu-item">📦 Mes Commandes</a>
+    <div class="mobile-menu-divider"></div>
+    ${user ? `
+      <a href="order.html" class="mobile-menu-item">👤 Mon Compte</a>
+      <button id="mobile-logout-btn" class="mobile-menu-item" style="text-align: left; width: 100%; cursor: pointer;">🚪 Déconnexion</button>
+    ` : `
+      <a href="login.html" class="mobile-menu-item">🔐 Connexion</a>
+      <a href="register.html" class="mobile-menu-item">✍️ Inscription</a>
+    `}
+  </div>
   `;
+
+  // Logout handlers
+  const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+  if (mobileLogoutBtn) {
+    mobileLogoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('ac_currentUser');
+      showToast('Déconnecté', 'success');
+      setTimeout(() => location.href = 'index.html', 700);
+    });
+  }
+
 
   // Initialize Lucide icons with enhanced visibility
   if (typeof lucide !== 'undefined') {
@@ -219,7 +222,7 @@ function injectHeader(){
     logoutBtn.addEventListener('click', ()=>{
       localStorage.removeItem('ac_currentUser');
       showToast('Déconnecté', 'success');
-      setTimeout(()=> location.href = '../index.html', 700);
+      setTimeout(()=> location.href = 'index.html', 700);
     });
   }
 }
@@ -244,7 +247,7 @@ function injectFooter(){
     </div>
     <div>
       <h3>Suivez-nous</h3>
-      <p><a href="#">Instagram</a> · <a href="#">TikTok</a></p>
+      <p><a href="https://www.instagram.com/aurum_bf?igsh=NXNkaXExeTVhNXgy" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.tiktok.com/@aurum_bf?_r=1&_t=ZM-92ULkdEQuCK" target="_blank" rel="noopener">TikTok</a></p>
     </div>
   </div>
   <div class="center mt-4">© ${new Date().getFullYear()} Aurum — Tous droits réservés.</div>`;
