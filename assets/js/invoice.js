@@ -4,7 +4,7 @@
 (function(){
   const { jsPDF } = window.jspdf || {};
   const WHATSAPP_PHONE = '22664502626';
-  const SNAPCHAT_USERNAME = 'daren_allan';
+  const SNAPCHAT_URL = 'https://www.snapchat.com/add/daren_allan?share_id=qyN3S3ExRJI&locale=fr-FR';
 
   function ensureInvoices(){
     if(!Array.isArray(Store.invoices)) Store.invoices = [];
@@ -32,11 +32,10 @@
       <div class="company-info">
         <img src="${logoPath}" alt="Aurum" class="invoice-logo" onerror="this.style.display='none'"/>
         <div>
-          <h2>Aurum Events</h2>
-          <div class="text-muted">Qualité · Courtoisie · Efficacité</div>
+          <h2>Aurum</h2>
           <div class="text-muted">Ouagadougou, Burkina Faso</div>
-          <div class="text-muted">Email: contact@aurum.events</div>
-          <div class="text-muted">Téléphone: +226 64 50 26 26</div>
+          <div class="text-muted">Email: aurumcorporate.d@gmail.com</div>
+          <div class="text-muted">WhatsApp / MLE: +226 64 50 26 26</div>
         </div>
       </div>`;
 
@@ -49,7 +48,7 @@
 
     const details = `
       <div class="invoice-details">
-        <div><strong>Référence:</strong> INV-${invoice.reference}</div>
+        <div><strong>Référence:</strong> AUR-${invoice.reference}</div>
         <div><strong>Date:</strong> ${new Date(invoice.date).toLocaleDateString('fr-FR')}</div>
         <div><strong>Mode de paiement:</strong> ${invoice.paymentMethod}</div>
       </div>`;
@@ -90,28 +89,35 @@
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const html = buildInvoiceHTML(invoice);
 
-    // Simple conversion: utilise doc.html si disponible
-    if(doc.html){
-      const container = document.createElement('div');
-      container.style.width = '595pt';
-      container.innerHTML = html;
-      document.body.appendChild(container);
-      await doc.html(container, { x: 20, y: 20 });
-      document.body.removeChild(container);
-    }else{
-      // Fallback: texte basique
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(12);
-      doc.text(`Aurum Events - Facture INV-${invoice.reference}`, 40, 40);
-      doc.text(`Client: ${invoice.clientName}`, 40, 60);
-      doc.text(`Email: ${invoice.clientEmail}`, 40, 80);
-      doc.text(`Téléphone: ${invoice.clientPhone}`, 40, 100);
-      doc.text(`Date: ${new Date(invoice.date).toLocaleDateString('fr-FR')}`, 40, 120);
-      doc.text(`Paiement: ${invoice.paymentMethod}`, 40, 140);
-      doc.text(`Description: ${invoice.serviceDescription}`, 40, 180, { maxWidth: 500 });
-      doc.text(`Montant: ${formatFCFA(invoice.amount)}`, 40, 240);
+    // Essaye doc.html seulement si html2canvas est présent (sinon erreur)
+    if(doc.html && window.html2canvas){
+      try{
+        const container = document.createElement('div');
+        container.style.width = '595pt';
+        container.innerHTML = html;
+        document.body.appendChild(container);
+        await doc.html(container, { x: 20, y: 20 });
+        document.body.removeChild(container);
+        return doc;
+      }catch(err){
+        console.warn('doc.html a échoué, bascule sur rendu texte', err);
+      }
     }
 
+    // Fallback: rendu texte simple (aucune dépendance)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    let y = 40;
+    const line = (text)=>{ doc.text(text, 40, y); y += 20; };
+    line(`Aurum - Facture AUR-${invoice.reference}`);
+    line(`Client: ${invoice.clientName}`);
+    line(`Email: ${invoice.clientEmail}`);
+    line(`Téléphone: ${invoice.clientPhone}`);
+    line(`Date: ${new Date(invoice.date).toLocaleDateString('fr-FR')}`);
+    line(`Paiement: ${invoice.paymentMethod}`);
+    line(`Montant: ${formatFCFA(invoice.amount)}`);
+    doc.text('Description:', 40, y + 10);
+    doc.text(invoice.serviceDescription || '', 40, y + 30, { maxWidth: 500 });
     return doc;
   }
 
@@ -133,15 +139,15 @@
   }
 
   function getSnapchatShareUrl(){
-    return `https://www.snapchat.com/add/${SNAPCHAT_USERNAME}`;
+    return SNAPCHAT_URL;
   }
 
   async function tryNativeShare(pdf, invoice, message){
     if(!pdf || !pdf.output || !navigator.share) return false;
     try{
       const blob = pdf.output('blob');
-      const file = new File([blob], `Aurum_Invoice_INV-${invoice.reference}.pdf`, { type:'application/pdf' });
-      const payload = { title: `Facture INV-${invoice.reference}`, text: message, files: [file] };
+      const file = new File([blob], `Aurum_Invoice_AUR-${invoice.reference}.pdf`, { type:'application/pdf' });
+      const payload = { title: `Facture AUR-${invoice.reference}`, text: message, files: [file] };
       if(navigator.canShare && !navigator.canShare(payload)) return false;
       await navigator.share(payload);
       return true;
@@ -151,15 +157,134 @@
     }
   }
 
-  window.addEventListener('DOMContentLoaded', ()=>{
+  async function generateInvoiceFromOrder(orderId){
+    const order = Store.orders?.find(o => o.id === orderId);
+    if(!order){
+      showToast('Commande introuvable', 'danger');
+      return null;
+    }
+
+    const user = JSON.parse(localStorage.getItem('ac_currentUser')||'null');
+    if(!user){
+      showToast('Utilisateur non connecté', 'warning');
+      return null;
+    }
+
+    // Créer une facture basée sur la commande
+    const invoice = {
+      id: 'inv-'+Date.now(),
+      reference: getNextInvoiceNumber(),
+      clientName: user.name || user.email.split('@')[0],
+      clientEmail: user.email,
+      clientPhone: user.phone || 'Non renseigné',
+      serviceDescription: order.items.map(it => `${it.name} (x${it.qty})`).join(', '),
+      amount: order.total,
+      paymentMethod: order.meta?.method || 'Standard',
+      date: new Date(order.date).toISOString(),
+      createdAt: Date.now(),
+      status: 'generated',
+      orderId: order.id,
+      sellerEmail: null
+    };
+
+    // Générer PDF
+    let pdf;
+    try{
+      pdf = await htmlToPdf(invoice);
+    }catch(err){
+      showToast('Erreur lors de la génération PDF', 'danger');
+      console.error(err);
+      return null;
+    }
+
+    // Sauvegarder
+    saveInvoice(invoice);
+    return { invoice, pdf };
+  }
+
+  window.addEventListener('DOMContentLoaded', async ()=>{
     const form = document.getElementById('invoice-form');
     const preview = document.getElementById('invoice-preview');
     const previewContent = document.getElementById('invoice-preview-content');
     const refDiv = document.getElementById('invoice-reference');
     const btnDownload = document.getElementById('download-invoice-btn');
+    const btnEmail = document.getElementById('email-invoice-btn');
     const btnWhatsApp = document.getElementById('whatsapp-invoice-btn');
     const btnSnap = document.getElementById('snapchat-invoice-btn');
 
+    // Vérifier si on doit générer une facture à partir d'une commande
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+    if(orderId){
+      // Afficher le banner de succès
+      const successBanner = document.getElementById('order-success-banner');
+      if(successBanner){
+        successBanner.classList.remove('hidden');
+        if(typeof lucide !== 'undefined') lucide.createIcons();
+      }
+
+      showToast('Génération de votre facture...', 'info');
+      const result = await generateInvoiceFromOrder(orderId);
+      if(result){
+        const { invoice, pdf } = result;
+        // Afficher la facture
+        if(refDiv) refDiv.textContent = `Référence: AUR-${invoice.reference}`;
+        if(previewContent) previewContent.innerHTML = buildInvoiceHTML(invoice);
+        if(preview) preview.classList.remove('hidden');
+        showToast('Facture générée avec succès', 'success');
+
+        // Configurer les boutons d'action
+        if(btnDownload){
+          btnDownload.onclick = ()=>{
+            pdf.save(`Aurum_Facture_AUR-${invoice.reference}.pdf`);
+            showToast('Facture téléchargée', 'success');
+          };
+        }
+
+        if(btnEmail){
+          btnEmail.onclick = ()=>{
+            const subject = `Facture AURUM CORP - AUR-${invoice.reference}`;
+            const body = `Bonjour,%0D%0A%0D%0AVeuillez trouver ci-joint ma facture AURUM CORP.%0D%0A%0D%0ARéférence: AUR-${invoice.reference}%0D%0AClient: ${invoice.clientName}%0D%0AMontant: ${formatFCFA(invoice.amount)}%0D%0ADate: ${new Date(invoice.date).toLocaleDateString('fr-FR')}%0D%0A%0D%0AMerci de votre confiance !%0D%0A%0D%0ACordialement,%0D%0A${invoice.clientName}`;
+            const emailUrl = `mailto:contact@aurumcorp.com?subject=${subject}&body=${body}`;
+            window.location.href = emailUrl;
+            showToast('Application email ouverte. Téléchargez et joignez le PDF.', 'info');
+          };
+        }
+
+        if(btnWhatsApp){
+          btnWhatsApp.onclick = async ()=>{
+            const msg = `Bonjour, voici ma facture AURUM CORP:\n\nRéférence: AUR-${invoice.reference}\nMontant: ${formatFCFA(invoice.amount)}\nClient: ${invoice.clientName}\n\nMerci de votre confiance !`;
+            const shared = await tryNativeShare(pdf, invoice, msg);
+            if(shared){
+              showToast('Facture partagée avec succès', 'success');
+              return;
+            }
+            const url = getWhatsAppUrl(msg);
+            window.open(url, '_blank');
+            showToast('WhatsApp ouvert. Téléchargez la facture et joignez-la au message.', 'info');
+          };
+        }
+
+        if(btnSnap){
+          btnSnap.onclick = async ()=>{
+            const msg = `Facture AURUM CORP AUR-${invoice.reference} · ${formatFCFA(invoice.amount)}`;
+            const shared = await tryNativeShare(pdf, invoice, msg);
+            if(shared){
+              showToast('Facture partagée avec succès', 'success');
+              return;
+            }
+            const url = getSnapchatShareUrl();
+            window.open(url, '_blank');
+            showToast('Snapchat ouvert. Partagez votre facture.', 'info');
+          };
+        }
+
+        // Masquer le formulaire si présent
+        if(form) form.style.display = 'none';
+      }
+    }
+
+    // Gestionnaire du formulaire manuel (toujours attacher l'événement)
     if(form){
       form.addEventListener('submit', async (e)=>{
         e.preventDefault();
@@ -200,18 +325,28 @@
         sendAdminNotification(invoice);
 
         // Afficher prévisualisation
-        refDiv.textContent = `Référence: INV-${invoice.reference}`;
+        refDiv.textContent = `Référence: AUR-${invoice.reference}`;
         previewContent.innerHTML = buildInvoiceHTML(invoice);
         preview.classList.remove('hidden');
         showToast('Facture générée, enregistrée et envoyée pour validation', 'success');
 
         // Actions
         btnDownload.onclick = ()=>{
-          pdf.save(`Aurum_Invoice_INV-${invoice.reference}.pdf`);
+          pdf.save(`Aurum_Invoice_AUR-${invoice.reference}.pdf`);
         };
 
+        if(btnEmail){
+          btnEmail.onclick = ()=>{
+            const subject = `Facture AURUM CORP - AUR-${invoice.reference}`;
+            const body = `Bonjour,%0D%0A%0D%0AVeuillez trouver ci-joint la facture AURUM CORP.%0D%0A%0D%0ARéférence: AUR-${invoice.reference}%0D%0AClient: ${invoice.clientName}%0D%0AMontant: ${formatFCFA(invoice.amount)}%0D%0ADate: ${new Date(invoice.date).toLocaleDateString('fr-FR')}%0D%0A%0D%0AMerci de votre confiance !`;
+            const emailUrl = `mailto:${invoice.clientEmail}?subject=${subject}&body=${body}`;
+            window.location.href = emailUrl;
+            showToast('Application email ouverte. Téléchargez et joignez le PDF.', 'info');
+          };
+        }
+
         btnWhatsApp.onclick = async ()=>{
-          const msg = `Bonjour, veuillez trouver en pièce jointe la facture INV-${invoice.reference} pour ${invoice.clientName} (montant: ${formatFCFA(invoice.amount)}).`;
+          const msg = `Bonjour, veuillez trouver en pièce jointe la facture AUR-${invoice.reference} pour ${invoice.clientName} (montant: ${formatFCFA(invoice.amount)}).`;
           const shared = await tryNativeShare(pdf, invoice, msg);
           if(shared){
             showToast('Partage via le sélecteur natif (WhatsApp si disponible)', 'info');
@@ -223,7 +358,7 @@
         };
 
         btnSnap.onclick = async ()=>{
-          const msg = `Facture INV-${invoice.reference} · ${invoice.clientName} · ${formatFCFA(invoice.amount)}`;
+          const msg = `Facture AUR-${invoice.reference} · ${invoice.clientName} · ${formatFCFA(invoice.amount)}`;
           const shared = await tryNativeShare(pdf, invoice, msg);
           if(shared){
             showToast('Partage ouvert (Snapchat si disponible)', 'info');
