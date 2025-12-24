@@ -127,8 +127,8 @@ window.addEventListener('DOMContentLoaded', () => {
           <svg viewBox="0 0 24 24" fill="none"><path d="M3 6h13l5 5v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z" stroke="currentColor" stroke-width="1.5"/></svg>
         </div>
         <div>
-          <p class="text-sm" style="font-weight:600">Livraison gratuite</p>
-          <p class="text-xs text-muted-foreground">Dès 20000 FCFA</p>
+          <p class="text-sm" style="font-weight:600">Livraison déterminée</p>
+          <p class="text-xs text-muted-foreground">Selon votre position géographique</p>
         </div>
       </div>
       <div class="feature-item">
@@ -136,7 +136,7 @@ window.addEventListener('DOMContentLoaded', () => {
           <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.5"/></svg>
         </div>
         <div>
-          <p class="text-sm" style="font-weight:600">Retours gratuits</p>
+          <p class="text-sm" style="font-weight:600">Retours gratuits en bon état</p>
           <p class="text-xs text-muted-foreground">Sous 30 jours</p>
         </div>
       </div>
@@ -330,10 +330,21 @@ window.addEventListener('DOMContentLoaded', () => {
   container.innerHTML = `
     <div class="product-wrap">
       <div class="product-grid">
-        <div class="product-main">
-          <img src="${images[selectedImage]}" alt="${p.name}" />
+        <!-- Image Slider Mobile-First -->
+        <div class="product-slider-wrap">
+          <div class="product-slider" id="product-slider">
+            ${images.map((img, i) => `
+              <div class="product-slider-image">
+                <img src="${img}" alt="${p.name} - Image ${i+1}" loading="${i===0?'eager':'lazy'}" />
+              </div>
+            `).join('')}
+          </div>
+          ${images.length > 1 ? `
+            <div class="slider-indicators">
+              ${images.map((_, i) => `<span class="slider-dot ${i===selectedImage?'active':''}" data-slide="${i}"></span>`).join('')}
+            </div>
+          ` : ''}
         </div>
-        <div class="thumbs">${thumbsHTML()}</div>
       </div>
       <div class="product-info">
         <a href="seller.html">
@@ -451,6 +462,28 @@ window.addEventListener('DOMContentLoaded', () => {
       <div id="reviews-list">
         ${renderReviews(p.reviews || [])}
       </div>
+    </div>
+    
+    <!-- Cross-Sell Section -->
+    <div class="cross-sell-section" id="cross-sell-section">
+      <h3 class="cross-sell-title">Va parfaitement avec...</h3>
+      <div class="cross-sell-grid" id="cross-sell-grid"></div>
+    </div>
+    
+    <!-- Sticky CTA Bar (Mobile) -->
+    <div class="sticky-cta" id="sticky-cta">
+      <div class="sticky-cta-price">
+        <span class="cta-price-label">Prix</span>
+        <span class="cta-price-value">${formatFCFA(p.price)}</span>
+      </div>
+      <button class="sticky-cta-btn" id="sticky-add-cart" ${isInCart(p.id) || p.stock===0 ? 'disabled' : ''}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span>${isInCart(p.id) ? 'Dans le panier' : 'Ajouter au panier'}</span>
+      </button>
     </div>
   `;
 
@@ -759,15 +792,67 @@ window.addEventListener('DOMContentLoaded', () => {
     lightbox.classList.add('active');
   }
 
-  // Vignettes: changement d’image
-  container.querySelectorAll('[data-thumb]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      selectedImage = parseInt(btn.getAttribute('data-thumb'),10);
-      container.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      container.querySelector('.product-main img').src = images[selectedImage];
+  // Vignettes: changement d'image (REPLACED WITH SLIDER)
+  // Slider functionality
+  const slider = container.querySelector('#product-slider');
+  const dots = container.querySelectorAll('.slider-dot');
+  
+  // Slider swipe handling
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let currentSlide = 0;
+  
+  function goToSlide(index) {
+    if (!slider || index < 0 || index >= images.length) return;
+    currentSlide = index;
+    slider.scrollTo({
+      left: slider.offsetWidth * index,
+      behavior: 'smooth'
     });
+    // Update indicators
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentSlide);
+    });
+  }
+  
+  // Dots click
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => goToSlide(i));
   });
+  
+  // Touch swipe detection
+  if (slider) {
+    slider.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+    
+    slider.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, {passive: true});
+    
+    // Scroll snap detection (alternative to touchend)
+    slider.addEventListener('scroll', () => {
+      const newSlide = Math.round(slider.scrollLeft / slider.offsetWidth);
+      if (newSlide !== currentSlide) {
+        currentSlide = newSlide;
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('active', i === currentSlide);
+        });
+      }
+    });
+  }
+  
+  function handleSwipe() {
+    const swipeThreshold = 50;
+    if (touchEndX < touchStartX - swipeThreshold) {
+      // Swipe left - next slide
+      goToSlide(Math.min(currentSlide + 1, images.length - 1));
+    } else if (touchEndX > touchStartX + swipeThreshold) {
+      // Swipe right - previous slide
+      goToSlide(Math.max(currentSlide - 1, 0));
+    }
+  }
 
   // Variantes: sélection
   container.querySelectorAll('[data-variant]').forEach(btn=>{
@@ -787,15 +872,38 @@ window.addEventListener('DOMContentLoaded', () => {
     quantity = Math.min(p.stock||1, quantity+1); qtyVal.textContent = quantity;
   });
 
-  // Ajouter au panier
+  // Ajouter au panier (Main button + Sticky CTA)
   const addBtn = container.querySelector('#add-cart');
+  const stickyAddBtn = container.querySelector('#sticky-add-cart');
+  
+  function updateAddButtons(added = true) {
+    const btnHTML = added 
+      ? '<i data-lucide="check" class="lucide-icon lucide-sm"></i><span>Dans le panier</span>' 
+      : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg><span>Ajouter au panier</span>';
+    if (addBtn) {
+      addBtn.disabled = added;
+      addBtn.innerHTML = btnHTML;
+    }
+    if (stickyAddBtn) {
+      stickyAddBtn.disabled = added;
+      stickyAddBtn.innerHTML = btnHTML;
+    }
+    // Reinit Lucide for new icon
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    // Update cart badge
+    if (typeof updateCartBadge === 'function') updateCartBadge();
+  }
+  
   addBtn && addBtn.addEventListener('click', ()=>{
     if(p.stock===0) return showToast('Article indisponible','warning');
     addToCart(p.id, quantity);
-    addBtn.disabled = true;
-    addBtn.innerHTML = '<i data-lucide="check" class="lucide-icon lucide-sm"></i><span>Dans le panier</span>';
-    // Reinit Lucide for new icon
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    updateAddButtons(true);
+  });
+  
+  stickyAddBtn && stickyAddBtn.addEventListener('click', ()=>{
+    if(p.stock===0) return showToast('Article indisponible','warning');
+    addToCart(p.id, quantity);
+    updateAddButtons(true);
   });
 
   // Wishlist toggle
@@ -823,6 +931,75 @@ window.addEventListener('DOMContentLoaded', () => {
   shareBtn && shareBtn.addEventListener('click', ()=>{
     copyToClipboard(location.href);
   });
+  
+  // Cross-Sell: Find complementary products
+  function renderCrossSell() {
+    const crossSellGrid = container.querySelector('#cross-sell-grid');
+    if (!crossSellGrid) return;
+    
+    // Find products in same category, exclude current product
+    // Prefer items within ±30% price range for relevance
+    const priceMin = p.price * 0.7;
+    const priceMax = p.price * 1.3;
+    
+    const complementary = Store.products
+      .filter(x => 
+        x.category === p.category && 
+        x.id !== p.id && 
+        !x.hidden &&
+        x.price >= priceMin && 
+        x.price <= priceMax
+      )
+      .sort(() => 0.5 - Math.random()) // Randomize
+      .slice(0, 2); // Max 2 items
+    
+    if (complementary.length === 0) {
+      container.querySelector('.cross-sell-section').style.display = 'none';
+      return;
+    }
+    
+    // Render using product-card component
+    crossSellGrid.innerHTML = complementary.map(prod => {
+      const img = prod.images && prod.images[0] ? prod.images[0] : "assets/img/placeholder-product-1.svg";
+      return `
+        <a href="product.html?id=${encodeURIComponent(prod.id)}" class="product-card">
+          <div class="product-image-wrap">
+            <img src="${img}" alt="${prod.name}" loading="lazy">
+            <button class="quick-add-btn" data-cross-add="${prod.id}" aria-label="Ajout rapide" title="Ajout rapide">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="product-info">
+            <h3 class="product-name">${prod.name}</h3>
+            <div class="product-price">${prod.price.toFixed(0)} <span>FCFA</span></div>
+          </div>
+        </a>
+      `;
+    }).join('');
+    
+    // Attach quick-add listeners for cross-sell
+    crossSellGrid.querySelectorAll('[data-cross-add]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const productId = btn.getAttribute('data-cross-add');
+        if (productId) {
+          addToCart(productId);
+          showToast('Ajouté au panier ✓', 'success');
+          btn.classList.add('pulse');
+          setTimeout(() => btn.classList.remove('pulse'), 600);
+          if (typeof updateCartBadge === 'function') updateCartBadge();
+        }
+      });
+    });
+  }
+  
+  // Render cross-sell products
+  renderCrossSell();
 
   // Initialize Lucide icons for product page
   if (typeof lucide !== 'undefined') {
