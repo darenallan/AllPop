@@ -78,18 +78,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    // Prevent ALL swipe/touch gestures from opening menu
-    document.addEventListener('touchmove', (e) => {
-      // If menu is NOT active and user tries to swipe, stop it
-      if (!mobileMenu.classList.contains('active')) {
-        const touch = e.changedTouches[0];
-        // Only prevent if it's a horizontal swipe
-        if (Math.abs(touch.clientX - touch.screenX) > 10) {
-          // Block horizontal movements
-          e.preventDefault();
-        }
-      }
-    }, {passive: false});
+    // Do not auto-open the mobile menu on touch gestures.
+    // Swipes should not trigger the menu; only the burger button opens it.
   }
 
   // Close mobile menu on overlay click
