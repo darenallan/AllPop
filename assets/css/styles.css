@@ -522,20 +522,21 @@ a:hover { color: var(--gold); }
 .mobile-menu {
   position: fixed;
   top: 56px;
-  right: -280px;
+  right: 0;
   width: 280px;
   height: calc(100vh - 56px);
   background: white;
   z-index: 999;
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
   box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
   pointer-events: none;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 .mobile-menu.active {
-  right: 0;
+  transform: translateX(0);
   pointer-events: auto;
 }
 
@@ -1645,6 +1646,10 @@ a:hover { color: var(--gold); }
 @media (prefers-color-scheme: dark) {
   body { background: var(--midnight); color: #f5f5f5; }
   .header { background: rgba(0,0,0,0.9); }
+  #search-overlay { background: rgba(255, 255, 255, 0.06); }
+  .mobile-menu { background: #0f0f0f; color: #f5f5f5; box-shadow: -2px 0 20px rgba(0,0,0,0.7); }
+  .mobile-menu-item { color: #f5f5f5; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .mobile-menu-item:hover { background: rgba(255,255,255,0.02); color: #fff; }
   .nav-links a, .nav-actions .btn-outline { color: #f5f5f5; }
   .hero { background: linear-gradient(180deg, var(--black), #222); }
   .hero p { color: rgba(255, 255, 255, 0.9); }
@@ -1655,6 +1660,14 @@ a:hover { color: var(--gold); }
   .footer a { color: #e5e5e5; }
   .footer p, .footer span { color: rgba(255, 255, 255, 0.9); }
 }
+
+/* Manual dark class support (for JS toggles) */
+.dark body { background: var(--midnight); color: #f5f5f5; }
+.dark .header { background: rgba(0,0,0,0.9); }
+.dark #search-overlay { background: rgba(255, 255, 255, 0.06); }
+.dark .mobile-menu { background: #0f0f0f; color: #f5f5f5; box-shadow: -2px 0 20px rgba(0,0,0,0.7); }
+.dark .mobile-menu-item { color: #f5f5f5; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.dark .mobile-menu-item:hover { background: rgba(255,255,255,0.02); color: #fff; }
 
 
 /* ===== Product detail (fiche produit) ===== */
