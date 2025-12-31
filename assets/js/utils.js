@@ -17,15 +17,18 @@ window.fixLucideIcons = function() {
                        svg.closest('.header') ||
                        svg.closest('.navbar') ||
                        svg.closest('.btn');
-      
+
       if (isLucide) {
+        // Force dark text icon color for light theme
+        const strokeColor = '#0F0F0F';
+
         // Force attributes on SVG
-        svg.setAttribute('stroke', '#0F0F0F');
+        svg.setAttribute('stroke', strokeColor);
         svg.setAttribute('stroke-width', '2.5');
         svg.setAttribute('width', '24');
         svg.setAttribute('height', '24');
         svg.style.cssText = `
-          stroke: #0F0F0F !important;
+          stroke: ${strokeColor} !important;
           stroke-width: 2.5 !important;
           width: 24px !important;
           height: 24px !important;
@@ -33,18 +36,18 @@ window.fixLucideIcons = function() {
           min-height: 24px !important;
           max-width: 24px !important;
           max-height: 24px !important;
-          color: #0F0F0F !important;
+          color: ${strokeColor} !important;
           display: block !important;
           visibility: visible !important;
           opacity: 1 !important;
           flex-shrink: 0 !important;
         `;
-        
+
         // Also fix all child elements (path, line, circle, etc.)
         svg.querySelectorAll('path, line, circle, polyline, polygon, rect').forEach(child => {
-          child.setAttribute('stroke', '#0F0F0F');
+          child.setAttribute('stroke', strokeColor);
           child.setAttribute('stroke-width', '2.5');
-          child.style.cssText = 'stroke: #0F0F0F !important; stroke-width: 2.5 !important; visibility: visible !important;';
+          child.style.cssText = `stroke: ${strokeColor} !important; stroke-width: 2.5 !important; visibility: visible !important;`;
         });
       }
     });
@@ -175,20 +178,22 @@ function injectHeader(){
   <div id="search-results"></div>
 
   <!-- Mobile Menu -->
-  <div class="mobile-menu">
-    <a href="index.html" class="mobile-menu-item">🏠 Accueil</a>
-    <a href="catalogue.html" class="mobile-menu-item">🛍️ Catalogue</a>
-    <a href="seller.html" class="mobile-menu-item">🏪 Espace Vendeur</a>
-    <a href="wishlist.html" class="mobile-menu-item">❤️ Favoris</a>
-    <a href="order.html" class="mobile-menu-item">📦 Mes Commandes</a>
-    <div class="mobile-menu-divider"></div>
-    ${user ? `
-      <a href="order.html" class="mobile-menu-item">👤 Mon Compte</a>
-      <button id="mobile-logout-btn" class="mobile-menu-item" style="text-align: left; width: 100%; cursor: pointer;">🚪 Déconnexion</button>
-    ` : `
-      <a href="login.html" class="mobile-menu-item">🔐 Connexion</a>
-      <a href="register.html" class="mobile-menu-item">✍️ Inscription</a>
-    `}
+  <div class="mobile-menu" role="dialog" aria-label="Menu mobile">
+    <nav class="mobile-menu-nav">
+      <a href="index.html" class="mobile-menu-item"><i data-lucide="home" class="menu-li-icon"></i><span>Accueil</span></a>
+      <a href="catalogue.html" class="mobile-menu-item"><i data-lucide="shopping-bag" class="menu-li-icon"></i><span>Catalogue</span></a>
+      <a href="seller.html" class="mobile-menu-item"><i data-lucide="store" class="menu-li-icon"></i><span>Espace Vendeur</span></a>
+      <a href="wishlist.html" class="mobile-menu-item"><i data-lucide="heart" class="menu-li-icon"></i><span>Favoris</span></a>
+      <a href="order.html" class="mobile-menu-item"><i data-lucide="clipboard-list" class="menu-li-icon"></i><span>Mes Commandes</span></a>
+      <div class="mobile-menu-divider"></div>
+      ${user ? `
+        <a href="order.html" class="mobile-menu-item"><i data-lucide="user" class="menu-li-icon"></i><span>Mon Compte</span></a>
+        <button id="mobile-logout-btn" class="mobile-menu-item" style="text-align: left; width: 100%; cursor: pointer;"><i data-lucide="log-out" class="menu-li-icon"></i><span>Déconnexion</span></button>
+      ` : `
+        <a href="login.html" class="mobile-menu-item"><i data-lucide="log-in" class="menu-li-icon"></i><span>Connexion</span></a>
+        <a href="register.html" class="mobile-menu-item"><i data-lucide="user-plus" class="menu-li-icon"></i><span>Inscription</span></a>
+      `}
+    </nav>
   </div>
   `;
 
@@ -217,6 +222,12 @@ function injectHeader(){
     window.fixLucideIcons();
   }
 
+  // Recreate icons once more after header/menu injection to ensure mobile menu icons render
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+    if (window.fixLucideIcons) window.fixLucideIcons();
+  }
+
   const logoutBtn = document.getElementById('logout-btn');
   if(logoutBtn){
     logoutBtn.addEventListener('click', ()=>{
@@ -233,21 +244,32 @@ function injectFooter(){
   f.innerHTML = `
   <div class="container cols">
     <div>
+      <div class="footer-logo" aria-label="Aurum">Aurum</div>
       <h3>À propos</h3>
       <p>Start-up burkinabè: Qualité, Courtoisie, Efficacité.</p>
     </div>
     <div>
       <h3>Liens</h3>
-      <p><a href="index.html">Accueil</a></p>
-      <p><a href="catalogue.html">Catalogue</a></p>
       <p><a href="faq.html">FAQ</a></p>
-      <p><a href="cgu.html">Règles d'utilisation</a></p>
-      <p><a href="seller.html">Espace vendeur</a></p>
-      <p><a href="admin.html">Dashboard Admin</a></p>
+      <p><a href="contact.html">Contact</a></p>
+      <p><a href="faq.html#retours">Retours</a></p>
     </div>
     <div>
       <h3>Suivez-nous</h3>
-      <p><a href="https://www.instagram.com/aurum_bf?igsh=NXNkaXExeTVhNXgy" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.tiktok.com/@aurum_bf?_r=1&_t=ZM-92ULkdEQuCK" target="_blank" rel="noopener">TikTok</a></p>
+      <div class="footer-socials">
+        <a class="social-link" href="https://www.instagram.com/aurum_bf?igsh=NXNkaXExeTVhNXgy" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="5" ry="5"></rect>
+            <circle cx="12" cy="12" r="4"></circle>
+            <circle cx="17.5" cy="6.5" r="1.3"></circle>
+          </svg>
+        </a>
+        <a class="social-link" href="https://www.tiktok.com/@aurum_bf?_r=1&_t=ZM-92ULkdEQuCK" target="_blank" rel="noopener" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 4.5c1.1 1.7 2.7 2.7 4.5 2.8v3.2c-1.7-.1-3.2-.7-4.5-1.7v5.8c0 3-2.2 5.4-5.2 5.4S4.8 17.6 4.8 14.7c0-2.8 2.2-5 5-5 0.3 0 0.7 0 1 .1v3.3c-0.3-0.1-0.6-0.1-1-0.1-1 0-1.8 0.8-1.8 1.8s0.8 1.8 1.8 1.8c1 0 1.8-0.8 1.8-1.8V4.5H15z"></path>
+          </svg>
+        </a>
+      </div>
     </div>
   </div>
   <div class="center mt-4">© ${new Date().getFullYear()} Aurum — Tous droits réservés.</div>`;
