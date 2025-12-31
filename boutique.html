@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Boutique Aurum</title>
+<meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
+<!-- Google Fonts - Luxury Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css" />
+<link rel="preload" href="assets/css/styles.css" as="style" />
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="assets/img/placeholder-product-1.svg" />
+<script defer src="assets/js/utils.js"></script>
+<script defer src="assets/js/data.js"></script>
+<script defer src="assets/js/icons.js"></script>
+<script defer src="assets/js/app.js"></script>
+<script defer src="assets/js/auth.js"></script>
+
+</head>
+<body class="shop-page">
+<header id="app-header" class="header"></header>
+
+<main>
+  <!-- Hero Boutique -->
+  <section class="shop-hero">
+    <div class="container">
+      <div class="shop-banner">
+        <img id="shop-banner" src="assets/img/placeholder-product-1.svg" alt="Bannière boutique" loading="eager" />
+      </div>
+      <div class="shop-profile">
+        <div class="shop-avatar-wrap">
+          <img id="shop-logo" class="shop-avatar" src="assets/img/placeholder-product-1.svg" alt="Logo de la boutique" />
+        </div>
+        <div class="shop-meta">
+          <h1 id="shop-name">Nom de la boutique</h1>
+          <p id="shop-desc" class="shop-desc">Description courte de la boutique.</p>
+          <div class="shop-badges">
+            <span class="shop-badge verified" id="shop-verified">Vendeur Vérifié</span>
+            <span class="shop-badge rating">
+              <i data-lucide="star" aria-hidden="true"></i>
+              <span id="shop-rating">4.8</span>/5
+            </span>
+          </div>
+          <div class="shop-actions">
+            <button class="btn btn-gold btn-md" id="contact-btn">
+              <i data-lucide="message-circle"></i>
+              Contacter
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Barre de recherche & filtres -->
+  <section class="shop-toolbar">
+    <div class="container shop-toolbar-inner">
+      <div class="shop-search">
+        <i data-lucide="search" aria-hidden="true"></i>
+        <input id="shop-search-input" type="search" placeholder="Chercher dans cette boutique" aria-label="Chercher dans cette boutique" />
+      </div>
+      <select id="shop-filter-category" class="chip-select">
+        <option value="">Toutes les catégories</option>
+        <option value="mode">Mode</option>
+        <option value="beaute">Beauté</option>
+        <option value="maison">Maison</option>
+        <option value="tech">Tech</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Grille produits -->
+  <section class="container shop-products">
+    <div id="shop-products" class="product-list"></div>
+  </section>
+
+  <!-- Cross selling -->
+  <section class="container shop-crosssell">
+    <h2>Ces articles pourraient vous plaire</h2>
+    <div id="shop-crosssell" class="product-list"></div>
+  </section>
+</main>
+
+<footer id="app-footer" class="footer"></footer>
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const shopId = params.get('id');
+
+    const nameEl = document.getElementById('shop-name');
+    const descEl = document.getElementById('shop-desc');
+    const bannerEl = document.getElementById('shop-banner');
+    const logoEl = document.getElementById('shop-logo');
+    const ratingEl = document.getElementById('shop-rating');
+    const verifiedEl = document.getElementById('shop-verified');
+    const contactBtn = document.getElementById('contact-btn');
+    const productsContainer = document.getElementById('shop-products');
+    const crossContainer = document.getElementById('shop-crosssell');
+    const searchInput = document.getElementById('shop-search-input');
+    const categorySelect = document.getElementById('shop-filter-category');
+
+    const shop = shopId ? (Store.shops || []).find(s => s.id === shopId) : null;
+    const productsData = Store.products || [];
+
+    if (!shop) {
+      nameEl.textContent = 'Boutique introuvable';
+      descEl.textContent = 'La boutique demandée est indisponible.';
+      verifiedEl.style.display = 'none';
+      bannerEl.src = 'assets/img/placeholder-product-1.svg';
+      logoEl.src = 'assets/img/placeholder-product-1.svg';
+      return;
+    }
+
+    const formatPrice = (val) => new Intl.NumberFormat('fr-FR').format(val) + ' FCFA';
+
+    nameEl.textContent = shop.name;
+    descEl.textContent = shop.description || 'Boutique partenaire Aurum.';
+    ratingEl.textContent = shop.rating ? (shop.rating.toFixed ? shop.rating.toFixed(1) : shop.rating) : '4.8';
+
+    if (shop.banner) bannerEl.src = shop.banner; else bannerEl.src = 'assets/img/placeholder-product-1.svg';
+    if (shop.logo) logoEl.src = shop.logo; else logoEl.src = 'assets/img/placeholder-product-1.svg';
+
+    if (!shop.status || shop.status !== 'active') {
+      verifiedEl.textContent = 'Vendeur non vérifié';
+      verifiedEl.classList.remove('verified');
+      verifiedEl.classList.add('unverified');
+    }
+
+    if (contactBtn) {
+      const waNumber = shop.phone ? shop.phone.replace(/[^\d]/g, '') : '';
+      contactBtn.addEventListener('click', () => {
+        if (waNumber) {
+          const msg = encodeURIComponent('Bonjour, je souhaite en savoir plus sur votre boutique Aurum.');
+          window.location.href = `https://wa.me/${waNumber}?text=${msg}`;
+        } else {
+          alert('Contact WhatsApp non disponible.');
+        }
+      });
+    }
+
+    const renderProducts = (list, target) => {
+      if (!target) return;
+      if (!list.length) {
+        target.innerHTML = '<p class="text-muted-foreground">Aucun produit disponible pour le moment.</p>';
+        return;
+      }
+      target.innerHTML = list.map(p => `
+        <article class="product-card">
+          <div class="product-card-img">
+            <img src="${(Array.isArray(p.images) && p.images[0]) || p.image || 'assets/img/placeholder-product-1.svg'}" alt="${p.name}" loading="lazy" />
+          </div>
+          <div class="product-card-info">
+            <h3 class="product-card-title">${p.name}</h3>
+            <p class="text-muted-foreground">${p.features || p.desc || ''}</p>
+            <div class="product-card-price">${formatPrice(p.price || 0)}</div>
+          </div>
+        </article>
+      `).join('');
+    };
+
+    const shopProducts = productsData.filter(p => (p.shopId === shopId) || (p.sellerId === shopId));
+    const crossPool = productsData.filter(p => (p.shopId !== shopId) && (p.sellerId !== shopId));
+
+    const applyFilters = () => {
+      const term = (searchInput?.value || '').toLowerCase();
+      const cat = (categorySelect?.value || '').toLowerCase();
+      const filtered = shopProducts.filter(p => {
+        const nameText = (p.name || '').toLowerCase();
+        const infoText = (p.features || p.desc || '').toLowerCase();
+        const matchText = !term || nameText.includes(term) || infoText.includes(term);
+        const productCat = (p.category || '').toLowerCase();
+        const matchCat = !cat || productCat.includes(cat);
+        return matchText && matchCat;
+      });
+      renderProducts(filtered, productsContainer);
+    };
+
+    // Initial render
+    renderProducts(shopProducts, productsContainer);
+
+    // Cross-sell: 4 aléatoires hors boutique
+    const shuffled = [...crossPool].sort(() => Math.random() - 0.5).slice(0, 4);
+    renderProducts(shuffled, crossContainer);
+
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (categorySelect) categorySelect.addEventListener('change', applyFilters);
+
+    if (window.lucide && window.lucide.createIcons) {
+      lucide.createIcons();
+    }
+  });
+</script>
+</body>
+</html>
