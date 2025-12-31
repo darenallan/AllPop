@@ -25,82 +25,249 @@
 
 <script defer src="assets/js/seller.js"></script>
 </head>
-<body>
+<body class="seller-layout">
 <header id="app-header" class="header"></header>
-<main class="container">
-  <section class="section">
-    <h1>Espace vendeur</h1>
-    <div id="seller-guard" class="text-muted">Seuls les vendeurs connectés peuvent gérer leur boutique.</div>
-    <div id="seller-dashboard" class="hidden">
-      <h2>Ma boutique</h2>
-      <div id="shop-meta"></div>
 
-      <h3 class="mt-4">Ajouter des produits</h3>
-      <form id="product-form" class="product-add-form">
-        <div class="form-row">
-          <input class="input" name="name" placeholder="Nom du produit" required />
-          <input class="input" name="price" type="number" step="100" placeholder="Prix (FCFA)" required />
-        </div>
-        <div class="form-row">
-          <input class="input" name="stock" type="number" placeholder="Stock total" required />
-          <input class="input" name="color" placeholder="Couleur principale" />
-        </div>
-        
-        <div id="fashion-type-row" class="form-row hidden">
+<!-- Sidebar vendeur -->
+<aside class="seller-sidebar" id="seller-sidebar">
+  <div class="seller-sidebar-logo">Aurum Seller</div>
+  <nav class="seller-sidebar-nav">
+    <a href="#overview" class="seller-nav-link active" data-section="overview"><i data-lucide="layout-dashboard"></i> Vue d'ensemble</a>
+    <a href="#products" class="seller-nav-link" data-section="products"><i data-lucide="package"></i> Mes Produits</a>
+    <a href="#add" class="seller-nav-link" data-section="add"><i data-lucide="plus-circle"></i> Ajouter un produit</a>
+    <a href="#orders" class="seller-nav-link" data-section="orders"><i data-lucide="shopping-bag"></i> Commandes reçues</a>
+    <a href="#settings" class="seller-nav-link" data-section="settings"><i data-lucide="settings"></i> Paramètres Boutique</a>
+  </nav>
+</aside>
+
+<main class="seller-main">
+  <div id="seller-guard" class="seller-guard card">Seuls les vendeurs connectés peuvent gérer leur boutique.</div>
+  <div id="seller-dashboard" class="hidden">
+
+    <!-- Overview -->
+    <section id="section-overview" class="seller-section active">
+      <div class="seller-page-header">
+        <h1 class="seller-page-title"><i data-lucide="store"></i> Espace Vendeur</h1>
+        <p class="seller-page-subtitle">Cockpit premium pour piloter votre boutique.</p>
+      </div>
+
+      <div class="seller-shop-card" id="shop-meta"></div>
+
+      <div class="seller-kpi-grid" id="seller-stats">
+        <div class="seller-kpi"><p class="kpi-label">Vues</p><p class="kpi-value" id="kpi-views">0</p></div>
+        <div class="seller-kpi"><p class="kpi-label">Ventes</p><p class="kpi-value" id="kpi-sales">0</p></div>
+        <div class="seller-kpi"><p class="kpi-label">Chiffre d'Affaires</p><p class="kpi-value" id="kpi-revenue">0 FCFA</p></div>
+      </div>
+
+      <div class="seller-card" id="seller-notifications"></div>
+    </section>
+
+    <!-- Mes Produits -->
+    <section id="section-products" class="seller-section hidden">
+      <div class="seller-page-header">
+        <h2 class="seller-page-title"><i data-lucide="package"></i> Mes Produits</h2>
+        <p class="seller-page-subtitle">Gérez vos fiches produits avec des actions rapides.</p>
+      </div>
+      <div class="seller-card">
+        <table class="seller-table" id="seller-products"></table>
+      </div>
+    </section>
+
+    <!-- Ajouter un produit -->
+    <section id="section-add" class="seller-section hidden">
+      <div class="seller-page-header">
+        <h2 class="seller-page-title"><i data-lucide="plus-circle"></i> Ajouter un produit</h2>
+        <p class="seller-page-subtitle">Formulaire compact en grille 2 colonnes.</p>
+      </div>
+      <div class="seller-card">
+        <form id="product-form" class="seller-form">
+          <div class="seller-form-grid">
+            <div class="form-group">
+              <label class="form-label">Nom du produit</label>
+              <input class="input" name="name" placeholder="Nom du produit" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prix (FCFA)</label>
+              <input class="input" name="price" type="number" step="100" placeholder="Prix" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Stock total</label>
+              <input class="input" name="stock" type="number" placeholder="Stock" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Couleur principale</label>
+              <input class="input" name="color" placeholder="Couleur" />
+            </div>
+          </div>
+
+          <div id="fashion-type-row" class="seller-form-grid hidden">
+            <div class="form-group">
+              <label class="form-label">Type d'article</label>
+              <select id="fashion-item-type" class="input">
+                <option value="">-- Choisir --</option>
+                <option value="clothing">Vêtements</option>
+                <option value="shoes">Chaussures</option>
+              </select>
+            </div>
+            <div class="form-group hidden" id="size-system-group">
+              <label class="form-label">Système de pointure</label>
+              <select id="size-system" class="input">
+                <option value="EU">EU</option>
+                <option value="US Homme">US Homme</option>
+                <option value="US Femme">US Femme</option>
+                <option value="UK">UK</option>
+                <option value="Enfants">Enfants</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="sizes-dynamic" class="sizes-container hidden">
+            <label class="form-label">Tailles disponibles :</label>
+            <div id="sizes-dynamic-grid" class="sizes-grid"></div>
+          </div>
+
           <div class="form-group">
-            <label class="form-label">Type d'article</label>
-            <select id="fashion-item-type" class="input">
-              <option value="">-- Choisir --</option>
-              <option value="clothing">Vêtements</option>
-              <option value="shoes">Chaussures</option>
-            </select>
+            <label class="form-label">Description</label>
+            <textarea class="input" name="features" placeholder="Caractéristiques et description du produit"></textarea>
           </div>
-          <div class="form-group hidden" id="size-system-group">
-            <label class="form-label">Système de pointure</label>
-            <select id="size-system" class="input">
-              <option value="EU">EU</option>
-              <option value="US Homme">US Homme</option>
-              <option value="US Femme">US Femme</option>
-              <option value="UK">UK</option>
-              <option value="Enfants">Enfants</option>
-            </select>
+
+          <div class="form-group">
+            <label class="form-label">Images produit</label>
+            <div class="upload-dropzone" id="upload-dropzone">
+              <i data-lucide="cloud-upload"></i>
+              <p>Glissez-déposez vos images ici ou cliquez pour choisir</p>
+              <small class="text-muted">PNG, JPG, WEBP · plusieurs images possibles</small>
+            </div>
+            <input class="input" id="product-images" name="images" type="file" multiple accept="image/*" style="display:none" />
+          </div>
+
+          <button class="btn btn-gold btn-xl" type="submit">Publier le produit</button>
+        </form>
+      </div>
+
+      <div class="seller-card">
+        <h3 class="seller-card-title">Upload en masse (CSV + ZIP d'images)</h3>
+        <div class="seller-form-grid">
+          <div class="form-group">
+            <label class="form-label">Fichier CSV</label>
+            <input id="csv-input" type="file" accept=".csv" class="input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fichier ZIP d'images</label>
+            <input id="zip-input" type="file" accept=".zip" class="input" />
           </div>
         </div>
-
-        <div id="sizes-dynamic" class="sizes-container hidden">
-          <label class="form-label">Tailles disponibles :</label>
-          <div id="sizes-dynamic-grid" class="sizes-grid"></div>
-        </div>
-
-        <textarea class="input" name="features" placeholder="Caractéristiques et description du produit"></textarea>
-        
-        <div class="form-row">
-          <input class="input" name="images" type="file" multiple accept="image/*" />
-        </div>
-        
-        <button class="btn btn-gold btn-xl" type="submit">Publier le produit</button>
-      </form>
-
-      <div class="mt-4">
-        <h3>Upload en masse (CSV + ZIP d'images)</h3>
-        <input id="csv-input" type="file" accept=".csv" />
-        <input id="zip-input" type="file" accept=".zip" />
         <button class="btn btn-dark mt-2" id="bulk-upload-btn">Traiter le CSV (images liées via backend)</button>
         <p class="text-muted">Le traitement du ZIP d'images nécessite le backend (voir documentation).</p>
       </div>
+    </section>
 
-      <h3 class="mt-6">Mes produits</h3>
-      <table class="table" id="seller-products"></table>
+    <!-- Commandes -->
+    <section id="section-orders" class="seller-section hidden">
+      <div class="seller-page-header">
+        <h2 class="seller-page-title"><i data-lucide="shopping-bag"></i> Commandes reçues</h2>
+        <p class="seller-page-subtitle">Suivi des commandes clients (placeholder).</p>
+      </div>
+      <div class="seller-card">
+        <p class="text-muted">Intégrer ici la liste des commandes (données backend).</p>
+      </div>
+    </section>
 
-      <h3 class="mt-6">Statistiques</h3>
-      <div id="seller-stats"></div>
+    <!-- Paramètres -->
+    <section id="section-settings" class="seller-section hidden">
+      <div class="seller-page-header">
+        <h2 class="seller-page-title"><i data-lucide="settings"></i> Paramètres Boutique</h2>
+        <p class="seller-page-subtitle">Gérez l'apparence et les coordonnées de votre vitrine.</p>
+      </div>
 
-      <h3 class="mt-6">Notifications</h3>
-      <div id="seller-notifications"></div>
-    </div>
-  </section>
+      <!-- Identité visuelle -->
+      <div class="seller-card">
+        <section class="shop-visual-identity">
+          <div class="shop-cover" id="brand-cover">
+            <button type="button" class="cover-btn" id="change-cover-btn"><i data-lucide="image"></i> Changer couverture</button>
+          </div>
+
+          <div class="shop-logo-wrap" id="brand-logo-wrap">
+            <img id="brand-logo" alt="Logo boutique" />
+            <div class="shop-logo-overlay"><i data-lucide="camera"></i></div>
+          </div>
+
+          <input type="file" id="cover-input" accept="image/*" hidden />
+          <input type="file" id="logo-input" accept="image/*" hidden />
+        </section>
+      </div>
+
+      <!-- Formulaire infos boutique -->
+      <div class="seller-card">
+        <form id="shop-settings-form" class="seller-form shop-settings-form">
+          <div class="seller-form-grid">
+            <div class="form-group">
+              <label class="form-label">Nom de la boutique</label>
+              <input class="input" id="shop-name-input" name="name" placeholder="Nom de la boutique" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Numéro de téléphone</label>
+              <div class="input-with-icon">
+                <i data-lucide="phone"></i>
+                <input class="input" id="shop-phone-input" name="phone" placeholder="Ex: +226 60 00 00 00" />
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description / Slogan</label>
+            <textarea class="input" id="shop-desc-input" name="description" rows="3" placeholder="Présentez votre univers en quelques mots (optionnel mais recommandé)"></textarea>
+          </div>
+
+          <div class="seller-actions-bar">
+            <button class="btn btn-gold btn-xl" type="submit">Enregistrer les modifications</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </div>
 </main>
+
 <footer id="app-footer" class="footer"></footer>
 <div class="toast-container" id="toast-container"></div>
+
+<script>
+  // Navigation entre sections seller
+  document.addEventListener('DOMContentLoaded', () => {
+    const links = document.querySelectorAll('.seller-nav-link');
+    const sections = document.querySelectorAll('.seller-section');
+    links.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = link.dataset.section;
+        links.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        sections.forEach(sec => {
+          if (sec.id === `section-${target}`) {
+            sec.classList.remove('hidden');
+            sec.classList.add('active');
+          } else {
+            sec.classList.add('hidden');
+            sec.classList.remove('active');
+          }
+        });
+      });
+    });
+
+    // Dropzone -> input file
+    const dz = document.getElementById('upload-dropzone');
+    const fileInput = document.getElementById('product-images');
+    if (dz && fileInput) {
+      ['click'].forEach(ev => dz.addEventListener(ev, () => fileInput.click()));
+      ['dragover','dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragging'); }));
+      ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dragging'); }));
+      dz.addEventListener('drop', e => {
+        if (e.dataTransfer?.files) {
+          fileInput.files = e.dataTransfer.files;
+        }
+      });
+    }
+  });
+</script>
 </body>
 </html>
