@@ -1,4 +1,3 @@
-
 // Dashboard vendeur
 window.addEventListener('DOMContentLoaded', ()=>{
   const user = JSON.parse(localStorage.getItem('ac_currentUser')||'null');
