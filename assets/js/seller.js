@@ -12,47 +12,42 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
   const shop = Store.shops.find(s=>s.ownerEmail===user.email);
   const meta = document.getElementById('shop-meta');
-  if(shop){
+  const placeholderImage = 'assets/img/placeholder-product-1.svg';
+
+  function renderShopMeta(){
+    if(!meta || !shop) return;
     const remaining = Math.max(0, shop.endDate - Date.now());
     const days = Math.ceil(remaining/86400000);
-    
-    // Récupérer l'info catégorie
     const categoryIcon = shop.categoryIcon || '🛍️';
     const categoryName = shop.category || 'Non classé';
-    const statusClass = shop.status === 'active' ? 'status-active' : 
-                        shop.status === 'suspended' ? 'status-suspended' : 'status-blocked';
-    
-    meta.innerHTML = `<div class="shop-info-card">
-      <div class="shop-info-header">
-        <span class="shop-category-badge large">
-          <span class="cat-icon">${categoryIcon}</span>
-          ${categoryName}
-        </span>
-        <span class="shop-status ${statusClass}">${shop.status}</span>
-      </div>
-      <h3 class="shop-title">${shop.name}</h3>
-      <p class="shop-description">${shop.description || '<em>Pas de description</em>'}</p>
-      <div class="shop-stats-row">
-        <div class="shop-stat">
-          <i data-lucide="package"></i>
-          <span>${shop.itemLimit} articles max</span>
+    const statusClass = shop.status === 'active' ? 'status-pill online' : 'status-pill draft';
+    const banner = shop.banner || placeholderImage;
+    const logo = shop.logo || placeholderImage;
+
+    meta.innerHTML = `
+      <div class="seller-hero-card" style="background-image:linear-gradient(135deg, rgba(212,175,55,0.08), rgba(0,0,0,0.08)), url('${banner}');">
+        <div class="seller-hero-overlay"></div>
+        <div class="seller-hero-content">
+          <div class="seller-hero-left">
+            <div class="seller-hero-logo"><img src="${logo}" alt="Logo boutique" /></div>
+            <div>
+              <div class="seller-hero-name">${shop.name}</div>
+              <div class="seller-hero-desc">${shop.description || 'Ajoutez une description inspirante de votre boutique.'}</div>
+              <div class="seller-hero-tags">
+                <span class="shop-category-badge"><span class="cat-icon">${categoryIcon}</span>${categoryName}</span>
+                <span class="${statusClass}">${shop.status === 'active' ? 'En ligne' : 'Brouillon'}</span>
+                <span class="seller-pill">${shop.itemLimit || 0} articles max</span>
+                <span class="seller-pill">Expire dans ${days} jours</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="shop-stat">
-          <i data-lucide="clock"></i>
-          <span>Expire dans ${days} jours</span>
-        </div>
-      </div>
-      ${shop.status === 'suspended' ? `
-        <div class="shop-alert warning">
-          <i data-lucide="alert-triangle"></i>
-          <span>Boutique suspendue${shop.suspendReason ? ': ' + shop.suspendReason : ''}. Contactez l'administration.</span>
-        </div>
-      ` : ''}
-    </div>`;
-    
-    // Réinitialiser les icônes Lucide
+      </div>`;
+
     if (typeof lucide !== 'undefined') lucide.createIcons();
   }
+
+  renderShopMeta();
 
   // Gestion avancée des tailles pour Mode & Vêtements
   const fashionTypeRow = document.getElementById('fashion-type-row');
@@ -335,13 +330,43 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
   function renderSellerProducts(){
     const table = document.getElementById('seller-products');
+    if(!table) return;
     const my = Store.products.filter(p=>p.shopId===shop.id);
-    table.innerHTML = `<tr><th>Nom</th><th>Prix</th><th>Stock</th><th>Actions</th></tr>` +
-      my.map(p=>`<tr><td>${p.name}</td><td>${p.price}</td><td>${p.stock}</td>
-        <td>
-          <button class="btn btn-dark" onclick="togglePublish('${p.id}')">${p.hidden?'Publier':'Dépublier'}</button>
-          <button class="btn" onclick="deleteProduct('${p.id}')">Supprimer</button>
-        </td></tr>`).join('');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Nom</th>
+          <th>Prix</th>
+          <th>Stock</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${my.map(p=>{
+          const thumb = Array.isArray(p.images) && p.images.length ? p.images[0] : 'assets/img/placeholder-product-1.svg';
+          const statusLabel = p.hidden ? 'Brouillon' : 'En ligne';
+          const statusClass = p.hidden ? 'status-pill draft' : 'status-pill online';
+          const toggleIcon = p.hidden ? 'eye' : 'eye-off';
+          const price = new Intl.NumberFormat('fr-FR').format(p.price || 0) + ' FCFA';
+          return `
+            <tr>
+              <td><div class="seller-thumb"><img src="${thumb}" alt="${p.name}" /></div></td>
+              <td class="seller-cell-name">${p.name}</td>
+              <td class="seller-cell-price">${price}</td>
+              <td>${p.stock || 0}</td>
+              <td><span class="${statusClass}">${statusLabel}</span></td>
+              <td class="seller-actions">
+                <button class="icon-btn" aria-label="Modifier" onclick="editProduct('${p.id}')"><i data-lucide="pencil"></i></button>
+                <button class="icon-btn" aria-label="Publier/Dépublier" onclick="togglePublish('${p.id}')"><i data-lucide="${toggleIcon}"></i></button>
+                <button class="icon-btn danger" aria-label="Supprimer" onclick="deleteProduct('${p.id}')"><i data-lucide="trash-2"></i></button>
+              </td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   }
   renderSellerProducts();
 
@@ -352,10 +377,96 @@ window.addEventListener('DOMContentLoaded', ()=>{
   window.deleteProduct = (id)=>{
     Store.products = Store.products.filter(x=>x.id!==id); saveStore(); renderSellerProducts(); showToast('Supprimé','warning');
   };
+  window.editProduct = (id)=>{
+    showToast('Ouverture de la modification (à implémenter)', 'info');
+  };
 
   // Statistiques
   const stats = document.getElementById('seller-stats');
+  const kpiViews = document.getElementById('kpi-views');
+  const kpiSales = document.getElementById('kpi-sales');
+  const kpiRevenue = document.getElementById('kpi-revenue');
   const my = Store.products.filter(p=>p.shopId===shop.id);
-  const views = my.reduce((a,b)=>a+b.views,0), sales = my.reduce((a,b)=>a+b.sales,0), wl = my.reduce((a,b)=>a+b.wishlist,0);
-  stats.innerHTML = `<div class="card"><div class="info">Vues: ${views} · Ventes: ${sales} · Wishlist: ${wl}</div></div>`;
+  const views = my.reduce((a,b)=>a+(b.views||0),0);
+  const sales = my.reduce((a,b)=>a+(b.sales||0),0);
+  const revenue = my.reduce((a,b)=>a+((b.sales||0)*(b.price||0)),0);
+  if(kpiViews) kpiViews.textContent = views;
+  if(kpiSales) kpiSales.textContent = sales;
+  if(kpiRevenue) kpiRevenue.textContent = new Intl.NumberFormat('fr-FR').format(revenue) + ' FCFA';
+  if(!stats) return;
+
+  // --- Paramètres boutique (identité visuelle + coordonnées) ---
+  const brandCover = document.getElementById('brand-cover');
+  const brandLogo = document.getElementById('brand-logo');
+  const changeCoverBtn = document.getElementById('change-cover-btn');
+  const logoWrap = document.getElementById('brand-logo-wrap');
+  const coverInput = document.getElementById('cover-input');
+  const logoInput = document.getElementById('logo-input');
+  const shopNameInput = document.getElementById('shop-name-input');
+  const shopPhoneInput = document.getElementById('shop-phone-input');
+  const shopDescInput = document.getElementById('shop-desc-input');
+  const settingsForm = document.getElementById('shop-settings-form');
+
+  function setBrandPreview(){
+    if(brandCover) brandCover.style.backgroundImage = `url('${(shop && shop.banner) || placeholderImage}')`;
+    if(brandLogo) brandLogo.src = (shop && shop.logo) || placeholderImage;
+  }
+  setBrandPreview();
+
+  function readFile(file, cb){
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=> cb(reader.result);
+    reader.onerror = ()=> showToast('Upload échoué','danger');
+    reader.readAsDataURL(file);
+  }
+
+  function updateCoverFromFile(file){
+    readFile(file, (data)=>{
+      if(!shop) return;
+      shop.banner = data;
+      saveStore();
+      setBrandPreview();
+      renderShopMeta();
+      showToast('Couverture mise à jour','success');
+    });
+  }
+
+  function updateLogoFromFile(file){
+    readFile(file, (data)=>{
+      if(!shop) return;
+      shop.logo = data;
+      saveStore();
+      setBrandPreview();
+      renderShopMeta();
+      showToast('Logo mis à jour','success');
+    });
+  }
+
+  if(changeCoverBtn && coverInput){
+    changeCoverBtn.addEventListener('click', ()=> coverInput.click());
+    coverInput.addEventListener('change', (e)=> updateCoverFromFile(e.target.files[0]));
+  }
+  if(logoWrap && logoInput){
+    logoWrap.addEventListener('click', ()=> logoInput.click());
+    logoInput.addEventListener('change', (e)=> updateLogoFromFile(e.target.files[0]));
+  }
+
+  if(shopNameInput) shopNameInput.value = shop ? shop.name : '';
+  if(shopPhoneInput) shopPhoneInput.value = (shop && (shop.phone || '')) || '';
+  if(shopDescInput) shopDescInput.value = shop ? (shop.description || '') : '';
+
+  if(settingsForm){
+    settingsForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      if(!shop) return showToast('Boutique introuvable','danger');
+      shop.name = (shopNameInput?.value || shop.name || '').trim();
+      shop.phone = (shopPhoneInput?.value || '').trim();
+      shop.description = (shopDescInput?.value || '').trim();
+      saveStore();
+      renderShopMeta();
+      setBrandPreview();
+      showToast('Paramètres mis à jour','success');
+    });
+  }
 });
