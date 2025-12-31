@@ -29,6 +29,13 @@ window.addEventListener('DOMContentLoaded', () => {
   const isAdmin = currentUser && (currentUser.role === 'superadmin' || currentUser.role === 'admin' || currentUser.role === 'maintainer');
   console.log('currentUser:', currentUser, 'isAdmin:', isAdmin);
 
+  // Helpers
+  const toNumber = (val) => {
+    const n = typeof val === 'string' ? parseFloat(val) : val;
+    return Number.isFinite(n) ? n : 0;
+  };
+  const formatRating = (val) => toNumber(val).toFixed(2);
+
   // Données dérivées
   const reviewCount = Array.isArray(p.reviews) ? p.reviews.length : 0;
   // Calculer le ratio réel à partir des avis
@@ -36,12 +43,33 @@ window.addEventListener('DOMContentLoaded', () => {
   if (reviewCount > 0) {
     const totalStars = p.reviews.reduce((sum, r) => sum + (r.stars || 0), 0);
     rating = totalStars / reviewCount;
-  } else if (typeof p.rating === 'number') {
-    rating = p.rating;
+  } else if (typeof p.rating === 'number' || typeof p.rating === 'string') {
+    rating = toNumber(p.rating);
   }
+  rating = Number(formatRating(rating));
   const images = Array.isArray(p.images) && p.images.length ? p.images : ["assets/img/placeholder-product-1.svg"];
   const compareAtPrice = (typeof p.compareAtPrice === 'number') ? p.compareAtPrice : null;
-  const storeName = p.shopId || 'Boutique'; // fallback
+
+  const shop = Store.shops.find(s => s.id === p.shopId) || Store.shops.find(s => s.id === p.sellerId);
+  const sellerDefaults = {
+    'Véhicules & Mobilité': { sellerName: 'Auto Prestige', sellerId: 'auto-prestige' },
+    'Électronique, Téléphonie & Informatique': { sellerName: 'High Tech Pro', sellerId: 'high-tech-pro' },
+    'Beauté, Hygiène & Bien-être': { sellerName: 'Aurum Beauty', sellerId: 'aurum-beauty' },
+    'Maison, Meubles & Décoration': { sellerName: 'Maison Élégance', sellerId: 'maison-elegance' },
+    'Mode & Accessoires': { sellerName: 'Streetwear Club', sellerId: 'streetwear-club' },
+    'Restauration & Boissons': { sellerName: 'Foodies Corner', sellerId: 'foodies-corner' },
+    'Bâtiment, Quincaillerie & Matériaux': { sellerName: 'Pro BTP', sellerId: 'pro-btp' }
+  };
+  const sellerInfo = sellerDefaults[p.category] || {};
+  const sellerName = p.sellerName || sellerInfo.sellerName || (shop ? shop.name : 'Boutique');
+  const sellerId = p.sellerId || sellerInfo.sellerId || (shop ? shop.id : 'boutique');
+  p.sellerName = sellerName;
+  p.sellerId = sellerId;
+  p.shopId = p.shopId || sellerId;
+  p.sellerName = sellerName;
+  p.sellerId = sellerId;
+  const storeName = sellerName;
+  const shopLink = `boutique.html?id=${encodeURIComponent(sellerId)}`;
   const tags = Array.isArray(p.tags) ? p.tags : []; // facultatif
   
   // Utiliser les variantes du produit s'il en a, sinon créer des variantes par défaut
@@ -347,15 +375,17 @@ window.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
       <div class="product-info">
-        <a href="seller.html">
-          ${storeName}
-        </a>
+        <div class="product-seller">
+          <a id="product-seller-link" href="${shopLink}">
+            <span id="product-seller-name">${storeName}</span>
+          </a>
+        </div>
 
           <h1 style="font-size:28px;margin:8px 0 12px">${p.name}</h1>
 
           <div class="product-rating">
             <div>${starsHTML(rating)}</div>
-            <span class="text-muted-foreground text-sm">${rating.toFixed(1)} (${reviewCount} avis)</span>
+            <span class="text-muted-foreground text-sm">${formatRating(rating)} (${reviewCount} avis)</span>
           </div>
 
           <div style="display:flex;align-items:baseline;gap:12px;margin:10px 0 16px">
@@ -426,7 +456,7 @@ window.addEventListener('DOMContentLoaded', () => {
       <div class="reviews-header">
         <h3>Avis clients</h3>
         <div class="reviews-summary">
-          <span class="avg-rating">${rating}</span>
+          <span class="avg-rating">${formatRating(rating)}</span>
           <span class="stars-display">${starsHTML(rating)}</span>
           <span class="text-muted-foreground">(${reviewCount} avis)</span>
         </div>
@@ -679,7 +709,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Recalculer la note moyenne
     const totalStars = p.reviews.reduce((sum, r) => sum + (r.stars || 0), 0);
-    p.rating = (totalStars / p.reviews.length).toFixed(1);
+    p.rating = parseFloat((totalStars / p.reviews.length).toFixed(2));
     
     saveStore();
     
@@ -700,8 +730,8 @@ window.addEventListener('DOMContentLoaded', () => {
     // Mettre à jour le résumé
     const avgRating = container.querySelector('.avg-rating');
     const starsDisplay = container.querySelector('.stars-display');
-    if (avgRating) avgRating.textContent = p.rating;
-    if (starsDisplay) starsDisplay.innerHTML = starsHTML(parseFloat(p.rating));
+    if (avgRating) avgRating.textContent = formatRating(p.rating);
+    if (starsDisplay) starsDisplay.innerHTML = starsHTML(toNumber(p.rating));
     
     showToast('Merci pour votre avis !', 'success');
   });
@@ -736,7 +766,7 @@ window.addEventListener('DOMContentLoaded', () => {
         // Recalculer la note moyenne
         if (p.reviews.length > 0) {
           const totalStars = p.reviews.reduce((sum, r) => sum + (r.stars || 0), 0);
-          p.rating = (totalStars / p.reviews.length).toFixed(1);
+          p.rating = parseFloat((totalStars / p.reviews.length).toFixed(2));
         } else {
           p.rating = 0;
         }
@@ -754,8 +784,8 @@ window.addEventListener('DOMContentLoaded', () => {
         const avgRating = container.querySelector('.avg-rating');
         const starsDisplay = container.querySelector('.stars-display');
         const reviewCountEl = container.querySelector('.reviews-summary .text-muted-foreground');
-        if (avgRating) avgRating.textContent = p.rating;
-        if (starsDisplay) starsDisplay.innerHTML = starsHTML(parseFloat(p.rating));
+        if (avgRating) avgRating.textContent = formatRating(p.rating);
+        if (starsDisplay) starsDisplay.innerHTML = starsHTML(toNumber(p.rating));
         if (reviewCountEl) reviewCountEl.textContent = `(${p.reviews.length} avis)`;
         
         showToast('Avis supprimé', 'success');
@@ -975,7 +1005,7 @@ window.addEventListener('DOMContentLoaded', () => {
           </div>
           <div class="product-info">
             <h3 class="product-name">${prod.name}</h3>
-            <div class="product-price">${prod.price.toFixed(0)} <span>FCFA</span></div>
+            <div class="product-price">${formatFCFA(prod.price)}</div>
           </div>
         </a>
       `;
