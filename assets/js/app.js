@@ -247,23 +247,21 @@ function renderHome(){
 
 function cardProduct(p){
   const img = p.images && p.images[0] ? p.images[0] : "assets/img/placeholder-product-1.svg";
+  const formatPrice = (value) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value);
   return `
   <a href="product.html?id=${encodeURIComponent(p.id)}" class="product-card">
     <div class="product-image-wrap">
       <img src="${img}" alt="${p.name}" loading="lazy">
+      <button class="wishlist-btn ${isInWishlist(p.id) ? 'active' : ''}" data-wishlist="${p.id}" aria-label="Ajouter aux favoris" title="Ajouter aux favoris">
+        <i data-lucide="heart" class="lucide-icon ${isInWishlist(p.id) ? 'filled' : ''}"></i>
+      </button>
       <button class="quick-add-btn" data-quick-add="${p.id}" aria-label="Ajout rapide au panier" title="Ajout rapide">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="9" cy="21" r="1" fill="white"></circle>
-          <circle cx="20" cy="21" r="1" fill="white"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          <line x1="12" y1="8" x2="12" y2="16"></line>
-          <line x1="8" y1="12" x2="16" y2="12"></line>
-        </svg>
+        <span class="quick-add-icon" aria-hidden="true">+</span>
       </button>
     </div>
     <div class="product-info">
       <h3 class="product-name">${p.name}</h3>
-      <div class="product-price">${p.price.toFixed(0)} <span>FCFA</span></div>
+      <div class="product-price">${formatPrice(p.price)} <span>FCFA</span></div>
     </div>
   </a>`;
 }
@@ -281,6 +279,24 @@ function cardProduct(p){
           animateIcon(quickAddBtn);
           // Update cart badge
           updateCartBadge();
+        }
+      }
+    });
+
+    // Délégation d'événements pour wishlist
+    document.addEventListener('click', (e)=>{
+      const wlBtn = e.target.closest('[data-wishlist]');
+      if(wlBtn){
+        e.preventDefault();
+        e.stopPropagation();
+        const pid = wlBtn.getAttribute('data-wishlist');
+        if(pid){
+          toggleWishlist(pid);
+          const isWl = isInWishlist(pid);
+          wlBtn.classList.toggle('active', isWl);
+          wlBtn.setAttribute('aria-pressed', isWl ? 'true' : 'false');
+          const heart = wlBtn.querySelector('.lucide-icon');
+          if(heart){ heart.classList.toggle('filled', isWl); }
         }
       }
     });
@@ -906,11 +922,94 @@ function clearWishlist(){
   updateWishlistBadge && updateWishlistBadge();
 }
 
+// ===== Load More Pagination =====
+function initLoadMore() {
+  const catalogueList = document.getElementById('catalogue-list');
+  const loadMoreBtn = document.getElementById('load-more-btn');
+  if (!catalogueList || !loadMoreBtn) return;
+  
+  const itemsPerPage = 12;
+  let currentPage = 1;
+  let totalItems = 0;
+  
+  // On premier chargement (après render), mettre en place la pagination
+  function setupPagination() {
+    const allCards = catalogueList.querySelectorAll('.product-card');
+    totalItems = allCards.length;
+    currentPage = 1;
+    
+    // Cacher tous les items
+    allCards.forEach(card => {
+      card.style.display = 'none';
+      card.style.opacity = '0';
+    });
+    
+    // Afficher les 12 premiers
+    showItems(1);
+    
+    // Mettre à jour le bouton
+    updateLoadMoreBtn(allCards);
+  }
+  
+  function showItems(page) {
+    const allCards = catalogueList.querySelectorAll('.product-card');
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    
+    allCards.forEach((card, index) => {
+      if (index >= start && index < end) {
+        card.style.display = 'block';
+        // Fade-in animation
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transition = 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+        }, 10 + index * 30); // Stagger effect
+      }
+    });
+  }
+  
+  function updateLoadMoreBtn(allCards) {
+    const visibleCount = currentPage * itemsPerPage;
+    const remaining = Math.max(0, totalItems - visibleCount);
+    
+    if (remaining === 0) {
+      loadMoreBtn.classList.add('hidden');
+      loadMoreBtn.setAttribute('disabled', 'disabled');
+    } else {
+      loadMoreBtn.classList.remove('hidden');
+      loadMoreBtn.removeAttribute('disabled');
+      loadMoreBtn.textContent = `Voir plus de produits (${remaining} restants)`;
+    }
+  }
+  
+  loadMoreBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    currentPage++;
+    const allCards = catalogueList.querySelectorAll('.product-card');
+    showItems(currentPage);
+    updateLoadMoreBtn(allCards);
+  });
+  
+  // Observable pour mettre à jour la pagination quand la grille change
+  const observer = new MutationObserver(() => {
+    setupPagination();
+  });
+  
+  observer.observe(catalogueList, {
+    childList: true,
+    subtree: false
+  });
+  
+  // Initial setup
+  setupPagination();
+}
+
 // ===== Initialisation automatique au chargement =====
 document.addEventListener('DOMContentLoaded', () => {
   // Page catalogue
   if(document.getElementById('catalogue-list')) {
     initCatalogue();
+    initLoadMore();
   }
   // Page accueil
   if(document.getElementById('home-categories') || document.getElementById('home-new')) {
