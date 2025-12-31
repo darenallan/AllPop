@@ -807,6 +807,57 @@ function generateMenu(cuisineType, index) {
     Store.orders = [order];
     localStorage.setItem('ac_orders', JSON.stringify(Store.orders));
   }
+
+  // Hydratation des vendeurs sur tous les produits
+  const sellerDefaults = {
+    'Véhicules & Mobilité': { sellerName: 'Auto Prestige', sellerId: 'auto-prestige' },
+    'Électronique, Téléphonie & Informatique': { sellerName: 'High Tech Pro', sellerId: 'high-tech-pro' },
+    'Beauté, Hygiène & Bien-être': { sellerName: 'Aurum Beauty', sellerId: 'aurum-beauty' },
+    'Maison, Meubles & Décoration': { sellerName: 'Maison Élégance', sellerId: 'maison-elegance' },
+    'Mode & Accessoires': { sellerName: 'Streetwear Club', sellerId: 'streetwear-club' },
+    'Restauration & Boissons': { sellerName: 'Foodies Corner', sellerId: 'foodies-corner' },
+    'Bâtiment, Quincaillerie & Matériaux': { sellerName: 'Pro BTP', sellerId: 'pro-btp' }
+  };
+
+  Store.products = Store.products.map(p => {
+    const shop = Store.shops.find(s => s.id === p.shopId);
+    const def = sellerDefaults[p.category] || {};
+    const sellerName = p.sellerName || def.sellerName || (shop ? shop.name : 'Boutique');
+    const sellerId = p.sellerId || def.sellerId || (shop ? shop.id : 'boutique');
+    return {
+      ...p,
+      sellerName,
+      sellerId,
+      shopId: p.shopId || sellerId // aligne le produit sur l'ID vendeur si shopId manquant
+    };
+  });
+
+  // Créer les boutiques manquantes pour les sellerId utilisés
+  const existingShopIds = new Set(Store.shops.map(s => s.id));
+  const now = Date.now();
+  const defaultEnd = now + 365 * 86400000;
+  const seen = new Set();
+  Store.products.forEach(p => {
+    if(!p.sellerId || seen.has(p.sellerId)) return;
+    seen.add(p.sellerId);
+    if(!existingShopIds.has(p.sellerId)){
+      Store.shops.push({
+        id: p.sellerId,
+        name: p.sellerName || p.sellerId,
+        description: p.features || 'Boutique partenaire Aurum',
+        category: p.category || 'Général',
+        ownerEmail: `${p.sellerId}@aurum.demo`,
+        startDate: now,
+        endDate: defaultEnd,
+        itemLimit: 200,
+        status: 'active'
+      });
+      existingShopIds.add(p.sellerId);
+    }
+  });
+
+  localStorage.setItem('ac_products', JSON.stringify(Store.products));
+  localStorage.setItem('ac_shops', JSON.stringify(Store.shops));
 })();
 
 function saveStore(){
