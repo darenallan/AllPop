@@ -11,6 +11,9 @@ const RoleMap = {
   'maintainer': 'maintainer',
 };
 
+// URL API (à remplacer par l'endpoint public en prod, jamais localhost depuis GitHub Pages)
+const API_BASE = 'https://api.example.com';
+
 // Utilitaires
 function delay(ms){ return new Promise(res => setTimeout(res, ms)); }
 function normalizeRole(r){
@@ -121,27 +124,42 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Login form
   const loginForm = document.getElementById('login-form');
   if(loginForm){
+    console.log('[login] Form #login-form détecté');
     loginForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
+      console.log('[login] Submit intercepté');
       const btn = loginForm.querySelector('button[type="submit"]');
       btn && (btn.disabled = true);
       const email = loginForm.email.value.trim();
       const pass = loginForm.password.value.trim();
+      console.log('[login] Champs saisis', { email, pwdLen: pass.length });
 
-      const res = await Auth.login(email, pass);
-      if(!res.success){
-        showToast(res.error || 'Échec de connexion', 'danger');
+      try {
+        console.log('[login] Tentative Auth.login (localStore)');
+        const res = await Auth.login(email, pass);
+        console.log('[login] Résultat', res);
+
+        if(!res.success){
+          console.warn('[login] Échec', res.error);
+          showToast(res.error || 'Échec de connexion', 'danger');
+          btn && (btn.disabled = false);
+          return;
+        }
+
+        showToast('Connecté avec succès', 'success');
+        const role = Auth.user.role;
+        console.log('[login] Redirection rôle', role);
+        setTimeout(()=>{
+          if(role === 'seller') location.href = 'seller.html';
+          else if(role === 'superadmin') location.href = 'admin.html';
+          else location.href = 'index.html';
+        }, 600);
+      } catch (err) {
+        console.error('[login] Exception', err);
+        alert("Impossible de contacter le serveur. Vérifie ta connexion ou l'URL de l'API.");
+        showToast('Erreur réseau ou serveur', 'danger');
         btn && (btn.disabled = false);
-        return;
       }
-      showToast('Connecté avec succès', 'success');
-      // Redirections selon rôles
-      const role = Auth.user.role;
-      setTimeout(()=>{
-        if(role === 'seller') location.href = 'seller.html';
-        else if(role === 'superadmin') location.href = 'admin.html';
-        else location.href = 'index.html';
-      }, 600);
     });
   }
 
