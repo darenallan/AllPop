@@ -67,20 +67,17 @@ const Auth = {
 };
 
 // Liaison formulaires - attacher les listeners dès que possible
-window.addEventListener('DOMContentLoaded', attachFormListeners);
-
-// Fallback immédiat si le DOM est déjà chargé
-if(document.readyState !== 'loading'){
-  attachFormListeners();
-}
-
 function attachFormListeners(){
+  console.log('[auth] Attaching form listeners...');
   const loginForm = document.getElementById('login-form');
+  console.log('[auth] loginForm element:', loginForm);
+  
   if(loginForm){
     loginForm.addEventListener('submit', (e)=>{
-      console.log('[login] submit event intercepté');
+      console.log('[login] submit event intercepté, defaultPrevented avant:', e.defaultPrevented);
       e.preventDefault();
       e.stopPropagation();
+      console.log('[login] defaultPrevented après preventDefault:', e.defaultPrevented);
       const btn = loginForm.querySelector('button[type="submit"]');
       btn && (btn.disabled = true);
       const email = loginForm.email.value.trim();
@@ -101,6 +98,7 @@ function attachFormListeners(){
         else location.href = 'index.html';
       }, 400);
     });
+    console.log('[auth] login listener attached successfully');
   }
 
   const regForm = document.getElementById('register-form');
@@ -123,6 +121,7 @@ function attachFormListeners(){
       showToast?.('Compte créé', 'success');
       setTimeout(()=> location.href='index.html', 500);
     });
+    console.log('[auth] register listener attached successfully');
   }
 
   const logoutBtn = document.getElementById('logout-btn');
@@ -133,6 +132,16 @@ function attachFormListeners(){
       setTimeout(()=> location.href='index.html', 300);
     });
   }
+  console.log('[auth] All listeners attached');
+}
+
+// Attacher immédiatement si le DOM est prêt
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', attachFormListeners);
+} else {
+  // DOM déjà prêt, attacher tout de suite
+  console.log('[auth] DOM already loaded, attaching listeners immediately');
+  attachFormListeners();
 }
 // Authentification avancée (API inspirée du contexte React)
 // Clés de stockage
