@@ -145,12 +145,36 @@ if(document.readyState === 'loading'){
 
 }
 
+//nouveelle section
+if(loginForm){
+    loginForm.addEventListener('submit', (e)=>{
+      e.preventDefault(); // Bloque le rechargement
+      e.stopPropagation();
 
+      const btn = loginForm.querySelector('button[type="submit"]');
+      if(btn) btn.innerHTML = "Connexion..."; // Feedback visuel sur le bouton
 
+      const email = loginForm.email.value.trim();
+      const pass = loginForm.password.value.trim();
 
+      // Tentative de connexion
+      const res = Auth.login(email, pass);
 
+      if(!res.success){
+        // 🚨 CAS D'ERREUR : On force une alerte visible
+        alert("ERREUR : " + (res.error || 'Échec de connexion'));
+        if(btn) btn.innerHTML = "Se connecter";
+        if(btn) btn.disabled = false;
+        return;
+      }
 
-
-
-
-
+      // ✅ SUCCÈS
+      alert("SUCCÈS ! Connecté en tant que " + res.user.name);
+      
+      const role = res.user.role;
+      setTimeout(()=>{
+        if(role === 'admin') location.href = 'admin.html';
+        else location.href = 'index.html';
+      }, 100);
+    });
+  }
