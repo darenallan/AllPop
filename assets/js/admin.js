@@ -12,6 +12,49 @@ window.addEventListener('DOMContentLoaded', ()=>{
   if(guard) guard.classList.add('hidden');
   if(dash) dash.classList.remove('hidden');
 
+  // === Navigation latérale admin ===
+  const navLinks = Array.from(document.querySelectorAll('.admin-nav-link[data-section]'));
+  const sections = Array.from(document.querySelectorAll('.admin-section'));
+  const sidebar = document.getElementById('admin-sidebar');
+  const mobileToggle = document.getElementById('admin-mobile-toggle');
+
+  const showSection = (sectionKey) => {
+    const targetId = `section-${sectionKey}`;
+    sections.forEach(sec => {
+      const isTarget = sec.id === targetId;
+      sec.classList.toggle('hidden', !isTarget);
+      sec.classList.toggle('active', isTarget);
+    });
+    navLinks.forEach(link => {
+      const isActive = link.dataset.section === sectionKey;
+      link.classList.toggle('active', isActive);
+    });
+    // Fermer le menu mobile après navigation
+    if (sidebar) sidebar.classList.remove('mobile-open');
+  };
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = link.dataset.section;
+      if (target) {
+        showSection(target);
+        // synchroniser l'URL hash pour rechargement direct
+        history.replaceState(null, '', `#${target}`);
+      }
+    });
+  });
+
+  if (mobileToggle && sidebar) {
+    mobileToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('mobile-open');
+    });
+  }
+
+  // Activer la section correspondant au hash ou par défaut le dashboard
+  const initialSection = (location.hash || '').replace('#','') || 'dashboard';
+  showSection(initialSection);
+
   // === Créer un compte vendeur ===
   const createSellerForm = document.getElementById('create-seller-form');
   if(createSellerForm){
