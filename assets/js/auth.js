@@ -148,6 +148,17 @@ window.addEventListener('DOMContentLoaded', ()=>{
       const pass = loginForm.password.value.trim();
       console.log('[login] Champs saisis', { email, pwdLen: pass.length });
 
+      // Feedback immédiat pour mobile
+      safeToast('Connexion en cours...', 'info');
+
+      // Garde si Store n'est pas prêt (cache/cors)
+      if(!window.Store){
+        console.error('[login] Store indisponible');
+        safeToast('Données non chargées. Recharge la page.', 'danger');
+        btn && (btn.disabled = false);
+        return;
+      }
+
       try {
         console.log('[login] Tentative Auth.login (localStore)');
         const res = await Auth.login(email, pass);
@@ -170,8 +181,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
         }, 600);
       } catch (err) {
         console.error('[login] Exception', err);
-        alert("Impossible de contacter le serveur. Vérifie ta connexion ou l'URL de l'API.");
-        showToast('Erreur réseau ou serveur', 'danger');
+        safeToast("Impossible de contacter le serveur. Vérifie ta connexion ou l'URL de l'API.", 'danger');
+      } finally {
         btn && (btn.disabled = false);
       }
     });
