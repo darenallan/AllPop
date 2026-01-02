@@ -20,6 +20,14 @@ function normalizeRole(r){
   const key = String(r||'client').toLowerCase();
   return RoleMap[key] || key;
 }
+function safeToast(message, type='info'){
+  try {
+    return showToast(message, type);
+  } catch (err) {
+    console.warn('[toast-fallback]', err);
+    alert(message);
+  }
+}
 
 // Expose une API Auth globale
 const Auth = {
@@ -63,8 +71,14 @@ const Auth = {
     // Normaliser rôle
     acc.role = normalizeRole(acc.role);
 
-    // Persister
-    localStorage.setItem(AUTH_KEY, JSON.stringify(acc));
+    // Persister (avec garde mobile/safari privé)
+    try {
+      localStorage.setItem(AUTH_KEY, JSON.stringify(acc));
+    } catch (err) {
+      console.warn('[auth] localStorage indisponible', err);
+      return { success:false, error:'Stockage bloqué par le navigateur. Réessaye en mode normal.' };
+    }
+
     this.user = acc;
     this.isLoading = false;
     return { success:true };
@@ -141,12 +155,12 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
         if(!res.success){
           console.warn('[login] Échec', res.error);
-          showToast(res.error || 'Échec de connexion', 'danger');
+          safeToast(res.error || 'Échec de connexion', 'danger');
           btn && (btn.disabled = false);
           return;
         }
 
-        showToast('Connecté avec succès', 'success');
+        safeToast('Connecté avec succès', 'success');
         const role = Auth.user.role;
         console.log('[login] Redirection rôle', role);
         setTimeout(()=>{
@@ -179,12 +193,12 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
       const res = await Auth.register(email, pass, name, phone, 'client');
       if(!res.success){
-        showToast(res.error || 'Échec de création', 'danger');
+        safeToast(res.error || 'Échec de création', 'danger');
         btn && (btn.disabled = false);
         return;
       }
 
-      showToast('Compte créé', 'success');
+      safeToast('Compte créé', 'success');
 
       if(wantShop){
         // Demande boutique
