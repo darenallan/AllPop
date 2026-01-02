@@ -66,17 +66,28 @@ const Auth = {
   isAuthenticated(){ return !!getSession(); }
 };
 
-// Liaison formulaires
-window.addEventListener('DOMContentLoaded', () => {
+// Liaison formulaires - attacher les listeners dès que possible
+window.addEventListener('DOMContentLoaded', attachFormListeners);
+
+// Fallback immédiat si le DOM est déjà chargé
+if(document.readyState !== 'loading'){
+  attachFormListeners();
+}
+
+function attachFormListeners(){
   const loginForm = document.getElementById('login-form');
   if(loginForm){
     loginForm.addEventListener('submit', (e)=>{
+      console.log('[login] submit event intercepté');
       e.preventDefault();
+      e.stopPropagation();
       const btn = loginForm.querySelector('button[type="submit"]');
       btn && (btn.disabled = true);
       const email = loginForm.email.value.trim();
       const pass = loginForm.password.value.trim();
+      console.log('[login] credentials:', { email, passLen: pass.length });
       const res = Auth.login(email, pass);
+      console.log('[login] result:', res);
       if(!res.success){
         showToast?.(res.error || 'Échec de connexion', 'danger');
         btn && (btn.disabled = false);
@@ -84,6 +95,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
       showToast?.('Connecté', 'success');
       const role = res.user.role;
+      console.log('[login] redirecting with role:', role);
       setTimeout(()=>{
         if(role === 'admin') location.href = 'admin.html';
         else location.href = 'index.html';
@@ -95,6 +107,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if(regForm){
     regForm.addEventListener('submit', (e)=>{
       e.preventDefault();
+      e.stopPropagation();
       const btn = regForm.querySelector('button[type="submit"]');
       btn && (btn.disabled = true);
       const name = regForm.name?.value?.trim() || '';
@@ -120,7 +133,7 @@ window.addEventListener('DOMContentLoaded', () => {
       setTimeout(()=> location.href='index.html', 300);
     });
   }
-});
+}
 // Authentification avancée (API inspirée du contexte React)
 // Clés de stockage
 const AUTH_KEY = 'ac_currentUser';
