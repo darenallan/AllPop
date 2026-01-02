@@ -47,5 +47,43 @@
 </main>
 <footer id="app-footer" class="footer"></footer>
 <div class="toast-container" id="toast-container"></div>
+  <script>
+    // 1. On vérifie tout de suite si ce script se lance
+    alert("📢 Le script de la page est chargé !");
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // 2. On cherche le formulaire
+        var form = document.getElementById("login-form");
+        
+        if (!form) {
+            alert("❌ ERREUR CRITIQUE : Impossible de trouver le formulaire 'login-form' dans le HTML !");
+        } else {
+            // 3. On force l'écouteur d'événement
+            alert("✅ Formulaire trouvé. Écouteur activé.");
+            
+            form.addEventListener("submit", function(event) {
+                // 4. On intercepte le clic
+                event.preventDefault(); 
+                alert("🖱️ BOUTON CLIQUÉ ! Le JavaScript contrôle le formulaire.");
+
+                // Récupération des valeurs
+                var email = form.querySelector('[name="email"]').value;
+                var password = form.querySelector('[name="password"]').value;
+
+                alert("Données saisies : " + email + " / " + password);
+
+                // Simulation simple pour voir si ça avance
+                if(email.includes("@")) {
+                    alert("🚀 Tentative de redirection...");
+                    window.location.href = "index.html"; 
+                } else {
+                    alert("⚠️ Email invalide pour le test.");
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
 </body>
 </html>
