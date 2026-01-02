@@ -24,6 +24,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
       const isTarget = sec.id === targetId;
       sec.classList.toggle('hidden', !isTarget);
       sec.classList.toggle('active', isTarget);
+      // Force display to avoid CSS conflicts
+      sec.style.display = isTarget ? 'block' : 'none';
     });
     navLinks.forEach(link => {
       const isActive = link.dataset.section === sectionKey;
@@ -31,6 +33,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
     });
     // Fermer le menu mobile après navigation
     if (sidebar) sidebar.classList.remove('mobile-open');
+    // Revenir en haut de la page pour éviter les restes de scroll
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   navLinks.forEach(link => {
@@ -54,6 +58,12 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Activer la section correspondant au hash ou par défaut le dashboard
   const initialSection = (location.hash || '').replace('#','') || 'dashboard';
   showSection(initialSection);
+
+  // Écouter les changements de hash (navigation via l'URL)
+  window.addEventListener('hashchange', () => {
+    const sectionFromHash = (location.hash || '').replace('#','') || 'dashboard';
+    showSection(sectionFromHash);
+  });
 
   // === Créer un compte vendeur ===
   const createSellerForm = document.getElementById('create-seller-form');
