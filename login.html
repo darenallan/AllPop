@@ -28,35 +28,10 @@
         <p style="margin-top: 15px;">Pas encore de compte ? <a href="register.html">Créer un compte</a></p>
     </div>
 
-    <script src="assets/js/auth.js?v=5"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-    <script>
-        // LOGIQUE DE LA PAGE LOGIN
-        document.getElementById('form-login').addEventListener('submit', function(e) {
-            e.preventDefault(); // Bloque le rechargement
+    <script src="assets/js/auth-firebase.js?v=10"></script>
 
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-
-            // Tentative de connexion via notre Auth.js
-            const result = Auth.login(email, pass);
-
-            if (result.success) {
-                alert("👋 Bon retour parmi nous, " + result.user.name + " !");
-                // Redirection selon le rôle (Admin ou Client)
-                if (result.user.email === "admin@aurum.com") {
-                     window.location.href = "admin.html";
-                } else {
-                     window.location.href = "index.html";
-                }
-            } else {
-                alert("❌ " + result.message);
-            }
-        });
-    </script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-
-<script src="assets/js/auth-firebase.js?v=1"></script>
 </body>
 </html>
