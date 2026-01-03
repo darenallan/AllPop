@@ -20,34 +20,56 @@
 
 <body>
   <header id="app-header" class="header">
-      <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
-          <a href="index.html" class="brand-name">AURUM</a>
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <div class="brand-logo-img" style="background:#D4AF37; width:40px; height:40px; border-radius:8px;"></div>
+              <div style="display:flex; flex-direction:column; margin-left:10px;">
+                  <span class="brand-name">AURUM</span>
+                  <span class="tagline">EXCELLENCE À VOTRE PORTÉE</span>
+              </div>
+          </a>
+          
           <nav class="nav-actions">
-              <a href="catalogue.html" class="btn btn-sm btn-outline">Catalogue</a>
-              <a href="seller.html" class="btn btn-sm btn-dark">Espace Vendeur</a>
-              <a href="cart.html" class="icon-btn"><i data-lucide="shopping-bag"></i></a>
-              <button class="menu-toggle" id="mobile-menu-btn"><i data-lucide="menu"></i></button>
+              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
+              <a href="cart.html" class="icon-btn">
+                  <i data-lucide="shopping-bag"></i>
+                  <span class="badge" id="cart-badge">0</span>
+              </a>
+              <button class="menu-toggle" id="menu-toggle">
+                  <i data-lucide="menu"></i>
+              </button>
           </nav>
       </div>
   </header>
+
+  <div class="mobile-menu" id="mobile-menu">
+      <nav class="mobile-menu-nav">
+          <a href="index.html" class="mobile-menu-item"><i data-lucide="home"></i> Accueil</a>
+          <a href="catalogue.html" class="mobile-menu-item"><i data-lucide="grid"></i> Catalogue</a>
+          <a href="seller.html" class="mobile-menu-item"><i data-lucide="store"></i> Espace Vendeur</a>
+          <a href="cart.html" class="mobile-menu-item"><i data-lucide="shopping-bag"></i> Panier</a>
+          <div class="mobile-menu-divider"></div>
+          <a href="login.html" class="mobile-menu-item"><i data-lucide="user"></i> Connexion</a>
+      </nav>
+  </div>
   
   <main>
     <section class="hero">
       <div class="container">
         <h1>L'Excellence à Votre Portée</h1>
-        <p class="hero-sub">L'excellence du style Burkinabè, livrée chez vous.</p>
+        <p class="hero-sub">Le meilleur du style Burkinabè, livré chez vous.</p>
         <div class="cta">
           <a href="catalogue.html" class="btn btn-gold">Découvrir la collection</a>
         </div>
       </div>
-      <div class="hero-img" style="background-image: url('assets/img/hero.png');"></div>
+      <div class="hero-img" style="background-image: url('assets/img/hero.png'); background-color:#111;"></div>
     </section>
 
     <section class="section container">
-      <h2 class="section-title">Qu'est-ce qui vous intéresse aujourd'hui ?</h2>
+      <h2 class="section-title">Nos Univers</h2>
       <div class="category-carousel-wrapper">
-        <div class="category-carousel" id="category-carousel">
-          <p style="padding:20px;">Chargement des catégories...</p>
+        <div class="category-carousel" id="category-carousel" style="display:flex; gap:15px; overflow-x:auto; padding:10px 0;">
+          <p>Chargement des catégories...</p>
         </div>
       </div>
     </section>
@@ -55,97 +77,139 @@
     <section class="section container">
       <h2 class="section-title">Nouveautés</h2>
       <div id="home-new" class="grid grid-4">
-          <p>Chargement des pépites...</p>
+          <p>Chargement des produits...</p>
       </div>
     </section>
 
     <section class="section container">
-      <h2 class="section-title">Promotions</h2>
+      <h2 class="section-title">Offres Spéciales</h2>
       <div id="home-promos" class="grid grid-4">
           </div>
     </section>
 
-    <section class="section testimonials-section">
-      <div class="container">
-        <h2 class="section-title">Ils nous font confiance</h2>
-        <div class="testimonials-slider">
-             <article class="testimonial-card">
-                <div class="testimonial-header">
-                    <div class="testimonial-avatar" style="background:#eee;">M</div>
-                    <div>
-                        <h4 class="testimonial-name">Mariam O.</h4>
-                        <span class="testimonial-role">Cliente Fidèle</span>
-                    </div>
-                </div>
-                <blockquote class="testimonial-content">« Service impeccable et produits de qualité. »</blockquote>
-             </article>
-             </div>
-      </div>
+    <section class="section container newsletter-section">
+        <h2 class="section-title" style="color:white;">Rejoignez le Cercle</h2>
+        <p class="section-subtitle" style="color:#ccc;">Offres exclusives et nouveautés.</p>
+        <form class="newsletter-form">
+            <input type="email" placeholder="Votre email..." style="padding:15px; border-radius:8px; border:none; width:300px;">
+            <button class="btn btn-gold">S'inscrire</button>
+        </form>
     </section>
   </main>
 
   <footer class="footer">
-      <div class="container text-center">
-          <p>&copy; 2026 Aurum Marketplace</p>
+      <div class="container">
+          <div class="cols" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
+              <div>
+                  <h3>AURUM</h3>
+                  <p>La première marketplace premium du Burkina Faso. Qualité, confiance et élégance.</p>
+              </div>
+              <div>
+                  <h4>Navigation</h4>
+                  <ul style="list-style:none; padding:0; line-height:2;">
+                      <li><a href="index.html">Accueil</a></li>
+                      <li><a href="catalogue.html">Catalogue</a></li>
+                      <li><a href="seller.html">Devenir Vendeur</a></li>
+                      <li><a href="login.html">Mon Compte</a></li>
+                  </ul>
+              </div>
+              <div>
+                  <h4>Légal</h4>
+                  <ul style="list-style:none; padding:0; line-height:2;">
+                      <li><a href="#">Conditions Générales</a></li>
+                      <li><a href="#">Politique de Confidentialité</a></li>
+                      <li><a href="#">FAQ</a></li>
+                  </ul>
+              </div>
+              <div>
+                  <h4>Suivez-nous</h4>
+                  <div class="footer-socials" style="display:flex; gap:15px;">
+                      <a href="#" class="social-link"><i data-lucide="facebook"></i></a>
+                      <a href="#" class="social-link"><i data-lucide="instagram"></i></a>
+                      <a href="#" class="social-link"><i data-lucide="twitter"></i></a>
+                  </div>
+              </div>
+          </div>
+          <div class="footer-bottom" style="margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
+              &copy; 2026 Aurum Marketplace. Tous droits réservés.
+          </div>
       </div>
   </footer>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // GESTION MENU BURGER
+        const menuBtn = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
         
-        // 1. Charger les CATÉGORIES
-        db.collection('categories').get().then(snap => {
-            const container = document.getElementById('category-carousel');
-            if(container && !snap.empty) {
-                container.innerHTML = "";
-                snap.forEach(doc => {
-                    const c = doc.data();
-                    container.innerHTML += `
-                        <a href="catalogue.html?cat=${c.name}" class="category-card">
-                            <div class="category-card-icon">
-                                <i data-lucide="${c.icon || 'tag'}"></i>
-                            </div>
-                            <span class="category-card-label">${c.name}</span>
-                        </a>
-                    `;
-                });
-                lucide.createIcons();
-            }
-        });
+        if(menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('active'); // Assure-toi que .active est dans ton CSS
+                // Fallback JS si CSS manquant
+                if(mobileMenu.style.transform === 'translateX(0%)') {
+                    mobileMenu.style.transform = 'translateX(100%)';
+                } else {
+                    mobileMenu.style.transform = 'translateX(0%)';
+                    mobileMenu.style.position = 'fixed';
+                    mobileMenu.style.top = '70px';
+                    mobileMenu.style.right = '0';
+                    mobileMenu.style.bottom = '0';
+                    mobileMenu.style.width = '300px';
+                    mobileMenu.style.background = '#fff';
+                    mobileMenu.style.padding = '20px';
+                    mobileMenu.style.zIndex = '9999';
+                    mobileMenu.style.boxShadow = '-5px 0 15px rgba(0,0,0,0.1)';
+                }
+            });
+        }
 
-        // 2. Charger les NOUVEAUTÉS
-        db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
-            const container = document.getElementById('home-new');
-            if(container) {
-                container.innerHTML = "";
-                if(snap.empty) container.innerHTML = "<p>Aucun produit pour le moment.</p>";
-                
-                snap.forEach(doc => {
-                    const p = doc.data();
-                    const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                    
-                    container.innerHTML += `
-                        <div class="card product-card">
-                            <a href="product.html?id=${doc.id}" style="text-decoration:none; color:inherit;">
-                                <div class="card-img">
-                                    <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" alt="${p.name}">
+        // CHARGEMENT DONNÉES
+        if(typeof firebase !== 'undefined') {
+            const db = firebase.firestore();
+
+            // 1. Catégories
+            db.collection('categories').get().then(snap => {
+                const box = document.getElementById('category-carousel');
+                if(!snap.empty) {
+                    box.innerHTML = "";
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        box.innerHTML += `
+                            <a href="catalogue.html?cat=${d.name}" class="category-card" style="min-width:100px; text-align:center; text-decoration:none; color:black;">
+                                <div style="width:70px; height:70px; background:#f5f5f5; border-radius:50%; display:grid; place-items:center; margin:0 auto 10px;">
+                                    <i data-lucide="${d.icon||'tag'}"></i>
                                 </div>
-                            </a>
-                            <div class="info">
-                                <div style="font-size:12px; color:#666; margin-bottom:5px;">
-                                    <a href="boutique.html?id=${p.shopId}" class="shop-link" style="text-decoration:none; color:#666;">
-                                        <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
-                                    </a>
+                                <span style="font-weight:600; font-size:13px;">${d.name}</span>
+                            </a>`;
+                    });
+                    lucide.createIcons();
+                } else { box.innerHTML = "<p>Aucune catégorie.</p>"; }
+            });
+
+            // 2. Produits (Nouveautés)
+            db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
+                const grid = document.getElementById('home-new');
+                if(!snap.empty) {
+                    grid.innerHTML = "";
+                    snap.forEach(doc => {
+                        const p = doc.data();
+                        grid.innerHTML += `
+                            <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
+                                <a href="product.html?id=${doc.id}">
+                                    <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" style="width:100%; height:250px; object-fit:cover;">
+                                </a>
+                                <div style="padding:15px;">
+                                    <div style="font-size:11px; color:#888; text-transform:uppercase;">${p.shopName || 'Boutique'}</div>
+                                    <h3 style="font-size:16px; margin:5px 0;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
+                                    <div style="font-weight:bold; color:#D4AF37;">${p.price} FCFA</div>
                                 </div>
-                                <h3 class="product-name"><a href="product.html?id=${doc.id}">${p.name}</a></h3>
-                                <div class="price">${price} FCFA</div>
-                            </div>
-                        </div>
-                    `;
-                });
-                lucide.createIcons();
-            }
-        });
+                            </div>`;
+                    });
+                } else { grid.innerHTML = "<p>Aucun produit récent.</p>"; }
+            });
+        }
+        
+        if(typeof lucide !== 'undefined') lucide.createIcons();
     });
   </script>
 </body>
