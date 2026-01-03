@@ -7118,3 +7118,33 @@ main > .section:not(.hero + .section):not(.hero + .section + .section) {
     .nav-desktop { display: none; } /* Cacher menu PC */
     .burger-btn { display: flex; }  /* Afficher Burger */
 }
+
+/* --- FORCER LE MENU BURGER SUR PC --- */
+.menu-toggle, .burger-btn {
+    display: flex !important; /* Force l'affichage */
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    margin-left: 15px;
+    z-index: 1001; /* Au-dessus du reste */
+}
+
+/* S'assurer que l'icône est visible */
+.menu-toggle i, .burger-btn i {
+    width: 28px;
+    height: 28px;
+    color: #000; /* Couleur noire */
+}
+
+/* Si tu utilises des spans (lignes) au lieu de l'icône Lucide */
+.burger-btn span {
+    background-color: #000 !important; 
+}
+
+/* Ajustement de la navbar pour tout aligner */
+.nav-actions {
+    display: flex;
+    align-items: center;
+}
