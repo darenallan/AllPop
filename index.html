@@ -19,30 +19,78 @@
 </head>
 
 <body>
-  <header id="app-header" class="header">
-      <div class="container navbar">
-          <a href="index.html" class="brand">
-              <div class="brand-logo-img" style="background:var(--gold); display:flex; align-items:center; justify-content:center;">
-                  <span style="font-weight:bold; color:black;">A</span>
-              </div>
-              <div style="display:flex; flex-direction:column; margin-left:10px;">
-                  <span class="brand-name">AURUM</span>
-                  <span class="tagline" style="font-size:10px; letter-spacing:1px;">EXCELLENCE À VOTRE PORTÉE</span>
-              </div>
-          </a>
-          
-          <nav class="nav-actions">
-              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
-              <a href="cart.html" class="icon-btn" style="position:relative;">
-                  <i data-lucide="shopping-bag"></i>
-                  <span class="badge" id="cart-badge" style="display:none;">0</span>
-              </a>
-              <button class="menu-toggle" id="menu-toggle" style="background:transparent; border:none; color:inherit;">
-                  <i data-lucide="menu"></i>
-              </button>
-          </nav>
-      </div>
-  </header>
+ <header class="header">
+    <div class="container navbar">
+        <a href="index.html" class="brand">
+            <span class="brand-name" style="font-family:'Playfair Display'; font-weight:700; font-size:24px;">AURUM</span>
+        </a>
+
+        <nav class="nav-desktop">
+            <a href="catalogue.html">Catalogue</a>
+            <a href="seller.html">Espace Vendeur</a>
+            <a href="wishlist.html"><i data-lucide="heart"></i></a>
+            <a href="cart.html"><i data-lucide="shopping-bag"></i></a>
+            <a href="login.html" id="desktop-auth-link" class="btn-login">Connexion</a>
+        </nav>
+
+        <button class="burger-btn" id="burger-btn" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+</header>
+
+<div class="mobile-drawer" id="mobile-drawer">
+    <div class="drawer-header">
+        <span class="drawer-title">Menu</span>
+        <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
+    </div>
+
+    <nav class="drawer-nav">
+        <a href="index.html" class="drawer-link">
+            <i data-lucide="home"></i> Accueil
+        </a>
+        <a href="catalogue.html" class="drawer-link">
+            <i data-lucide="grid"></i> Catalogue
+        </a>
+        <a href="seller.html" class="drawer-link highlight">
+            <i data-lucide="store"></i> Espace Vendeur
+        </a>
+        
+        <div class="drawer-divider"></div>
+
+        <a href="wishlist.html" class="drawer-link">
+            <i data-lucide="heart"></i> Ma Wishlist
+        </a>
+        <a href="cart.html" class="drawer-link">
+            <i data-lucide="shopping-bag"></i> Mon Panier
+        </a>
+        <a href="orders.html" class="drawer-link">
+            <i data-lucide="package"></i> Mes Commandes
+        </a>
+
+        <div class="drawer-divider"></div>
+
+        <div id="drawer-auth-section">
+            <div id="auth-guest" class="auth-buttons">
+                <a href="login.html" class="btn btn-outline" style="width:100%; justify-content:center;">Connexion</a>
+                <a href="register.html" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:10px;">Inscription</a>
+            </div>
+            
+            <div id="auth-user" class="hidden">
+                <a href="profile.html" class="drawer-link">
+                    <i data-lucide="user"></i> Mon Profil
+                </a>
+                <button id="logout-btn" class="drawer-link logout">
+                    <i data-lucide="log-out"></i> Déconnexion
+                </button>
+            </div>
+        </div>
+    </nav>
+</div>
+
+<div class="overlay" id="menu-overlay"></div>
 
   <div class="mobile-menu" id="mobile-menu">
       <nav class="mobile-menu-nav">
