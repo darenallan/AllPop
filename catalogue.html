@@ -1,86 +1,120 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catalogue - Aurum</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aurum - L'Excellence à Votre Portée</title>
-<meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
-<!-- Google Fonts - Luxury Typography -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css" />
-<link rel="preload" href="assets/css/styles.css" as="style" />
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" href="assets/img/placeholder-product-1.svg" />
-<script defer src="assets/js/utils.js"></script>
-<script defer src="assets/js/data.js"></script>
-<script defer src="assets/js/icons.js"></script>
-<script defer src="assets/js/app.js"></script>
-<script defer src="assets/js/auth.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/auth.js"></script>
 </head>
+
 <body>
-<header id="app-header" class="header"></header>
-<main class="container">
-  <section class="section">
+  <header class="header" style="padding:20px; border-bottom:1px solid #eee;">
+      <div class="container" style="display:flex; justify-content:space-between;">
+          <a href="index.html" style="font-weight:bold; font-size:20px; text-decoration:none; color:black;">AURUM</a>
+          <nav>
+              <a href="cart.html" style="color:black;"><i data-lucide="shopping-bag"></i></a>
+          </nav>
+      </div>
+  </header>
+
+  <main class="container" style="padding:40px 0;">
     <h1>Catalogue</h1>
-    <div class="catalogue-toolbar">
-      <div class="catalogue-search">
-        <i data-lucide="search" aria-hidden="true"></i>
-        <input id="search-input" class="catalogue-search-input" placeholder="Recherche (auto-suggest)" />
-      </div>
-      <div class="catalogue-chips">
-        <select id="filter-category" class="chip-select"><option value="">Toutes catégories</option></select>
-        <select id="filter-shop" class="chip-select shop-filter"><option value="">Toutes les boutiques</option></select>
-        <select id="filter-color" class="chip-select"><option value="">Toutes couleurs</option></select>
-        <select id="filter-size" class="chip-select"><option value="">Toutes tailles</option></select>
-        <select id="sort-select" class="chip-select">
-          <option value="recent">Plus récent</option>
-          <option value="price-asc">Prix ↑</option>
-          <option value="price-desc">Prix ↓</option>
-        </select>
-        <!-- Filtres Beauté (affichés dynamiquement) -->
-        <select id="filter-beauty-type" class="chip-select beauty-filter hidden"><option value="">Type de produit</option></select>
-        <select id="filter-skin-type" class="chip-select beauty-filter hidden"><option value="">Type de peau</option></select>
-        <select id="filter-brand" class="chip-select beauty-filter hidden"><option value="">Marque</option></select>
-        <!-- Filtres Électronique (affichés dynamiquement) -->
-        <select id="filter-tech-type" class="chip-select tech-filter hidden"><option value="">Type d'appareil</option></select>
-        <select id="filter-capacity" class="chip-select tech-filter hidden"><option value="">Capacité</option></select>
-        <select id="filter-condition" class="chip-select tech-filter hidden"><option value="">État</option></select>
-        <select id="filter-tech-brand" class="chip-select tech-filter hidden"><option value="">Marque</option></select>
-        <!-- Filtres Maison (affichés dynamiquement) -->
-        <select id="filter-home-type" class="chip-select home-filter hidden"><option value="">Type de meuble</option></select>
-        <select id="filter-material" class="chip-select home-filter hidden"><option value="">Matière</option></select>
-        <select id="filter-dimension" class="chip-select home-filter hidden"><option value="">Dimensions</option></select>
-        <select id="filter-home-style" class="chip-select home-filter hidden"><option value="">Style</option></select>
-        <!-- Filtres Bâtiment (affichés dynamiquement) -->
-        <select id="filter-btp-type" class="chip-select btp-filter hidden"><option value="">Type de produit</option></select>
-        <select id="filter-btp-unit" class="chip-select btp-filter hidden"><option value="">Unité</option></select>
-        <select id="filter-client-type" class="chip-select btp-filter hidden"><option value="">Type client</option></select>
-        <select id="filter-btp-brand" class="chip-select btp-filter hidden"><option value="">Marque</option></select>
-        <!-- Filtres Véhicules (affichés dynamiquement) -->
-        <select id="filter-vehicle-type" class="chip-select vehicle-filter hidden"><option value="">Type de véhicule</option></select>
-        <select id="filter-vehicle-condition" class="chip-select vehicle-filter hidden"><option value="">État</option></select>
-        <select id="filter-vehicle-year" class="chip-select vehicle-filter hidden"><option value="">Année</option></select>
-        <select id="filter-vehicle-fuel" class="chip-select vehicle-filter hidden"><option value="">Carburant</option></select>
-        <select id="filter-vehicle-brand" class="chip-select vehicle-filter hidden"><option value="">Marque</option></select>
-        <!-- Filtres Restauration (affichés dynamiquement) -->
-        <select id="filter-cuisine-type" class="chip-select resto-filter hidden"><option value="">Type de cuisine</option></select>
-        <select id="filter-price-range" class="chip-select resto-filter hidden"><option value="">Tous les prix</option></select>
-      </div>
+    
+    <div style="display:flex; gap:15px; margin-bottom:30px; flex-wrap:wrap;">
+        <input id="search-input" type="text" placeholder="Rechercher..." style="padding:10px; border:1px solid #ddd; border-radius:5px; flex:1;">
+        <select id="cat-filter" style="padding:10px; border:1px solid #ddd; border-radius:5px;">
+            <option value="">Toutes les catégories</option>
+            </select>
     </div>
-    <div id="catalogue-list" class="product-list"></div>
-    <div class="load-more-container">
-      <button type="button" id="load-more-btn" class="load-more-btn" aria-label="Charger plus de produits">Voir plus de produits</button>
+
+    <div id="product-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px;">
+        <p>Chargement du catalogue...</p>
     </div>
-  </section>
-</main>
-<footer id="app-footer" class="footer"></footer>
-<div class="toast-container" id="toast-container"></div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const db = firebase.firestore();
+        let allProducts = [];
+
+        // 1. Load Categories for Filter
+        db.collection('categories').get().then(snap => {
+            const select = document.getElementById('cat-filter');
+            snap.forEach(doc => {
+                select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`;
+            });
+        });
+
+        // 2. Load All Products
+        db.collection('products').get().then(snap => {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = "";
+            
+            if(snap.empty) {
+                grid.innerHTML = "<p>Aucun produit disponible.</p>";
+                return;
+            }
+
+            snap.forEach(doc => {
+                allProducts.push({id: doc.id, ...doc.data()});
+            });
+
+            renderProducts(allProducts);
+        });
+
+        // Render Function
+        function renderProducts(list) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = "";
+            
+            list.forEach(p => {
+                const price = new Intl.NumberFormat('fr-FR').format(p.price);
+                grid.innerHTML += `
+                    <article style="border:1px solid #eee; border-radius:10px; overflow:hidden;">
+                        <a href="product.html?id=${p.id}">
+                            <img src="${p.image || 'assets/img/placeholder.png'}" style="width:100%; height:200px; object-fit:cover;">
+                        </a>
+                        <div style="padding:15px;">
+                            <a href="boutique.html?id=${p.shopId}" style="font-size:11px; color:#666; text-transform:uppercase; text-decoration:none; display:block; margin-bottom:5px;">
+                                Vendu par : <b>${p.shopName}</b>
+                            </a>
+                            <h3 style="font-size:16px; margin:0 0 5px;">${p.name}</h3>
+                            <div style="font-weight:bold; color:#D4AF37;">${price} FCFA</div>
+                        </div>
+                    </article>
+                `;
+            });
+        }
+
+        // 3. Search & Filter Logic
+        const searchInput = document.getElementById('search-input');
+        const catSelect = document.getElementById('cat-filter');
+
+        function filter() {
+            const term = searchInput.value.toLowerCase();
+            const cat = catSelect.value;
+
+            const filtered = allProducts.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(term);
+                const matchesCat = cat === "" || p.category === cat;
+                return matchesSearch && matchesCat;
+            });
+            renderProducts(filtered);
+        }
+
+        searchInput.addEventListener('input', filter);
+        catSelect.addEventListener('change', filter);
+        
+        lucide.createIcons();
+    });
+  </script>
 </body>
 </html>
