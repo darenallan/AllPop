@@ -9,12 +9,13 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
     <link rel="stylesheet" href="assets/css/styles.css" />
-    <link rel="stylesheet" href="assets/css/admin-patch.css" /> <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <link rel="stylesheet" href="assets/css/admin-fix.css" />
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script> <script src="assets/js/utils.js"></script>
-    <script src="assets/js/data.js"></script>
-    <script src="assets/js/auth-firebase.js"></script>
-    <script defer src="assets/js/admin.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <script src="assets/js/auth-firebase.js"></script> <script defer src="assets/js/admin.js"></script>
 </head>
 <body class="admin-layout">
 
@@ -41,7 +42,13 @@
             <a href="#promos" class="admin-nav-link" data-section="promos">
                 <i data-lucide="percent"></i> <span>Codes Promo</span>
             </a>
-            <a href="index.html" class="admin-nav-link logout-link" style="margin-top: auto; color: #ff6b6b;">
+            <a href="#testimonials" class="admin-nav-link" data-section="testimonials">
+                <i data-lucide="message-square"></i> <span>Témoignages</span>
+            </a>
+            <a href="#stats" class="admin-nav-link" data-section="stats">
+                <i data-lucide="bar-chart-3"></i> <span>Statistiques</span>
+            </a>
+            <a href="index.html" class="admin-nav-link logout-link" style="margin-top: auto; color: #ff6b6b; border-top: 1px solid rgba(255,255,255,0.1);">
                 <i data-lucide="log-out"></i> <span>Quitter</span>
             </a>
         </nav>
@@ -53,8 +60,9 @@
 
     <main class="admin-main">
         
-        <div id="admin-guard" style="text-align: center; margin-top: 100px;">
-            <p>Chargement des données...</p>
+        <div id="admin-loader" style="text-align: center; margin-top: 20%; color: #666;">
+            <i data-lucide="loader" class="spin" style="width: 40px; height: 40px; color: var(--gold);"></i>
+            <p>Connexion au serveur...</p>
         </div>
 
         <div id="admin-dashboard" class="hidden">
@@ -62,47 +70,61 @@
             <section id="section-dashboard" class="admin-section active">
                 <div class="admin-page-header">
                     <h1 class="admin-page-title">Tableau de Bord</h1>
+                    <p class="admin-page-subtitle">Vue d'ensemble de votre marketplace</p>
                 </div>
                 <div id="admin-stats" class="admin-stats-grid"></div>
             </section>
 
             <section id="section-sellers" class="admin-section">
-                <div class="admin-page-header"><h1 class="admin-page-title">Créer Vendeur</h1></div>
+                <div class="admin-page-header">
+                    <h1 class="admin-page-title">Créer un Compte Vendeur</h1>
+                </div>
                 <div class="admin-card">
                     <form id="create-seller-form" class="admin-form">
-                        <div class="form-group">
-                            <label>Nom</label>
-                            <input class="input" name="name" required>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label>Nom complet</label>
+                                <input class="input" name="name" placeholder="Ex: Jean Ouedraogo" required>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Email</label>
+                                <input class="input" name="email" type="email" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input class="input" name="email" required>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label>Téléphone</label>
+                                <input class="input" name="phone" type="tel">
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Mot de passe</label>
+                                <input class="input" name="password" type="text" placeholder="******" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Mot de passe</label>
-                            <input class="input" name="password" required>
-                        </div>
-                        <button class="btn btn-gold">Créer</button>
+                        <button type="submit" class="btn btn-gold btn-xl" style="margin-top: 20px;">Créer le compte</button>
                     </form>
                 </div>
             </section>
 
             <section id="section-shops" class="admin-section">
                 <div class="admin-page-header"><h1 class="admin-page-title">Boutiques</h1></div>
-                
                 <div class="admin-card mb-4">
-                    <h3>Nouvelle Boutique</h3>
+                    <h2 class="admin-card-title">Nouvelle Boutique</h2>
                     <form id="shop-form" class="admin-form">
-                        <div class="form-group"><input class="input" name="name" placeholder="Nom"></div>
-                        <div class="form-group"><input class="input" name="ownerEmail" placeholder="Email Vendeur"></div>
-                        <div class="form-group">
-                            <select class="input" name="categoryId" id="shop-category-select"></select>
+                        <div class="admin-form-row">
+                            <input class="input" name="name" placeholder="Nom de la boutique" required>
+                            <input class="input" name="ownerEmail" placeholder="Email Propriétaire" required>
                         </div>
-                        <button class="btn btn-gold">Ajouter</button>
+                        <div class="admin-form-group" style="margin-top:10px;">
+                            <select class="input category-select" name="categoryId" id="shop-category-select">
+                                </select>
+                        </div>
+                        <button class="btn btn-gold" style="margin-top:15px;">Ajouter</button>
                     </form>
                 </div>
-
-                <div id="admin-shops" class="shops-grid"></div>
+                <div class="admin-card">
+                    <div id="admin-shops" class="shops-grid"></div>
+                </div>
             </section>
 
             <section id="section-categories" class="admin-section">
@@ -112,12 +134,29 @@
             
             <section id="section-users" class="admin-section">
                 <div class="admin-page-header"><h1 class="admin-page-title">Utilisateurs</h1></div>
-                <div id="admin-users"></div>
+                <div id="admin-users" class="admin-card"></div>
             </section>
 
             <section id="section-promos" class="admin-section">
-                <div class="admin-page-header"><h1 class="admin-page-title">Promos</h1></div>
-                <div id="admin-promos"></div>
+                <div class="admin-page-header"><h1 class="admin-page-title">Promotions</h1></div>
+                <div class="admin-card">
+                    <form id="promo-form" class="admin-form mb-4" style="display:flex; gap:10px;">
+                        <input class="input" name="code" placeholder="CODE" required>
+                        <input class="input" name="percent" type="number" placeholder="%" style="width:80px">
+                        <button class="btn btn-gold">Créer</button>
+                    </form>
+                    <div id="admin-promos" class="promos-list"></div>
+                </div>
+            </section>
+
+            <section id="section-stats" class="admin-section">
+                <div class="admin-page-header"><h1 class="admin-page-title">Statistiques</h1></div>
+                <div class="admin-card">Statistiques détaillées à venir...</div>
+            </section>
+
+            <section id="section-testimonials" class="admin-section">
+                <div class="admin-page-header"><h1 class="admin-page-title">Témoignages</h1></div>
+                <div id="admin-testimonials" class="admin-card"></div>
             </section>
 
         </div>
