@@ -202,11 +202,19 @@
             }
         }
 
-        if(menuBtn) {
-            menuBtn.addEventListener('click', toggleMenu);
-            // Fermer si on clique dehors
-            overlay.addEventListener('click', toggleMenu);
+       if(menuBtn) {
+    menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('active');
+        
+        // Force l'affichage si le CSS ne suit pas
+        if(mobileMenu.style.transform === 'translateX(0%)') {
+            mobileMenu.style.transform = 'translateX(100%)';
+        } else {
+            mobileMenu.style.transform = 'translateX(0%)';
+            mobileMenu.style.display = 'block';
         }
+    });
+}
 
         // 2. CHARGEMENT DONNÉES FIREBASE
         if(typeof firebase !== 'undefined') {
