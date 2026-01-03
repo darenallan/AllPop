@@ -4,249 +4,135 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Aurum - L'Excellence à Votre Portée</title>
-  <meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
   
-  <!-- Google Fonts - Luxury Typography -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Stylesheets -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css" />
-  <link rel="preload" href="assets/css/styles.css" as="style" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
-  <!-- Lucide Icons (outline style, lightweight) -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-  
-  <!-- App Configuration -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/img/placeholder-product-1.svg" />
-  
-  <!-- Scripts -->
-  <script defer src="assets/js/utils.js"></script>
-  <script defer src="assets/js/data.js"></script>
-  <script defer src="assets/js/icons.js"></script>
-  <script defer src="assets/js/app.js"></script>
-  <script defer src="assets/js/auth.js"></script>
+  <script src="assets/js/auth.js"></script>
 </head>
 
 <body>
-  <header id="app-header" class="header"></header>
+  <header id="app-header" class="header">
+      <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
+          <a href="index.html" style="font-family:'Playfair Display'; font-weight:700; font-size:24px; color:#000; text-decoration:none;">AURUM</a>
+          <nav>
+              <a href="catalogue.html" style="margin-right:15px; color:#000; text-decoration:none;">Catalogue</a>
+              <a href="login.html" style="margin-right:15px; color:#000; text-decoration:none;">Connexion</a>
+              <a href="cart.html" style="color:#000; text-decoration:none;"><i data-lucide="shopping-bag"></i></a>
+          </nav>
+      </div>
+  </header>
   
   <main>
-    <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero" style="background:#0F0F0F; color:white; padding:80px 0; text-align:center;">
       <div class="container">
-        <h1>L'Excellence à Votre Portée</h1>
-        <p class="hero-sub">L'excellence du style Burkinabè, livrée chez vous.</p>
-        <div class="cta">
-          <a href="catalogue.html" class="btn btn-gold">Découvrir la collection</a>
-        </div>
-      </div>
-      <div class="hero-img" style="background-image: url('assets/img/hero.png');"></div>
-    </section>
-
-    <!-- Category Carousel - Glovo style -->
-    <section class="section container">
-      <h2 class="section-title">Qu'est-ce qui vous intéresse aujourd'hui ?</h2>
-      <div class="category-carousel-wrapper">
-        <button class="carousel-arrow carousel-prev" aria-label="Précédent">
-          <i data-lucide="chevron-left" class="lucide-icon"></i>
-        </button>
-        <div class="category-carousel" id="category-carousel">
-          <!-- Catégories injectées par JS -->
-        </div>
-        <button class="carousel-arrow carousel-next" aria-label="Suivant">
-          <i data-lucide="chevron-right" class="lucide-icon"></i>
-        </button>
+        <h1 style="color:white; font-size:3rem; margin-bottom:10px;">L'Excellence à Votre Portée</h1>
+        <p style="color:#ccc; margin-bottom:30px;">Le meilleur du style, livré chez vous.</p>
+        <a href="catalogue.html" class="btn btn-gold" style="background:#D4AF37; color:black; padding:12px 30px; text-decoration:none; font-weight:bold; border-radius:5px;">Découvrir la collection</a>
       </div>
     </section>
 
-    <!-- New Products -->
+    <section class="section container" style="padding:60px 0;">
+      <h2 class="section-title">Nos Univers</h2>
+      <div class="category-carousel" id="category-list" style="display:flex; gap:20px; overflow-x:auto; padding-bottom:20px;">
+        <p>Chargement des catégories...</p>
+      </div>
+    </section>
+
     <section class="section container">
       <h2 class="section-title">Nouveautés</h2>
-      <div id="home-new" class="grid grid-4"></div>
-    </section>
-
-    <!-- Promotions -->
-    <section class="section container">
-      <h2 class="section-title">Promotions</h2>
-      <div id="home-promos" class="grid grid-4"></div>
-    </section>
-
-    <!-- Testimonials - Section Premium -->
-    <section class="section testimonials-section">
-      <div class="container">
-        <h2 class="section-title">Ils nous font confiance</h2>
-        <p class="section-subtitle">Découvrez les avis de notre communauté</p>
-        
-        <div class="testimonials-slider" id="testimonials-slider">
-          <article class="testimonial-card">
-            <div class="testimonial-header">
-              <div class="testimonial-avatar">
-                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=facearea&w=160&h=160&q=80" alt="Photo de Mariam Ouédraogo">
-              </div>
-              <div class="testimonial-meta">
-                <div class="testimonial-name-row">
-                  <h4 class="testimonial-name">Mariam Ouédraogo</h4>
-                  <span class="badge-verified" aria-label="Avis vérifié"><i data-lucide="badge-check"></i></span>
-                </div>
-                <span class="testimonial-role">Cliente fidèle</span>
-              </div>
-            </div>
-            <blockquote class="testimonial-content">
-              « Service impeccable et produits de qualité exceptionnelle. Une vraie référence pour le luxe accessible. »
-            </blockquote>
-            <div class="testimonial-rating">
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-            </div>
-          </article>
-
-          <article class="testimonial-card">
-            <div class="testimonial-header">
-              <div class="testimonial-avatar">
-                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=facearea&w=160&h=160&q=80" alt="Photo de Issa Compaoré">
-              </div>
-              <div class="testimonial-meta">
-                <div class="testimonial-name-row">
-                  <h4 class="testimonial-name">Issa Compaoré</h4>
-                  <span class="badge-verified" aria-label="Avis vérifié"><i data-lucide="badge-check"></i></span>
-                </div>
-                <span class="testimonial-role">Vendeur vérifié</span>
-              </div>
-            </div>
-            <blockquote class="testimonial-content">
-              « Plateforme intuitive et professionnelle. Mes ventes ont augmenté de 200% en 3 mois. »
-            </blockquote>
-            <div class="testimonial-rating">
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-            </div>
-          </article>
-
-          <article class="testimonial-card">
-            <div class="testimonial-header">
-              <div class="testimonial-avatar">
-                <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=facearea&w=160&h=160&q=80" alt="Photo de Aminata Traoré">
-              </div>
-              <div class="testimonial-meta">
-                <div class="testimonial-name-row">
-                  <h4 class="testimonial-name">Aminata Traoré</h4>
-                  <span class="badge-verified" aria-label="Avis vérifié"><i data-lucide="badge-check"></i></span>
-                </div>
-                <span class="testimonial-role">Créatrice mode</span>
-              </div>
-            </div>
-            <blockquote class="testimonial-content">
-              « Enfin une marketplace qui met en valeur l'artisanat africain avec élégance et modernité. »
-            </blockquote>
-            <div class="testimonial-rating">
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon"></i>
-            </div>
-          </article>
-
-          <article class="testimonial-card">
-            <div class="testimonial-header">
-              <div class="testimonial-avatar">
-                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=facearea&w=160&h=160&q=80" alt="Photo de Karim Sawadogo">
-              </div>
-              <div class="testimonial-meta">
-                <div class="testimonial-name-row">
-                  <h4 class="testimonial-name">Karim Sawadogo</h4>
-                  <span class="badge-verified" aria-label="Avis vérifié"><i data-lucide="badge-check"></i></span>
-                </div>
-                <span class="testimonial-role">Client premium</span>
-              </div>
-            </div>
-            <blockquote class="testimonial-content">
-              « Livraison rapide, emballage soigné et service client réactif. Je recommande vivement. »
-            </blockquote>
-            <div class="testimonial-rating">
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-            </div>
-          </article>
-
-          <article class="testimonial-card">
-            <div class="testimonial-header">
-              <div class="testimonial-avatar">
-                <img src="https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=facearea&w=160&h=160&q=80" alt="Photo de Fatou Diallo">
-              </div>
-              <div class="testimonial-meta">
-                <div class="testimonial-name-row">
-                  <h4 class="testimonial-name">Fatou Diallo</h4>
-                  <span class="badge-verified" aria-label="Avis vérifié"><i data-lucide="badge-check"></i></span>
-                </div>
-                <span class="testimonial-role">Restauratrice</span>
-              </div>
-            </div>
-            <blockquote class="testimonial-content">
-              « Grâce à Aurum, mon restaurant touche une clientèle plus large. Une vraie révolution ! »
-            </blockquote>
-            <div class="testimonial-rating">
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-            </div>
-          </article>
-
-          <article class="testimonial-card">
-            <div class="testimonial-header">
-              <div class="testimonial-avatar">
-                <img src="https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?auto=format&fit=facearea&w=160&h=160&q=80" alt="Photo de Omar Kaboré">
-              </div>
-              <div class="testimonial-meta">
-                <div class="testimonial-name-row">
-                  <h4 class="testimonial-name">Omar Kaboré</h4>
-                  <span class="badge-verified" aria-label="Avis vérifié"><i data-lucide="badge-check"></i></span>
-                </div>
-                <span class="testimonial-role">Entrepreneur</span>
-              </div>
-            </div>
-            <blockquote class="testimonial-content">
-              « L'interface admin est claire et les statistiques m'aident à prendre de meilleures décisions. »
-            </blockquote>
-            <div class="testimonial-rating">
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon filled"></i>
-              <i data-lucide="star" class="star-icon"></i>
-            </div>
-          </article>
-        </div>
+      <div id="home-new" class="product-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px;">
+        <p>Chargement des produits...</p>
       </div>
     </section>
 
-    <!-- Newsletter -->
-    <section class="section container newsletter-section">
-      <h2 class="section-title">Rejoignez le Cercle Aurum</h2>
-      <p class="section-subtitle">Soyez les premiers informés de nos collections exclusives et profitez d'offres privées.</p>
-      <form id="newsletter-form" class="newsletter-form">
-        <input class="input" type="email" placeholder="Votre email" aria-label="Votre email" required />
-        <button class="btn btn-gold" type="submit">Je rejoins le club</button>
-      </form>
-      <small class="newsletter-note">Nous respectons votre vie privée.</small>
+    <section class="section container">
+      <h2 class="section-title">Promotions</h2>
+      <div id="home-promos" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
+         </div>
     </section>
   </main>
 
-  <footer id="app-footer" class="footer"></footer>
-  <div class="toast-container" id="toast-container"></div>
+  <footer style="background:#000; color:white; padding:40px 0; text-align:center; margin-top:60px;">
+      <p>&copy; 2026 Aurum Marketplace</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const db = firebase.firestore();
+
+        // 1. LOAD CATEGORIES
+        db.collection('categories').get().then(snap => {
+            const container = document.getElementById('category-list');
+            if(container) {
+                container.innerHTML = "";
+                snap.forEach(doc => {
+                    const c = doc.data();
+                    container.innerHTML += `
+                        <a href="catalogue.html?cat=${c.name}" class="category-card" style="min-width:120px; text-align:center; text-decoration:none; color:black;">
+                            <div style="width:80px; height:80px; background:#f5f5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
+                                <i data-lucide="${c.icon || 'tag'}" style="width:30px; height:30px;"></i>
+                            </div>
+                            <span style="font-weight:600; font-size:14px;">${c.name}</span>
+                        </a>
+                    `;
+                });
+                lucide.createIcons();
+            }
+        });
+
+        // 2. LOAD NEW PRODUCTS
+        db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
+            const container = document.getElementById('home-new');
+            if(container) {
+                container.innerHTML = "";
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    const price = new Intl.NumberFormat('fr-FR').format(p.price);
+                    container.innerHTML += `
+                        <article class="product-card" style="border:1px solid #eee; border-radius:10px; overflow:hidden;">
+                            <a href="product.html?id=${doc.id}">
+                                <img src="${p.image || 'assets/img/placeholder.png'}" style="width:100%; height:200px; object-fit:cover;">
+                            </a>
+                            <div style="padding:15px;">
+                                <a href="boutique.html?id=${p.shopId}" style="font-size:11px; color:#666; text-transform:uppercase; text-decoration:none; display:block; margin-bottom:5px;">
+                                    Vendu par : <b>${p.shopName}</b>
+                                </a>
+                                <h3 style="font-size:16px; margin:0 0 5px;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
+                                <div style="font-weight:bold; color:#D4AF37;">${price} FCFA</div>
+                            </div>
+                        </article>
+                    `;
+                });
+            }
+        });
+
+        // 3. LOAD PROMOS
+        db.collection('promos').where('status', '==', 'active').limit(4).get().then(snap => {
+            const container = document.getElementById('home-promos');
+            if(container) {
+                container.innerHTML = "";
+                if(snap.empty) {
+                    container.innerHTML = "<p>Aucune promo pour le moment.</p>";
+                } else {
+                    snap.forEach(doc => {
+                        const pr = doc.data();
+                        container.innerHTML += `
+                            <div style="background:#D4AF37; color:black; padding:20px; border-radius:10px; text-align:center;">
+                                <h3 style="font-size:24px; margin:0;">${pr.percent}% OFF</h3>
+                                <p>Code : <b>${pr.code}</b></p>
+                            </div>
+                        `;
+                    });
+                }
+            }
+        });
+    });
+  </script>
 </body>
 </html>
