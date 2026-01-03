@@ -16,6 +16,19 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+// 1. Initialiser Firebase (Mettre le contact)
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+    console.log("🔥 Firebase connecté avec succès !");
+} else if (typeof firebase === 'undefined') {
+    console.error("❌ Erreur : Les scripts Firebase (gstatic) ne sont pas chargés dans le HTML.");
+}
+
+// 2. Exporter les outils pour les autres fichiers
+// (admin.js va utiliser ces variables)
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 // ==========================================
 // 2. LOGIQUE D'AUTHENTIFICATION
 // ==========================================
