@@ -22,20 +22,22 @@
   <header id="app-header" class="header">
       <div class="container navbar">
           <a href="index.html" class="brand">
-              <div class="brand-logo-img" style="background:#D4AF37; width:40px; height:40px; border-radius:8px;"></div>
+              <div class="brand-logo-img" style="background:var(--gold); display:flex; align-items:center; justify-content:center;">
+                  <span style="font-weight:bold; color:black;">A</span>
+              </div>
               <div style="display:flex; flex-direction:column; margin-left:10px;">
                   <span class="brand-name">AURUM</span>
-                  <span class="tagline">EXCELLENCE À VOTRE PORTÉE</span>
+                  <span class="tagline" style="font-size:10px; letter-spacing:1px;">EXCELLENCE À VOTRE PORTÉE</span>
               </div>
           </a>
           
           <nav class="nav-actions">
               <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
-              <a href="cart.html" class="icon-btn">
+              <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
-                  <span class="badge" id="cart-badge">0</span>
+                  <span class="badge" id="cart-badge" style="display:none;">0</span>
               </a>
-              <button class="menu-toggle" id="menu-toggle">
+              <button class="menu-toggle" id="menu-toggle" style="background:transparent; border:none; color:inherit;">
                   <i data-lucide="menu"></i>
               </button>
           </nav>
@@ -49,7 +51,7 @@
           <a href="seller.html" class="mobile-menu-item"><i data-lucide="store"></i> Espace Vendeur</a>
           <a href="cart.html" class="mobile-menu-item"><i data-lucide="shopping-bag"></i> Panier</a>
           <div class="mobile-menu-divider"></div>
-          <a href="login.html" class="mobile-menu-item"><i data-lucide="user"></i> Connexion</a>
+          <a href="login.html" class="mobile-menu-item"><i data-lucide="user"></i> Mon Compte</a>
       </nav>
   </div>
   
@@ -66,10 +68,10 @@
     </section>
 
     <section class="section container">
-      <h2 class="section-title">Nos Univers</h2>
+      <h2 class="section-title">Qu'est-ce qui vous intéresse aujourd'hui ?</h2>
       <div class="category-carousel-wrapper">
-        <div class="category-carousel" id="category-carousel" style="display:flex; gap:15px; overflow-x:auto; padding:10px 0;">
-          <p>Chargement des catégories...</p>
+        <div class="category-carousel" id="category-carousel" style="display:flex; gap:15px; overflow-x:auto; padding-bottom:15px;">
+          <p style="padding:20px;">Chargement des catégories...</p>
         </div>
       </div>
     </section>
@@ -77,20 +79,48 @@
     <section class="section container">
       <h2 class="section-title">Nouveautés</h2>
       <div id="home-new" class="grid grid-4">
-          <p>Chargement des produits...</p>
+          <p>Chargement des pépites...</p>
       </div>
     </section>
 
     <section class="section container">
-      <h2 class="section-title">Offres Spéciales</h2>
+      <h2 class="section-title">Promotions</h2>
       <div id="home-promos" class="grid grid-4">
           </div>
+    </section>
+
+    <section class="section testimonials-section">
+      <div class="container">
+        <h2 class="section-title">Ils nous font confiance</h2>
+        <div class="testimonials-slider" style="display:flex; gap:20px; overflow-x:auto;">
+             <article class="testimonial-card" style="min-width:300px;">
+                <div class="testimonial-header">
+                    <div class="testimonial-avatar" style="background:#eee; width:50px; height:50px; border-radius:50%; display:grid; place-items:center;">M</div>
+                    <div>
+                        <h4 class="testimonial-name">Mariam O.</h4>
+                        <span class="testimonial-role" style="color:var(--gold); font-size:12px;">CLIENTE FIDÈLE</span>
+                    </div>
+                </div>
+                <blockquote class="testimonial-content">« Service impeccable et produits de qualité. »</blockquote>
+             </article>
+             <article class="testimonial-card" style="min-width:300px;">
+                <div class="testimonial-header">
+                    <div class="testimonial-avatar" style="background:#eee; width:50px; height:50px; border-radius:50%; display:grid; place-items:center;">I</div>
+                    <div>
+                        <h4 class="testimonial-name">Issa C.</h4>
+                        <span class="testimonial-role" style="color:var(--gold); font-size:12px;">VENDEUR VÉRIFIÉ</span>
+                    </div>
+                </div>
+                <blockquote class="testimonial-content">« Plateforme très simple pour vendre mes produits. »</blockquote>
+             </article>
+        </div>
+      </div>
     </section>
 
     <section class="section container newsletter-section">
         <h2 class="section-title" style="color:white;">Rejoignez le Cercle</h2>
         <p class="section-subtitle" style="color:#ccc;">Offres exclusives et nouveautés.</p>
-        <form class="newsletter-form">
+        <form class="newsletter-form" style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
             <input type="email" placeholder="Votre email..." style="padding:15px; border-radius:8px; border:none; width:300px;">
             <button class="btn btn-gold">S'inscrire</button>
         </form>
@@ -136,38 +166,35 @@
       </div>
   </footer>
 
+  <div class="toast-container" id="toast-container"></div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // GESTION MENU BURGER
+        
+        // 1. GESTION MENU BURGER (Mobile)
         const menuBtn = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
         
-        if(menuBtn) {
+        if(menuBtn && mobileMenu) {
             menuBtn.addEventListener('click', () => {
-                mobileMenu.classList.toggle('active'); // Assure-toi que .active est dans ton CSS
-                // Fallback JS si CSS manquant
+                // Bascule la classe active
+                mobileMenu.classList.toggle('active');
+                
+                // Fallback JS si le CSS .active ne marche pas
                 if(mobileMenu.style.transform === 'translateX(0%)') {
                     mobileMenu.style.transform = 'translateX(100%)';
                 } else {
                     mobileMenu.style.transform = 'translateX(0%)';
-                    mobileMenu.style.position = 'fixed';
-                    mobileMenu.style.top = '70px';
-                    mobileMenu.style.right = '0';
-                    mobileMenu.style.bottom = '0';
-                    mobileMenu.style.width = '300px';
-                    mobileMenu.style.background = '#fff';
-                    mobileMenu.style.padding = '20px';
-                    mobileMenu.style.zIndex = '9999';
-                    mobileMenu.style.boxShadow = '-5px 0 15px rgba(0,0,0,0.1)';
+                    mobileMenu.style.display = 'block'; // Force display
                 }
             });
         }
 
-        // CHARGEMENT DONNÉES
+        // 2. CHARGEMENT DONNÉES FIREBASE
         if(typeof firebase !== 'undefined') {
             const db = firebase.firestore();
 
-            // 1. Catégories
+            // A. Charger les CATÉGORIES
             db.collection('categories').get().then(snap => {
                 const box = document.getElementById('category-carousel');
                 if(!snap.empty) {
@@ -176,39 +203,50 @@
                         const d = doc.data();
                         box.innerHTML += `
                             <a href="catalogue.html?cat=${d.name}" class="category-card" style="min-width:100px; text-align:center; text-decoration:none; color:black;">
-                                <div style="width:70px; height:70px; background:#f5f5f5; border-radius:50%; display:grid; place-items:center; margin:0 auto 10px;">
+                                <div class="category-card-icon" style="width:70px; height:70px; background:#f5f5f5; border-radius:50%; display:grid; place-items:center; margin:0 auto 10px;">
                                     <i data-lucide="${d.icon||'tag'}"></i>
                                 </div>
-                                <span style="font-weight:600; font-size:13px;">${d.name}</span>
+                                <span class="category-card-label" style="font-weight:600; font-size:13px;">${d.name}</span>
                             </a>`;
                     });
                     lucide.createIcons();
                 } else { box.innerHTML = "<p>Aucune catégorie.</p>"; }
             });
 
-            // 2. Produits (Nouveautés)
+            // B. Charger les NOUVEAUTÉS (Produits)
             db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
                 const grid = document.getElementById('home-new');
                 if(!snap.empty) {
                     grid.innerHTML = "";
                     snap.forEach(doc => {
                         const p = doc.data();
+                        // Format Prix
+                        const price = new Intl.NumberFormat('fr-FR').format(p.price);
+                        
                         grid.innerHTML += `
                             <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
                                 <a href="product.html?id=${doc.id}">
-                                    <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" style="width:100%; height:250px; object-fit:cover;">
+                                    <div style="height:250px; overflow:hidden;">
+                                        <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" style="width:100%; height:100%; object-fit:cover;">
+                                    </div>
                                 </a>
                                 <div style="padding:15px;">
-                                    <div style="font-size:11px; color:#888; text-transform:uppercase;">${p.shopName || 'Boutique'}</div>
-                                    <h3 style="font-size:16px; margin:5px 0;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
-                                    <div style="font-weight:bold; color:#D4AF37;">${p.price} FCFA</div>
+                                    <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px;">
+                                        <a href="boutique.html?id=${p.shopId}" style="text-decoration:none; color:#888;">
+                                            <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
+                                        </a>
+                                    </div>
+                                    <h3 style="font-size:16px; margin:0;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
+                                    <div style="font-weight:bold; color:#D4AF37; margin-top:5px;">${price} FCFA</div>
                                 </div>
                             </div>`;
                     });
+                    lucide.createIcons();
                 } else { grid.innerHTML = "<p>Aucun produit récent.</p>"; }
             });
         }
         
+        // Initialiser Icônes
         if(typeof lucide !== 'undefined') lucide.createIcons();
     });
   </script>
