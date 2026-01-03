@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Catalogue - Aurum</title>
+  <title>Catalogue — Aurum</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
@@ -16,9 +16,11 @@
 </head>
 
 <body>
-  <header id="app-header" class="header">
-      <div class="container" style="display:flex; justify-content:space-between; align-items:center; padding: 15px 0;">
-          <a href="index.html" class="brand-name">AURUM</a>
+  <header class="header">
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+          </a>
           <nav class="nav-actions">
               <a href="cart.html" class="icon-btn"><i data-lucide="shopping-bag"></i></a>
           </nav>
@@ -27,113 +29,111 @@
 
   <main class="container">
     <section class="section">
-      <h1>Catalogue</h1>
+      <h1 class="section-title">Catalogue</h1>
       
-      <div class="catalogue-toolbar">
-        <div class="catalogue-search">
-          <i data-lucide="search" aria-hidden="true"></i>
-          <input id="search-input" class="catalogue-search-input" placeholder="Rechercher (auto-suggest)" />
+      <div class="catalogue-toolbar" style="background:#fff; padding:20px; border:1px solid #eee; border-radius:12px; margin-bottom:30px; box-shadow:0 4px 15px rgba(0,0,0,0.03);">
+        
+        <div class="catalogue-search" style="display:flex; align-items:center; background:#f9f9f9; padding:12px; border-radius:8px; margin-bottom:15px;">
+          <i data-lucide="search" style="color:#888;"></i>
+          <input id="search-input" placeholder="Rechercher un article..." style="border:none; background:transparent; width:100%; margin-left:10px; outline:none; font-size:15px;">
         </div>
-        <div class="catalogue-chips">
-          <select id="filter-category" class="chip-select">
+
+        <div class="catalogue-chips" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <select id="filter-cat" class="chip-select" style="padding:10px 15px; border:1px solid #ddd; border-radius:20px; background:#fff; cursor:pointer;">
               <option value="">Toutes les catégories</option>
               </select>
-          <select id="sort-select" class="chip-select">
+          
+          <select id="sort-select" class="chip-select" style="padding:10px 15px; border:1px solid #ddd; border-radius:20px; background:#fff; cursor:pointer;">
             <option value="recent">Plus récent</option>
-            <option value="price-asc">Prix ↑</option>
-            <option value="price-desc">Prix ↓</option>
+            <option value="price-asc">Prix croissant</option>
+            <option value="price-desc">Prix décroissant</option>
           </select>
         </div>
       </div>
 
-      <div id="catalogue-list" class="product-list grid grid-4">
+      <div id="catalogue-grid" class="grid grid-4">
           <p>Chargement du catalogue...</p>
       </div>
       
-      <div class="load-more-container">
-        <button type="button" id="load-more-btn" class="load-more-btn">Voir plus de produits</button>
-      </div>
     </section>
   </main>
 
-  <footer class="footer"><div class="container text-center"><p>&copy; 2026 Aurum</p></div></footer>
+  <footer class="footer">
+      <div class="container text-center" style="padding:40px 0;">
+          <p>&copy; 2026 Aurum Marketplace</p>
+      </div>
+  </footer>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-        let allProducts = [];
+        const db = firebase.firestore();
+        let products = [];
 
-        // 1. Charger les catégories pour le filtre
+        // 1. FILTRES (Catégories)
         db.collection('categories').get().then(snap => {
-            const select = document.getElementById('filter-category');
+            const sel = document.getElementById('filter-cat');
             snap.forEach(doc => {
-                select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`;
+                sel.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`;
             });
         });
 
-        // 2. Charger TOUS les produits
+        // 2. PRODUITS
         db.collection('products').get().then(snap => {
-            const container = document.getElementById('catalogue-list');
-            container.innerHTML = "";
+            const grid = document.getElementById('catalogue-grid');
+            grid.innerHTML = "";
             
             if(snap.empty) {
-                container.innerHTML = "<p>Aucun produit disponible.</p>";
+                grid.innerHTML = "<p>Aucun produit trouvé.</p>";
                 return;
             }
 
             snap.forEach(doc => {
-                allProducts.push({ id: doc.id, ...doc.data() });
+                products.push({ id: doc.id, ...doc.data() });
             });
 
-            renderProducts(allProducts);
+            render(products);
         });
 
-        // Fonction d'affichage
-        function renderProducts(list) {
-            const container = document.getElementById('catalogue-list');
-            container.innerHTML = "";
+        function render(list) {
+            const grid = document.getElementById('catalogue-grid');
+            grid.innerHTML = "";
             
             list.forEach(p => {
-                const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                container.innerHTML += `
-                    <div class="card product-card">
-                        <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;">
-                            <div class="card-img">
-                                <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" alt="${p.name}">
-                            </div>
+                grid.innerHTML += `
+                    <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
+                        <a href="product.html?id=${p.id}">
+                            <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" style="width:100%; height:250px; object-fit:cover;">
                         </a>
-                        <div class="info">
-                            <div style="font-size:12px; color:#666; margin-bottom:5px;">
-                                <a href="boutique.html?id=${p.shopId}" style="text-decoration:none; color:#666;">
-                                    <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
-                                </a>
-                            </div>
-                            <h3 class="product-name"><a href="product.html?id=${p.id}">${p.name}</a></h3>
-                            <div class="price">${price} FCFA</div>
+                        <div style="padding:15px;">
+                            <div style="font-size:11px; color:#888;">${p.shopName || 'Boutique'}</div>
+                            <h3 style="font-size:16px; margin:5px 0;">${p.name}</h3>
+                            <div style="font-weight:bold; color:#D4AF37;">${p.price} FCFA</div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
             lucide.createIcons();
         }
 
-        // Filtres
+        // LOGIQUE FILTRE
         const search = document.getElementById('search-input');
-        const catSelect = document.getElementById('filter-category');
+        const catFilter = document.getElementById('filter-cat');
 
-        function filter() {
+        function applyFilters() {
             const term = search.value.toLowerCase();
-            const cat = catSelect.value;
+            const cat = catFilter.value;
             
-            const filtered = allProducts.filter(p => {
+            const filtered = products.filter(p => {
                 const matchSearch = p.name.toLowerCase().includes(term);
                 const matchCat = cat === "" || p.category === cat;
                 return matchSearch && matchCat;
             });
-            renderProducts(filtered);
+            render(filtered);
         }
 
-        search.addEventListener('input', filter);
-        catSelect.addEventListener('change', filter);
+        search.addEventListener('input', applyFilters);
+        catFilter.addEventListener('change', applyFilters);
+        
+        lucide.createIcons();
     });
   </script>
 </body>
