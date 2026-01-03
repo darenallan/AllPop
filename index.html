@@ -19,78 +19,30 @@
 </head>
 
 <body>
- <header class="header">
-    <div class="container navbar">
-        <a href="index.html" class="brand">
-            <span class="brand-name" style="font-family:'Playfair Display'; font-weight:700; font-size:24px;">AURUM</span>
-        </a>
-
-        <nav class="nav-desktop">
-            <a href="catalogue.html">Catalogue</a>
-            <a href="seller.html">Espace Vendeur</a>
-            <a href="wishlist.html"><i data-lucide="heart"></i></a>
-            <a href="cart.html"><i data-lucide="shopping-bag"></i></a>
-            <a href="login.html" id="desktop-auth-link" class="btn-login">Connexion</a>
-        </nav>
-
-        <button class="burger-btn" id="burger-btn" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </div>
-</header>
-
-<div class="mobile-drawer" id="mobile-drawer">
-    <div class="drawer-header">
-        <span class="drawer-title">Menu</span>
-        <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
-    </div>
-
-    <nav class="drawer-nav">
-        <a href="index.html" class="drawer-link">
-            <i data-lucide="home"></i> Accueil
-        </a>
-        <a href="catalogue.html" class="drawer-link">
-            <i data-lucide="grid"></i> Catalogue
-        </a>
-        <a href="seller.html" class="drawer-link highlight">
-            <i data-lucide="store"></i> Espace Vendeur
-        </a>
-        
-        <div class="drawer-divider"></div>
-
-        <a href="wishlist.html" class="drawer-link">
-            <i data-lucide="heart"></i> Ma Wishlist
-        </a>
-        <a href="cart.html" class="drawer-link">
-            <i data-lucide="shopping-bag"></i> Mon Panier
-        </a>
-        <a href="orders.html" class="drawer-link">
-            <i data-lucide="package"></i> Mes Commandes
-        </a>
-
-        <div class="drawer-divider"></div>
-
-        <div id="drawer-auth-section">
-            <div id="auth-guest" class="auth-buttons">
-                <a href="login.html" class="btn btn-outline" style="width:100%; justify-content:center;">Connexion</a>
-                <a href="register.html" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:10px;">Inscription</a>
-            </div>
-            
-            <div id="auth-user" class="hidden">
-                <a href="profile.html" class="drawer-link">
-                    <i data-lucide="user"></i> Mon Profil
-                </a>
-                <button id="logout-btn" class="drawer-link logout">
-                    <i data-lucide="log-out"></i> Déconnexion
-                </button>
-            </div>
-        </div>
-    </nav>
-</div>
-
-<div class="overlay" id="menu-overlay"></div>
+  <header id="app-header" class="header">
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <div class="brand-logo-img" style="background:var(--gold); display:flex; align-items:center; justify-content:center;">
+                  <span style="font-weight:bold; color:black;">A</span>
+              </div>
+              <div style="display:flex; flex-direction:column; margin-left:10px;">
+                  <span class="brand-name">AURUM</span>
+                  <span class="tagline" style="font-size:10px; letter-spacing:1px;">EXCELLENCE À VOTRE PORTÉE</span>
+              </div>
+          </a>
+          
+          <nav class="nav-actions">
+              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
+              <a href="cart.html" class="icon-btn" style="position:relative;">
+                  <i data-lucide="shopping-bag"></i>
+                  <span class="badge" id="cart-badge" style="display:none;">0</span>
+              </a>
+              <button class="menu-toggle" id="menu-toggle" style="background:transparent; border:none; color:inherit;">
+                  <i data-lucide="menu"></i>
+              </button>
+          </nav>
+      </div>
+  </header>
 
   <div class="mobile-menu" id="mobile-menu">
       <nav class="mobile-menu-nav">
@@ -99,9 +51,11 @@
           <a href="seller.html" class="mobile-menu-item"><i data-lucide="store"></i> Espace Vendeur</a>
           <a href="cart.html" class="mobile-menu-item"><i data-lucide="shopping-bag"></i> Panier</a>
           <div class="mobile-menu-divider"></div>
-          <a href="login.html" class="mobile-menu-item"><i data-lucide="user"></i> Mon Compte</a>
+          <a href="login.html" id="mobile-auth-link" class="mobile-menu-item"><i data-lucide="user"></i> Connexion</a>
       </nav>
   </div>
+  
+  <div id="menu-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:998; display:none;"></div>
   
   <main>
     <section class="hero">
@@ -116,7 +70,7 @@
     </section>
 
     <section class="section container">
-      <h2 class="section-title">Qu'est-ce qui vous intéresse aujourd'hui ?</h2>
+      <h2 class="section-title">Nos Univers</h2>
       <div class="category-carousel-wrapper">
         <div class="category-carousel" id="category-carousel" style="display:flex; gap:15px; overflow-x:auto; padding-bottom:15px;">
           <p style="padding:20px;">Chargement des catégories...</p>
@@ -219,30 +173,60 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         
-        // 1. GESTION MENU BURGER (Mobile)
+        // 1. GESTION MENU BURGER (CORRIGÉ)
         const menuBtn = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
+        const overlay = document.getElementById('menu-overlay');
         
-        if(menuBtn && mobileMenu) {
-            menuBtn.addEventListener('click', () => {
-                // Bascule la classe active
-                mobileMenu.classList.toggle('active');
-                
-                // Fallback JS si le CSS .active ne marche pas
-                if(mobileMenu.style.transform === 'translateX(0%)') {
-                    mobileMenu.style.transform = 'translateX(100%)';
-                } else {
-                    mobileMenu.style.transform = 'translateX(0%)';
-                    mobileMenu.style.display = 'block'; // Force display
-                }
-            });
+        function toggleMenu() {
+            // Bascule la classe active pour le CSS (si présent)
+            mobileMenu.classList.toggle('active');
+            
+            // Force l'affichage en JS si le CSS ne marche pas
+            if(mobileMenu.style.transform === 'translateX(0%)') {
+                mobileMenu.style.transform = 'translateX(100%)';
+                overlay.style.display = 'none';
+            } else {
+                mobileMenu.style.transform = 'translateX(0%)';
+                mobileMenu.style.display = 'block';
+                mobileMenu.style.position = 'fixed';
+                mobileMenu.style.top = '70px';
+                mobileMenu.style.right = '0';
+                mobileMenu.style.bottom = '0';
+                mobileMenu.style.width = '300px';
+                mobileMenu.style.background = '#fff';
+                mobileMenu.style.padding = '20px';
+                mobileMenu.style.zIndex = '9999';
+                mobileMenu.style.boxShadow = '-5px 0 15px rgba(0,0,0,0.1)';
+                overlay.style.display = 'block';
+            }
+        }
+
+        if(menuBtn) {
+            menuBtn.addEventListener('click', toggleMenu);
+            // Fermer si on clique dehors
+            overlay.addEventListener('click', toggleMenu);
         }
 
         // 2. CHARGEMENT DONNÉES FIREBASE
         if(typeof firebase !== 'undefined') {
             const db = firebase.firestore();
+            const auth = firebase.auth();
 
-            // A. Charger les CATÉGORIES
+            // A. État de Connexion
+            auth.onAuthStateChanged((user) => {
+                const link = document.getElementById('mobile-auth-link');
+                if (user) {
+                    link.innerHTML = '<i data-lucide="user-check"></i> Mon Compte';
+                    link.href = 'profile.html'; // Redirige vers profil
+                } else {
+                    link.innerHTML = '<i data-lucide="log-in"></i> Connexion';
+                    link.href = 'login.html';
+                }
+                lucide.createIcons();
+            });
+
+            // B. Charger les CATÉGORIES
             db.collection('categories').get().then(snap => {
                 const box = document.getElementById('category-carousel');
                 if(!snap.empty) {
@@ -261,7 +245,7 @@
                 } else { box.innerHTML = "<p>Aucune catégorie.</p>"; }
             });
 
-            // B. Charger les NOUVEAUTÉS (Produits)
+            // C. Charger les NOUVEAUTÉS (Produits)
             db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
                 const grid = document.getElementById('home-new');
                 if(!snap.empty) {
@@ -284,7 +268,7 @@
                                             <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
                                         </a>
                                     </div>
-                                    <h3 style="font-size:16px; margin:0;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
+                                    <h3 style="font-size:16px; margin:5px 0;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
                                     <div style="font-weight:bold; color:#D4AF37; margin-top:5px;">${price} FCFA</div>
                                 </div>
                             </div>`;
