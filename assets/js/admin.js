@@ -1,9 +1,9 @@
-
 // Dashboard admin (création/gestion boutiques, rôles, expiration, skip)
 window.addEventListener('DOMContentLoaded', ()=>{
   const user = JSON.parse(localStorage.getItem('ac_currentUser')||'null');
   const guard = document.getElementById('admin-guard');
   const dash = document.getElementById('admin-dashboard');
+  
   if(!user || user.role!=='superadmin'){
     if(guard) guard.classList.remove('hidden');
     if(dash) dash.classList.add('hidden');
@@ -148,7 +148,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
     categorySelect.addEventListener('change', () => {
       const selectedOption = categorySelect.options[categorySelect.selectedIndex];
       const lucideIcon = selectedOption?.dataset?.icon || 'shopping-bag';
-      const emoji = selectedOption?.dataset?.emoji || '🛍️';
       
       // Afficher icône Lucide dans le preview
       if (categoryIconPreview) {
