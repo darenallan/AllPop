@@ -44,12 +44,13 @@ function initRealDashboard() {
     listenToUsers();
     
     setupForms();
-    lucide.createIcons();
+    if(typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // --- Navigation ---
 function setupNavigation() {
-    const navLinks = document.querySelectorAll('.admin-nav-item');
+    // On sélectionne tous les liens du menu
+    const navLinks = document.querySelectorAll('.admin-nav-item, .admin-nav-link'); 
     const sections = document.querySelectorAll('.admin-section');
     const sidebar = document.getElementById('admin-sidebar');
     const mobileToggle = document.getElementById('admin-mobile-toggle');
@@ -58,16 +59,33 @@ function setupNavigation() {
 
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
+            // Si c'est le lien "Quitter", on laisse faire (ne pas empêcher la redirection)
+            if (link.getAttribute('href') === 'index.html' || link.classList.contains('logout-link')) return;
+
             e.preventDefault();
             const targetId = link.dataset.section;
-            sections.forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+            
+            if(!targetId) return; // Sécurité
+
+            // Masquer toutes les sections
+            sections.forEach(s => { 
+                s.classList.remove('active'); 
+                s.style.display = 'none'; 
+            });
+            
+            // Désactiver tous les liens
             navLinks.forEach(l => l.classList.remove('active'));
             
-            document.getElementById('section-' + targetId).style.display = 'block';
-            document.getElementById('section-' + targetId).classList.add('active');
+            // Afficher la section demandée
+            const targetSection = document.getElementById('section-' + targetId);
+            if(targetSection) {
+                targetSection.style.display = 'block';
+                targetSection.classList.add('active');
+            }
+            
             link.classList.add('active');
             
-            if(window.innerWidth < 900) sidebar.classList.remove('mobile-open');
+            if(window.innerWidth < 900 && sidebar) sidebar.classList.remove('mobile-open');
         });
     });
 }
@@ -110,33 +128,39 @@ function renderShops() {
     }
 
     container.innerHTML = currentShops.map(shop => `
-        <div class="shop-card">
-            <div class="shop-card-header">
-                <span class="shop-category-badge">
-                    <i data-lucide="store" class="cat-icon"></i> ${shop.category || 'Général'}
+        <div class="shop-card" style="padding:15px; border:1px solid #eee; margin-bottom:10px; border-radius:8px; background:white;">
+            <div class="shop-card-header" style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span class="shop-category-badge" style="background:#f0f0f0; padding:2px 8px; border-radius:10px; font-size:12px;">
+                    <i data-lucide="store" class="cat-icon" style="width:12px;"></i> ${shop.category || 'Général'}
                 </span>
-                <span class="shop-status status-active">Active</span>
+                <span class="shop-status status-active" style="color:green; font-weight:bold; font-size:12px;">Active</span>
             </div>
-            <h4 class="shop-name">${shop.name}</h4>
-            <div class="shop-meta">
-                <span><i data-lucide="mail"></i> ${shop.ownerEmail}</span>
+            <h4 class="shop-name" style="margin:0; font-size:16px;">${shop.name}</h4>
+            <div class="shop-meta" style="font-size:13px; color:#666; margin:5px 0;">
+                <span><i data-lucide="mail" style="width:12px;"></i> ${shop.ownerEmail}</span>
             </div>
-            <div class="shop-actions">
-                <button class="btn btn-sm btn-danger" onclick="deleteShop('${shop.id}')">Supprimer</button>
+            <div class="shop-actions" style="margin-top:10px;">
+                <button class="btn btn-sm btn-danger" style="background:#ffdddd; color:red; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;" onclick="deleteShop('${shop.id}')">Supprimer</button>
             </div>
         </div>
     `).join('');
-    lucide.createIcons();
+    
+    if(typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function renderUsers() {
     const div = document.getElementById('admin-users');
     if(!div) return;
     
+    if(currentUsers.length === 0) {
+        div.innerHTML = '<p>Aucun utilisateur enregistré via l\'admin.</p>';
+        return;
+    }
+
     div.innerHTML = currentUsers.map(u => `
         <div style="background:#fff; padding:16px; border-bottom:1px solid #eee; margin-bottom:5px;">
             <strong>${u.name || 'Utilisateur'}</strong> <br> 
-            <small>${u.email}</small> <span class="badge">${u.role}</span>
+            <small>${u.email}</small> <span class="badge" style="background:#eee; padding:2px 5px; border-radius:4px;">${u.role}</span>
         </div>
     `).join('');
 }
@@ -145,13 +169,13 @@ function renderStats() {
     const statsDiv = document.getElementById('admin-stats');
     if(statsDiv) {
         statsDiv.innerHTML = `
-            <div class="admin-stat-card">
-                <div class="admin-stat-label">Boutiques Actives</div>
-                <div class="admin-stat-value">${currentShops.length}</div>
+            <div class="admin-stat-card" style="background:white; padding:20px; border-radius:12px; border-left:4px solid #D4AF37; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                <div class="admin-stat-label" style="text-transform:uppercase; font-size:11px; color:#666;">Boutiques Actives</div>
+                <div class="admin-stat-value" style="font-size:24px; font-weight:bold;">${currentShops.length}</div>
             </div>
-            <div class="admin-stat-card">
-                <div class="admin-stat-label">Utilisateurs</div>
-                <div class="admin-stat-value">${currentUsers.length}</div>
+            <div class="admin-stat-card" style="background:white; padding:20px; border-radius:12px; border-left:4px solid #D4AF37; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                <div class="admin-stat-label" style="text-transform:uppercase; font-size:11px; color:#666;">Utilisateurs</div>
+                <div class="admin-stat-value" style="font-size:24px; font-weight:bold;">${currentUsers.length}</div>
             </div>
         `;
     }
@@ -203,7 +227,9 @@ function setupForms() {
             e.preventDefault();
             const name = shopForm.name.value;
             const owner = shopForm.ownerEmail.value;
-            const cat = shopForm.categoryId.value; // Assure-toi que le select a des options
+            // Sécurité si le select est vide ou mal chargé
+            const select = shopForm.querySelector('select[name="categoryId"]');
+            const cat = select ? select.value : 'Général';
 
             db.collection("shops").add({
                 name: name,
@@ -217,6 +243,16 @@ function setupForms() {
             }).catch((err) => {
                 alert("Erreur : " + err.message);
             });
+        });
+    }
+    
+    // Remplir le select catégorie (Simple)
+    const catSelect = document.getElementById('shop-category-select');
+    if(catSelect) {
+        const cats = ['Mode', 'Électronique', 'Maison', 'Beauté', 'Auto'];
+        catSelect.innerHTML = '<option value="">Choisir...</option>';
+        cats.forEach(c => {
+            catSelect.innerHTML += `<option value="${c}">${c}</option>`;
         });
     }
 }
