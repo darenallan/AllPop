@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Catalogue - Aurum</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
@@ -16,104 +16,111 @@
 </head>
 
 <body>
-  <header class="header" style="padding:20px; border-bottom:1px solid #eee;">
-      <div class="container" style="display:flex; justify-content:space-between;">
-          <a href="index.html" style="font-weight:bold; font-size:20px; text-decoration:none; color:black;">AURUM</a>
-          <nav>
-              <a href="cart.html" style="color:black;"><i data-lucide="shopping-bag"></i></a>
-          </nav>
+  <header id="app-header" class="header">
+      <div class="container" style="display:flex; justify-content:space-between; padding:15px 0;">
+          <a href="index.html" class="brand-name" style="font-size:24px; font-weight:bold; color:black;">AURUM</a>
+          <nav><a href="cart.html"><i data-lucide="shopping-bag"></i></a></nav>
       </div>
   </header>
 
-  <main class="container" style="padding:40px 0;">
-    <h1>Catalogue</h1>
-    
-    <div style="display:flex; gap:15px; margin-bottom:30px; flex-wrap:wrap;">
-        <input id="search-input" type="text" placeholder="Rechercher..." style="padding:10px; border:1px solid #ddd; border-radius:5px; flex:1;">
-        <select id="cat-filter" style="padding:10px; border:1px solid #ddd; border-radius:5px;">
+  <main class="container">
+    <section class="section">
+      <h1>Catalogue</h1>
+      
+      <div class="catalogue-toolbar" style="margin-bottom:30px; display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="catalogue-search" style="flex:1; min-width:200px; display:flex; align-items:center; border:1px solid #ddd; padding:10px; border-radius:8px;">
+          <i data-lucide="search" style="width:20px; color:#666;"></i>
+          <input id="search-input" style="border:none; outline:none; margin-left:10px; width:100%;" placeholder="Rechercher un produit...">
+        </div>
+        <select id="filter-category" class="chip-select" style="padding:10px; border:1px solid #ddd; border-radius:8px;">
             <option value="">Toutes les catégories</option>
-            </select>
-    </div>
+        </select>
+      </div>
 
-    <div id="product-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px;">
-        <p>Chargement du catalogue...</p>
-    </div>
+      <div id="catalogue-list" class="grid grid-4">
+          <p>Chargement du catalogue...</p>
+      </div>
+    </section>
   </main>
+
+  <footer class="footer"><div class="container text-center"><p>&copy; 2026 Aurum</p></div></footer>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const db = firebase.firestore();
         let allProducts = [];
 
-        // 1. Load Categories for Filter
+        // 1. Charger les catégories pour le filtre
         db.collection('categories').get().then(snap => {
-            const select = document.getElementById('cat-filter');
+            const select = document.getElementById('filter-category');
             snap.forEach(doc => {
                 select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`;
             });
         });
 
-        // 2. Load All Products
+        // 2. Charger TOUS les produits
         db.collection('products').get().then(snap => {
-            const grid = document.getElementById('product-grid');
-            grid.innerHTML = "";
+            const container = document.getElementById('catalogue-list');
+            container.innerHTML = "";
             
             if(snap.empty) {
-                grid.innerHTML = "<p>Aucun produit disponible.</p>";
+                container.innerHTML = "<p>Aucun produit disponible.</p>";
                 return;
             }
 
             snap.forEach(doc => {
-                allProducts.push({id: doc.id, ...doc.data()});
+                allProducts.push({ id: doc.id, ...doc.data() });
             });
 
             renderProducts(allProducts);
         });
 
-        // Render Function
+        // Fonction d'affichage
         function renderProducts(list) {
-            const grid = document.getElementById('product-grid');
-            grid.innerHTML = "";
+            const container = document.getElementById('catalogue-list');
+            container.innerHTML = "";
             
             list.forEach(p => {
                 const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                grid.innerHTML += `
-                    <article style="border:1px solid #eee; border-radius:10px; overflow:hidden;">
-                        <a href="product.html?id=${p.id}">
-                            <img src="${p.image || 'assets/img/placeholder.png'}" style="width:100%; height:200px; object-fit:cover;">
+                container.innerHTML += `
+                    <div class="card product-card">
+                        <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;">
+                            <div class="card-img" style="height:250px; overflow:hidden;">
+                                <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
                         </a>
-                        <div style="padding:15px;">
-                            <a href="boutique.html?id=${p.shopId}" style="font-size:11px; color:#666; text-transform:uppercase; text-decoration:none; display:block; margin-bottom:5px;">
-                                Vendu par : <b>${p.shopName}</b>
-                            </a>
-                            <h3 style="font-size:16px; margin:0 0 5px;">${p.name}</h3>
-                            <div style="font-weight:bold; color:#D4AF37;">${price} FCFA</div>
+                        <div class="info">
+                            <div style="font-size:12px; color:#666; margin-bottom:5px;">
+                                <a href="boutique.html?id=${p.shopId}" style="text-decoration:none; color:#666;">
+                                    <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
+                                </a>
+                            </div>
+                            <h3 class="product-name" style="font-size:16px; margin:0;"><a href="product.html?id=${p.id}">${p.name}</a></h3>
+                            <div class="price">${price} FCFA</div>
                         </div>
-                    </article>
+                    </div>
                 `;
             });
+            lucide.createIcons();
         }
 
-        // 3. Search & Filter Logic
-        const searchInput = document.getElementById('search-input');
-        const catSelect = document.getElementById('cat-filter');
+        // Filtres
+        const search = document.getElementById('search-input');
+        const catSelect = document.getElementById('filter-category');
 
         function filter() {
-            const term = searchInput.value.toLowerCase();
+            const term = search.value.toLowerCase();
             const cat = catSelect.value;
-
+            
             const filtered = allProducts.filter(p => {
-                const matchesSearch = p.name.toLowerCase().includes(term);
-                const matchesCat = cat === "" || p.category === cat;
-                return matchesSearch && matchesCat;
+                const matchSearch = p.name.toLowerCase().includes(term);
+                const matchCat = cat === "" || p.category === cat;
+                return matchSearch && matchCat;
             });
             renderProducts(filtered);
         }
 
-        searchInput.addEventListener('input', filter);
+        search.addEventListener('input', filter);
         catSelect.addEventListener('change', filter);
-        
-        lucide.createIcons();
     });
   </script>
 </body>
