@@ -1,273 +1,149 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Vendeur - Aurum</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aurum - L'Excellence à Votre Portée</title>
-<meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
-<!-- Google Fonts - Luxury Typography -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css" />
-<link rel="preload" href="assets/css/styles.css" as="style" />
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" href="assets/img/placeholder-product-1.svg" />
-<script defer src="assets/js/utils.js"></script>
-<script defer src="assets/js/data.js"></script>
-<script defer src="assets/js/icons.js"></script>
-<script defer src="assets/js/app.js"></script>
-<script defer src="assets/js/auth.js"></script>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/admin-patch.css"> 
 
-<script defer src="assets/js/seller.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="assets/js/auth-firebase.js"></script>
+
+    <script defer src="assets/js/seller.js"></script>
 </head>
-<body class="seller-layout">
-<header id="app-header" class="header"></header>
+<body class="admin-layout">
 
-<!-- Sidebar vendeur -->
-<aside class="seller-sidebar" id="seller-sidebar">
-  <div class="seller-sidebar-logo">Aurum Seller</div>
-  <nav class="seller-sidebar-nav">
-    <a href="#overview" class="seller-nav-link active" data-section="overview"><i data-lucide="layout-dashboard"></i> Vue d'ensemble</a>
-    <a href="#products" class="seller-nav-link" data-section="products"><i data-lucide="package"></i> Mes Produits</a>
-    <a href="#add" class="seller-nav-link" data-section="add"><i data-lucide="plus-circle"></i> Ajouter un produit</a>
-    <a href="#orders" class="seller-nav-link" data-section="orders"><i data-lucide="shopping-bag"></i> Commandes reçues</a>
-    <a href="#settings" class="seller-nav-link" data-section="settings"><i data-lucide="settings"></i> Paramètres Boutique</a>
-  </nav>
-</aside>
-
-<main class="seller-main">
-  <div id="seller-guard" class="seller-guard card">Seuls les vendeurs connectés peuvent gérer leur boutique.</div>
-  <div id="seller-dashboard" class="hidden">
-
-    <!-- Overview -->
-    <section id="section-overview" class="seller-section active">
-      <div class="seller-page-header">
-        <h1 class="seller-page-title"><i data-lucide="store"></i> Espace Vendeur</h1>
-        <p class="seller-page-subtitle">Cockpit premium pour piloter votre boutique.</p>
-      </div>
-
-      <div class="seller-shop-card" id="shop-meta"></div>
-
-      <div class="seller-kpi-grid" id="seller-stats">
-        <div class="seller-kpi"><p class="kpi-label">Vues</p><p class="kpi-value" id="kpi-views">0</p></div>
-        <div class="seller-kpi"><p class="kpi-label">Ventes</p><p class="kpi-value" id="kpi-sales">0</p></div>
-        <div class="seller-kpi"><p class="kpi-label">Chiffre d'Affaires</p><p class="kpi-value" id="kpi-revenue">0 FCFA</p></div>
-      </div>
-
-      <div class="seller-card" id="seller-notifications"></div>
-    </section>
-
-    <!-- Mes Produits -->
-    <section id="section-products" class="seller-section hidden">
-      <div class="seller-page-header">
-        <h2 class="seller-page-title"><i data-lucide="package"></i> Mes Produits</h2>
-        <p class="seller-page-subtitle">Gérez vos fiches produits avec des actions rapides.</p>
-      </div>
-      <div class="seller-card">
-        <table class="seller-table" id="seller-products"></table>
-      </div>
-    </section>
-
-    <!-- Ajouter un produit -->
-    <section id="section-add" class="seller-section hidden">
-      <div class="seller-page-header">
-        <h2 class="seller-page-title"><i data-lucide="plus-circle"></i> Ajouter un produit</h2>
-        <p class="seller-page-subtitle">Formulaire compact en grille 2 colonnes.</p>
-      </div>
-      <div class="seller-card">
-        <form id="product-form" class="seller-form">
-          <div class="seller-form-grid">
-            <div class="form-group">
-              <label class="form-label">Nom du produit</label>
-              <input class="input" name="name" placeholder="Nom du produit" required />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Prix (FCFA)</label>
-              <input class="input" name="price" type="number" step="100" placeholder="Prix" required />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Stock total</label>
-              <input class="input" name="stock" type="number" placeholder="Stock" required />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Couleur principale</label>
-              <input class="input" name="color" placeholder="Couleur" />
-            </div>
-          </div>
-
-          <div id="fashion-type-row" class="seller-form-grid hidden">
-            <div class="form-group">
-              <label class="form-label">Type d'article</label>
-              <select id="fashion-item-type" class="input">
-                <option value="">-- Choisir --</option>
-                <option value="clothing">Vêtements</option>
-                <option value="shoes">Chaussures</option>
-              </select>
-            </div>
-            <div class="form-group hidden" id="size-system-group">
-              <label class="form-label">Système de pointure</label>
-              <select id="size-system" class="input">
-                <option value="EU">EU</option>
-                <option value="US Homme">US Homme</option>
-                <option value="US Femme">US Femme</option>
-                <option value="UK">UK</option>
-                <option value="Enfants">Enfants</option>
-              </select>
-            </div>
-          </div>
-
-          <div id="sizes-dynamic" class="sizes-container hidden">
-            <label class="form-label">Tailles disponibles :</label>
-            <div id="sizes-dynamic-grid" class="sizes-grid"></div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Description</label>
-            <textarea class="input" name="features" placeholder="Caractéristiques et description du produit"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Images produit</label>
-            <div class="upload-dropzone" id="upload-dropzone">
-              <i data-lucide="cloud-upload"></i>
-              <p>Glissez-déposez vos images ici ou cliquez pour choisir</p>
-              <small class="text-muted">PNG, JPG, WEBP · plusieurs images possibles</small>
-            </div>
-            <input class="input" id="product-images" name="images" type="file" multiple accept="image/*" style="display:none" />
-          </div>
-
-          <button class="btn btn-gold btn-xl" type="submit">Publier le produit</button>
-        </form>
-      </div>
-
-      <div class="seller-card">
-        <h3 class="seller-card-title">Upload en masse (CSV + ZIP d'images)</h3>
-        <div class="seller-form-grid">
-          <div class="form-group">
-            <label class="form-label">Fichier CSV</label>
-            <input id="csv-input" type="file" accept=".csv" class="input" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Fichier ZIP d'images</label>
-            <input id="zip-input" type="file" accept=".zip" class="input" />
-          </div>
+    <aside class="admin-sidebar" id="seller-sidebar">
+        <div class="admin-sidebar-header">
+            <h1 class="admin-sidebar-title">Aurum Seller</h1>
         </div>
-        <button class="btn btn-dark mt-2" id="bulk-upload-btn">Traiter le CSV (images liées via backend)</button>
-        <p class="text-muted">Le traitement du ZIP d'images nécessite le backend (voir documentation).</p>
-      </div>
-    </section>
-
-    <!-- Commandes -->
-    <section id="section-orders" class="seller-section hidden">
-      <div class="seller-page-header">
-        <h2 class="seller-page-title"><i data-lucide="shopping-bag"></i> Commandes reçues</h2>
-        <p class="seller-page-subtitle">Suivi des commandes clients (placeholder).</p>
-      </div>
-      <div class="seller-card">
-        <p class="text-muted">Intégrer ici la liste des commandes (données backend).</p>
-      </div>
-    </section>
-
-    <!-- Paramètres -->
-    <section id="section-settings" class="seller-section hidden">
-      <div class="seller-page-header">
-        <h2 class="seller-page-title"><i data-lucide="settings"></i> Paramètres Boutique</h2>
-        <p class="seller-page-subtitle">Gérez l'apparence et les coordonnées de votre vitrine.</p>
-      </div>
-
-      <!-- Identité visuelle -->
-      <div class="seller-card">
-        <section class="shop-visual-identity">
-          <div class="shop-cover" id="brand-cover">
-            <button type="button" class="cover-btn" id="change-cover-btn"><i data-lucide="image"></i> Changer couverture</button>
-          </div>
-
-          <div class="shop-logo-wrap" id="brand-logo-wrap">
-            <img id="brand-logo" alt="Logo boutique" />
-            <div class="shop-logo-overlay"><i data-lucide="camera"></i></div>
-          </div>
-
-          <input type="file" id="cover-input" accept="image/*" hidden />
-          <input type="file" id="logo-input" accept="image/*" hidden />
-        </section>
-      </div>
-
-      <!-- Formulaire infos boutique -->
-      <div class="seller-card">
-        <form id="shop-settings-form" class="seller-form shop-settings-form">
-          <div class="seller-form-grid">
-            <div class="form-group">
-              <label class="form-label">Nom de la boutique</label>
-              <input class="input" id="shop-name-input" name="name" placeholder="Nom de la boutique" required />
+        <nav>
+            <div class="admin-nav-item active" onclick="nav('dashboard', this)">
+                <i data-lucide="layout-grid"></i> Vue d'ensemble
             </div>
-            <div class="form-group">
-              <label class="form-label">Numéro de téléphone</label>
-              <div class="input-with-icon">
-                <i data-lucide="phone"></i>
-                <input class="input" id="shop-phone-input" name="phone" placeholder="Ex: +226 60 00 00 00" />
-              </div>
+            <div class="admin-nav-item" onclick="nav('products', this)">
+                <i data-lucide="package"></i> Mes Produits
             </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Description / Slogan</label>
-            <textarea class="input" id="shop-desc-input" name="description" rows="3" placeholder="Présentez votre univers en quelques mots (optionnel mais recommandé)"></textarea>
-          </div>
+            <div class="admin-nav-item" onclick="nav('add-product', this)">
+                <i data-lucide="plus-circle"></i> Ajouter un produit
+            </div>
+            <div class="admin-nav-item" onclick="nav('orders', this)">
+                <i data-lucide="shopping-bag"></i> Commandes
+            </div>
+            <div class="admin-nav-item" onclick="nav('settings', this)">
+                <i data-lucide="settings"></i> Paramètres Boutique
+            </div>
+            <a href="index.html" class="admin-nav-item" style="margin-top: 40px; color: #ff6b6b; border-top: 1px solid rgba(255,255,255,0.1);">
+                <i data-lucide="log-out"></i> Retour au site
+            </a>
+        </nav>
+    </aside>
 
-          <div class="seller-actions-bar">
-            <button class="btn btn-gold btn-xl" type="submit">Enregistrer les modifications</button>
-          </div>
-        </form>
-      </div>
-    </section>
+    <button class="admin-mobile-toggle" onclick="document.getElementById('seller-sidebar').classList.toggle('mobile-open')">
+        <i data-lucide="menu"></i>
+    </button>
 
-  </div>
-</main>
+    <main class="admin-main">
+        
+        <div id="loader" style="text-align: center; margin-top: 20%;">
+            <i data-lucide="loader" class="spin"></i> Chargement de votre boutique...
+        </div>
 
-<footer id="app-footer" class="footer"></footer>
-<div class="toast-container" id="toast-container"></div>
+        <div id="no-shop-warning" class="hidden" style="text-align: center; margin-top: 100px;">
+            <div class="admin-card" style="max-width: 500px; margin: 0 auto; border-left: 4px solid red;">
+                <h3>⚠️ Aucune boutique trouvée</h3>
+                <p>Aucune boutique n'est associée à cet email (<span id="user-email-display"></span>).</p>
+                <p>Contactez l'administrateur pour créer votre espace vendeur.</p>
+            </div>
+        </div>
 
-<script>
-  // Navigation entre sections seller
-  document.addEventListener('DOMContentLoaded', () => {
-    const links = document.querySelectorAll('.seller-nav-link');
-    const sections = document.querySelectorAll('.seller-section');
-    links.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = link.dataset.section;
-        links.forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
-        sections.forEach(sec => {
-          if (sec.id === `section-${target}`) {
-            sec.classList.remove('hidden');
-            sec.classList.add('active');
-          } else {
-            sec.classList.add('hidden');
-            sec.classList.remove('active');
-          }
-        });
-      });
-    });
+        <div id="seller-content" class="hidden">
+            
+            <section id="sec-dashboard" class="admin-section active">
+                <div class="admin-page-header">
+                    <h1 class="admin-page-title">Ma Boutique : <span id="shop-name-title">...</span></h1>
+                </div>
+                <div class="admin-stats-grid">
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-label">Produits en ligne</div>
+                        <div class="admin-stat-value" id="stat-products">0</div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-label">Ventes (FCFA)</div>
+                        <div class="admin-stat-value">0</div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-label">Commandes</div>
+                        <div class="admin-stat-value">0</div>
+                    </div>
+                </div>
+            </section>
 
-    // Dropzone -> input file
-    const dz = document.getElementById('upload-dropzone');
-    const fileInput = document.getElementById('product-images');
-    if (dz && fileInput) {
-      ['click'].forEach(ev => dz.addEventListener(ev, () => fileInput.click()));
-      ['dragover','dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragging'); }));
-      ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dragging'); }));
-      dz.addEventListener('drop', e => {
-        if (e.dataTransfer?.files) {
-          fileInput.files = e.dataTransfer.files;
-        }
-      });
-    }
-  });
-</script>
+            <section id="sec-products" class="admin-section hidden">
+                <div class="admin-page-header"><h1 class="admin-page-title">Mes Produits</h1></div>
+                <div class="admin-card">
+                    <div id="products-list">Chargement...</div>
+                </div>
+            </section>
+
+            <section id="sec-add-product" class="admin-section hidden">
+                <div class="admin-page-header"><h1 class="admin-page-title">Ajouter un produit</h1></div>
+                <div class="admin-card">
+                    <form id="form-add-product">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nom du produit</label>
+                                <input class="input" id="prod-name" required placeholder="Ex: Montre Or 24k">
+                            </div>
+                            <div class="form-group">
+                                <label>Prix (FCFA)</label>
+                                <input class="input" id="prod-price" type="number" required placeholder="50000">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="input" id="prod-desc" rows="4" placeholder="Détails du produit..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL (Temporaire)</label>
+                            <input class="input" id="prod-img" placeholder="https://...">
+                        </div>
+                        <button class="btn-gold">Mettre en ligne</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="sec-orders" class="admin-section hidden">
+                <div class="admin-page-header"><h1 class="admin-page-title">Commandes Reçues</h1></div>
+                <div class="admin-card">
+                    <p class="text-muted">Aucune commande pour le moment.</p>
+                </div>
+            </section>
+
+            <section id="sec-settings" class="admin-section hidden">
+                <div class="admin-page-header"><h1 class="admin-page-title">Paramètres Boutique</h1></div>
+                <div class="admin-card">
+                    <form id="form-settings">
+                        <label>Nom de la boutique</label>
+                        <input class="input" id="set-shop-name">
+                        <label>Description</label>
+                        <input class="input" id="set-shop-desc">
+                        <button class="btn-gold" style="margin-top:10px;">Enregistrer les modifications</button>
+                    </form>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast-container"></div>
+
 </body>
 </html>
