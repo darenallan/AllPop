@@ -12,7 +12,7 @@ const firebaseConfig = {
     measurementId: "G-SY7DY6WV97"
 };
 
-// 1. Initialisation (Une seule fois)
+// 1. Initialisation (Une seule fois, sécurité anti-doublon)
 if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
     console.log("🔥 Firebase connecté !");
@@ -29,11 +29,11 @@ const Auth = {
             .then((cred) => {
                 return cred.user.updateProfile({ displayName: name })
                     .then(() => {
-                        // Créer l'entrée dans la base de données aussi
+                        // Créer l'entrée dans la base de données
                         return db.collection('users').doc(cred.user.uid).set({
                             name: name,
                             email: email,
-                            role: 'client', // Par défaut
+                            role: 'client',
                             createdAt: new Date()
                         });
                     })
