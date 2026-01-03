@@ -4,34 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - Aurum</title>
+    
     <link rel="stylesheet" href="assets/css/styles.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
-    <div class="container" style="max-width: 400px; margin: 50px auto; padding: 20px;">
-        <h2>Connexion</h2>
+    <header id="app-header" class="header"></header>
 
-        <form id="form-login">
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="login-email" class="input" required>
+    <main class="container">
+        <section class="section">
+            <div style="max-width: 400px; margin: 0 auto;">
+                <h1>Connexion</h1>
+
+                <form id="form-login" class="grid grid-1" style="gap: 20px;">
+                    <div class="form-group">
+                        <label style="font-weight: bold;">Email</label>
+                        <input type="email" id="login-email" class="input" required placeholder="votre@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label style="font-weight: bold;">Mot de passe</label>
+                        <input type="password" id="login-pass" class="input" required placeholder="••••••••">
+                    </div>
+
+                    <button type="submit" id="btn-submit" class="btn btn-gold" style="width: 100%; padding: 15px;">
+                        Se connecter
+                    </button>
+                </form>
+
+                <p style="margin-top: 20px; text-align: center;">
+                    Pas encore de compte ? <a href="register.html" style="color: var(--gold); font-weight: bold;">Créer un compte</a>
+                </p>
             </div>
+        </section>
+    </main>
 
-            <div class="form-group">
-                <label>Mot de passe</label>
-                <input type="password" id="login-pass" class="input" required>
-            </div>
+    <footer id="app-footer" class="footer"></footer>
 
-            <button type="submit" class="btn btn-gold" style="margin-top: 20px; width: 100%;">Se connecter</button>
-        </form>
-
-        <p style="margin-top: 15px;">Pas encore de compte ? <a href="register.html">Créer un compte</a></p>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/icons.js"></script>
+    <script src="assets/js/app.js"></script> <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-    <script src="assets/js/auth-firebase.js?v=10"></script>
+    <script>
+        // --- CONFIGURATION FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
+            authDomain: "aurum-bf.firebaseapp.com",
+            projectId: "aurum-bf",
+            storageBucket: "aurum-bf.firebasestorage.app",
+            messagingSenderId: "858318726586",
+            appId: "1:858318726586:web:14687fff6d4d08527a6983",
+            measurementId: "G-SY7DY6WV97"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // --- LOGIQUE DE CONNEXION ---
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("🚀 Page chargée, script prêt.");
+
+            const form = document.getElementById('form-login');
+            const btn = document.getElementById('btn-submit');
+
+            if(form) {
+                form.addEventListener('submit', function(e) {
+                    // STOPPE LE RECHARGEMENT DE LA PAGE
+                    e.preventDefault();
+                    console.log("🛑 Rechargement bloqué. Début connexion...");
+
+                    // Feedback visuel
+                    const originalText = btn.innerText;
+                    btn.innerText = "Connexion en cours...";
+                    btn.disabled = true;
+
+                    const email = document.getElementById('login-email').value;
+                    const pass = document.getElementById('login-pass').value;
+
+                    // Appel Firebase
+                    auth.signInWithEmailAndPassword(email, pass)
+                        .then((userCredential) => {
+                            // SUCCÈS
+                            console.log("✅ Connecté :", userCredential.user.email);
+                            alert("Bienvenue !");
+                            
+                            // Redirection intelligente
+                            if (email === "admin@aurum.com") {
+                                window.location.href = "admin.html";
+                            } else {
+                                window.location.href = "index.html";
+                            }
+                        })
+                        .catch((error) => {
+                            // ERREUR
+                            console.error("❌ Erreur :", error);
+                            let msg = "Erreur de connexion.";
+                            if (error.code === 'auth/user-not-found') msg = "Compte introuvable.";
+                            if (error.code === 'auth/wrong-password') msg = "Mot de passe incorrect.";
+                            
+                            alert("⚠️ " + msg);
+                            
+                            // On remet le bouton
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        });
+                });
+            } else {
+                console.error("❌ Formulaire introuvable !");
+            }
+        });
+    </script>
 
 </body>
 </html>
