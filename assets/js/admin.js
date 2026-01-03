@@ -1,69 +1,60 @@
 /* =========================================================
-   DASHBOARD ADMIN - NAVIGATION & DONNÉES RESTAURÉES
+   DASHBOARD ADMIN - AFFICHAGE FORCÉ & DONNÉES FICTIVES
    ========================================================= */
 
-// 1. DATA STORE (Mémoire locale pour l'affichage immédiat)
+// 1. STORE (Données mémoire)
 const Store = {
     users: JSON.parse(localStorage.getItem('ac_users') || '[]'),
     shops: JSON.parse(localStorage.getItem('ac_shops') || '[]'),
     promos: JSON.parse(localStorage.getItem('ac_promos') || '[]'),
-    // Catégories par défaut
-    categories: [
-        { id: 'mode', name: 'Mode & Vêtements', icon: 'shirt' },
-        { id: 'beaute', name: 'Beauté & Hygiène', icon: 'sparkles' },
-        { id: 'electronique', name: 'Électronique', icon: 'smartphone' },
-        { id: 'maison', name: 'Maison & Déco', icon: 'home' },
-        { id: 'auto', name: 'Auto & Moto', icon: 'car' }
-    ]
 };
 
-// 2. DONNÉES FICTIVES (Pour que le dashboard ne soit pas vide au démarrage)
+// 2. DONNÉES PAR DÉFAUT (Pour que ça ne soit pas vide)
 function initMockData() {
     if (Store.shops.length === 0) {
         Store.shops = [
-            { id: 's1', name: 'Luxe Motors', category: 'Auto & Moto', owner: 'vente.lll@gmail.com', status: 'active' },
-            { id: 's2', name: 'Boutique Faso', category: 'Mode & Vêtements', owner: 'client.add@gmail.com', status: 'active' }
+            { id: '1', name: 'Luxe Motors', category: 'Auto', owner: 'vente.lll@gmail.com', status: 'active' },
+            { id: '2', name: 'Mode Faso', category: 'Mode', owner: 'client.add@gmail.com', status: 'active' }
         ];
     }
     if (Store.users.length === 0) {
         Store.users = [
-            { name: "Super Admin", email: "aurumcorporate.d@gmail.com", role: "superadmin" },
-            { name: "Vendeur Test", email: "vendeur@test.com", role: "seller" }
+            { name: "Admin", email: "admin@aurum.com", role: "superadmin" },
+            { name: "Vendeur 1", email: "vendeur@test.com", role: "seller" }
         ];
     }
-    // On ne sauvegarde pas dans le localStorage pour ne pas écraser les futures vraies données, 
-    // on les garde juste en mémoire vive pour l'affichage de cette session.
 }
 
-// 3. INITIALISATION
+// 3. LANCEMENT IMMÉDIAT (Sans attendre Firebase)
 document.addEventListener('DOMContentLoaded', () => {
-    // ON LANCE TOUT DE SUITE L'INTERFACE (Pas d'attente Firebase pour l'UI)
-    initMockData();
-    initDashboardFeatures();
+    console.log("🚀 Admin Dashboard : Démarrage forcé");
     
-    // On connecte Firebase en arrière-plan pour les vraies actions futures
-    if(typeof firebase !== 'undefined') {
-        firebase.auth().onAuthStateChanged((user) => {
-            if(user) console.log("Admin connecté:", user.email);
-        });
-    }
-});
-
-// 4. FONCTIONNALITÉS
-function initDashboardFeatures() {
+    // Initialise les données
+    initMockData();
+    
+    // Configure la navigation
     setupNavigation();
-    renderStats();
+    
+    // Affiche le contenu
     renderShops();
     renderUsers();
     renderPromos();
-    renderCategories();
     
+    // Cache le loader si présent
+    const guard = document.getElementById('admin-guard');
+    if(guard) guard.style.display = 'none';
+    
+    // Affiche le dashboard
+    const dash = document.getElementById('admin-dashboard');
+    if(dash) dash.style.display = 'block';
+    
+    // Icônes
     if(typeof lucide !== 'undefined') lucide.createIcons();
-}
+});
 
-// --- Navigation (C'est ça qui répare les boutons !) ---
+// --- NAVIGATION (Réparée) ---
 function setupNavigation() {
-    const navLinks = document.querySelectorAll('.admin-nav-item[data-section]');
+    const navLinks = document.querySelectorAll('.admin-nav-item');
     const sections = document.querySelectorAll('.admin-section');
     const sidebar = document.getElementById('admin-sidebar');
     const mobileToggle = document.getElementById('admin-mobile-toggle');
@@ -80,106 +71,112 @@ function setupNavigation() {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const targetId = link.dataset.section;
+            if(!targetId) return;
 
-            // 1. Retirer la classe active de tous les liens
+            // Gestion active liens
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
 
-            // 2. Cacher toutes les sections
+            // Gestion affichage sections
             sections.forEach(sec => {
                 sec.classList.remove('active');
                 sec.style.display = 'none'; // Force hide
             });
 
-            // 3. Afficher la section demandée
             const targetSection = document.getElementById('section-' + targetId);
             if(targetSection) {
                 targetSection.style.display = 'block'; // Force show
                 targetSection.classList.add('active');
             }
             
-            // Fermer le menu sur mobile
-            if(window.innerWidth < 900 && sidebar) sidebar.classList.remove('mobile-open');
+            // Fermer menu sur mobile
+            if(window.innerWidth < 968 && sidebar) {
+                sidebar.classList.remove('mobile-open');
+            }
         });
     });
 }
 
-// --- Affichage des Boutiques ---
+// --- AFFICHAGE ---
 function renderShops() {
     const container = document.getElementById('admin-shops');
     if(!container) return;
-
+    
     if(Store.shops.length === 0) {
-        container.innerHTML = '<p class="text-muted">Aucune boutique.</p>';
+        container.innerHTML = '<p>Aucune boutique.</p>';
         return;
     }
 
     container.innerHTML = Store.shops.map(shop => `
-        <div class="admin-card" style="margin-bottom:10px; padding:15px; border-left: 4px solid var(--gold);">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h4 style="margin:0;">${shop.name}</h4>
-                <span class="status-badge status-badge--active">Active</span>
+        <div style="padding:15px; border:1px solid #eee; margin-bottom:10px; border-radius:8px; background:#fff; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <strong>${shop.name}</strong> <br>
+                <small>${shop.category} - ${shop.owner}</small>
             </div>
-            <div style="font-size:13px; color:#666; margin-top:5px;">
-                ${shop.category} — ${shop.owner}
-            </div>
-            <div style="margin-top:10px;">
-                <button class="btn btn-sm btn-danger">Supprimer</button>
-            </div>
+            <button class="btn btn-sm" style="background:#ffdddd; color:red; border:none; padding:5px 10px; cursor:pointer;" onclick="deleteItem('shops', '${shop.id}')">X</button>
         </div>
     `).join('');
 }
 
-// --- Affichage des Utilisateurs ---
 function renderUsers() {
-    const div = document.getElementById('admin-users');
-    if(!div) return;
+    const container = document.getElementById('admin-users');
+    if(!container) return;
     
-    div.innerHTML = Store.users.map(u => `
-        <div class="admin-card" style="margin-bottom:10px; padding:15px;">
-            <strong>${u.name}</strong><br>
-            <span class="text-muted">${u.email}</span>
-            <span class="status-badge" style="float:right;">${u.role}</span>
+    container.innerHTML = Store.users.map(u => `
+        <div style="padding:10px; border-bottom:1px solid #eee;">
+            <strong>${u.name}</strong> (${u.role}) <br> ${u.email}
         </div>
     `).join('');
 }
 
-// --- Affichage des Catégories ---
-function renderCategories() {
-    const div = document.getElementById('categories-management');
-    if(!div) return;
-    
-    div.innerHTML = Store.categories.map(cat => `
-        <div class="category-manage-card">
-            <div class="category-manage-header">
-                <i data-lucide="${cat.icon}" class="category-manage-icon"></i>
-                <h4>${cat.name}</h4>
-            </div>
-            <button class="btn btn-sm btn-warning" style="width:100%; margin-top:10px;">Désactiver</button>
-        </div>
-    `).join('');
-}
-
-// --- Affichage des Promos ---
 function renderPromos() {
-    const div = document.getElementById('admin-promos');
-    if(!div) return;
-    div.innerHTML = `
-        <div class="promo-card">
-            <div class="promo-info">
-                <div class="promo-code">AURUM10</div>
-                <div class="promo-details">
-                    <span class="promo-percent">-10%</span>
-                    <span class="promo-status">Actif</span>
-                </div>
-            </div>
-            <button class="btn btn-danger btn-sm">Supprimer</button>
-        </div>
-    `;
+    const container = document.getElementById('admin-promos');
+    if(!container) return;
+    container.innerHTML = '<p class="text-muted">Aucune promo active (Test).</p>';
 }
 
-// --- Stats (Mise à jour avec Store) ---
-function renderStats() {
-    // Les stats sont déjà en dur dans le HTML pour l'instant, 
-    // mais on pourrait les mettre à jour dynamiquement ici.
+// --- ACTIONS FORMULAIRES ---
+// Créer Vendeur (Simulé + Firebase)
+const sellerForm = document.getElementById('create-seller-form');
+if(sellerForm) {
+    sellerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = sellerForm.name.value;
+        const email = sellerForm.email.value;
+        
+        // Ajout local pour affichage immédiat
+        Store.users.push({ name, email, role: 'seller' });
+        localStorage.setItem('ac_users', JSON.stringify(Store.users));
+        
+        alert("Vendeur créé (Simulation) !");
+        renderUsers();
+        sellerForm.reset();
+    });
 }
+
+// Créer Boutique
+const shopForm = document.getElementById('shop-form');
+if(shopForm) {
+    shopForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = shopForm.name.value;
+        const owner = shopForm.ownerEmail.value;
+        const cat = document.getElementById('shop-category-select').value;
+        
+        Store.shops.push({ id: Date.now().toString(), name, owner, category: cat, status: 'active' });
+        localStorage.setItem('ac_shops', JSON.stringify(Store.shops));
+        
+        alert("Boutique créée !");
+        renderShops();
+        shopForm.reset();
+    });
+}
+
+// Delete
+window.deleteItem = function(type, id) {
+    if(confirm("Supprimer ?")) {
+        Store[type] = Store[type].filter(item => item.id !== id);
+        localStorage.setItem('ac_' + type, JSON.stringify(Store[type]));
+        if(type === 'shops') renderShops();
+    }
+};
