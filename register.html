@@ -32,43 +32,16 @@
                 <input type="password" id="reg-pass-confirm" class="input" required placeholder="Répétez le mot de passe">
             </div>
 
-            <button type="submit" class="btn btn-primary" style="margin-top: 20px; width: 100%;">S'inscrire</button>
+            <button type="submit" class="btn btn-gold" style="margin-top: 20px; width: 100%;">S'inscrire</button>
         </form>
         
         <p style="margin-top: 15px;">Déjà un compte ? <a href="login.html">Se connecter</a></p>
     </div>
 
-    <script src="assets/js/auth.js?v=5"></script> <script>
-        // LOGIQUE DE LA PAGE INSCRIPTION
-        document.getElementById('form-register').addEventListener('submit', function(e) {
-            e.preventDefault(); // On bloque le rechargement
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-            // 1. Récupérer les valeurs
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const pass1 = document.getElementById('reg-pass').value;
-            const pass2 = document.getElementById('reg-pass-confirm').value;
+    <script src="assets/js/auth-firebase.js?v=10"></script>
 
-            // 2. Vérifier que les mots de passe sont identiques
-            if (pass1 !== pass2) {
-                alert("❌ Erreur : Les mots de passe ne correspondent pas !");
-                return;
-            }
-
-            // 3. Tenter l'inscription
-            const result = Auth.register(email, pass1, name);
-
-            if (result.success) {
-                alert("✅ " + result.message);
-                window.location.href = "login.html"; // Redirection vers login
-            } else {
-                alert("⚠️ " + result.message);
-            }
-        });
-    </script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-
-<script src="assets/js/auth-firebase.js"></script>
 </body>
 </html>
