@@ -1,107 +1,153 @@
 /* =========================================================
-   DASHBOARD ADMIN - NAVIGATION DIRECTE
+   AURUM ADMIN - CONNEXION RÉELLE FIREBASE (FIRESTORE)
    ========================================================= */
 
-// 1. STORE (Données mémoire)
+// Initialisation de la base de données
+const db = firebase.firestore();
+
+// STORE GLOBAL (Tes données vivantes)
 const Store = {
-    users: JSON.parse(localStorage.getItem('ac_users') || '[]'),
-    shops: JSON.parse(localStorage.getItem('ac_shops') || '[]'),
-    promos: JSON.parse(localStorage.getItem('ac_promos') || '[]'),
+    users: [],
+    shops: [],
+    promos: [],
+    categories: [
+        { id: 'mode', name: 'Mode', icon: 'shirt' },
+        { id: 'auto', name: 'Auto', icon: 'car' },
+        { id: 'maison', name: 'Maison', icon: 'home' },
+        { id: 'tech', name: 'Tech', icon: 'smartphone' }
+    ]
 };
 
-// 2. DONNÉES PAR DÉFAUT (Pour éviter le vide)
-function initMockData() {
-    if (Store.shops.length === 0) {
-        Store.shops = [
-            { id: '1', name: 'Luxe Motors', category: 'Auto', owner: 'vente.lll@gmail.com', status: 'active' },
-            { id: '2', name: 'Mode Faso', category: 'Mode', owner: 'client.add@gmail.com', status: 'active' }
-        ];
-    }
-    if (Store.users.length === 0) {
-        Store.users = [
-            { name: "Admin", email: "admin@aurum.com", role: "superadmin" },
-            { name: "Vendeur 1", email: "vendeur@test.com", role: "seller" }
-        ];
-    }
-}
-
-// 3. LANCEMENT
+// --- 1. DÉMARRAGE SÉCURISÉ ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Admin chargé");
-    initMockData();
-    setupNavigation();
-    renderShops();
-    renderUsers();
-    renderPromos();
     
-    if(typeof lucide !== 'undefined') lucide.createIcons();
+    // On surveille la connexion de l'admin
+    firebase.auth().onAuthStateChanged((user) => {
+        const guard = document.getElementById('admin-guard');
+        const dash = document.getElementById('admin-dashboard');
+
+        // Liste des admins autorisés
+        const admins = ["aurumcorporate.d@gmail.com", "admin@aurum.com"];
+
+        if (user && admins.includes(user.email)) {
+            // Admin reconnu -> On ouvre l'accès
+            if(guard) guard.style.display = 'none';
+            if(dash) {
+                dash.classList.remove('hidden');
+                dash.style.display = 'block';
+            }
+            
+            console.log("✅ Admin connecté :", user.email);
+            
+            // ON LANCE LA RÉCUPÉRATION DES DONNÉES RÉELLES
+            startRealTimeData();
+            
+            // On active la navigation
+            setupNavigation();
+            setupForms();
+            
+        } else {
+            // Pas connecté ? -> Login
+            window.location.href = "login.html";
+        }
+    });
 });
 
-// --- NAVIGATION (Le point critique) ---
+// --- 2. RÉCUPÉRATION DONNÉES TEMPS RÉEL (Firestore) ---
+function startRealTimeData() {
+    
+    // Écoute les BOUTIQUES
+    db.collection('shops').onSnapshot(snapshot => {
+        Store.shops = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderShops();
+        renderStats(); // Met à jour les stats
+    });
+
+    // Écoute les UTILISATEURS
+    db.collection('users').onSnapshot(snapshot => {
+        Store.users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderUsers();
+        renderStats();
+    });
+
+    // Écoute les PROMOS
+    db.collection('promos').onSnapshot(snapshot => {
+        Store.promos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderPromos();
+    });
+    
+    // Initialiser les catégories (Statiques pour l'instant)
+    renderCategoriesManagement();
+    populateCategorySelect();
+    
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// --- 3. NAVIGATION (Ton code, réparé) ---
 function setupNavigation() {
-    const navLinks = document.querySelectorAll('.admin-nav-item');
+    const navLinks = document.querySelectorAll('.admin-nav-link[data-section]');
     const sections = document.querySelectorAll('.admin-section');
     const sidebar = document.getElementById('admin-sidebar');
     const mobileToggle = document.getElementById('admin-mobile-toggle');
 
-    // Menu Mobile
-    if(mobileToggle) {
-        mobileToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('mobile-open');
-        });
-    }
+    if(mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
 
-    // Clic sur les onglets
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
-            // Ignorer si c'est le lien Quitter
-            if(link.getAttribute('href').includes('index.html')) return;
-
             e.preventDefault();
             const targetId = link.dataset.section;
-            if(!targetId) return;
 
-            console.log("Clic sur :", targetId);
-
-            // 1. Reset
+            // Gestion Active
             navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+
+            // Affichage Section
             sections.forEach(sec => {
                 sec.classList.remove('active');
-                sec.style.display = 'none'; // Force hide
+                sec.style.display = 'none'; // Force masquage
             });
 
-            // 2. Activate
-            link.classList.add('active');
-            const targetSection = document.getElementById('section-' + targetId);
-            if(targetSection) {
-                targetSection.style.display = 'block'; // Force show
-                setTimeout(() => targetSection.classList.add('active'), 10);
-            } else {
-                console.error("Section introuvable : section-" + targetId);
+            const target = document.getElementById('section-' + targetId);
+            if(target) {
+                target.style.display = 'block'; // Force affichage
+                setTimeout(() => target.classList.add('active'), 10);
             }
             
-            // Mobile close
-            if(window.innerWidth < 968 && sidebar) {
-                sidebar.classList.remove('mobile-open');
-            }
+            // Fermer menu mobile
+            if(window.innerWidth < 900 && sidebar) sidebar.classList.remove('mobile-open');
         });
     });
 }
 
-// --- AFFICHAGE ---
+// --- 4. RENDU DES DONNÉES (Affichage) ---
+
 function renderShops() {
     const container = document.getElementById('admin-shops');
     if(!container) return;
-    
+
+    if (Store.shops.length === 0) {
+        container.innerHTML = '<div class="empty-state-card"><p>Aucune boutique en ligne.</p></div>';
+        return;
+    }
+
     container.innerHTML = Store.shops.map(shop => `
-        <div style="padding:15px; border:1px solid #eee; margin-bottom:10px; border-radius:8px; background:#fff; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <strong>${shop.name}</strong> <br>
-                <small>${shop.category} - ${shop.owner}</small>
+        <div class="shop-card" style="position: relative;">
+            <div class="shop-card-header">
+                <span class="shop-category-badge">
+                    <i data-lucide="store"></i> ${shop.category}
+                </span>
+                <span class="shop-status ${shop.status === 'active' ? 'status-active' : 'status-blocked'}">${shop.status}</span>
             </div>
-            <button class="btn btn-sm" style="background:#ffdddd; color:red; border:none; padding:5px 10px; cursor:pointer;" onclick="deleteItem('shops', '${shop.id}')">X</button>
+            <h4 class="shop-name">${shop.name}</h4>
+            <div class="shop-meta">
+                <span><i data-lucide="mail"></i> ${shop.ownerEmail}</span>
+            </div>
+            <div class="shop-actions">
+                <button class="btn btn-sm btn-danger" onclick="deleteShop('${shop.id}')">Supprimer</button>
+            </div>
         </div>
     `).join('');
+    lucide.createIcons();
 }
 
 function renderUsers() {
@@ -109,8 +155,12 @@ function renderUsers() {
     if(!container) return;
     
     container.innerHTML = Store.users.map(u => `
-        <div style="padding:10px; border-bottom:1px solid #eee;">
-            <strong>${u.name}</strong> (${u.role}) <br> ${u.email}
+        <div class="admin-card" style="padding: 15px; margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <strong>${u.name || 'Utilisateur'}</strong><br>
+                <span class="text-muted">${u.email}</span>
+            </div>
+            <span class="badge" style="background:#eee;">${u.role}</span>
         </div>
     `).join('');
 }
@@ -118,35 +168,127 @@ function renderUsers() {
 function renderPromos() {
     const container = document.getElementById('admin-promos');
     if(!container) return;
-    container.innerHTML = '<p class="text-muted">Aucune promo active.</p>';
+    
+    if (Store.promos.length === 0) {
+        container.innerHTML = '<p class="text-muted">Aucune promo.</p>';
+        return;
+    }
+
+    container.innerHTML = Store.promos.map(p => `
+        <div class="promo-card">
+            <div class="promo-info">
+                <div class="promo-code">${p.code}</div>
+                <div class="promo-details">
+                    <span class="promo-percent">-${p.percent}%</span>
+                </div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="deleteItem('promos', '${p.id}')">X</button>
+        </div>
+    `).join('');
 }
 
-// --- ACTIONS ---
-const sellerForm = document.getElementById('create-seller-form');
-if(sellerForm) {
-    sellerForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        // Simulation sauvegarde
-        alert("Vendeur créé (Simulation) !");
-        sellerForm.reset();
+function renderStats() {
+    const statsDiv = document.getElementById('admin-stats');
+    if(statsDiv) {
+        statsDiv.innerHTML = `
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Boutiques</div>
+                <div class="admin-stat-value">${Store.shops.length}</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Comptes</div>
+                <div class="admin-stat-value">${Store.users.length}</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Promos</div>
+                <div class="admin-stat-value">${Store.promos.length}</div>
+            </div>
+        `;
+    }
+}
+
+// --- 5. FORMULAIRES (Envoi vers Firestore) ---
+
+function setupForms() {
+    
+    // CRÉER VENDEUR
+    const sellerForm = document.getElementById('create-seller-form');
+    if(sellerForm) {
+        sellerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = sellerForm.name.value;
+            const email = sellerForm.email.value;
+            const pass = sellerForm.password.value;
+            
+            // Appel Auth (Création compte) + Firestore (Sauvegarde data)
+            Auth.createSeller(email, pass, name).then(res => {
+                if(res.success) {
+                    db.collection('users').add({
+                        name: name, email: email, role: 'seller', createdAt: new Date()
+                    });
+                    alert("✅ Vendeur créé !");
+                    sellerForm.reset();
+                } else {
+                    alert("Erreur: " + res.message);
+                }
+            });
+        });
+    }
+
+    // CRÉER BOUTIQUE
+    const shopForm = document.getElementById('shop-form');
+    if(shopForm) {
+        shopForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = shopForm.name.value;
+            const email = shopForm.ownerEmail.value;
+            const cat = shopForm.categoryId.value;
+
+            db.collection('shops').add({
+                name: name,
+                ownerEmail: email,
+                category: cat,
+                status: 'active',
+                createdAt: new Date()
+            }).then(() => {
+                alert("✅ Boutique créée en ligne !");
+                shopForm.reset();
+            });
+        });
+    }
+}
+
+// --- HELPER CATEGORIES ---
+function populateCategorySelect() {
+    const select = document.getElementById('shop-category-select');
+    if(!select) return;
+    select.innerHTML = '<option value="">Choisir catégorie</option>';
+    Store.categories.forEach(c => {
+        select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
     });
 }
 
-const shopForm = document.getElementById('shop-form');
-if(shopForm) {
-    shopForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = shopForm.name.value;
-        Store.shops.push({ id: Date.now(), name: name, category: 'Nouveau', owner: 'Moi', status: 'active' });
-        renderShops();
-        alert("Boutique créée !");
-        shopForm.reset();
-    });
+function renderCategoriesManagement() {
+    const div = document.getElementById('categories-management');
+    if(div) {
+        div.innerHTML = Store.categories.map(c => `
+            <div class="category-manage-card">
+                <h4>${c.name}</h4>
+                <button class="btn btn-sm btn-outline">Gérer</button>
+            </div>
+        `).join('');
+    }
 }
 
-window.deleteItem = function(type, id) {
+// --- GLOBAL DELETE ---
+window.deleteShop = function(id) {
+    if(confirm("Supprimer cette boutique ?")) {
+        db.collection('shops').doc(id).delete();
+    }
+};
+
+window.deleteItem = function(col, id) {
     if(confirm("Supprimer ?")) {
-        Store[type] = Store[type].filter(item => item.id != id);
-        if(type === 'shops') renderShops();
+        db.collection(col).doc(id).delete();
     }
 };
