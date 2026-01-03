@@ -1,0 +1,61 @@
+/* =================================================================
+   CORRECTIF ADMIN - A charger APRÈS styles.css
+   ================================================================= */
+
+/* 1. Force la Sidebar à gauche sur PC (Écrase le style mobile) */
+@media (min-width: 900px) {
+    body.admin-layout {
+        display: grid !important;
+        grid-template-columns: 260px 1fr !important;
+        overflow: hidden; 
+    }
+
+    .admin-sidebar {
+        position: relative !important;
+        transform: none !important;
+        display: flex !important;
+        width: 260px !important;
+        height: 100vh !important;
+        z-index: 100;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-main {
+        margin-left: 0 !important;
+        padding: 40px !important;
+        overflow-y: auto;
+        height: 100vh;
+        width: 100%;
+    }
+
+    /* CACHE LE BOUTON BURGER SUR PC (C'est lui qui gêne !) */
+    .admin-mobile-toggle {
+        display: none !important;
+    }
+}
+
+/* 2. Force l'affichage des sections (Empêche la page blanche) */
+.hidden {
+    display: none !important;
+}
+
+/* Quand une section est active, on la force en block */
+.admin-section.active {
+    display: block !important;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 3. Style pour les cartes vides (si pas encore de données) */
+.empty-state-card {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    border: 2px dashed #ddd;
+    color: #888;
+}
