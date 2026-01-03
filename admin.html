@@ -13,22 +13,39 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/auth-firebase.js"></script>
+    <script defer src="assets/js/admin.js"></script>
 </head>
 <body class="admin-layout">
 
     <aside class="admin-sidebar" id="admin-sidebar">
         <div class="admin-sidebar-logo-text">Aurum Admin</div>
         <nav>
-            <a href="#" class="admin-nav-link active" data-section="dashboard">
+            <a href="#dashboard" class="admin-nav-link active" data-section="dashboard">
                 <i data-lucide="layout-dashboard"></i> Tableau de bord
             </a>
-            <a href="#" class="admin-nav-link" data-section="sellers">
+            <a href="#sellers" class="admin-nav-link" data-section="sellers">
                 <i data-lucide="user-plus"></i> Créer Vendeur
             </a>
-            <a href="#" class="admin-nav-link" data-section="shops">
+            <a href="#shops" class="admin-nav-link" data-section="shops">
                 <i data-lucide="store"></i> Boutiques
             </a>
-            <a href="index.html" class="admin-nav-link" style="margin-top: 40px; color: #ff6b6b !important;">
+            <a href="#categories" class="admin-nav-link" data-section="categories">
+                <i data-lucide="tag"></i> Catégories
+            </a>
+            <a href="#users" class="admin-nav-link" data-section="users">
+                <i data-lucide="users"></i> Comptes
+            </a>
+            <a href="#promos" class="admin-nav-link" data-section="promos">
+                <i data-lucide="percent"></i> Codes Promo
+            </a>
+            <a href="#stats" class="admin-nav-link" data-section="stats">
+                <i data-lucide="bar-chart-3"></i> Statistiques
+            </a>
+            <a href="index.html" class="admin-nav-link logout-link" style="margin-top: 40px; color: #ff6b6b !important;">
                 <i data-lucide="log-out"></i> Quitter
             </a>
         </nav>
@@ -41,53 +58,113 @@
     <main class="admin-main">
         
         <div id="admin-guard" style="text-align: center; margin-top: 50px;">
-            <h2>Chargement des accès...</h2>
+            <h2>Chargement des données...</h2>
         </div>
 
         <div id="admin-dashboard" class="hidden" style="display: none;">
             
             <section id="section-dashboard" class="admin-section active">
                 <h1 class="admin-page-title">Tableau de Bord</h1>
-                <div id="admin-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div id="admin-stats" class="admin-stats-grid">
                     </div>
+                <div class="admin-card">
+                    <h2 class="admin-card-title">Activité Récente</h2>
+                    <div id="admin-notifications" class="notifications-list"></div>
+                </div>
             </section>
 
             <section id="section-sellers" class="admin-section">
                 <h1 class="admin-page-title">Ajouter un Vendeur</h1>
                 <div class="admin-card">
                     <form id="create-seller-form" class="admin-form">
-                        <div style="margin-bottom: 15px;">
-                            <label>Nom de la Boutique</label>
-                            <input type="text" name="name" class="input" required placeholder="Luxe Motors">
+                        <div class="admin-form-group">
+                            <label>Nom du vendeur / Boutique</label>
+                            <input class="input" name="name" required placeholder="Ex: Luxe Motors">
                         </div>
-                        <div style="margin-bottom: 15px;">
-                            <label>Email Vendeur</label>
-                            <input type="email" name="email" class="input" required placeholder="vendeur@gmail.com">
+                        <div class="admin-form-group">
+                            <label>Email de connexion</label>
+                            <input class="input" name="email" type="email" required placeholder="vendeur@gmail.com">
                         </div>
-                        <div style="margin-bottom: 15px;">
-                            <label>Mot de passe</label>
-                            <input type="text" name="password" class="input" required placeholder="password123">
+                        <div class="admin-form-group">
+                            <label>Mot de passe provisoire</label>
+                            <input class="input" name="password" type="text" required placeholder="Minimum 6 caractères">
                         </div>
-                        <button type="submit" class="btn btn-gold">Créer le compte</button>
+                        <div class="admin-form-group">
+                            <label>Téléphone</label>
+                            <input class="input" name="phone" type="tel" placeholder="+226 XX XX XX XX">
+                        </div>
+                        <button type="submit" class="btn btn-gold">Créer le compte vendeur</button>
                     </form>
                 </div>
             </section>
 
             <section id="section-shops" class="admin-section">
                 <h1 class="admin-page-title">Gestion des Boutiques</h1>
-                <div id="admin-shops" class="admin-card"></div>
+                
+                <div class="admin-card">
+                    <h3>Nouvelle Boutique</h3>
+                    <form id="shop-form" class="admin-form">
+                        <div class="admin-form-group">
+                            <label>Nom de la boutique</label>
+                            <input class="input" name="name" required>
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Email Propriétaire</label>
+                            <input class="input" name="ownerEmail" required>
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Catégorie</label>
+                            <select class="input" name="categoryId" id="shop-category-select">
+                                <option value="">Choisir...</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-gold">Créer la Boutique</button>
+                    </form>
+                </div>
+
+                <div class="admin-card">
+                    <h3>Liste des Boutiques</h3>
+                    <div id="admin-shops" class="shops-grid"></div>
+                </div>
+            </section>
+
+            <section id="section-categories" class="admin-section">
+                <h1 class="admin-page-title">Catégories</h1>
+                <div class="admin-card">
+                    <div id="categories-management" class="grid-3"></div>
+                </div>
+            </section>
+
+            <section id="section-users" class="admin-section">
+                <h1 class="admin-page-title">Utilisateurs</h1>
+                <div id="admin-users" class="admin-card"></div>
+            </section>
+
+            <section id="section-promos" class="admin-section">
+                <h1 class="admin-page-title">Codes Promo</h1>
+                <div class="admin-card">
+                    <form id="promo-form" class="admin-form" style="margin-bottom: 30px;">
+                        <div style="display:flex; gap:10px;">
+                            <input class="input" name="code" placeholder="CODE (ex: SOLDES)" style="flex:1">
+                            <input class="input" name="percent" type="number" placeholder="%" style="width:80px">
+                            <button class="btn btn-gold">Ajouter</button>
+                        </div>
+                    </form>
+                    <div id="admin-promos"></div>
+                </div>
+            </section>
+
+            <section id="section-stats" class="admin-section">
+                <h1 class="admin-page-title">Statistiques Détaillées</h1>
+                <div class="admin-card" id="admin-stats-detailed">
+                    <p>Statistiques globales en cours de chargement...</p>
+                </div>
             </section>
 
         </div>
     </main>
 
-    <script src="assets/js/utils.js"></script>
-    <script src="assets/js/data.js"></script>
-    <script src="assets/js/auth-firebase.js"></script>
-    <script src="assets/js/admin.js"></script>
-    
-    <script>
-        lucide.createIcons();
-    </script>
+    <div class="toast-container" id="toast-container"></div>
+
 </body>
 </html>
