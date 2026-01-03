@@ -1,6 +1,6 @@
-// ==========================================
-// 1. CONFIGURATION FIREBASE
-// ==========================================
+/* =========================================================
+   AUTHENTIFICATION & CONNEXION FIREBASE (CORRIGÉ)
+   ========================================================= */
 
 const firebaseConfig = {
     apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
@@ -12,131 +12,43 @@ const firebaseConfig = {
     measurementId: "G-SY7DY6WV97"
 };
 
-// Initialisation (Version Compatibilité HTML)
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-
-// 1. Initialiser Firebase (Mettre le contact)
+// 1. Initialisation (Une seule fois)
 if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
-    console.log("🔥 Firebase connecté avec succès !");
-} else if (typeof firebase === 'undefined') {
-    console.error("❌ Erreur : Les scripts Firebase (gstatic) ne sont pas chargés dans le HTML.");
+    console.log("🔥 Firebase connecté !");
 }
 
-// 2. Exporter les outils pour les autres fichiers
-// (admin.js va utiliser ces variables)
+// 2. Export des outils globaux
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ==========================================
-// 2. LOGIQUE D'AUTHENTIFICATION
-// ==========================================
-
+// 3. Fonctions d'aide (Login/Register)
 const Auth = {
-    // S'INSCRIRE
-    register: function(email, password, name) {
+    register: (email, password, name) => {
         return auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                return user.updateProfile({
-                    displayName: name
-                }).then(() => {
-                    return { success: true, user: user };
-                });
+            .then((cred) => {
+                return cred.user.updateProfile({ displayName: name })
+                    .then(() => {
+                        // Créer l'entrée dans la base de données aussi
+                        return db.collection('users').doc(cred.user.uid).set({
+                            name: name,
+                            email: email,
+                            role: 'client', // Par défaut
+                            createdAt: new Date()
+                        });
+                    })
+                    .then(() => ({ success: true, user: cred.user }));
             })
-            .catch((error) => {
-                let msg = "Erreur inconnue";
-                if (error.code === 'auth/email-already-in-use') msg = "Cet email est déjà utilisé !";
-                if (error.code === 'auth/weak-password') msg = "Le mot de passe est trop faible (6 caractères min).";
-                if (error.code === 'auth/invalid-email') msg = "L'adresse email n'est pas valide.";
-                return { success: false, message: msg };
-            });
+            .catch(err => ({ success: false, message: err.message }));
     },
 
-    // SE CONNECTER
-    login: function(email, password) {
+    login: (email, password) => {
         return auth.signInWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                return { success: true, user: userCredential.user };
-            })
-            .catch((error) => {
-                let msg = "Erreur de connexion.";
-                if (error.code === 'auth/user-not-found') msg = "Aucun compte trouvé avec cet email.";
-                if (error.code === 'auth/wrong-password') msg = "Mot de passe incorrect.";
-                return { success: false, message: msg };
-            });
+            .then(cred => ({ success: true, user: cred.user }))
+            .catch(err => ({ success: false, message: err.message }));
     },
 
-    // SE DÉCONNECTER
-    logout: function() {
-        auth.signOut().then(() => {
-            window.location.href = "login.html";
-        });
+    logout: () => {
+        auth.signOut().then(() => window.location.href = "login.html");
     }
 };
-
-// ==========================================
-// 3. GESTION DES FORMULAIRES
-// ==========================================
-
-document.addEventListener("DOMContentLoaded", function() {
-
-    // --- FORMULAIRE INSCRIPTION (Si présent sur la page) ---
-    const regForm = document.getElementById('form-register');
-    if (regForm) {
-        regForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const pass1 = document.getElementById('reg-pass').value;
-            const pass2 = document.getElementById('reg-pass-confirm').value;
-
-            if (pass1 !== pass2) {
-                alert("❌ Les mots de passe ne correspondent pas !");
-                return;
-            }
-
-            Auth.register(email, pass1, name).then((result) => {
-                if (result.success) {
-                    alert("✅ Compte créé ! Bienvenue " + name);
-                    window.location.href = "index.html";
-                } else {
-                    alert("⚠️ " + result.message);
-                }
-            });
-        });
-    }
-
-    // --- FORMULAIRE CONNEXION (Si présent sur la page) ---
-    const loginForm = document.getElementById('form-login');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-
-            Auth.login(email, pass).then((result) => {
-                if (result.success) {
-                    alert("👋 Connexion réussie !");
-                    if (email === "admin@aurum.com") {
-                        window.location.href = "admin.html";
-                    } else {
-                        window.location.href = "index.html";
-                    }
-                } else {
-                    alert("❌ " + result.message);
-                }
-            });
-        });
-    }
-
-    // --- VÉRIFICATION DE SESSION ---
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            console.log("Utilisateur connecté :", user.email);
-        } else {
-            console.log("Aucun utilisateur connecté");
-        }
-    });
-});
