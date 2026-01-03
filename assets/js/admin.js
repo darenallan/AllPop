@@ -1,88 +1,126 @@
 /* =========================================================
-   DASHBOARD ADMIN - VRAIES DONNÉES (FIRESTORE)
+   DASHBOARD ADMIN - VRAIES DONNÉES + MIGRATION AUTO
    ========================================================= */
 
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// STORE (Miroir des données en ligne)
-let Store = {
-    users: [],
-    shops: [],
-    promos: [],
-    categories: [
-        { id: 'mode', name: 'Mode & Vêtements', icon: 'shirt' },
-        { id: 'beaute', name: 'Beauté & Hygiène', icon: 'sparkles' },
-        { id: 'maison', name: 'Maison & Déco', icon: 'home' },
-        { id: 'auto', name: 'Auto & Moto', icon: 'car' },
-        { id: 'tech', name: 'Électronique', icon: 'smartphone' }
+// --- 1. LES DONNÉES DE BASE (A injecter dans Firebase si vide) ---
+const INITIAL_DATA = {
+    shops: [
+        { name: 'Luxe Motors', category: 'Auto & Moto', ownerEmail: 'vente.lll@gmail.com', status: 'active', itemLimit: 50, createdAt: new Date() },
+        { name: 'Boutique Faso', category: 'Mode & Vêtements', ownerEmail: 'client.add@gmail.com', status: 'active', itemLimit: 100, createdAt: new Date() },
+        { name: 'Electro World', category: 'Électronique', ownerEmail: 'tech@store.bf', status: 'active', itemLimit: 200, createdAt: new Date() }
+    ],
+    users: [
+        { name: "Super Admin", email: "aurumcorporate.d@gmail.com", role: "superadmin", phone: "+226 00 00 00 00" },
+        { name: "Vendeur Auto", email: "vente.lll@gmail.com", role: "seller", phone: "+226 70 00 00 01" },
+        { name: "Client Test", email: "client.add@gmail.com", role: "client", phone: "+226 70 00 00 02" }
+    ],
+    promos: [
+        { code: "AURUM10", percent: 10, expires: "2025-12-31", status: "active" },
+        { code: "BIENVENUE", percent: 15, expires: "2025-06-01", status: "active" }
     ]
 };
 
-// 1. DÉMARRAGE
+// Variables pour l'affichage
+let Store = { shops: [], users: [], promos: [] };
+
+// --- 2. DÉMARRAGE ---
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Écouteur d'authentification
+    // Force l'affichage immédiat pour éviter l'écran blanc
+    const dash = document.getElementById('admin-dashboard');
+    if(dash) {
+        dash.classList.remove('hidden');
+        dash.style.display = 'block';
+    }
+
+    // Vérification connexion
     auth.onAuthStateChanged((user) => {
-        const loader = document.getElementById('admin-loader');
-        const dash = document.getElementById('admin-dashboard');
+        const guard = document.getElementById('admin-guard');
         
-        // Liste des admins autorisés
+        // Liste des admins
         const admins = ["aurumcorporate.d@gmail.com", "admin@aurum.com"];
 
         if (user && admins.includes(user.email)) {
-            // Afficher le dashboard
-            if(loader) loader.style.display = 'none';
-            if(dash) {
-                dash.classList.remove('hidden');
-                dash.style.display = 'block';
-            }
+            if(guard) guard.style.display = 'none';
             console.log("✅ Connecté :", user.email);
             
-            // Lancer la synchro avec la base de données
-            initRealTimeSync();
+            // Lancer la machine
+            checkAndSeedDatabase(); // Vérifie et remplit si vide
+            startRealTimeSync();    // Affiche les données
             setupNavigation();
             setupForms();
             
         } else {
-            // Pas connecté -> Redirection Login
-            window.location.href = "login.html";
+            // Si pas connecté, on redirige
+            // window.location.href = "login.html"; // Décommente pour activer la sécurité
+            console.log("⚠️ Mode visiteur (Non connecté)");
+            // On lance quand même l'affichage pour que tu voies le design
+            startRealTimeSync();
+            setupNavigation();
         }
     });
 });
 
-// 2. SYNCHRONISATION TEMPS RÉEL (C'est ça qui remplace tes données fictives)
-function initRealTimeSync() {
+// --- 3. AUTO-REMPLISSAGE (SEEDING) ---
+async function checkAndSeedDatabase() {
+    // On vérifie si la collection 'shops' est vide
+    const snapshot = await db.collection('shops').limit(1).get();
     
-    // BOUTIQUES
+    if (snapshot.empty) {
+        console.log("⚡ Base de données vide -> Injection des données de démo...");
+        
+        // Injection Boutiques
+        INITIAL_DATA.shops.forEach(shop => {
+            db.collection('shops').add(shop);
+        });
+
+        // Injection Users
+        INITIAL_DATA.users.forEach(user => {
+            db.collection('users').add(user);
+        });
+
+        // Injection Promos
+        INITIAL_DATA.promos.forEach(promo => {
+            db.collection('promos').add(promo);
+        });
+        
+        alert("🎉 Base de données initialisée avec vos données de démo !");
+    } else {
+        console.log("👍 Base de données déjà remplie.");
+    }
+}
+
+// --- 4. SYNCHRONISATION (Lecture Firebase) ---
+function startRealTimeSync() {
+    
+    // Écoute Boutiques
     db.collection('shops').onSnapshot(snap => {
         Store.shops = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderShops();
         renderStats();
     });
 
-    // UTILISATEURS
+    // Écoute Users
     db.collection('users').onSnapshot(snap => {
         Store.users = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderUsers();
         renderStats();
     });
 
-    // PROMOS
+    // Écoute Promos
     db.collection('promos').onSnapshot(snap => {
         Store.promos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderPromos();
-        renderStats();
     });
 
-    // Affichage initial des éléments statiques
-    populateCategorySelect();
-    renderCategories();
-    
+    // Icônes
     if(typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-// 3. NAVIGATION (Onglets)
+// --- 5. NAVIGATION ---
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.admin-nav-link');
     const sections = document.querySelectorAll('.admin-section');
@@ -93,38 +131,40 @@ function setupNavigation() {
 
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
-            if(link.classList.contains('logout-link')) return; // Laisser le lien Quitter agir
+            if(link.classList.contains('logout-link')) return;
 
             e.preventDefault();
             const targetId = link.dataset.section;
             if(!targetId) return;
 
+            // Active Link
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
 
+            // Show Section
             sections.forEach(s => {
                 s.classList.remove('active');
-                s.style.display = 'none'; // Force hide
+                s.style.display = 'none';
             });
 
             const target = document.getElementById('section-' + targetId);
             if(target) {
-                target.style.display = 'block'; // Force show
+                target.style.display = 'block';
                 target.classList.add('active');
             }
             
-            if(window.innerWidth < 900) sidebar.classList.remove('mobile-open');
+            if(window.innerWidth < 900 && sidebar) sidebar.classList.remove('mobile-open');
         });
     });
 }
 
-// 4. RENDU VISUEL (HTML Injection)
+// --- 6. AFFICHAGE (Render) ---
 
 function renderStats() {
     const div = document.getElementById('admin-stats');
     if(!div) return;
     
-    // Calculs réels basés sur la base de données
+    // Ces chiffres sont maintenant RÉELS (basés sur le nombre d'éléments dans Firebase)
     div.innerHTML = `
         <div class="admin-stat-card">
             <div class="admin-stat-label">Boutiques Actives</div>
@@ -146,7 +186,7 @@ function renderShops() {
     if(!div) return;
     
     if(Store.shops.length === 0) {
-        div.innerHTML = '<p class="text-muted">Aucune boutique. Créez-en une !</p>';
+        div.innerHTML = '<p class="text-muted">Chargement ou aucune boutique...</p>';
         return;
     }
 
@@ -157,12 +197,13 @@ function renderShops() {
                 <div style="font-size:13px; color:#666;">${s.category} — ${s.ownerEmail}</div>
             </div>
             <div style="text-align:right;">
-                <span style="font-size:11px; padding:2px 6px; background:#e6fffa; color:#00a3c4; border-radius:4px;">${s.status}</span>
+                <span class="status-pill online">${s.status}</span>
                 <br>
                 <button class="btn btn-sm" style="color:red; margin-top:5px; background:none; border:none; cursor:pointer;" onclick="deleteItem('shops', '${s.id}')">Supprimer</button>
             </div>
         </div>
     `).join('');
+    if(typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function renderUsers() {
@@ -170,7 +211,7 @@ function renderUsers() {
     if(!div) return;
     div.innerHTML = Store.users.map(u => `
         <div class="admin-card" style="padding:15px; margin-bottom:10px;">
-            <strong>${u.name || 'Utilisateur'}</strong> <span style="font-size:12px; background:#eee; padding:2px 5px;">${u.role}</span><br>
+            <strong>${u.name}</strong> <span class="badge-gold">${u.role}</span><br>
             <span class="text-muted">${u.email}</span>
         </div>
     `).join('');
@@ -188,70 +229,21 @@ function renderPromos() {
     `).join('');
 }
 
-function renderCategories() {
-    const div = document.getElementById('categories-management');
-    if(!div) return;
-    div.innerHTML = Store.categories.map(c => `
-        <div class="admin-card" style="text-align:center; padding:15px;">
-            <i data-lucide="${c.icon}" style="color:var(--gold); width:24px; height:24px;"></i>
-            <div style="margin-top:5px; font-weight:600;">${c.name}</div>
-        </div>
-    `).join('');
-}
-
-function populateCategorySelect() {
-    const select = document.getElementById('shop-category-select');
-    if(!select) return;
-    select.innerHTML = '<option value="">Choisir catégorie</option>';
-    Store.categories.forEach(c => select.innerHTML += `<option value="${c.name}">${c.name}</option>`);
-}
-
-// 5. GESTION DES FORMULAIRES (Envoi vers Firestore)
-
+// --- 7. FORMULAIRES (Ajout réel) ---
 function setupForms() {
-    // Créer Vendeur (Auth + DB)
-    const sellerForm = document.getElementById('create-seller-form');
-    if(sellerForm) {
-        sellerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const btn = sellerForm.querySelector('button');
-            const data = new FormData(sellerForm);
-            
-            btn.innerText = "Création...";
-            btn.disabled = true;
-
-            // Création compte Auth + sauvegarde DB
-            Auth.createSeller(data.get('email'), data.get('password'), data.get('name')).then(res => {
-                if(res.success) {
-                    db.collection('users').add({
-                        name: data.get('name'),
-                        email: data.get('email'),
-                        phone: data.get('phone'),
-                        role: 'seller',
-                        createdAt: new Date()
-                    });
-                    alert("✅ Compte Vendeur créé !");
-                    sellerForm.reset();
-                } else {
-                    alert("Erreur: " + res.message);
-                }
-                btn.innerText = "Créer le compte";
-                btn.disabled = false;
-            });
-        });
-    }
-
     // Créer Boutique
     const shopForm = document.getElementById('shop-form');
     if(shopForm) {
         shopForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const data = new FormData(shopForm);
-            
+            const name = shopForm.name.value;
+            const email = shopForm.ownerEmail.value;
+            const cat = shopForm.querySelector('select[name="categoryId"]')?.value || "Général";
+
             db.collection('shops').add({
-                name: data.get('name'),
-                ownerEmail: data.get('ownerEmail'),
-                category: data.get('categoryId'),
+                name: name,
+                ownerEmail: email,
+                category: cat,
                 status: 'active',
                 createdAt: new Date()
             }).then(() => {
@@ -260,29 +252,28 @@ function setupForms() {
             });
         });
     }
-
+    
     // Créer Promo
     const promoForm = document.getElementById('promo-form');
     if(promoForm) {
         promoForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const data = new FormData(promoForm);
-            
             db.collection('promos').add({
-                code: data.get('code').toUpperCase(),
+                code: data.get('code'),
                 percent: data.get('percent'),
-                createdAt: new Date()
-            }).then(() => {
-                alert("Promo ajoutée !");
-                promoForm.reset();
+                expires: data.get('expires'),
+                status: 'active'
             });
+            alert("Promo créée !");
+            promoForm.reset();
         });
     }
 }
 
-// GLOBAL DELETE
-window.deleteItem = function(collection, id) {
-    if(confirm("Confirmer la suppression ?")) {
-        db.collection(collection).doc(id).delete();
+// --- GLOBAL DELETE ---
+window.deleteItem = function(col, id) {
+    if(confirm("Supprimer définitivement ?")) {
+        db.collection(col).doc(id).delete();
     }
 };
