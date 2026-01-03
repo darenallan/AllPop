@@ -20,12 +20,13 @@
 
 <body>
   <header id="app-header" class="header">
-      <div class="container" style="display:flex; justify-content:space-between; align-items:center; padding: 15px 0;">
-          <a href="index.html" class="brand-name" style="font-size:24px; font-weight:bold; color:black; text-decoration:none;">AURUM</a>
+      <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
+          <a href="index.html" class="brand-name">AURUM</a>
           <nav class="nav-actions">
               <a href="catalogue.html" class="btn btn-sm btn-outline">Catalogue</a>
               <a href="seller.html" class="btn btn-sm btn-dark">Espace Vendeur</a>
               <a href="cart.html" class="icon-btn"><i data-lucide="shopping-bag"></i></a>
+              <button class="menu-toggle" id="mobile-menu-btn"><i data-lucide="menu"></i></button>
           </nav>
       </div>
   </header>
@@ -39,14 +40,14 @@
           <a href="catalogue.html" class="btn btn-gold">Découvrir la collection</a>
         </div>
       </div>
-      <div class="hero-img" style="background-image: url('assets/img/hero.png'); background-color:#111;"></div>
+      <div class="hero-img" style="background-image: url('assets/img/hero.png');"></div>
     </section>
 
     <section class="section container">
       <h2 class="section-title">Qu'est-ce qui vous intéresse aujourd'hui ?</h2>
       <div class="category-carousel-wrapper">
-        <div class="category-carousel" id="category-carousel" style="display:flex; gap:15px; overflow-x:auto;">
-          <p>Chargement...</p>
+        <div class="category-carousel" id="category-carousel">
+          <p style="padding:20px;">Chargement des catégories...</p>
         </div>
       </div>
     </section>
@@ -62,6 +63,24 @@
       <h2 class="section-title">Promotions</h2>
       <div id="home-promos" class="grid grid-4">
           </div>
+    </section>
+
+    <section class="section testimonials-section">
+      <div class="container">
+        <h2 class="section-title">Ils nous font confiance</h2>
+        <div class="testimonials-slider">
+             <article class="testimonial-card">
+                <div class="testimonial-header">
+                    <div class="testimonial-avatar" style="background:#eee;">M</div>
+                    <div>
+                        <h4 class="testimonial-name">Mariam O.</h4>
+                        <span class="testimonial-role">Cliente Fidèle</span>
+                    </div>
+                </div>
+                <blockquote class="testimonial-content">« Service impeccable et produits de qualité. »</blockquote>
+             </article>
+             </div>
+      </div>
     </section>
   </main>
 
@@ -91,8 +110,6 @@
                     `;
                 });
                 lucide.createIcons();
-            } else if (container) {
-                container.innerHTML = "<p>Aucune catégorie.</p>";
             }
         });
 
@@ -101,6 +118,8 @@
             const container = document.getElementById('home-new');
             if(container) {
                 container.innerHTML = "";
+                if(snap.empty) container.innerHTML = "<p>Aucun produit pour le moment.</p>";
+                
                 snap.forEach(doc => {
                     const p = doc.data();
                     const price = new Intl.NumberFormat('fr-FR').format(p.price);
@@ -108,17 +127,17 @@
                     container.innerHTML += `
                         <div class="card product-card">
                             <a href="product.html?id=${doc.id}" style="text-decoration:none; color:inherit;">
-                                <div class="card-img" style="height:250px; overflow:hidden;">
-                                    <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;">
+                                <div class="card-img">
+                                    <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" alt="${p.name}">
                                 </div>
                             </a>
                             <div class="info">
                                 <div style="font-size:12px; color:#666; margin-bottom:5px;">
-                                    <a href="boutique.html?id=${p.shopId}" style="text-decoration:none; color:#666;">
+                                    <a href="boutique.html?id=${p.shopId}" class="shop-link" style="text-decoration:none; color:#666;">
                                         <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
                                     </a>
                                 </div>
-                                <h3 class="product-name" style="font-size:16px; margin:0;"><a href="product.html?id=${doc.id}">${p.name}</a></h3>
+                                <h3 class="product-name"><a href="product.html?id=${doc.id}">${p.name}</a></h3>
                                 <div class="price">${price} FCFA</div>
                             </div>
                         </div>
