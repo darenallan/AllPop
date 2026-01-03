@@ -1,5 +1,5 @@
 /* =========================================================
-   DASHBOARD ADMIN - AFFICHAGE FORCÉ & DONNÉES FICTIVES
+   DASHBOARD ADMIN - NAVIGATION DIRECTE
    ========================================================= */
 
 // 1. STORE (Données mémoire)
@@ -9,7 +9,7 @@ const Store = {
     promos: JSON.parse(localStorage.getItem('ac_promos') || '[]'),
 };
 
-// 2. DONNÉES PAR DÉFAUT (Pour que ça ne soit pas vide)
+// 2. DONNÉES PAR DÉFAUT (Pour éviter le vide)
 function initMockData() {
     if (Store.shops.length === 0) {
         Store.shops = [
@@ -25,34 +25,19 @@ function initMockData() {
     }
 }
 
-// 3. LANCEMENT IMMÉDIAT (Sans attendre Firebase)
+// 3. LANCEMENT
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Admin Dashboard : Démarrage forcé");
-    
-    // Initialise les données
+    console.log("🚀 Admin chargé");
     initMockData();
-    
-    // Configure la navigation
     setupNavigation();
-    
-    // Affiche le contenu
     renderShops();
     renderUsers();
     renderPromos();
     
-    // Cache le loader si présent
-    const guard = document.getElementById('admin-guard');
-    if(guard) guard.style.display = 'none';
-    
-    // Affiche le dashboard
-    const dash = document.getElementById('admin-dashboard');
-    if(dash) dash.style.display = 'block';
-    
-    // Icônes
     if(typeof lucide !== 'undefined') lucide.createIcons();
 });
 
-// --- NAVIGATION (Réparée) ---
+// --- NAVIGATION (Le point critique) ---
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.admin-nav-item');
     const sections = document.querySelectorAll('.admin-section');
@@ -69,27 +54,33 @@ function setupNavigation() {
     // Clic sur les onglets
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
+            // Ignorer si c'est le lien Quitter
+            if(link.getAttribute('href').includes('index.html')) return;
+
             e.preventDefault();
             const targetId = link.dataset.section;
             if(!targetId) return;
 
-            // Gestion active liens
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
+            console.log("Clic sur :", targetId);
 
-            // Gestion affichage sections
+            // 1. Reset
+            navLinks.forEach(l => l.classList.remove('active'));
             sections.forEach(sec => {
                 sec.classList.remove('active');
                 sec.style.display = 'none'; // Force hide
             });
 
+            // 2. Activate
+            link.classList.add('active');
             const targetSection = document.getElementById('section-' + targetId);
             if(targetSection) {
                 targetSection.style.display = 'block'; // Force show
-                targetSection.classList.add('active');
+                setTimeout(() => targetSection.classList.add('active'), 10);
+            } else {
+                console.error("Section introuvable : section-" + targetId);
             }
             
-            // Fermer menu sur mobile
+            // Mobile close
             if(window.innerWidth < 968 && sidebar) {
                 sidebar.classList.remove('mobile-open');
             }
@@ -102,11 +93,6 @@ function renderShops() {
     const container = document.getElementById('admin-shops');
     if(!container) return;
     
-    if(Store.shops.length === 0) {
-        container.innerHTML = '<p>Aucune boutique.</p>';
-        return;
-    }
-
     container.innerHTML = Store.shops.map(shop => `
         <div style="padding:15px; border:1px solid #eee; margin-bottom:10px; border-radius:8px; background:#fff; display:flex; justify-content:space-between; align-items:center;">
             <div>
@@ -132,51 +118,35 @@ function renderUsers() {
 function renderPromos() {
     const container = document.getElementById('admin-promos');
     if(!container) return;
-    container.innerHTML = '<p class="text-muted">Aucune promo active (Test).</p>';
+    container.innerHTML = '<p class="text-muted">Aucune promo active.</p>';
 }
 
-// --- ACTIONS FORMULAIRES ---
-// Créer Vendeur (Simulé + Firebase)
+// --- ACTIONS ---
 const sellerForm = document.getElementById('create-seller-form');
 if(sellerForm) {
     sellerForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const name = sellerForm.name.value;
-        const email = sellerForm.email.value;
-        
-        // Ajout local pour affichage immédiat
-        Store.users.push({ name, email, role: 'seller' });
-        localStorage.setItem('ac_users', JSON.stringify(Store.users));
-        
+        // Simulation sauvegarde
         alert("Vendeur créé (Simulation) !");
-        renderUsers();
         sellerForm.reset();
     });
 }
 
-// Créer Boutique
 const shopForm = document.getElementById('shop-form');
 if(shopForm) {
     shopForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const name = shopForm.name.value;
-        const owner = shopForm.ownerEmail.value;
-        const cat = document.getElementById('shop-category-select').value;
-        
-        Store.shops.push({ id: Date.now().toString(), name, owner, category: cat, status: 'active' });
-        localStorage.setItem('ac_shops', JSON.stringify(Store.shops));
-        
-        alert("Boutique créée !");
+        Store.shops.push({ id: Date.now(), name: name, category: 'Nouveau', owner: 'Moi', status: 'active' });
         renderShops();
+        alert("Boutique créée !");
         shopForm.reset();
     });
 }
 
-// Delete
 window.deleteItem = function(type, id) {
     if(confirm("Supprimer ?")) {
-        Store[type] = Store[type].filter(item => item.id !== id);
-        localStorage.setItem('ac_' + type, JSON.stringify(Store[type]));
+        Store[type] = Store[type].filter(item => item.id != id);
         if(type === 'shops') renderShops();
     }
 };
