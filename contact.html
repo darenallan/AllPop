@@ -2,44 +2,134 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact - Aurum</title>
+  <meta name="description" content="Contactez Aurum, marketplace premium Burkinabè." />
 
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aurum - L'Excellence à Votre Portée</title>
-<meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
-<!-- Google Fonts - Luxury Typography -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css" />
-<link rel="preload" href="assets/css/styles.css" as="style" />
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" href="assets/img/placeholder-product-1.svg" />
-<script defer src="assets/js/utils.js"></script>
-<script defer src="assets/js/data.js"></script>
-<script defer src="assets/js/icons.js"></script>
-<script defer src="assets/js/app.js"></script>
-<script defer src="assets/js/auth.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js" defer></script>
 </head>
+
 <body>
-<header id="app-header" class="header"></header>
-<main class="container">
-  <section class="section">
-    <h1>Contact</h1>
-    <form id="contact-form" class="grid grid-2" aria-label="Formulaire de contact">
-      <input class="input" name="name" placeholder="Nom" required />
-      <input class="input" name="email" type="email" placeholder="Email" required />
-      <input class="input" name="phone" type="tel" placeholder="Téléphone" />
-      <textarea class="input" name="message" placeholder="Message" rows="5" required></textarea>
-      <button class="btn btn-gold" type="submit">Envoyer</button>
-      <small class="text-muted">Nous vous répondrons rapidement.</small>
+  <header id="app-header" class="header">
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+          </a>
+          <nav class="nav-actions">
+              <a href="cart.html" class="icon-btn" style="position:relative;">
+                  <i data-lucide="shopping-bag"></i>
+                  <span class="badge" id="cart-badge" style="display:none;">0</span>
+              </a>
+              <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
+          </nav>
+      </div>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer">
+      <div class="drawer-header">
+          <span class="drawer-title">Menu</span>
+          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
+      </div>
+      <nav class="drawer-nav">
+          <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
+          <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
+          <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
+          <div class="drawer-divider"></div>
+          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
+      </nav>
+  </div>
+  <div id="menu-overlay"></div>
+
+  <main class="container" style="padding-top:40px; padding-bottom:80px;">
+  <section class="section" style="background:white; border:1px solid rgba(0,0,0,0.06); border-radius:16px; padding:24px 28px; box-shadow:var(--shadow-sm);">
+    <h1 style="font-family:var(--font-serif); font-size:28px; margin-bottom:16px;">Contact</h1>
+    <p style="color:#555; margin-top:0; margin-bottom:20px;">Une question ? Écrivez-nous, nous répondons rapidement.</p>
+    <form id="contact-form" class="grid grid-2" aria-label="Formulaire de contact" style="gap:16px;">
+    <input class="input" name="name" placeholder="Nom" required />
+    <input class="input" name="email" type="email" placeholder="Email" required />
+    <input class="input" name="phone" type="tel" placeholder="Téléphone" />
+    <textarea class="input" name="message" placeholder="Message" rows="5" required style="grid-column:1 / -1;"></textarea>
+    <button class="btn btn-gold" type="submit" style="grid-column:1 / -1; width:fit-content;">Envoyer</button>
+    <small class="text-muted" style="grid-column:1 / -1; color:#666;">Nous vous répondrons rapidement.</small>
     </form>
   </section>
-</main>
-<footer id="app-footer" class="footer"></footer>
-<div class="toast-container" id="toast-container"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="cols" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
+        <div>
+          <h3>AURUM</h3>
+          <p>La première marketplace premium du Burkina Faso. Qualité, confiance et élégance.</p>
+        </div>
+        <div>
+          <h4>Navigation</h4>
+          <ul style="list-style:none; padding:0; line-height:2;">
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="catalogue.html">Catalogue</a></li>
+            <li><a href="seller.html">Devenir Vendeur</a></li>
+            <li><a href="profile.html">Mon Compte</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Légal</h4>
+            <ul style="list-style:none; padding:0; line-height:2;">
+              <li><a href="cgu.html">CGU</a></li>
+              <li><a href="faq.html">FAQ</a></li>
+              <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+        <div>
+          <h4>Suivez-nous</h4>
+          <div class="footer-socials" style="display:flex; gap:15px;">
+            <a href="#" class="social-link"><i data-lucide="facebook"></i></a>
+            <a href="#" class="social-link"><i data-lucide="instagram"></i></a>
+            <a href="#" class="social-link"><i data-lucide="twitter"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom" style="margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
+        &copy; 2026 Aurum Marketplace. Tous droits réservés.
+      </div>
+    </div>
+  </footer>
+
+ <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // GESTION MENU BURGER (Standardisée)
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeBtn = document.getElementById('close-btn');
+        const drawer = document.getElementById('mobile-drawer');
+        const overlay = document.getElementById('menu-overlay');
+
+        function toggleMenu() {
+            // Si le menu est déjà ouvert (contient la classe active), on le ferme
+            if (drawer.classList.contains('active')) {
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = ''; // Réactiver le scroll
+            } else {
+                // Sinon on l'ouvre
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Bloquer le scroll
+            }
+        }
+
+        // Écouteurs d'événements
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu); // Fermer en cliquant à côté
+    });
+  </script>
 </body>
 </html>
