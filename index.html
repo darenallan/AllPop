@@ -289,6 +289,14 @@
         // Initialiser Icônes
         if(typeof lucide !== 'undefined') lucide.createIcons();
     });
+    // Dans le bloc auth.onAuthStateChanged
+const mobileLogout = document.getElementById('logout-btn-mobile');
+if (mobileLogout) {
+    mobileLogout.addEventListener('click', (e) => {
+        e.preventDefault();
+        firebase.auth().signOut().then(() => window.location.reload());
+    });
+}
   </script>
 </body>
 </html>
