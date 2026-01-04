@@ -81,7 +81,8 @@
         .hidden { display: none !important; }
         .active-section { display: block !important; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-        /* ZONE UPLOAD */
+
+        /* --- NOUVEAU STYLE UPLOAD --- */
         .upload-area {
             border: 2px dashed #ddd;
             border-radius: 12px;
@@ -91,7 +92,7 @@
             cursor: pointer;
             transition: 0.3s;
             position: relative;
-            min-height: 200px;
+            min-height: 150px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -101,7 +102,8 @@
             border-color: #D4AF37;
             background: rgba(212, 175, 55, 0.05);
         }
-        /* GALERIE UPLOAD */
+        
+        /* Galerie de prévisualisation */
         .preview-gallery {
             display: flex;
             flex-wrap: wrap;
@@ -115,6 +117,7 @@
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid #ddd;
+            background: #fff;
         }
         .preview-item img {
             width: 100%;
@@ -140,6 +143,10 @@
         .preview-remove:hover {
             background: red;
         }
+
+        /* Upload Profile Hover Effect */
+        .upload-area-mini:hover { border-color: #D4AF37 !important; }
+        .upload-area-mini:hover div { opacity: 1 !important; }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -233,7 +240,7 @@
                 </div>
             </section>
 
-           <section id="sec-add" class="admin-section hidden">
+            <section id="sec-add" class="admin-section hidden">
                 <h1 class="admin-page-title">Nouveau Produit</h1>
                 <div class="admin-card">
                     <form id="form-add-product">
@@ -267,6 +274,7 @@
                     </form>
                 </div>
             </section>
+
             <section id="sec-orders" class="admin-section hidden">
                 <h1 class="admin-page-title">Commandes</h1>
                 <div class="admin-card">
@@ -275,19 +283,70 @@
             </section>
 
             <section id="sec-settings" class="admin-section hidden">
-                <h1 class="admin-page-title">Paramètres Boutique</h1>
+                <h1 class="admin-page-title">Ma Vitrine</h1>
                 <div class="admin-card">
                     <form id="form-settings">
-                        <label>Nom de la boutique</label>
-                        <input class="input" id="set-name">
                         
-                        <label>Email Propriétaire (Lecture seule)</label>
-                        <input class="input" id="set-email" readonly style="background: #eee;">
-                        
-                        <label>Description Boutique</label>
-                        <textarea class="input" id="set-desc" rows="3"></textarea>
-                        
-                        <button class="btn-gold">Enregistrer les modifications</button>
+                        <h3 style="margin-top:0;">Identité Visuelle</h3>
+                        <p class="text-muted" style="font-size:13px; margin-bottom:20px;">Personnalisez l'apparence de votre boutique.</p>
+
+                        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                            <div style="text-align:center;">
+                                <label style="display:block; margin-bottom:8px;">Logo</label>
+                                <div class="upload-area-mini" id="upload-logo" style="width:100px; height:100px; border-radius:50%; border:2px dashed #ddd; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative; margin:0 auto;">
+                                    <img id="preview-logo" src="assets/img/placeholder.png" style="width:100%; height:100%; object-fit:cover;">
+                                    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; opacity:0; transition:0.2s;">
+                                        <i data-lucide="camera"></i>
+                                    </div>
+                                </div>
+                                <input type="file" id="file-logo" accept="image/*" hidden>
+                            </div>
+
+                            <div style="flex:1; min-width:200px;">
+                                <label style="display:block; margin-bottom:8px;">Bannière</label>
+                                <div class="upload-area-mini" id="upload-banner" style="width:100%; height:120px; border-radius:10px; border:2px dashed #ddd; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative;">
+                                    <img id="preview-banner" src="assets/img/placeholder-banner.jpg" style="width:100%; height:100%; object-fit:cover;">
+                                    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; opacity:0; transition:0.2s;">
+                                        <i data-lucide="image"></i> Modifier
+                                    </div>
+                                </div>
+                                <input type="file" id="file-banner" accept="image/*" hidden>
+                            </div>
+                        </div>
+
+                        <hr style="border:0; border-top:1px solid #eee; margin:30px 0;">
+
+                        <h3>Informations</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label>Nom de la boutique</label>
+                                <input class="input" id="set-name" required>
+                            </div>
+                            <div>
+                                <label>Slogan</label>
+                                <input class="input" id="set-slogan" placeholder="Ex: L'élégance au quotidien">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label>Description complète</label>
+                            <textarea class="input" id="set-desc" rows="4" placeholder="Parlez de votre histoire..."></textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label>Email Contact</label>
+                                <input class="input" id="set-email" readonly style="background:#eee;">
+                            </div>
+                            <div>
+                                <label>Téléphone / WhatsApp</label>
+                                <input class="input" id="set-phone" placeholder="+226...">
+                            </div>
+                        </div>
+
+                        <div style="text-align:right; margin-top:20px;">
+                            <button class="btn-gold" type="submit" style="width:auto; padding:12px 40px;">Enregistrer les modifications</button>
+                        </div>
                     </form>
                 </div>
             </section>
@@ -314,6 +373,9 @@
 
         // Variables Globales
         let myShop = null;
+        let productImages = []; // Pour l'upload produit
+        let logoBase64 = "";    // Pour le profil
+        let bannerBase64 = "";  // Pour le profil
 
         // 2. DÉMARRAGE
         document.addEventListener('DOMContentLoaded', () => {
@@ -325,10 +387,9 @@
                     console.log("Connecté en tant que :", user.email);
                     
                     // RECHERCHE DE LA BOUTIQUE
-                    // On cherche une boutique dont l'ownerEmail correspond à l'email connecté
                     db.collection('shops').where('ownerEmail', '==', user.email).get()
                     .then(snapshot => {
-                        loader.style.display = 'none'; // Stop loader
+                        loader.style.display = 'none';
 
                         if (!snapshot.empty) {
                             // Boutique trouvée !
@@ -338,21 +399,19 @@
                             // Affichage
                             document.getElementById('seller-content').classList.remove('hidden');
                             
-                            // Remplissage des infos
+                            // Remplissage Dashboard
                             document.getElementById('shop-title-display').innerText = myShop.name;
                             document.getElementById('shop-status-display').innerText = myShop.status;
                             document.getElementById('shop-category-display').innerText = myShop.category;
                             
-                            // Pré-remplir paramètres
-                            document.getElementById('set-name').value = myShop.name;
-                            document.getElementById('set-email').value = myShop.ownerEmail;
-                            document.getElementById('set-desc').value = myShop.description || "";
+                            // Chargement Paramètres
+                            loadShopSettings();
 
-                            // Lancer l'écoute des produits
+                            // Écoute Produits
                             listenProducts();
 
                         } else {
-                            // Pas de boutique trouvée
+                            // Pas de boutique
                             document.getElementById('no-shop-warning').classList.remove('hidden');
                             document.getElementById('user-email-display').innerText = user.email;
                         }
@@ -363,12 +422,13 @@
                     });
 
                 } else {
-                    // Pas connecté -> Login
                     window.location.href = "login.html";
                 }
             });
 
             lucide.createIcons();
+            setupProductUpload(); // Initialiser le drag & drop produit
+            setupProfileUpload(); // Initialiser le drag & drop profil
         });
 
         // 3. ÉCOUTE PRODUITS
@@ -386,10 +446,13 @@
                 snap.forEach(doc => {
                     count++;
                     const p = doc.data();
+                    // On prend la première image ou le placeholder
+                    const displayImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image || 'assets/img/placeholder.png');
+                    
                     list.innerHTML += `
                     <div class="product-item">
                         <div style="display:flex; align-items:center;">
-                            <img src="${p.image || 'assets/img/placeholder-product.svg'}" class="product-img">
+                            <img src="${displayImg}" class="product-img">
                             <div>
                                 <div style="font-weight:bold;">${p.name}</div>
                                 <div style="color:#D4AF37; font-weight:bold;">${p.price} FCFA</div>
@@ -406,30 +469,29 @@
             });
         }
 
-        // 4. ACTIONS
-      // --- GESTION MULTI-UPLOAD ---
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('p-files');
-        const gallery = document.getElementById('preview-gallery');
-        let productImages = []; // Tableau pour stocker les Base64
+        // 4. GESTION UPLOAD PRODUIT (Drag & Drop Multiple)
+        function setupProductUpload() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('p-files');
+            const gallery = document.getElementById('preview-gallery');
 
-        // Ouvrir sélecteur
-        dropZone.addEventListener('click', () => fileInput.click());
+            // Ouvrir sélecteur
+            dropZone.addEventListener('click', () => fileInput.click());
 
-        // Drag & Drop
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            handleFiles(e.dataTransfer.files);
-        });
+            // Drag Events
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                handleProductFiles(e.dataTransfer.files);
+            });
 
-        // Changement Input
-        fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+            // Input Change
+            fileInput.addEventListener('change', () => handleProductFiles(fileInput.files));
+        }
 
-        // Traitement des fichiers
-        function handleFiles(files) {
+        function handleProductFiles(files) {
             if (productImages.length + files.length > 5) {
                 alert("Maximum 5 images autorisées.");
                 return;
@@ -440,49 +502,94 @@
                 
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const base64 = e.target.result;
-                    productImages.push(base64); // Ajouter au tableau
-                    renderGallery(); // Mettre à jour l'affichage
+                    productImages.push(e.target.result); // Base64
+                    renderProductGallery();
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        // Afficher la galerie
-        function renderGallery() {
+        function renderProductGallery() {
+            const gallery = document.getElementById('preview-gallery');
             gallery.innerHTML = "";
             productImages.forEach((img, index) => {
                 gallery.innerHTML += `
                     <div class="preview-item">
                         <img src="${img}">
-                        <button type="button" class="preview-remove" onclick="removeImage(${index})">&times;</button>
+                        <button type="button" class="preview-remove" onclick="removeProductImage(${index})">&times;</button>
                     </div>
                 `;
             });
         }
 
-        // Supprimer une image
-        window.removeImage = (index) => {
+        window.removeProductImage = (index) => {
             productImages.splice(index, 1);
-            renderGallery();
+            renderProductGallery();
         };
 
-        // --- SOUMISSION FORMULAIRE ---
+        // 5. GESTION PROFIL (Logo & Banner)
+        function setupProfileUpload() {
+            // Logo
+            const logoZone = document.getElementById('upload-logo');
+            const logoInput = document.getElementById('file-logo');
+            logoZone.addEventListener('click', () => logoInput.click());
+            logoInput.addEventListener('change', () => {
+                if(logoInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        logoBase64 = e.target.result;
+                        document.getElementById('preview-logo').src = logoBase64;
+                    };
+                    reader.readAsDataURL(logoInput.files[0]);
+                }
+            });
+
+            // Banner
+            const bannerZone = document.getElementById('upload-banner');
+            const bannerInput = document.getElementById('file-banner');
+            bannerZone.addEventListener('click', () => bannerInput.click());
+            bannerInput.addEventListener('change', () => {
+                if(bannerInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        bannerBase64 = e.target.result;
+                        document.getElementById('preview-banner').src = bannerBase64;
+                    };
+                    reader.readAsDataURL(bannerInput.files[0]);
+                }
+            });
+        }
+
+        function loadShopSettings() {
+            if(myShop) {
+                document.getElementById('set-name').value = myShop.name || "";
+                document.getElementById('set-email').value = myShop.ownerEmail || "";
+                document.getElementById('set-desc').value = myShop.description || "";
+                document.getElementById('set-slogan').value = myShop.slogan || "";
+                document.getElementById('set-phone').value = myShop.phone || "";
+                
+                if(myShop.logo) {
+                    document.getElementById('preview-logo').src = myShop.logo;
+                    logoBase64 = myShop.logo;
+                }
+                if(myShop.banner) {
+                    document.getElementById('preview-banner').src = myShop.banner;
+                    bannerBase64 = myShop.banner;
+                }
+            }
+        }
+
+        // --- SOUMISSION PRODUIT ---
         document.getElementById('form-add-product').addEventListener('submit', (e) => {
             e.preventDefault();
-            console.log("Tentative d'ajout produit...");
-
             const btn = document.getElementById('btn-submit-product');
             const name = document.getElementById('p-name').value;
             const price = document.getElementById('p-price').value;
             const desc = document.getElementById('p-desc').value;
 
-            if(!name || !price) {
-                alert("Nom et prix obligatoires.");
-                return;
-            }
+            if(!name || !price) { alert("Nom et prix obligatoires."); return; }
 
-            btn.innerText = "Publication en cours...";
+            btn.innerText = "Publication...";
             btn.disabled = true;
 
             // Image principale = la première, ou placeholder
@@ -494,67 +601,53 @@
                 name: name,
                 price: Number(price),
                 description: desc,
-                image: mainImage,       // Image principale (pour l'affichage en grille)
-                images: productImages,  // Toutes les images (pour le détail produit)
+                image: mainImage,       // Pour affichage liste
+                images: productImages,  // Tableau complet
                 category: myShop.category,
                 createdAt: new Date()
             }).then(() => {
-                console.log("Succès !");
                 alert("✅ Produit mis en vente !");
-                
-                // Reset complet
                 e.target.reset();
                 productImages = [];
-                renderGallery();
-                
+                renderProductGallery();
                 btn.innerText = "Mettre en vente";
                 btn.disabled = false;
                 nav('products', document.querySelectorAll('.admin-nav-item')[1]);
             }).catch(err => {
-                console.error("Erreur Firebase:", err);
-                alert("Erreur lors de l'ajout : " + err.message);
+                alert("Erreur: " + err.message);
                 btn.disabled = false;
                 btn.innerText = "Mettre en vente";
             });
         });
-        // Ajouter Produit
-        document.getElementById('form-add-product').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerText = "Ajout...";
-            btn.disabled = true;
 
-            db.collection('products').add({
-                shopId: myShop.id, // Lien avec la boutique
-                shopName: myShop.name,
-                name: document.getElementById('p-name').value,
-                price: Number(document.getElementById('p-price').value),
-                description: document.getElementById('p-desc').value,
-                image: document.getElementById('p-img').value,
-                category: myShop.category, // Hérite de la catégorie boutique
-                createdAt: new Date()
-            }).then(() => {
-                alert("Produit ajouté !");
-                e.target.reset();
-                btn.innerText = "Mettre en vente";
-                btn.disabled = false;
-                // Retour liste
-                nav('products', document.querySelectorAll('.admin-nav-item')[1]);
-            }).catch(err => alert(err.message));
-        });
-
-        // Modifier Paramètres
+        // --- SOUMISSION PARAMÈTRES ---
         document.getElementById('form-settings').addEventListener('submit', (e) => {
             e.preventDefault();
-            const newName = document.getElementById('set-name').value;
-            const newDesc = document.getElementById('set-desc').value;
+            const btn = e.target.querySelector('button');
+            btn.innerText = "Enregistrement...";
+            btn.disabled = true;
 
-            db.collection('shops').doc(myShop.id).update({
-                name: newName,
-                description: newDesc
-            }).then(() => {
-                alert("Modifications enregistrées !");
-                document.getElementById('shop-title-display').innerText = newName;
+            const updateData = {
+                name: document.getElementById('set-name').value,
+                description: document.getElementById('set-desc').value,
+                slogan: document.getElementById('set-slogan').value,
+                phone: document.getElementById('set-phone').value
+            };
+
+            if(logoBase64) updateData.logo = logoBase64;
+            if(bannerBase64) updateData.banner = bannerBase64;
+
+            db.collection('shops').doc(myShop.id).update(updateData)
+            .then(() => {
+                alert("✅ Boutique mise à jour !");
+                btn.innerText = "Enregistrer les modifications";
+                btn.disabled = false;
+                myShop = { ...myShop, ...updateData }; // Update local
+                document.getElementById('shop-title-display').innerText = myShop.name;
+            })
+            .catch(err => {
+                alert("Erreur: " + err.message);
+                btn.disabled = false;
             });
         });
 
@@ -565,7 +658,7 @@
             }
         };
 
-        // Navigation
+        // Navigation Sidebar
         window.nav = (id, btn) => {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active-section'));
@@ -574,7 +667,7 @@
             document.getElementById('sec-'+id).classList.add('active-section');
 
             document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            if(btn) btn.classList.add('active');
 
             if(window.innerWidth < 900) document.getElementById('seller-sidebar').classList.remove('mobile-open');
         };
