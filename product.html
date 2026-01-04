@@ -182,61 +182,102 @@
 
   <div class="toast-container" id="toast-container"></div>
 
-  <script>
+<script>
     let currentProduct = null;
     let currentQty = 1;
-    let selectedRating = 0; // Pour le formulaire d'avis
+    let selectedRating = 0; 
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Vérification de sécurité pour Firebase
+        if (typeof firebase === 'undefined') {
+            console.error("Firebase n'est pas chargé !");
+            document.getElementById('loading').innerHTML = "<p style='color:red'>Erreur technique : Firebase manquant.</p>";
+            return;
+        }
+
         const db = firebase.firestore();
         const auth = firebase.auth();
         const params = new URLSearchParams(window.location.search);
         const productId = params.get('id');
 
+        console.log("ID Produit demandé :", productId); // Debug
+
         if (!productId) {
-            document.getElementById('loading').innerHTML = "<p>Produit introuvable.</p>";
+            document.getElementById('loading').innerHTML = "<p>Aucun produit spécifié.</p><a href='catalogue.html' class='btn btn-outline'>Retour au catalogue</a>";
             return;
         }
 
         // 1. CHARGER LE PRODUIT
-        db.collection('products').doc(productId).get().then(doc => {
+        db.collection('products').doc(productId).get()
+        .then(doc => {
             if (doc.exists) {
+                console.log("Produit trouvé :", doc.data()); // Debug
                 currentProduct = { id: doc.id, ...doc.data() };
                 renderProductPage(currentProduct);
-                loadSimilarProducts(currentProduct.category);
-                // Charger les avis en temps réel
+                
+                // Charger les infos complémentaires
+                if(currentProduct.category) loadSimilarProducts(currentProduct.category);
                 loadReviews(productId);
             } else {
-                document.getElementById('loading').innerHTML = "<p>Ce produit n'existe plus.</p>";
+                console.warn("Produit introuvable dans la base.");
+                document.getElementById('loading').innerHTML = "<p>Ce produit n'existe plus.</p><a href='catalogue.html' class='btn btn-outline'>Retour au catalogue</a>";
             }
-        }).catch(err => {
-            console.error(err);
-            document.getElementById('loading').innerHTML = "<p>Erreur de chargement.</p>";
+        })
+        .catch(err => {
+            console.error("Erreur chargement produit :", err);
+            document.getElementById('loading').innerHTML = "<p style='color:red'>Erreur de chargement. Vérifiez votre connexion.</p>";
         });
 
         // --- FONCTIONS D'AFFICHAGE ---
         function renderProductPage(p) {
+            // Cacher le loader
             document.getElementById('loading').style.display = 'none';
+            // Afficher le contenu
             document.getElementById('product-content').style.display = 'block';
 
-            document.getElementById('p-name').innerText = p.name;
-            document.getElementById('p-price').innerText = new Intl.NumberFormat('fr-FR').format(p.price) + " FCFA";
+            // Remplir les textes (avec sécurité si champ manquant)
+            document.getElementById('p-name').innerText = p.name || "Produit sans nom";
+            document.getElementById('p-price').innerText = new Intl.NumberFormat('fr-FR').format(p.price || 0) + " FCFA";
             document.getElementById('p-desc').innerText = p.description || "Aucune description disponible.";
             
-            document.getElementById('p-seller-name').innerText = p.shopName || "Boutique Partenaire";
-            document.getElementById('p-seller-link').href = `boutique.html?id=${p.shopId}`;
+            // Lien Vendeur
+            const sellerName = p.shopName || "Boutique Partenaire";
+            document.getElementById('p-seller-name').innerText = sellerName;
+            // Lien vers la boutique (si shopId existe)
+            const shopLink = document.getElementById('p-seller-link');
+            if(p.shopId) {
+                shopLink.href = `boutique.html?id=${p.shopId}`;
+            } else {
+                shopLink.style.pointerEvents = "none"; // Désactive le lien si pas d'ID
+                shopLink.style.color = "#999";
+            }
             
-            // Afficher la note moyenne actuelle du produit
+            // Afficher la note moyenne
             updateRatingDisplay(p.rating, p.reviewCount);
 
-            // Galerie
+            // Galerie Images
             const mainImg = document.getElementById('p-main-img');
             const thumbsContainer = document.getElementById('p-thumbs');
             const primarySrc = p.image || 'assets/img/placeholder.png';
+            
+            // Image principale par défaut
             mainImg.src = primarySrc;
+            mainImg.onerror = function() { this.src = 'assets/img/placeholder.png'; }; // Fallback si erreur lien
 
-            if (p.images && p.images.length > 0) {
-                p.images.forEach((src, index) => {
+            // Vider les miniatures avant de remplir
+            thumbsContainer.innerHTML = "";
+
+            // Générer les miniatures
+            // On combine l'image principale et le tableau d'images secondaires
+            let allImages = [];
+            if(p.image) allImages.push(p.image);
+            if(p.images && Array.isArray(p.images)) allImages = [...allImages, ...p.images];
+            
+            // Dédoublonner
+            allImages = [...new Set(allImages)];
+
+            if (allImages.length > 0) {
+                allImages.forEach((src, index) => {
                     const thumb = document.createElement('div');
                     thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
                     thumb.innerHTML = `<img src="${src}" onclick="switchImage('${src}', this)">`;
@@ -245,8 +286,12 @@
             } else {
                 thumbsContainer.innerHTML = `<div class="thumb active"><img src="${primarySrc}"></div>`;
             }
+
+            // Mettre à jour le titre de l'onglet
             document.title = `${p.name} - Aurum`;
-            lucide.createIcons();
+            
+            // Initialiser les icônes
+            if(typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function updateRatingDisplay(rating, count) {
@@ -266,27 +311,28 @@
             }
         }
 
-
         // --- GESTION DES AVIS ---
-        
-        // 1. Afficher/Masquer le formulaire
         const formContainer = document.getElementById('review-form-container');
-        document.getElementById('btn-toggle-review').addEventListener('click', () => {
-            if(!auth.currentUser) {
-                alert("Veuillez vous connecter pour laisser un avis.");
-                window.location.href = "login.html?redirect=product.html?id=" + productId;
-                return;
-            }
-            formContainer.style.display = formContainer.style.display === 'none' ? 'block' : 'none';
-        });
+        const btnToggleReview = document.getElementById('btn-toggle-review');
+        
+        if(btnToggleReview) {
+            btnToggleReview.addEventListener('click', () => {
+                if(!auth.currentUser) {
+                    alert("Veuillez vous connecter pour laisser un avis.");
+                    // Redirection vers login avec retour
+                    window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                    return;
+                }
+                formContainer.style.display = formContainer.style.display === 'none' ? 'block' : 'none';
+            });
+        }
 
-        // 2. Sélecteur d'étoiles
+        // Sélecteur d'étoiles
         const starBtns = document.querySelectorAll('.star-picker-btn');
         starBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 selectedRating = parseInt(e.target.dataset.value);
                 document.getElementById('review-rating').value = selectedRating;
-                // Mettre à jour visuel
                 starBtns.forEach((b, index) => {
                     if(index < selectedRating) b.classList.add('active');
                     else b.classList.remove('active');
@@ -294,75 +340,86 @@
             });
         });
 
-        // 3. Soumission du formulaire
-        document.getElementById('review-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            if(selectedRating === 0) { alert("Veuillez sélectionner une note."); return; }
-            
-            const user = auth.currentUser;
-            const comment = document.getElementById('review-comment').value;
-            const submitBtn = e.target.querySelector('button[type="submit"]');
+        // Soumission Avis
+        const reviewForm = document.getElementById('review-form');
+        if(reviewForm) {
+            reviewForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if(selectedRating === 0) { alert("Veuillez sélectionner une note."); return; }
+                
+                const user = auth.currentUser;
+                const comment = document.getElementById('review-comment').value;
+                const submitBtn = e.target.querySelector('button[type="submit"]');
 
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Publication...";
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Envoi...";
 
-            // Ajouter l'avis dans la sous-collection 'reviews'
-            db.collection('products').doc(productId).collection('reviews').add({
-                userId: user.uid,
-                userName: user.displayName || user.email.split('@')[0] || 'Client',
-                rating: selectedRating,
-                comment: comment,
-                createdAt: new Date()
-            }).then(() => {
-                // Reset du formulaire
-                e.target.reset();
-                selectedRating = 0;
-                starBtns.forEach(b => b.classList.remove('active'));
-                formContainer.style.display = 'none';
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Publier l'avis";
+                db.collection('products').doc(productId).collection('reviews').add({
+                    userId: user.uid,
+                    userName: user.displayName || user.email.split('@')[0] || 'Client',
+                    rating: selectedRating,
+                    comment: comment,
+                    createdAt: new Date()
+                }).then(() => {
+                    e.target.reset();
+                    selectedRating = 0;
+                    starBtns.forEach(b => b.classList.remove('active'));
+                    formContainer.style.display = 'none';
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Publier l'avis";
+                    
+                    // Mise à jour de la note globale
+                    updateProductRatingSummary(productId);
+                    alert("Merci pour votre avis !");
 
-                // IMPORTANT: Recalculer la moyenne du produit
-                updateProductRatingSummary(productId);
-
-            }).catch(err => {
-                console.error(err);
-                alert("Erreur lors de la publication.");
-                submitBtn.disabled = false;
+                }).catch(err => {
+                    console.error(err);
+                    alert("Erreur lors de la publication.");
+                    submitBtn.disabled = false;
+                });
             });
-        });
+        }
 
-        // 4. Charger et afficher les avis (Temps réel)
+        // Charger Avis
         function loadReviews(pid) {
             db.collection('products').doc(pid).collection('reviews')
               .orderBy('createdAt', 'desc')
               .onSnapshot(snap => {
                   const list = document.getElementById('reviews-list');
+                  if(!list) return;
+                  
                   list.innerHTML = "";
                   if(snap.empty) {
-                      list.innerHTML = "<p>Aucun avis pour le moment. Soyez le premier !</p>";
+                      list.innerHTML = "<p style='color:#777; font-style:italic;'>Soyez le premier à donner votre avis !</p>";
                       return;
                   }
 
                   snap.forEach(doc => {
                       const r = doc.data();
-                      const date = r.createdAt ? new Date(r.createdAt.seconds * 1000).toLocaleDateString() : '';
+                      // Conversion date Firestore -> JS
+                      let dateStr = "Récemment";
+                      if(r.createdAt && r.createdAt.seconds) {
+                          dateStr = new Date(r.createdAt.seconds * 1000).toLocaleDateString('fr-FR');
+                      }
+
                       let starsHtml = "";
-                      for(let i=0; i<5; i++) { starsHtml += (i < r.rating) ? '<span style="color:var(--gold)">★</span>' : '<span style="color:#ddd">★</span>'; }
+                      for(let i=0; i<5; i++) { 
+                          starsHtml += (i < r.rating) ? '<span style="color:var(--gold)">★</span>' : '<span style="color:#ddd">★</span>'; 
+                      }
 
                       list.innerHTML += `
                         <div class="review-card">
                             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
                                 <div style="display:flex; align-items:center; gap:10px;">
-                                    <div style="width:40px; height:40px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; text-transform:uppercase;">
-                                        ${r.userName.charAt(0)}
+                                    <div style="width:40px; height:40px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; text-transform:uppercase; color:#555;">
+                                        ${(r.userName || 'A').charAt(0)}
                                     </div>
                                     <div>
                                         <div style="font-weight:600;">${r.userName}</div>
                                         <div style="font-size:14px;">${starsHtml}</div>
                                     </div>
                                 </div>
-                                <small style="color:#999;">${date}</small>
+                                <small style="color:#999;">${dateStr}</small>
                             </div>
                             <p style="color:#555; font-size:14px; line-height:1.6;">${r.comment}</p>
                         </div>
@@ -371,10 +428,10 @@
               });
         }
 
-        // 5. Fonction utilitaire pour recalculer la moyenne générale du produit
+        // Recalcul Note
         function updateProductRatingSummary(pid) {
             db.collection('products').doc(pid).collection('reviews').get().then(snap => {
-                let total Rating = 0;
+                let totalRating = 0;
                 let count = 0;
                 snap.forEach(doc => {
                     totalRating += doc.data().rating;
@@ -383,61 +440,81 @@
 
                 const newAverage = count > 0 ? (totalRating / count) : 0;
 
-                // Mise à jour du document produit principal
                 db.collection('products').doc(pid).update({
                     rating: newAverage,
                     reviewCount: count
                 }).then(() => {
-                   // Mettre à jour l'affichage en haut de la page
                    updateRatingDisplay(newAverage, count);
                 });
             });
         }
 
-
-        // --- AUTRES FONCTIONS (Similaires, Panier...) ---
+        // Produits Similaires
         function loadSimilarProducts(category) {
             if(!category) return;
+            const container = document.getElementById('similar-products');
+            if(!container) return;
+
             db.collection('products').where('category', '==', category).limit(4).get().then(snap => {
-                  const container = document.getElementById('similar-products');
                   container.innerHTML = "";
+                  let found = 0;
                   snap.forEach(doc => {
-                      if(doc.id === currentProduct.id) return; 
+                      if(doc.id === currentProduct.id) return; // Exclure produit actuel
+                      found++;
                       const p = doc.data();
+                      const price = new Intl.NumberFormat('fr-FR').format(p.price);
+                      const img = p.image || 'assets/img/placeholder.png';
+                      
                       container.innerHTML += `
-                        <div class="card product-card">
-                            <a href="product.html?id=${doc.id}" style="text-decoration:none; color:inherit;">
-                                <div class="card-img"><img src="${p.image || 'assets/img/placeholder.png'}" style="width:100%; height:100%; object-fit:cover;"></div>
-                            </a>
+                        <div class="card product-card" style="cursor:pointer;" onclick="window.location.href='product.html?id=${doc.id}'">
+                            <div class="card-img">
+                                <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
                             <div class="card-body">
                                 <h4 style="font-size:14px; margin:0;">${p.name}</h4>
-                                <div style="font-weight:bold; color:var(--gold); margin-top:5px;">${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA</div>
+                                <div style="font-weight:bold; color:var(--gold); margin-top:5px;">${price} FCFA</div>
                             </div>
                         </div>`;
                   });
+                  
+                  if(found === 0) container.innerHTML = "<p>Aucun autre produit similaire.</p>";
               });
         }
 
+        // Ajout Panier
         const btnCart = document.getElementById('btn-add-cart');
         if(btnCart) {
             btnCart.addEventListener('click', () => {
+                // Utilise la fonction addToCart de app.js si dispo, sinon fallback simple
                 if(typeof addToCart === 'function') {
                     addToCart(currentProduct.id, currentQty);
-                    const originalText = btnCart.innerText;
-                    btnCart.innerText = "Ajouté !";
-                    btnCart.style.background = "#1F8A70";
-                    setTimeout(() => { btnCart.innerText = originalText; btnCart.style.background = ""; }, 2000);
+                } else {
+                    // Fallback manuel si app.js n'est pas chargé
+                    let cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+                    const existing = cart.find(i => i.pid === currentProduct.id);
+                    if(existing) existing.qty += currentQty;
+                    else cart.push({ pid: currentProduct.id, qty: currentQty });
+                    localStorage.setItem('ac_cart', JSON.stringify(cart));
+                    alert("Ajouté au panier !");
                 }
+                
+                // Animation bouton
+                const originalText = btnCart.innerText;
+                btnCart.innerText = "Ajouté !";
+                btnCart.style.background = "#1F8A70";
+                setTimeout(() => { btnCart.innerText = originalText; btnCart.style.background = ""; }, 2000);
             });
         }
     });
 
-    // Fonctions globales
+    // --- FONCTIONS GLOBALES (accessibles depuis le HTML) ---
+
     window.switchImage = function(src, thumbElement) {
         document.getElementById('p-main-img').src = src;
         document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
-        thumbElement.parentElement.classList.add('active');
+        thumbElement.classList.add('active');
     };
+
     window.updateQty = function(change) {
         currentQty += change;
         if (currentQty < 1) currentQty = 1;
