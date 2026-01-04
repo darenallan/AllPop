@@ -101,6 +101,45 @@
             border-color: #D4AF37;
             background: rgba(212, 175, 55, 0.05);
         }
+        /* GALERIE UPLOAD */
+        .preview-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .preview-remove:hover {
+            background: red;
+        }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -212,25 +251,22 @@
                         <label>Description</label>
                         <textarea class="input" id="p-desc" rows="4" placeholder="Détails du produit..."></textarea>
                         
-                        <label>Photo du produit</label>
+                        <label>Photos du produit (Max 5)</label>
                         <div class="upload-area" id="drop-zone">
-                            <input type="file" id="p-file" accept="image/*" hidden>
+                            <input type="file" id="p-files" accept="image/*" multiple hidden>
                             <div class="upload-content" id="upload-content">
-                                <i data-lucide="upload-cloud" style="width: 48px; height: 48px; color: #D4AF37; margin-bottom: 10px;"></i>
-                                <p style="margin: 0; font-weight: 500;">Glissez une image ici ou <span style="color: #D4AF37; cursor: pointer; text-decoration: underline;">parcourez</span></p>
-                                <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">JPG, PNG (Max 2Mo)</p>
-                            </div>
-                            <div id="preview-container" style="display: none; position: relative; width: 100%; height: 100%;">
-                                <img id="img-preview" src="" style="width: 100%; height: 200px; object-fit: contain; border-radius: 8px;">
-                                <button type="button" id="remove-img" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">&times;</button>
+                                <i data-lucide="image-plus" style="width: 48px; height: 48px; color: #D4AF37; margin-bottom: 10px;"></i>
+                                <p style="margin: 0; font-weight: 500;">Glissez vos images ici ou <span style="color: #D4AF37; cursor: pointer; text-decoration: underline;">parcourez</span></p>
+                                <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">JPG, PNG (Max 2Mo par image)</p>
                             </div>
                         </div>
 
-                        <button class="btn-gold" style="margin-top: 20px;">Mettre en vente</button>
+                        <div id="preview-gallery" class="preview-gallery"></div>
+
+                        <button class="btn-gold" id="btn-submit-product" style="margin-top: 20px;">Mettre en vente</button>
                     </form>
                 </div>
             </section>
-
             <section id="sec-orders" class="admin-section hidden">
                 <h1 class="admin-page-title">Commandes</h1>
                 <div class="admin-card">
@@ -371,58 +407,115 @@
         }
 
         // 4. ACTIONS
-        // --- GESTION UPLOAD ---
+      // --- GESTION MULTI-UPLOAD ---
         const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('p-file');
-        const previewContainer = document.getElementById('preview-container');
-        const uploadContent = document.getElementById('upload-content');
-        const imgPreview = document.getElementById('img-preview');
-        const removeBtn = document.getElementById('remove-img');
-        let currentImageBase64 = ""; // Stockera l'image convertie
+        const fileInput = document.getElementById('p-files');
+        const gallery = document.getElementById('preview-gallery');
+        let productImages = []; // Tableau pour stocker les Base64
 
-        // Click pour ouvrir l'explorateur
+        // Ouvrir sélecteur
         dropZone.addEventListener('click', () => fileInput.click());
 
-        // Gestion Drag & Drop
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
+        // Drag & Drop
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('dragover');
-            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            handleFiles(e.dataTransfer.files);
         });
 
         // Changement Input
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length) handleFile(fileInput.files[0]);
-        });
+        fileInput.addEventListener('change', () => handleFiles(fileInput.files));
 
-        // Traitement du fichier
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                alert("Veuillez sélectionner une image valide.");
+        // Traitement des fichiers
+        function handleFiles(files) {
+            if (productImages.length + files.length > 5) {
+                alert("Maximum 5 images autorisées.");
                 return;
             }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                currentImageBase64 = e.target.result; // L'image en format texte (Base64)
-                imgPreview.src = currentImageBase64;
-                uploadContent.style.display = 'none';
-                previewContainer.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const base64 = e.target.result;
+                    productImages.push(base64); // Ajouter au tableau
+                    renderGallery(); // Mettre à jour l'affichage
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
-        // Supprimer l'image
-        removeBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Empêche de rouvrir l'explorateur
-            currentImageBase64 = "";
-            fileInput.value = "";
-            previewContainer.style.display = 'none';
-            uploadContent.style.display = 'block';
+        // Afficher la galerie
+        function renderGallery() {
+            gallery.innerHTML = "";
+            productImages.forEach((img, index) => {
+                gallery.innerHTML += `
+                    <div class="preview-item">
+                        <img src="${img}">
+                        <button type="button" class="preview-remove" onclick="removeImage(${index})">&times;</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Supprimer une image
+        window.removeImage = (index) => {
+            productImages.splice(index, 1);
+            renderGallery();
+        };
+
+        // --- SOUMISSION FORMULAIRE ---
+        document.getElementById('form-add-product').addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log("Tentative d'ajout produit...");
+
+            const btn = document.getElementById('btn-submit-product');
+            const name = document.getElementById('p-name').value;
+            const price = document.getElementById('p-price').value;
+            const desc = document.getElementById('p-desc').value;
+
+            if(!name || !price) {
+                alert("Nom et prix obligatoires.");
+                return;
+            }
+
+            btn.innerText = "Publication en cours...";
+            btn.disabled = true;
+
+            // Image principale = la première, ou placeholder
+            const mainImage = productImages.length > 0 ? productImages[0] : 'assets/img/placeholder.png';
+
+            db.collection('products').add({
+                shopId: myShop.id,
+                shopName: myShop.name,
+                name: name,
+                price: Number(price),
+                description: desc,
+                image: mainImage,       // Image principale (pour l'affichage en grille)
+                images: productImages,  // Toutes les images (pour le détail produit)
+                category: myShop.category,
+                createdAt: new Date()
+            }).then(() => {
+                console.log("Succès !");
+                alert("✅ Produit mis en vente !");
+                
+                // Reset complet
+                e.target.reset();
+                productImages = [];
+                renderGallery();
+                
+                btn.innerText = "Mettre en vente";
+                btn.disabled = false;
+                nav('products', document.querySelectorAll('.admin-nav-item')[1]);
+            }).catch(err => {
+                console.error("Erreur Firebase:", err);
+                alert("Erreur lors de l'ajout : " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Mettre en vente";
+            });
         });
         // Ajouter Produit
         document.getElementById('form-add-product').addEventListener('submit', (e) => {
