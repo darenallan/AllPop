@@ -81,6 +81,26 @@
         .hidden { display: none !important; }
         .active-section { display: block !important; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        /* ZONE UPLOAD */
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #fdfdfd;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #D4AF37;
+            background: rgba(212, 175, 55, 0.05);
+        }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -174,7 +194,7 @@
                 </div>
             </section>
 
-            <section id="sec-add" class="admin-section hidden">
+           <section id="sec-add" class="admin-section hidden">
                 <h1 class="admin-page-title">Nouveau Produit</h1>
                 <div class="admin-card">
                     <form id="form-add-product">
@@ -192,10 +212,21 @@
                         <label>Description</label>
                         <textarea class="input" id="p-desc" rows="4" placeholder="Détails du produit..."></textarea>
                         
-                        <label>URL Image (Temporaire)</label>
-                        <input class="input" id="p-img" placeholder="https://...">
+                        <label>Photo du produit</label>
+                        <div class="upload-area" id="drop-zone">
+                            <input type="file" id="p-file" accept="image/*" hidden>
+                            <div class="upload-content" id="upload-content">
+                                <i data-lucide="upload-cloud" style="width: 48px; height: 48px; color: #D4AF37; margin-bottom: 10px;"></i>
+                                <p style="margin: 0; font-weight: 500;">Glissez une image ici ou <span style="color: #D4AF37; cursor: pointer; text-decoration: underline;">parcourez</span></p>
+                                <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">JPG, PNG (Max 2Mo)</p>
+                            </div>
+                            <div id="preview-container" style="display: none; position: relative; width: 100%; height: 100%;">
+                                <img id="img-preview" src="" style="width: 100%; height: 200px; object-fit: contain; border-radius: 8px;">
+                                <button type="button" id="remove-img" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">&times;</button>
+                            </div>
+                        </div>
 
-                        <button class="btn-gold">Mettre en vente</button>
+                        <button class="btn-gold" style="margin-top: 20px;">Mettre en vente</button>
                     </form>
                 </div>
             </section>
@@ -340,7 +371,59 @@
         }
 
         // 4. ACTIONS
-        
+        // --- GESTION UPLOAD ---
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('p-file');
+        const previewContainer = document.getElementById('preview-container');
+        const uploadContent = document.getElementById('upload-content');
+        const imgPreview = document.getElementById('img-preview');
+        const removeBtn = document.getElementById('remove-img');
+        let currentImageBase64 = ""; // Stockera l'image convertie
+
+        // Click pour ouvrir l'explorateur
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Gestion Drag & Drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        // Changement Input
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) handleFile(fileInput.files[0]);
+        });
+
+        // Traitement du fichier
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert("Veuillez sélectionner une image valide.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImageBase64 = e.target.result; // L'image en format texte (Base64)
+                imgPreview.src = currentImageBase64;
+                uploadContent.style.display = 'none';
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Supprimer l'image
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Empêche de rouvrir l'explorateur
+            currentImageBase64 = "";
+            fileInput.value = "";
+            previewContainer.style.display = 'none';
+            uploadContent.style.display = 'block';
+        });
         // Ajouter Produit
         document.getElementById('form-add-product').addEventListener('submit', (e) => {
             e.preventDefault();
