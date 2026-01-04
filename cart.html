@@ -3,65 +3,432 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aurum - Panier</title>
-  <meta name="description" content="Votre panier Aurum." />
-  <!-- Google Fonts - Luxury Typography -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-  <link rel="manifest" href="manifest.json">
-  <link rel="preload" as="image" href="assets/img/placeholder-product-1.svg">
+  <title>Mon Panier - Aurum</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <script src="assets/js/auth.js"></script>
+  <style>
+      /* --- Styles spécifiques Panier --- */
+      .cart-container { padding-top: 40px; padding-bottom: 80px; min-height: 60vh; }
+      
+      /* État Panier Vide */
+      .empty-state {
+          text-align: center;
+          padding: 80px 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+      }
+      .empty-icon { width: 80px; height: 80px; color: #ddd; margin-bottom: 20px; }
+      .empty-title { font-family: var(--font-serif); font-size: 28px; margin-bottom: 10px; }
+      .empty-text { color: #666; margin-bottom: 30px; }
+
+      /* Layout Panier Rempli */
+      .cart-layout {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 40px;
+      }
+
+      /* Liste des articles */
+      .cart-item {
+          display: flex;
+          align-items: center;
+          padding: 20px 0;
+          border-bottom: 1px solid #eee;
+          gap: 20px;
+      }
+      .cart-item-img {
+          width: 100px;
+          height: 100px;
+          border-radius: 12px;
+          object-fit: cover;
+          background: #f5f5f5;
+      }
+      .cart-item-info { flex: 1; }
+      .cart-item-title { font-weight: 600; margin-bottom: 5px; display: block; text-decoration: none; color: inherit; }
+      .cart-item-price { color: #666; font-size: 14px; }
+      
+      .cart-item-actions {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+      }
+      .qty-selector-sm {
+          display: flex;
+          align-items: center;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+      }
+      .qty-btn-sm { padding: 5px 10px; background: none; border: none; cursor: pointer; }
+      .qty-val-sm { width: 30px; text-align: center; font-weight: 600; font-size: 14px; }
+      
+      .item-total { font-weight: 700; color: var(--gold); font-size: 16px; min-width: 80px; text-align: right; }
+      .btn-delete { color: #999; cursor: pointer; transition: 0.2s; }
+      .btn-delete:hover { color: var(--danger); }
+
+      /* Résumé */
+      .summary-card {
+          background: #fff;
+          padding: 30px;
+          border-radius: 16px;
+          border: 1px solid #eee;
+          position: sticky;
+          top: 100px;
+      }
+      .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; color: #555; }
+      .summary-total { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-weight: 700; font-size: 18px; }
+      .summary-total .value { color: var(--gold); }
+
+      @media (max-width: 900px) {
+          .cart-layout { grid-template-columns: 1fr; gap: 30px; }
+          .cart-item { flex-wrap: wrap; }
+          .cart-item-actions { width: 100%; justify-content: space-between; margin-top: 15px; }
+          .summary-card { position: static; }
+      }
+  </style>
 </head>
+
 <body>
-  <header id="app-header" class="header"></header>
-  <main class="container cart-page">
-    <section class="section">
-      <h1>Votre panier</h1>
-      <div class="cart-grid">
-        <div>
-          <div id="cart-items"></div>
-          <div class="mt-4">
-            <button class="btn" id="clear-cart-btn">Vider le panier</button>
-            <a href="catalogue.html" class="btn btn-outline">Continuer vos achats</a>
-          </div>
-        </div>
-        <aside>
-          <div class="summary-card">
-            <h3>Résumé</h3>
-            <div class="summary-row"><span>Articles</span><span id="summary-count">0</span></div>
-            <div class="summary-row"><span>Sous-total</span><span id="summary-subtotal">0 FCFA</span></div>
-            <div class="summary-row">
-              <span>Adresse de livraison</span>
-              <span>
-                <input id="delivery-address" class="input" placeholder="Ex: Zone du Bois, Ouagadougou" style="width:100%;margin-top:8px" />
-              </span>
-            </div>
-            <div class="summary-row">
-              <span>Code promo</span>
-              <span>
-                <input id="promo-code" class="input" placeholder="Ex: AURUM10" style="width:140px" />
-                <button class="btn btn-dark mt-2" id="apply-promo-btn">Appliquer</button>
-              </span>
-            </div>
-            <div class="summary-row"><span>Réduction</span><span id="summary-discount">0 FCFA</span></div>
-            <div class="summary-row"><span>Livraison</span><span id="summary-shipping">Gratuite</span></div>
-            <div class="summary-row summary-total"><span>Total</span><span id="summary-total">0 FCFA</span></div>
-            <button class="btn btn-gold btn-xl mt-4" id="checkout-btn">Procéder au paiement</button>
-          </div>
-        </aside>
+  <header id="app-header" class="header">
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+          </a>
+          <nav class="nav-actions">
+              <a href="cart.html" class="icon-btn" style="position:relative;">
+                  <i data-lucide="shopping-bag"></i>
+                  <span class="badge" id="cart-badge" style="display:none;">0</span>
+              </a>
+              <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
+          </nav>
       </div>
-    </section>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer">
+      <div class="drawer-header">
+          <span class="drawer-title">Menu</span>
+          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
+      </div>
+      <nav class="drawer-nav">
+          <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
+          <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
+          <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
+          <div class="drawer-divider"></div>
+          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
+      </nav>
+  </div>
+  <div id="menu-overlay"></div>
+
+  <main class="container cart-container">
+    
+    <div id="loading" style="text-align:center; padding:100px;">
+        <i data-lucide="loader" class="spin" style="animation:spin 1s linear infinite; width:40px; height:40px; color:var(--gold);"></i>
+        <p style="margin-top:20px; color:#666;">Chargement de votre panier...</p>
+    </div>
+
+    <div id="cart-empty" class="empty-state" style="display:none;">
+        <i data-lucide="shopping-bag" class="empty-icon"></i>
+        <h1 class="empty-title">Votre panier est vide</h1>
+        <p class="empty-text">Il semblerait que vous n'ayez pas encore trouvé votre bonheur.</p>
+        <a href="catalogue.html" class="btn btn-gold btn-lg">
+            Découvrir nos collections
+        </a>
+    </div>
+
+    <div id="cart-content" class="cart-layout" style="display:none;">
+        
+        <div class="cart-list-section">
+            <h2 style="margin-top:0; margin-bottom:30px;">Mon Panier (<span id="cart-count-label">0</span>)</h2>
+            <div id="cart-items-list">
+                </div>
+        </div>
+
+        <div class="cart-summary-section">
+            <div class="summary-card">
+                <h3 style="margin-top:0;">Résumé</h3>
+                
+                <div class="summary-row">
+                    <span>Sous-total</span>
+                    <span id="subtotal-display">0 FCFA</span>
+                </div>
+                <div class="summary-row">
+                    <span>Livraison</span>
+                    <span>Calculé à l'étape suivante</span>
+                </div>
+                
+                <div style="margin: 20px 0; display:flex; gap:10px;">
+                    <input type="text" class="input" placeholder="Code promo" style="margin:0;">
+                    <button class="btn btn-outline" style="padding: 0 20px;">OK</button>
+                </div>
+
+                <div class="summary-total">
+                    <span>Total</span>
+                    <span class="value" id="total-display">0 FCFA</span>
+                </div>
+
+                <button id="btn-checkout" class="btn btn-gold btn-lg" style="width:100%; margin-top:20px;">
+                    Procéder au paiement
+                </button>
+                
+                <p style="text-align:center; margin-top:15px; font-size:13px; color:#666;">
+                    <i data-lucide="shield-check" style="width:14px; vertical-align:middle;"></i> Paiement sécurisé
+                </p>
+            </div>
+        </div>
+
+    </div>
   </main>
-  <footer id="app-footer" class="footer"></footer>
-  <div class="toast-container" id="toast-container"></div>
-  <script src="assets/js/utils.js" defer></script>
-  <script src="assets/js/data.js" defer></script>
-  <script src="assets/js/icons.js" defer></script>
-  <script src="assets/js/app.js" defer></script>
-  <script src="assets/js/auth.js" defer></script>
-  <script src="assets/js/cart.js" defer></script>
+
+  <footer class="footer">
+      <div class="container">
+          <div class="cols" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
+              <div>
+                  <h3>AURUM</h3>
+                  <p>La première marketplace premium du Burkina Faso. Qualité, confiance et élégance.</p>
+              </div>
+              <div>
+                  <h4>Navigation</h4>
+                  <ul style="list-style:none; padding:0; line-height:2;">
+                      <li><a href="index.html">Accueil</a></li>
+                      <li><a href="catalogue.html">Catalogue</a></li>
+                      <li><a href="seller.html">Devenir Vendeur</a></li>
+                      <li><a href="profile.html">Mon Compte</a></li>
+                  </ul>
+              </div>
+              <div>
+                  <h4>Légal</h4>
+                  <ul style="list-style:none; padding:0; line-height:2;">
+                      <li><a href="cgu.html">Conditions Générales</a></li>
+                      <li><a href="contact.html">Politique de Confidentialité</a></li>
+                      <li><a href="faq.html">FAQ</a></li>
+                  </ul>
+              </div>
+              <div>
+                  <h4>Suivez-nous</h4>
+                  <div class="footer-socials" style="display:flex; gap:15px;">
+                      <a href="#" class="social-link"><i data-lucide="facebook"></i></a>
+                      <a href="#" class="social-link"><i data-lucide="instagram"></i></a>
+                      <a href="#" class="social-link"><i data-lucide="twitter"></i></a>
+                  </div>
+              </div>
+          </div>
+          <div class="footer-bottom" style="margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
+              &copy; 2026 Aurum Marketplace. Tous droits réservés.
+          </div>
+      </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Éléments DOM
+        const loadingEl = document.getElementById('loading');
+        const emptyEl = document.getElementById('cart-empty');
+        const contentEl = document.getElementById('cart-content');
+        const listEl = document.getElementById('cart-items-list');
+        const countLabel = document.getElementById('cart-count-label');
+        const subtotalEl = document.getElementById('subtotal-display');
+        const totalEl = document.getElementById('total-display');
+        const checkoutBtn = document.getElementById('btn-checkout');
+
+        // 1. Lire le LocalStorage
+        let cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+        let cartProductsData = []; // Stockera les infos complètes des produits
+
+        console.log("Panier initial (LocalStorage) :", cart);
+
+        if (cart.length === 0) {
+            showEmptyState();
+            return;
+        }
+
+        // 2. Récupérer les infos fraîches depuis Firestore
+        // On crée un tableau de promesses pour récupérer chaque produit
+        const promises = cart.map(item => db.collection('products').doc(item.pid).get());
+
+        Promise.all(promises)
+            .then(snapshots => {
+                snapshots.forEach(doc => {
+                    if (doc.exists) {
+                        // On combine les données Firestore avec la quantité du panier local
+                        const productData = doc.data();
+                        const cartItem = cart.find(i => i.pid === doc.id);
+                        cartProductsData.push({
+                            id: doc.id,
+                            ...productData,
+                            qty: cartItem ? cartItem.qty : 1
+                        });
+                    }
+                });
+
+                // Nettoyage : Si des produits du localStorage n'existent plus dans Firebase
+                if (cartProductsData.length < cart.length) {
+                    console.warn("Certains produits du panier n'existent plus. Mise à jour du panier local.");
+                    // On ne garde que ce qui a été trouvé en base
+                    const validIds = cartProductsData.map(p => p.id);
+                    cart = cart.filter(item => validIds.includes(item.pid));
+                    localStorage.setItem('ac_cart', JSON.stringify(cart));
+                }
+
+                if (cartProductsData.length === 0) {
+                    showEmptyState();
+                } else {
+                    renderCart();
+                }
+            })
+            .catch(err => {
+                console.error("Erreur chargement panier :", err);
+                loadingEl.innerHTML = "<p style='color:red;'>Erreur lors du chargement. Veuillez rafraîchir.</p>";
+            });
+
+
+        // --- FONCTIONS ---
+
+        function showEmptyState() {
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'flex';
+            contentEl.style.display = 'none';
+            lucide.createIcons();
+        }
+
+        function renderCart() {
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'none';
+            contentEl.style.display = 'grid';
+            
+            listEl.innerHTML = "";
+            let total = 0;
+            let itemCount = 0;
+
+            cartProductsData.forEach(p => {
+                const lineTotal = p.price * p.qty;
+                total += lineTotal;
+                itemCount += p.qty;
+                const img = p.image || p.images?.[0] || 'assets/img/placeholder.png';
+
+                listEl.innerHTML += `
+                    <div class="cart-item">
+                        <a href="product.html?id=${p.id}">
+                            <img src="${img}" class="cart-item-img" alt="${p.name}">
+                        </a>
+                        <div class="cart-item-info">
+                            <a href="product.html?id=${p.id}" class="cart-item-title">${p.name}</a>
+                            <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA / unité</div>
+                        </div>
+                        <div class="cart-item-actions">
+                            <div class="qty-selector-sm">
+                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', -1)">-</button>
+                                <span class="qty-val-sm">${p.qty}</span>
+                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', 1)">+</button>
+                            </div>
+                            <div class="item-total">
+                                ${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA
+                            </div>
+                            <div class="btn-delete" onclick="removeItem('${p.id}')">
+                                <i data-lucide="trash-2"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Mise à jour des totaux
+            const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
+            subtotalEl.innerText = formattedTotal;
+            totalEl.innerText = formattedTotal;
+            countLabel.innerText = itemCount;
+
+            lucide.createIcons();
+        }
+
+        // --- ACTIONS GLOBALES (accessibles via onclick) ---
+
+        window.changeQty = function(pid, delta) {
+            // 1. Mise à jour données locales
+            const product = cartProductsData.find(p => p.id === pid);
+            if(product) {
+                product.qty += delta;
+                if(product.qty < 1) product.qty = 1;
+            }
+            
+            // 2. Mise à jour LocalStorage
+            const lsItem = cart.find(i => i.pid === pid);
+            if(lsItem) {
+                lsItem.qty += delta;
+                if(lsItem.qty < 1) lsItem.qty = 1;
+                localStorage.setItem('ac_cart', JSON.stringify(cart));
+            }
+
+            // 3. Rerender
+            renderCart();
+        };
+
+        window.removeItem = function(pid) {
+            if(!confirm("Retirer cet article du panier ?")) return;
+
+            // 1. Filtre les données
+            cartProductsData = cartProductsData.filter(p => p.id !== pid);
+            cart = cart.filter(i => i.pid !== pid);
+            
+            // 2. Sauvegarde LS
+            localStorage.setItem('ac_cart', JSON.stringify(cart));
+
+            // 3. Rerender ou état vide
+            if(cart.length === 0) {
+                showEmptyState();
+            } else {
+                renderCart();
+            }
+        };
+
+        // --- CHECKOUT ---
+        checkoutBtn.addEventListener('click', () => {
+            if(!auth.currentUser) {
+                // Sauvegarde l'intention de checkout pour rediriger après login
+                sessionStorage.setItem('ac_checkout_pending', 'true');
+                window.location.href = "login.html?redirect=cart.html";
+            } else {
+                // Rediriger vers la page de commande (à créer plus tard)
+                // Pour l'instant, simple alerte
+                alert("Redirection vers la page de paiement sécurisé... (Prochaine étape)");
+                // window.location.href = "checkout.html"; 
+            }
+        });
+
+        // --- MENU MOBILE ---
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeBtn = document.getElementById('close-btn');
+        const drawer = document.getElementById('mobile-drawer');
+        const menuOverlay = document.getElementById('menu-overlay');
+
+        function openMenu() {
+            drawer.classList.add('active');
+            menuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            drawer.classList.remove('active');
+            menuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        if (menuToggle) menuToggle.addEventListener('click', openMenu);
+        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+        if (menuOverlay) menuOverlay.addEventListener('click', closeMenu);
+
+    });
+  </script>
 </body>
 </html>
