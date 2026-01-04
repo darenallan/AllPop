@@ -45,13 +45,21 @@
   </header>
 
   <div class="mobile-menu" id="mobile-menu">
+      <div class="drawer-header">
+          <span class="drawer-title">Menu</span>
+          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
+      </div>
+
       <nav class="mobile-menu-nav">
           <a href="index.html" class="mobile-menu-item"><i data-lucide="home"></i> Accueil</a>
           <a href="catalogue.html" class="mobile-menu-item"><i data-lucide="grid"></i> Catalogue</a>
           <a href="seller.html" class="mobile-menu-item"><i data-lucide="store"></i> Espace Vendeur</a>
           <a href="cart.html" class="mobile-menu-item"><i data-lucide="shopping-bag"></i> Panier</a>
+          
           <div class="mobile-menu-divider"></div>
+          
           <a href="login.html" id="mobile-auth-link" class="mobile-menu-item"><i data-lucide="user"></i> Connexion</a>
+          <a href="#" id="logout-btn-mobile" class="mobile-menu-item" style="display:none; color:red;"><i data-lucide="log-out"></i> Déconnexion</a>
       </nav>
   </div>
   
@@ -173,24 +181,25 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         
-        // 1. GESTION MENU BURGER (CORRIGÉ)
+        // --- 1. GESTION MENU BURGER ---
         const menuBtn = document.getElementById('menu-toggle');
+        const closeBtn = document.getElementById('close-btn'); // Bouton fermeture
         const mobileMenu = document.getElementById('mobile-menu');
         const overlay = document.getElementById('menu-overlay');
         
         function toggleMenu() {
-            // Bascule la classe active pour le CSS (si présent)
+            // Bascule la classe active
             mobileMenu.classList.toggle('active');
             
-            // Force l'affichage en JS si le CSS ne marche pas
+            // Fallback JS si CSS ne marche pas
             if(mobileMenu.style.transform === 'translateX(0%)') {
                 mobileMenu.style.transform = 'translateX(100%)';
                 overlay.style.display = 'none';
             } else {
                 mobileMenu.style.transform = 'translateX(0%)';
-                mobileMenu.style.display = 'block';
+                mobileMenu.style.display = 'block'; // Force display block
                 mobileMenu.style.position = 'fixed';
-                mobileMenu.style.top = '70px';
+                mobileMenu.style.top = '0'; // Top 0 pour couvrir tout le côté
                 mobileMenu.style.right = '0';
                 mobileMenu.style.bottom = '0';
                 mobileMenu.style.width = '300px';
@@ -202,37 +211,39 @@
             }
         }
 
-       if(menuBtn) {
-    menuBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('active');
-        
-        // Force l'affichage si le CSS ne suit pas
-        if(mobileMenu.style.transform === 'translateX(0%)') {
-            mobileMenu.style.transform = 'translateX(100%)';
-        } else {
-            mobileMenu.style.transform = 'translateX(0%)';
-            mobileMenu.style.display = 'block';
-        }
-    });
-}
+        if(menuBtn) menuBtn.addEventListener('click', toggleMenu);
+        if(closeBtn) closeBtn.addEventListener('click', toggleMenu); // Fermeture via croix
+        if(overlay) overlay.addEventListener('click', toggleMenu);   // Fermeture via overlay
 
-        // 2. CHARGEMENT DONNÉES FIREBASE
+        // --- 2. LOGIQUE FIREBASE ---
         if(typeof firebase !== 'undefined') {
             const db = firebase.firestore();
             const auth = firebase.auth();
 
-            // A. État de Connexion
+            // A. État de Connexion & Déconnexion
+            const authLink = document.getElementById('mobile-auth-link');
+            const logoutLink = document.getElementById('logout-btn-mobile');
+
             auth.onAuthStateChanged((user) => {
-                const link = document.getElementById('mobile-auth-link');
                 if (user) {
-                    link.innerHTML = '<i data-lucide="user-check"></i> Mon Compte';
-                    link.href = 'profile.html'; // Redirige vers profil
+                    authLink.innerHTML = '<i data-lucide="user-check"></i> Mon Compte';
+                    authLink.href = 'profile.html';
+                    logoutLink.style.display = 'flex'; // Afficher bouton déconnexion
                 } else {
-                    link.innerHTML = '<i data-lucide="log-in"></i> Connexion';
-                    link.href = 'login.html';
+                    authLink.innerHTML = '<i data-lucide="log-in"></i> Connexion';
+                    authLink.href = 'login.html';
+                    logoutLink.style.display = 'none'; // Cacher bouton déconnexion
                 }
                 lucide.createIcons();
             });
+
+            // Gérer le clic sur Déconnexion
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.signOut().then(() => window.location.reload());
+                });
+            }
 
             // B. Charger les CATÉGORIES
             db.collection('categories').get().then(snap => {
@@ -253,14 +264,13 @@
                 } else { box.innerHTML = "<p>Aucune catégorie.</p>"; }
             });
 
-            // C. Charger les NOUVEAUTÉS (Produits)
+            // C. Charger les NOUVEAUTÉS
             db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
                 const grid = document.getElementById('home-new');
                 if(!snap.empty) {
                     grid.innerHTML = "";
                     snap.forEach(doc => {
                         const p = doc.data();
-                        // Format Prix
                         const price = new Intl.NumberFormat('fr-FR').format(p.price);
                         
                         grid.innerHTML += `
@@ -286,17 +296,8 @@
             });
         }
         
-        // Initialiser Icônes
         if(typeof lucide !== 'undefined') lucide.createIcons();
     });
-    // Dans le bloc auth.onAuthStateChanged
-const mobileLogout = document.getElementById('logout-btn-mobile');
-if (mobileLogout) {
-    mobileLogout.addEventListener('click', (e) => {
-        e.preventDefault();
-        firebase.auth().signOut().then(() => window.location.reload());
-    });
-}
   </script>
 </body>
 </html>
