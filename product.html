@@ -17,128 +17,31 @@
   <script src="assets/js/app.js" defer></script>
 
   <style>
-      /* Styles spécifiques à la fiche produit pour correspondre à tes captures */
-      .product-container {
-          padding-top: 40px;
-          padding-bottom: 80px;
-      }
-      
-      .product-layout {
-          display: grid;
-          grid-template-columns: 1.2fr 1fr; /* Image plus grande à gauche */
-          gap: 60px;
-          margin-bottom: 80px;
-      }
-
-      /* Galerie */
-      .gallery-main {
-          width: 100%;
-          height: 500px;
-          background: #f9f9f9;
-          border-radius: 20px;
-          overflow: hidden;
-          margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-      }
-      .gallery-main img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain; /* ou cover selon préférence */
-      }
-      .gallery-thumbs {
-          display: flex;
-          gap: 12px;
-      }
-      .thumb {
-          width: 80px;
-          height: 80px;
-          border-radius: 12px;
-          background: #f5f5f5;
-          cursor: pointer;
-          overflow: hidden;
-          border: 2px solid transparent;
-          transition: 0.2s;
-      }
-      .thumb.active {
-          border-color: var(--gold);
-      }
+      /* --- Styles existants (layout) --- */
+      .product-container { padding-top: 40px; padding-bottom: 80px; }
+      .product-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; margin-bottom: 80px; }
+      .gallery-main { width: 100%; height: 500px; background: #f9f9f9; border-radius: 20px; overflow: hidden; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; }
+      .gallery-main img { width: 100%; height: 100%; object-fit: contain; }
+      .gallery-thumbs { display: flex; gap: 12px; }
+      .thumb { width: 80px; height: 80px; border-radius: 12px; background: #f5f5f5; cursor: pointer; overflow: hidden; border: 2px solid transparent; transition: 0.2s; }
+      .thumb.active { border-color: var(--gold); }
       .thumb img { width: 100%; height: 100%; object-fit: cover; }
-
-      /* Infos */
-      .product-info h1 {
-          font-size: 42px;
-          margin-bottom: 10px;
-          line-height: 1.1;
-      }
-      .product-price-xl {
-          font-size: 28px;
-          color: var(--gold);
-          font-weight: 700;
-          margin-bottom: 24px;
-          font-family: var(--font-sans);
-      }
-      .seller-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 13px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          font-weight: 600;
-          color: #666;
-          margin-bottom: 16px;
-          text-decoration: none;
-      }
+      .product-info h1 { font-size: 42px; margin-bottom: 10px; line-height: 1.1; }
+      .product-price-xl { font-size: 28px; color: var(--gold); font-weight: 700; margin-bottom: 24px; font-family: var(--font-sans); }
+      .seller-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; color: #666; margin-bottom: 16px; text-decoration: none; }
       .seller-link:hover { color: var(--black); }
+      .qty-selector { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; width: fit-content; }
+      .qty-btn { padding: 12px 16px; background: transparent; border: none; cursor: pointer; font-size: 18px; }
+      .qty-value { font-weight: 600; width: 30px; text-align: center; }
+      .action-row { display: flex; gap: 16px; margin-top: 30px; }
+      .reviews-section { background: #f9f9f9; padding: 60px; border-radius: 20px; }
+      .review-card { background: white; padding: 24px; border-radius: 16px; margin-bottom: 16px; }
+      @media (max-width: 900px) { .product-layout { grid-template-columns: 1fr; gap: 30px; } .gallery-main { height: 350px; } .product-info h1 { font-size: 32px; } .reviews-section { padding: 20px; } }
 
-      /* Actions */
-      .qty-selector {
-          display: flex;
-          align-items: center;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          width: fit-content;
-      }
-      .qty-btn {
-          padding: 12px 16px;
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          font-size: 18px;
-      }
-      .qty-value {
-          font-weight: 600;
-          width: 30px;
-          text-align: center;
-      }
-      
-      .action-row {
-          display: flex;
-          gap: 16px;
-          margin-top: 30px;
-      }
-
-      /* Avis */
-      .reviews-section {
-          background: #f9f9f9;
-          padding: 60px;
-          border-radius: 20px;
-      }
-      .review-card {
-          background: white;
-          padding: 24px;
-          border-radius: 16px;
-          margin-bottom: 16px;
-      }
-
-      @media (max-width: 900px) {
-          .product-layout { grid-template-columns: 1fr; gap: 30px; }
-          .gallery-main { height: 350px; }
-          .product-info h1 { font-size: 32px; }
-          .reviews-section { padding: 20px; }
-      }
+      /* --- NOUVEAUX STYLES POUR LES AVIS --- */
+      .star-picker-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ddd; transition: 0.2s; padding: 0 5px; }
+      .star-picker-btn.active, .star-picker-btn:hover { color: var(--gold); }
+      #review-form-container { background: #fff; padding: 30px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #eee; }
   </style>
 </head>
 
@@ -181,26 +84,20 @@
     <div id="product-content" style="display:none;">
         
         <div class="product-layout">
-            
             <div class="product-gallery">
                 <div class="gallery-main">
                     <img id="p-main-img" src="" alt="Produit">
                 </div>
-                <div class="gallery-thumbs" id="p-thumbs">
-                    </div>
+                <div class="gallery-thumbs" id="p-thumbs"></div>
             </div>
 
             <div class="product-info">
                 <a href="#" id="p-seller-link" class="seller-link">
                     <i data-lucide="store" style="width:16px;"></i> <span id="p-seller-name">...</span>
                 </a>
-                
                 <h1 id="p-name">...</h1>
                 <div class="product-price-xl" id="p-price">... FCFA</div>
-                
-                <p id="p-desc" style="color:#555; line-height:1.8; margin-bottom:30px;">
-                    Chargement de la description...
-                </p>
+                <p id="p-desc" style="color:#555; line-height:1.8; margin-bottom:30px;">Chargement...</p>
 
                 <div style="margin-bottom: 20px;">
                     <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px;">Quantité</label>
@@ -212,57 +109,68 @@
                 </div>
 
                 <div class="action-row">
-                    <button id="btn-add-cart" class="btn btn-gold btn-xl" style="flex:1;">
-                        Ajouter au panier
-                    </button>
-                    <button class="btn btn-outline btn-xl">
-                        <i data-lucide="heart"></i>
-                    </button>
+                    <button id="btn-add-cart" class="btn btn-gold btn-xl" style="flex:1;">Ajouter au panier</button>
+                    <button class="btn btn-outline btn-xl"><i data-lucide="heart"></i></button>
                 </div>
 
                 <div style="margin-top:40px; border-top:1px solid #eee; padding-top:20px;">
                     <div style="display:flex; gap:15px; margin-bottom:15px;">
                         <i data-lucide="truck" style="color:var(--gold);"></i>
-                        <div>
-                            <strong style="display:block; font-size:14px;">Livraison Rapide</strong>
-                            <span style="font-size:13px; color:#666;">Expédié sous 24h-48h</span>
-                        </div>
+                        <div><strong style="display:block; font-size:14px;">Livraison Rapide</strong><span style="font-size:13px; color:#666;">Expédié sous 24h-48h</span></div>
                     </div>
                     <div style="display:flex; gap:15px;">
                         <i data-lucide="shield-check" style="color:var(--gold);"></i>
-                        <div>
-                            <strong style="display:block; font-size:14px;">Garantie Qualité</strong>
-                            <span style="font-size:13px; color:#666;">Authenticité garantie par Aurum</span>
-                        </div>
+                        <div><strong style="display:block; font-size:14px;">Garantie Qualité</strong><span style="font-size:13px; color:#666;">Authenticité garantie</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="reviews-section">
+        <div class="reviews-section" id="reviews-anchor">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
                 <h2 style="margin:0;">Avis Clients</h2>
-                <div style="font-size:24px; font-weight:700; color:var(--gold);">4.8 <span style="font-size:16px; color:#000;">/ 5</span></div>
+                <div style="text-align:right;">
+                    <div style="font-size:24px; font-weight:700; color:var(--gold);">
+                        <span id="avg-rating-display">-</span> <span style="font-size:16px; color:#000;">/ 5</span>
+                    </div>
+                    <small style="color:#666;" id="total-reviews-display">(0 avis)</small>
+                </div>
+            </div>
+
+            <button class="btn-outline" id="btn-toggle-review" style="margin-bottom: 20px;">Écrire un avis</button>
+
+            <div id="review-form-container" style="display:none;">
+                <h3 style="margin-top:0;">Votre avis compte</h3>
+                <form id="review-form">
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block; font-weight:600; margin-bottom:5px;">Note</label>
+                        <div class="star-picker">
+                            <button type="button" class="star-picker-btn" data-value="1">★</button>
+                            <button type="button" class="star-picker-btn" data-value="2">★</button>
+                            <button type="button" class="star-picker-btn" data-value="3">★</button>
+                            <button type="button" class="star-picker-btn" data-value="4">★</button>
+                            <button type="button" class="star-picker-btn" data-value="5">★</button>
+                        </div>
+                        <input type="hidden" id="review-rating" value="0" required>
+                    </div>
+                    
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block; font-weight:600; margin-bottom:5px;">Commentaire</label>
+                        <textarea class="input" id="review-comment" rows="4" placeholder="Partagez votre expérience..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-gold">Publier l'avis</button>
+                </form>
             </div>
 
             <div id="reviews-list">
-                <div class="review-card">
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                        <div style="width:40px; height:40px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">M</div>
-                        <div>
-                            <div style="font-weight:600;">Mariam O.</div>
-                            <div style="color:var(--gold); font-size:12px;">★★★★★</div>
-                        </div>
-                    </div>
-                    <p style="color:#555; font-size:14px;">Produit conforme et de très bonne qualité. Je recommande !</p>
-                </div>
-                </div>
+                <p>Chargement des avis...</p>
+            </div>
         </div>
 
         <section class="section">
             <h2 class="section-title">Vous aimerez aussi</h2>
-            <div id="similar-products" class="grid grid-4">
-                </div>
+            <div id="similar-products" class="grid grid-4"></div>
         </section>
 
     </div>
@@ -277,24 +185,27 @@
   <script>
     let currentProduct = null;
     let currentQty = 1;
+    let selectedRating = 0; // Pour le formulaire d'avis
 
     document.addEventListener('DOMContentLoaded', () => {
         const db = firebase.firestore();
+        const auth = firebase.auth();
         const params = new URLSearchParams(window.location.search);
         const productId = params.get('id');
 
-        // 1. VÉRIFICATION ID
         if (!productId) {
             document.getElementById('loading').innerHTML = "<p>Produit introuvable.</p>";
             return;
         }
 
-        // 2. RÉCUPÉRATION DU PRODUIT
+        // 1. CHARGER LE PRODUIT
         db.collection('products').doc(productId).get().then(doc => {
             if (doc.exists) {
                 currentProduct = { id: doc.id, ...doc.data() };
                 renderProductPage(currentProduct);
                 loadSimilarProducts(currentProduct.category);
+                // Charger les avis en temps réel
+                loadReviews(productId);
             } else {
                 document.getElementById('loading').innerHTML = "<p>Ce produit n'existe plus.</p>";
             }
@@ -303,34 +214,28 @@
             document.getElementById('loading').innerHTML = "<p>Erreur de chargement.</p>";
         });
 
-        // 3. FONCTION D'AFFICHAGE
+        // --- FONCTIONS D'AFFICHAGE ---
         function renderProductPage(p) {
-            // Masquer loader, afficher contenu
             document.getElementById('loading').style.display = 'none';
             document.getElementById('product-content').style.display = 'block';
 
-            // Remplir les textes
             document.getElementById('p-name').innerText = p.name;
             document.getElementById('p-price').innerText = new Intl.NumberFormat('fr-FR').format(p.price) + " FCFA";
             document.getElementById('p-desc').innerText = p.description || "Aucune description disponible.";
             
-            // Lien Vendeur
-            const sellerName = p.shopName || "Boutique Partenaire";
-            document.getElementById('p-seller-name').innerText = sellerName;
+            document.getElementById('p-seller-name').innerText = p.shopName || "Boutique Partenaire";
             document.getElementById('p-seller-link').href = `boutique.html?id=${p.shopId}`;
+            
+            // Afficher la note moyenne actuelle du produit
+            updateRatingDisplay(p.rating, p.reviewCount);
 
-            // Gestion Images (Galerie)
+            // Galerie
             const mainImg = document.getElementById('p-main-img');
             const thumbsContainer = document.getElementById('p-thumbs');
-            
-            // Image principale
             const primarySrc = p.image || 'assets/img/placeholder.png';
             mainImg.src = primarySrc;
 
-            // Miniatures (si tableau images existe)
             if (p.images && p.images.length > 0) {
-                // Ajouter l'image principale en premier
-                // p.images devrait contenir toutes les images uploadées
                 p.images.forEach((src, index) => {
                     const thumb = document.createElement('div');
                     thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
@@ -338,82 +243,201 @@
                     thumbsContainer.appendChild(thumb);
                 });
             } else {
-                // Si pas de galerie, juste une miniature
                 thumbsContainer.innerHTML = `<div class="thumb active"><img src="${primarySrc}"></div>`;
             }
-
-            // Mise à jour du titre de la page
             document.title = `${p.name} - Aurum`;
             lucide.createIcons();
         }
 
-        // 4. CHARGER PRODUITS SIMILAIRES
-        function loadSimilarProducts(category) {
-            if(!category) return;
+        function updateRatingDisplay(rating, count) {
+            const avgDisplay = document.getElementById('avg-rating-display');
+            const totalDisplay = document.getElementById('total-reviews-display');
             
-            db.collection('products')
-              .where('category', '==', category)
-              .limit(4)
-              .get()
-              .then(snap => {
-                  const container = document.getElementById('similar-products');
-                  container.innerHTML = "";
-                  
+            if (rating) {
+                avgDisplay.innerText = rating.toFixed(1);
+            } else {
+                avgDisplay.innerText = "-";
+            }
+            
+            if (count) {
+                totalDisplay.innerText = `(${count} avis)`;
+            } else {
+                 totalDisplay.innerText = `(0 avis)`;
+            }
+        }
+
+
+        // --- GESTION DES AVIS ---
+        
+        // 1. Afficher/Masquer le formulaire
+        const formContainer = document.getElementById('review-form-container');
+        document.getElementById('btn-toggle-review').addEventListener('click', () => {
+            if(!auth.currentUser) {
+                alert("Veuillez vous connecter pour laisser un avis.");
+                window.location.href = "login.html?redirect=product.html?id=" + productId;
+                return;
+            }
+            formContainer.style.display = formContainer.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // 2. Sélecteur d'étoiles
+        const starBtns = document.querySelectorAll('.star-picker-btn');
+        starBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                selectedRating = parseInt(e.target.dataset.value);
+                document.getElementById('review-rating').value = selectedRating;
+                // Mettre à jour visuel
+                starBtns.forEach((b, index) => {
+                    if(index < selectedRating) b.classList.add('active');
+                    else b.classList.remove('active');
+                });
+            });
+        });
+
+        // 3. Soumission du formulaire
+        document.getElementById('review-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(selectedRating === 0) { alert("Veuillez sélectionner une note."); return; }
+            
+            const user = auth.currentUser;
+            const comment = document.getElementById('review-comment').value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Publication...";
+
+            // Ajouter l'avis dans la sous-collection 'reviews'
+            db.collection('products').doc(productId).collection('reviews').add({
+                userId: user.uid,
+                userName: user.displayName || user.email.split('@')[0] || 'Client',
+                rating: selectedRating,
+                comment: comment,
+                createdAt: new Date()
+            }).then(() => {
+                // Reset du formulaire
+                e.target.reset();
+                selectedRating = 0;
+                starBtns.forEach(b => b.classList.remove('active'));
+                formContainer.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Publier l'avis";
+
+                // IMPORTANT: Recalculer la moyenne du produit
+                updateProductRatingSummary(productId);
+
+            }).catch(err => {
+                console.error(err);
+                alert("Erreur lors de la publication.");
+                submitBtn.disabled = false;
+            });
+        });
+
+        // 4. Charger et afficher les avis (Temps réel)
+        function loadReviews(pid) {
+            db.collection('products').doc(pid).collection('reviews')
+              .orderBy('createdAt', 'desc')
+              .onSnapshot(snap => {
+                  const list = document.getElementById('reviews-list');
+                  list.innerHTML = "";
+                  if(snap.empty) {
+                      list.innerHTML = "<p>Aucun avis pour le moment. Soyez le premier !</p>";
+                      return;
+                  }
+
                   snap.forEach(doc => {
-                      if(doc.id === currentProduct.id) return; // Ne pas afficher le produit actuel
-                      const p = doc.data();
-                      const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                      
-                      container.innerHTML += `
-                        <div class="card product-card">
-                            <a href="product.html?id=${doc.id}" style="text-decoration:none; color:inherit;">
-                                <div class="card-img">
-                                    <img src="${p.image || 'assets/img/placeholder.png'}" style="width:100%; height:100%; object-fit:cover;">
+                      const r = doc.data();
+                      const date = r.createdAt ? new Date(r.createdAt.seconds * 1000).toLocaleDateString() : '';
+                      let starsHtml = "";
+                      for(let i=0; i<5; i++) { starsHtml += (i < r.rating) ? '<span style="color:var(--gold)">★</span>' : '<span style="color:#ddd">★</span>'; }
+
+                      list.innerHTML += `
+                        <div class="review-card">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:40px; height:40px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; text-transform:uppercase;">
+                                        ${r.userName.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:600;">${r.userName}</div>
+                                        <div style="font-size:14px;">${starsHtml}</div>
+                                    </div>
                                 </div>
-                            </a>
-                            <div class="card-body">
-                                <h4 style="font-size:14px; margin:0;">${p.name}</h4>
-                                <div style="font-weight:bold; color:var(--gold); margin-top:5px;">${price} FCFA</div>
+                                <small style="color:#999;">${date}</small>
                             </div>
+                            <p style="color:#555; font-size:14px; line-height:1.6;">${r.comment}</p>
                         </div>
                       `;
                   });
               });
         }
 
-        // 5. AJOUT AU PANIER
+        // 5. Fonction utilitaire pour recalculer la moyenne générale du produit
+        function updateProductRatingSummary(pid) {
+            db.collection('products').doc(pid).collection('reviews').get().then(snap => {
+                let total Rating = 0;
+                let count = 0;
+                snap.forEach(doc => {
+                    totalRating += doc.data().rating;
+                    count++;
+                });
+
+                const newAverage = count > 0 ? (totalRating / count) : 0;
+
+                // Mise à jour du document produit principal
+                db.collection('products').doc(pid).update({
+                    rating: newAverage,
+                    reviewCount: count
+                }).then(() => {
+                   // Mettre à jour l'affichage en haut de la page
+                   updateRatingDisplay(newAverage, count);
+                });
+            });
+        }
+
+
+        // --- AUTRES FONCTIONS (Similaires, Panier...) ---
+        function loadSimilarProducts(category) {
+            if(!category) return;
+            db.collection('products').where('category', '==', category).limit(4).get().then(snap => {
+                  const container = document.getElementById('similar-products');
+                  container.innerHTML = "";
+                  snap.forEach(doc => {
+                      if(doc.id === currentProduct.id) return; 
+                      const p = doc.data();
+                      container.innerHTML += `
+                        <div class="card product-card">
+                            <a href="product.html?id=${doc.id}" style="text-decoration:none; color:inherit;">
+                                <div class="card-img"><img src="${p.image || 'assets/img/placeholder.png'}" style="width:100%; height:100%; object-fit:cover;"></div>
+                            </a>
+                            <div class="card-body">
+                                <h4 style="font-size:14px; margin:0;">${p.name}</h4>
+                                <div style="font-weight:bold; color:var(--gold); margin-top:5px;">${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA</div>
+                            </div>
+                        </div>`;
+                  });
+              });
+        }
+
         const btnCart = document.getElementById('btn-add-cart');
         if(btnCart) {
             btnCart.addEventListener('click', () => {
                 if(typeof addToCart === 'function') {
                     addToCart(currentProduct.id, currentQty);
-                    
-                    // Feedback visuel
                     const originalText = btnCart.innerText;
                     btnCart.innerText = "Ajouté !";
-                    btnCart.style.background = "#1F8A70"; // Vert succès
-                    setTimeout(() => {
-                        btnCart.innerText = originalText;
-                        btnCart.style.background = ""; // Retour au style CSS (Gold)
-                    }, 2000);
-                } else {
-                    console.error("Fonction addToCart introuvable dans app.js");
+                    btnCart.style.background = "#1F8A70";
+                    setTimeout(() => { btnCart.innerText = originalText; btnCart.style.background = ""; }, 2000);
                 }
             });
         }
     });
 
-    // --- FONCTIONS GLOBALES ---
-
-    // Changer l'image principale au clic sur miniature
+    // Fonctions globales
     window.switchImage = function(src, thumbElement) {
         document.getElementById('p-main-img').src = src;
-        // Gérer la classe active
         document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
         thumbElement.parentElement.classList.add('active');
     };
-
-    // Gestion Quantité (+ / -)
     window.updateQty = function(change) {
         currentQty += change;
         if (currentQty < 1) currentQty = 1;
