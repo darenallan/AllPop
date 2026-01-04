@@ -7010,23 +7010,163 @@ main > .section:not(.hero + .section):not(.hero + .section + .section) {
     transition: 0.3s;
 }
 
-/* --- MOBILE DRAWER (Le Menu) --- */
+/* =========================================
+   MENU BURGER PREMIUM (AURUM STYLE)
+   ========================================= */
+
+/* L'OVERLAY (Fond sombre flouté) */
+#menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6); /* Noir transparent */
+    backdrop-filter: blur(5px); /* Effet verre dépoli de luxe */
+    z-index: 1999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+}
+
+#menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* LE TIROIR (Menu latéral) */
 .mobile-drawer {
     position: fixed;
     top: 0;
-    right: -300px; /* Caché à droite */
-    width: 280px;
-    height: 100vh;
-    background: #fff;
+    right: 0;
+    bottom: 0;
+    width: 300px; /* Largeur confortable */
+    background: #FFFFFF; /* Blanc pur pour le contraste */
     z-index: 2000;
-    box-shadow: -5px 0 20px rgba(0,0,0,0.1);
-    transition: right 0.3s ease-in-out;
+    transform: translateX(100%); /* Caché à droite */
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); /* Animation fluide "Apple-like" */
+    box-shadow: -10px 0 30px rgba(0,0,0,0.15); /* Ombre portée douce */
     display: flex;
     flex-direction: column;
 }
 
-.mobile-drawer.open {
-    right: 0; /* Visible */
+.mobile-drawer.active {
+    transform: translateX(0); /* Visible */
+}
+
+/* EN-TÊTE DU MENU */
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.drawer-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #000;
+    letter-spacing: 0.5px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #000;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.close-btn:hover {
+    transform: rotate(90deg);
+    color: #D4AF37; /* Or au survol */
+}
+
+/* NAVIGATION */
+.drawer-nav {
+    padding: 20px 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.drawer-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    text-decoration: none;
+    color: #333;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.drawer-link i {
+    color: #D4AF37; /* Icônes en OR */
+    width: 20px;
+    transition: transform 0.3s;
+}
+
+/* Effet au survol */
+.drawer-link:hover {
+    color: #000;
+    padding-left: 10px; /* Petit décalage vers la droite */
+}
+
+.drawer-link:hover i {
+    transform: scale(1.1);
+}
+
+/* Lien Actif ou Important */
+.drawer-link.highlight {
+    color: #000;
+    font-weight: 700;
+}
+
+/* SÉPARATEUR */
+.drawer-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #eee, transparent);
+    margin: 20px 0;
+}
+
+/* BOUTONS AUTH (Bas du menu) */
+.auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.btn-outline {
+    border: 1px solid #000;
+    color: #000;
+    background: transparent;
+    padding: 12px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px; /* Coins légèrement arrondis mais carrés */
+    transition: 0.3s;
+}
+
+.btn-gold {
+    background: #D4AF37;
+    color: #000;
+    padding: 12px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); /* Ombre dorée */
+    transition: 0.3s;
+}
+
+.btn-gold:hover {
+    background: #bfa030;
+    transform: translateY(-2px);
 }
 
 /* Header du menu */
