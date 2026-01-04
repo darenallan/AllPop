@@ -15,15 +15,141 @@
   
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/app.js" defer></script>
+
+  <style>
+      /* Styles spécifiques à la fiche produit pour correspondre à tes captures */
+      .product-container {
+          padding-top: 40px;
+          padding-bottom: 80px;
+      }
+      
+      .product-layout {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr; /* Image plus grande à gauche */
+          gap: 60px;
+          margin-bottom: 80px;
+      }
+
+      /* Galerie */
+      .gallery-main {
+          width: 100%;
+          height: 500px;
+          background: #f9f9f9;
+          border-radius: 20px;
+          overflow: hidden;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+      .gallery-main img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain; /* ou cover selon préférence */
+      }
+      .gallery-thumbs {
+          display: flex;
+          gap: 12px;
+      }
+      .thumb {
+          width: 80px;
+          height: 80px;
+          border-radius: 12px;
+          background: #f5f5f5;
+          cursor: pointer;
+          overflow: hidden;
+          border: 2px solid transparent;
+          transition: 0.2s;
+      }
+      .thumb.active {
+          border-color: var(--gold);
+      }
+      .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+      /* Infos */
+      .product-info h1 {
+          font-size: 42px;
+          margin-bottom: 10px;
+          line-height: 1.1;
+      }
+      .product-price-xl {
+          font-size: 28px;
+          color: var(--gold);
+          font-weight: 700;
+          margin-bottom: 24px;
+          font-family: var(--font-sans);
+      }
+      .seller-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 600;
+          color: #666;
+          margin-bottom: 16px;
+          text-decoration: none;
+      }
+      .seller-link:hover { color: var(--black); }
+
+      /* Actions */
+      .qty-selector {
+          display: flex;
+          align-items: center;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          width: fit-content;
+      }
+      .qty-btn {
+          padding: 12px 16px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          font-size: 18px;
+      }
+      .qty-value {
+          font-weight: 600;
+          width: 30px;
+          text-align: center;
+      }
+      
+      .action-row {
+          display: flex;
+          gap: 16px;
+          margin-top: 30px;
+      }
+
+      /* Avis */
+      .reviews-section {
+          background: #f9f9f9;
+          padding: 60px;
+          border-radius: 20px;
+      }
+      .review-card {
+          background: white;
+          padding: 24px;
+          border-radius: 16px;
+          margin-bottom: 16px;
+      }
+
+      @media (max-width: 900px) {
+          .product-layout { grid-template-columns: 1fr; gap: 30px; }
+          .gallery-main { height: 350px; }
+          .product-info h1 { font-size: 32px; }
+          .reviews-section { padding: 20px; }
+      }
+  </style>
 </head>
 
 <body>
   <header id="app-header" class="header">
       <div class="container navbar">
           <a href="index.html" class="brand">
-              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+              <span class="brand-name">AURUM</span>
           </a>
           <nav class="nav-actions">
+              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
                   <span class="badge" id="cart-badge" style="display:none;">0</span>
@@ -46,61 +172,100 @@
   </div>
   <div id="menu-overlay"></div>
 
-  <main class="container" style="padding: 40px 20px;">
+  <main class="container product-container">
     
-    <div id="loading" style="text-align:center; padding:50px;">
-        <p>Chargement du produit...</p>
+    <div id="loading" style="text-align:center; padding:100px;">
+        <i data-lucide="loader" class="spin" style="animation:spin 1s linear infinite; width:40px; height:40px;"></i>
     </div>
 
-    <div id="product-container" style="display:none;">
-        <div class="product-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+    <div id="product-content" style="display:none;">
+        
+        <div class="product-layout">
             
-            <div class="product-images">
-                <div class="main-image" style="background:#f9f9f9; border-radius:16px; overflow:hidden; margin-bottom:10px;">
-                    <img id="p-image-main" src="" alt="Produit" style="width:100%; height:400px; object-fit:contain;">
+            <div class="product-gallery">
+                <div class="gallery-main">
+                    <img id="p-main-img" src="" alt="Produit">
                 </div>
-                <div class="thumbs" id="p-thumbs" style="display:flex; gap:10px; overflow-x:auto;">
+                <div class="gallery-thumbs" id="p-thumbs">
                     </div>
             </div>
 
-            <div class="product-details">
-                <div style="margin-bottom:10px;">
-                    <a href="#" id="p-shop-link" style="font-size:13px; text-transform:uppercase; color:#666; font-weight:600; letter-spacing:1px;">
-                        <i data-lucide="store" style="width:14px;"></i> <span id="p-shop-name">...</span>
-                    </a>
+            <div class="product-info">
+                <a href="#" id="p-seller-link" class="seller-link">
+                    <i data-lucide="store" style="width:16px;"></i> <span id="p-seller-name">...</span>
+                </a>
+                
+                <h1 id="p-name">...</h1>
+                <div class="product-price-xl" id="p-price">... FCFA</div>
+                
+                <p id="p-desc" style="color:#555; line-height:1.8; margin-bottom:30px;">
+                    Chargement de la description...
+                </p>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px;">Quantité</label>
+                    <div class="qty-selector">
+                        <button class="qty-btn" onclick="updateQty(-1)">-</button>
+                        <span class="qty-value" id="qty-val">1</span>
+                        <button class="qty-btn" onclick="updateQty(1)">+</button>
+                    </div>
                 </div>
 
-                <h1 id="p-name" style="margin:0 0 15px 0;">...</h1>
-                <div id="p-price" style="font-size:28px; font-weight:700; color:#D4AF37; margin-bottom:20px;">... FCFA</div>
-
-                <p id="p-desc" style="color:#444; line-height:1.6; margin-bottom:30px;">...</p>
-
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <div style="display:flex; align-items:center; border:1px solid #ddd; border-radius:8px;">
-                        <button onclick="updateQty(-1)" style="background:none; border:none; padding:10px 15px; cursor:pointer;">-</button>
-                        <span id="qty-display" style="font-weight:600; width:30px; text-align:center;">1</span>
-                        <button onclick="updateQty(1)" style="background:none; border:none; padding:10px 15px; cursor:pointer;">+</button>
-                    </div>
-                    
-                    <button id="add-to-cart-btn" class="btn btn-gold" style="flex:1;">
+                <div class="action-row">
+                    <button id="btn-add-cart" class="btn btn-gold btn-xl" style="flex:1;">
                         Ajouter au panier
+                    </button>
+                    <button class="btn btn-outline btn-xl">
+                        <i data-lucide="heart"></i>
                     </button>
                 </div>
 
-                <div style="margin-top:30px; padding:20px; background:#f9f9f9; border-radius:12px; font-size:13px; color:#555;">
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                        <i data-lucide="truck" style="color:#D4AF37;"></i> 
-                        <span>Livraison rapide partout au Burkina Faso</span>
+                <div style="margin-top:40px; border-top:1px solid #eee; padding-top:20px;">
+                    <div style="display:flex; gap:15px; margin-bottom:15px;">
+                        <i data-lucide="truck" style="color:var(--gold);"></i>
+                        <div>
+                            <strong style="display:block; font-size:14px;">Livraison Rapide</strong>
+                            <span style="font-size:13px; color:#666;">Expédié sous 24h-48h</span>
+                        </div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <i data-lucide="shield-check" style="color:#D4AF37;"></i> 
-                        <span>Paiement à la livraison ou sécurisé</span>
+                    <div style="display:flex; gap:15px;">
+                        <i data-lucide="shield-check" style="color:var(--gold);"></i>
+                        <div>
+                            <strong style="display:block; font-size:14px;">Garantie Qualité</strong>
+                            <span style="font-size:13px; color:#666;">Authenticité garantie par Aurum</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
+        <div class="reviews-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h2 style="margin:0;">Avis Clients</h2>
+                <div style="font-size:24px; font-weight:700; color:var(--gold);">4.8 <span style="font-size:16px; color:#000;">/ 5</span></div>
+            </div>
+
+            <div id="reviews-list">
+                <div class="review-card">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <div style="width:40px; height:40px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">M</div>
+                        <div>
+                            <div style="font-weight:600;">Mariam O.</div>
+                            <div style="color:var(--gold); font-size:12px;">★★★★★</div>
+                        </div>
+                    </div>
+                    <p style="color:#555; font-size:14px;">Produit conforme et de très bonne qualité. Je recommande !</p>
+                </div>
+                </div>
+        </div>
+
+        <section class="section">
+            <h2 class="section-title">Vous aimerez aussi</h2>
+            <div id="similar-products" class="grid grid-4">
+                </div>
+        </section>
+
+    </div>
   </main>
 
   <footer class="footer">
@@ -118,16 +283,18 @@
         const params = new URLSearchParams(window.location.search);
         const productId = params.get('id');
 
+        // 1. VÉRIFICATION ID
         if (!productId) {
             document.getElementById('loading').innerHTML = "<p>Produit introuvable.</p>";
             return;
         }
 
-        // 1. Récupérer le produit depuis Firebase
+        // 2. RÉCUPÉRATION DU PRODUIT
         db.collection('products').doc(productId).get().then(doc => {
             if (doc.exists) {
                 currentProduct = { id: doc.id, ...doc.data() };
-                renderProduct(currentProduct);
+                renderProductPage(currentProduct);
+                loadSimilarProducts(currentProduct.category);
             } else {
                 document.getElementById('loading').innerHTML = "<p>Ce produit n'existe plus.</p>";
             }
@@ -136,72 +303,122 @@
             document.getElementById('loading').innerHTML = "<p>Erreur de chargement.</p>";
         });
 
-        // Fonction d'affichage
-        function renderProduct(p) {
+        // 3. FONCTION D'AFFICHAGE
+        function renderProductPage(p) {
+            // Masquer loader, afficher contenu
             document.getElementById('loading').style.display = 'none';
-            document.getElementById('product-container').style.display = 'block';
+            document.getElementById('product-content').style.display = 'block';
 
-            // Textes
+            // Remplir les textes
             document.getElementById('p-name').innerText = p.name;
             document.getElementById('p-price').innerText = new Intl.NumberFormat('fr-FR').format(p.price) + " FCFA";
-            document.getElementById('p-desc').innerText = p.description || "Aucune description.";
+            document.getElementById('p-desc').innerText = p.description || "Aucune description disponible.";
             
-            // Boutique
-            document.getElementById('p-shop-name').innerText = p.shopName || "Boutique Partenaire";
-            document.getElementById('p-shop-link').href = `boutique.html?id=${p.shopId}`;
+            // Lien Vendeur
+            const sellerName = p.shopName || "Boutique Partenaire";
+            document.getElementById('p-seller-name').innerText = sellerName;
+            document.getElementById('p-seller-link').href = `boutique.html?id=${p.shopId}`;
 
-            // Image Principale
-            const mainImg = p.image || 'assets/img/placeholder.png';
-            document.getElementById('p-image-main').src = mainImg;
-
-            // Galerie (si plusieurs images)
+            // Gestion Images (Galerie)
+            const mainImg = document.getElementById('p-main-img');
             const thumbsContainer = document.getElementById('p-thumbs');
+            
+            // Image principale
+            const primarySrc = p.image || 'assets/img/placeholder.png';
+            mainImg.src = primarySrc;
+
+            // Miniatures (si tableau images existe)
             if (p.images && p.images.length > 0) {
-                p.images.forEach(imgSrc => {
-                    const thumb = document.createElement('img');
-                    thumb.src = imgSrc;
-                    thumb.style.width = "60px";
-                    thumb.style.height = "60px";
-                    thumb.style.objectFit = "cover";
-                    thumb.style.borderRadius = "8px";
-                    thumb.style.cursor = "pointer";
-                    thumb.style.border = "1px solid #ddd";
-                    
-                    thumb.onclick = () => {
-                        document.getElementById('p-image-main').src = imgSrc;
-                    };
+                // Ajouter l'image principale en premier
+                // p.images devrait contenir toutes les images uploadées
+                p.images.forEach((src, index) => {
+                    const thumb = document.createElement('div');
+                    thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
+                    thumb.innerHTML = `<img src="${src}" onclick="switchImage('${src}', this)">`;
                     thumbsContainer.appendChild(thumb);
                 });
+            } else {
+                // Si pas de galerie, juste une miniature
+                thumbsContainer.innerHTML = `<div class="thumb active"><img src="${primarySrc}"></div>`;
             }
 
+            // Mise à jour du titre de la page
+            document.title = `${p.name} - Aurum`;
             lucide.createIcons();
         }
 
-        // 2. Gestion Panier
-        document.getElementById('add-to-cart-btn').addEventListener('click', () => {
-            if (typeof addToCart === 'function' && currentProduct) {
-                addToCart(currentProduct.id, currentQty);
-                // Animation bouton
-                const btn = document.getElementById('add-to-cart-btn');
-                const originalText = btn.innerText;
-                btn.innerText = "Ajouté !";
-                btn.style.background = "#1F8A70"; // Vert
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.style.background = ""; // Retour couleur or
-                }, 2000);
-            } else {
-                alert("Erreur: Impossible d'ajouter au panier.");
-            }
-        });
+        // 4. CHARGER PRODUITS SIMILAIRES
+        function loadSimilarProducts(category) {
+            if(!category) return;
+            
+            db.collection('products')
+              .where('category', '==', category)
+              .limit(4)
+              .get()
+              .then(snap => {
+                  const container = document.getElementById('similar-products');
+                  container.innerHTML = "";
+                  
+                  snap.forEach(doc => {
+                      if(doc.id === currentProduct.id) return; // Ne pas afficher le produit actuel
+                      const p = doc.data();
+                      const price = new Intl.NumberFormat('fr-FR').format(p.price);
+                      
+                      container.innerHTML += `
+                        <div class="card product-card">
+                            <a href="product.html?id=${doc.id}" style="text-decoration:none; color:inherit;">
+                                <div class="card-img">
+                                    <img src="${p.image || 'assets/img/placeholder.png'}" style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                            </a>
+                            <div class="card-body">
+                                <h4 style="font-size:14px; margin:0;">${p.name}</h4>
+                                <div style="font-weight:bold; color:var(--gold); margin-top:5px;">${price} FCFA</div>
+                            </div>
+                        </div>
+                      `;
+                  });
+              });
+        }
+
+        // 5. AJOUT AU PANIER
+        const btnCart = document.getElementById('btn-add-cart');
+        if(btnCart) {
+            btnCart.addEventListener('click', () => {
+                if(typeof addToCart === 'function') {
+                    addToCart(currentProduct.id, currentQty);
+                    
+                    // Feedback visuel
+                    const originalText = btnCart.innerText;
+                    btnCart.innerText = "Ajouté !";
+                    btnCart.style.background = "#1F8A70"; // Vert succès
+                    setTimeout(() => {
+                        btnCart.innerText = originalText;
+                        btnCart.style.background = ""; // Retour au style CSS (Gold)
+                    }, 2000);
+                } else {
+                    console.error("Fonction addToCart introuvable dans app.js");
+                }
+            });
+        }
     });
 
-    // Gestion Quantité
-    function updateQty(amount) {
-        currentQty += amount;
+    // --- FONCTIONS GLOBALES ---
+
+    // Changer l'image principale au clic sur miniature
+    window.switchImage = function(src, thumbElement) {
+        document.getElementById('p-main-img').src = src;
+        // Gérer la classe active
+        document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+        thumbElement.parentElement.classList.add('active');
+    };
+
+    // Gestion Quantité (+ / -)
+    window.updateQty = function(change) {
+        currentQty += change;
         if (currentQty < 1) currentQty = 1;
-        document.getElementById('qty-display').innerText = currentQty;
-    }
+        document.getElementById('qty-val').innerText = currentQty;
+    };
   </script>
 </body>
 </html>
