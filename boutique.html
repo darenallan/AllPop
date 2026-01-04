@@ -1,202 +1,296 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Boutique - Aurum</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Boutique Aurum</title>
-<meta name="description" content="Aurum: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
-<!-- Google Fonts - Luxury Typography -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css" />
-<link rel="preload" href="assets/css/styles.css" as="style" />
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" href="assets/img/placeholder-product-1.svg" />
-<script defer src="assets/js/utils.js"></script>
-<script defer src="assets/js/data.js"></script>
-<script defer src="assets/js/icons.js"></script>
-<script defer src="assets/js/app.js"></script>
-<script defer src="assets/js/auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <script src="assets/js/auth.js"></script>
 
-</head>
-<body class="shop-page">
-<header id="app-header" class="header"></header>
-
-<main>
-  <!-- Hero Boutique -->
-  <section class="shop-hero">
-    <div class="container">
-      <div class="shop-banner">
-        <img id="shop-banner" src="assets/img/placeholder-product-1.svg" alt="Bannière boutique" loading="eager" />
-      </div>
-      <div class="shop-profile">
-        <div class="shop-avatar-wrap">
-          <img id="shop-logo" class="shop-avatar" src="assets/img/placeholder-product-1.svg" alt="Logo de la boutique" />
-        </div>
-        <div class="shop-meta">
-          <h1 id="shop-name">Nom de la boutique</h1>
-          <p id="shop-desc" class="shop-desc">Description courte de la boutique.</p>
-          <div class="shop-badges">
-            <span class="shop-badge verified" id="shop-verified">Vendeur Vérifié</span>
-            <span class="shop-badge rating">
-              <i data-lucide="star" aria-hidden="true"></i>
-              <span id="shop-rating">4.8</span>/5
-            </span>
-          </div>
-          <div class="shop-actions">
-            <button class="btn btn-gold btn-md" id="contact-btn">
-              <i data-lucide="message-circle"></i>
-              Contacter
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Barre de recherche & filtres -->
-  <section class="shop-toolbar">
-    <div class="container shop-toolbar-inner">
-      <div class="shop-search">
-        <i data-lucide="search" aria-hidden="true"></i>
-        <input id="shop-search-input" type="search" placeholder="Chercher dans cette boutique" aria-label="Chercher dans cette boutique" />
-      </div>
-      <select id="shop-filter-category" class="chip-select">
-        <option value="">Toutes les catégories</option>
-        <option value="mode">Mode</option>
-        <option value="beaute">Beauté</option>
-        <option value="maison">Maison</option>
-        <option value="tech">Tech</option>
-      </select>
-    </div>
-  </section>
-
-  <!-- Grille produits -->
-  <section class="container shop-products">
-    <div id="shop-products" class="product-list"></div>
-  </section>
-
-  <!-- Cross selling -->
-  <section class="container shop-crosssell">
-    <h2>Ces articles pourraient vous plaire</h2>
-    <div id="shop-crosssell" class="product-list"></div>
-  </section>
-</main>
-
-<footer id="app-footer" class="footer"></footer>
-<div class="toast-container" id="toast-container"></div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const shopId = params.get('id');
-
-    const nameEl = document.getElementById('shop-name');
-    const descEl = document.getElementById('shop-desc');
-    const bannerEl = document.getElementById('shop-banner');
-    const logoEl = document.getElementById('shop-logo');
-    const ratingEl = document.getElementById('shop-rating');
-    const verifiedEl = document.getElementById('shop-verified');
-    const contactBtn = document.getElementById('contact-btn');
-    const productsContainer = document.getElementById('shop-products');
-    const crossContainer = document.getElementById('shop-crosssell');
-    const searchInput = document.getElementById('shop-search-input');
-    const categorySelect = document.getElementById('shop-filter-category');
-
-    const shop = shopId ? (Store.shops || []).find(s => s.id === shopId) : null;
-    const productsData = Store.products || [];
-
-    if (!shop) {
-      nameEl.textContent = 'Boutique introuvable';
-      descEl.textContent = 'La boutique demandée est indisponible.';
-      verifiedEl.style.display = 'none';
-      bannerEl.src = 'assets/img/placeholder-product-1.svg';
-      logoEl.src = 'assets/img/placeholder-product-1.svg';
-      return;
-    }
-
-    const formatPrice = (val) => new Intl.NumberFormat('fr-FR').format(val) + ' FCFA';
-
-    nameEl.textContent = shop.name;
-    descEl.textContent = shop.description || 'Boutique partenaire Aurum.';
-    ratingEl.textContent = shop.rating ? (shop.rating.toFixed ? shop.rating.toFixed(1) : shop.rating) : '4.8';
-
-    if (shop.banner) bannerEl.src = shop.banner; else bannerEl.src = 'assets/img/placeholder-product-1.svg';
-    if (shop.logo) logoEl.src = shop.logo; else logoEl.src = 'assets/img/placeholder-product-1.svg';
-
-    if (!shop.status || shop.status !== 'active') {
-      verifiedEl.textContent = 'Vendeur non vérifié';
-      verifiedEl.classList.remove('verified');
-      verifiedEl.classList.add('unverified');
-    }
-
-    if (contactBtn) {
-      const waNumber = shop.phone ? shop.phone.replace(/[^\d]/g, '') : '';
-      contactBtn.addEventListener('click', () => {
-        if (waNumber) {
-          const msg = encodeURIComponent('Bonjour, je souhaite en savoir plus sur votre boutique Aurum.');
-          window.location.href = `https://wa.me/${waNumber}?text=${msg}`;
-        } else {
-          alert('Contact WhatsApp non disponible.');
-        }
-      });
-    }
-
-    const renderProducts = (list, target) => {
-      if (!target) return;
-      if (!list.length) {
-        target.innerHTML = '<p class="text-muted-foreground">Aucun produit disponible pour le moment.</p>';
-        return;
+  <style>
+      /* --- CSS SPÉCIFIQUE BOUTIQUE --- */
+      .shop-header-wrapper { position: relative; margin-bottom: 60px; }
+      .shop-banner-container { width: 100%; height: 300px; background-color: #f0f0f0; overflow: hidden; }
+      .shop-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      
+      .shop-profile-card {
+          position: relative; max-width: 900px; margin: -80px auto 0;
+          background: #fff; border-radius: 16px; padding: 30px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.08); display: flex;
+          align-items: center; gap: 30px; z-index: 10;
       }
-      target.innerHTML = list.map(p => `
-        <article class="product-card">
-          <div class="product-card-img">
-            <img src="${(Array.isArray(p.images) && p.images[0]) || p.image || 'assets/img/placeholder-product-1.svg'}" alt="${p.name}" loading="lazy" />
+      
+      .shop-logo-container {
+          width: 120px; height: 120px; border-radius: 50%;
+          border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+          overflow: hidden; background: #fff; flex-shrink: 0;
+      }
+      .shop-logo-img { width: 100%; height: 100%; object-fit: cover; }
+      
+      .shop-info { flex: 1; }
+      .shop-name { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; margin: 0 0 5px 0; line-height: 1.1; }
+      .shop-slogan { color: #D4AF37; font-style: italic; margin-bottom: 10px; font-weight: 500; }
+      .shop-desc { font-size: 14px; color: #666; line-height: 1.5; margin-bottom: 15px; max-width: 600px; }
+      
+      .shop-badges { display: flex; gap: 10px; margin-bottom: 15px; }
+      .badge-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; background: #f9f9f9; font-size: 12px; font-weight: 600; border: 1px solid #eee; }
+
+      /* Mobile */
+      @media (max-width: 768px) {
+          .shop-banner-container { height: 200px; }
+          .shop-profile-card { flex-direction: column; text-align: center; margin-top: -50px; width: 90%; }
+          .shop-desc { margin: 0 auto 15px; }
+          .shop-badges { justify-content: center; }
+      }
+  </style>
+</head>
+
+<body class="shop-page">
+  
+  <header id="app-header" class="header">
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+          </a>
+          <nav class="nav-actions">
+              <a href="cart.html" class="icon-btn" style="position:relative;">
+                  <i data-lucide="shopping-bag"></i>
+                  <span class="badge" id="cart-badge" style="display:none;">0</span>
+              </a>
+              <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
+          </nav>
+      </div>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer">
+      <div class="drawer-header">
+          <span class="drawer-title">Menu</span>
+          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
+      </div>
+      <nav class="drawer-nav">
+          <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
+          <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
+          <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
+          <div class="drawer-divider"></div>
+          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
+      </nav>
+  </div>
+  <div id="menu-overlay"></div>
+
+  <main>
+    <section class="shop-header-wrapper">
+        <div class="shop-banner-container">
+            <img id="shop-banner" src="assets/img/placeholder-banner.jpg" alt="Cover" class="shop-banner-img">
+        </div>
+        <div class="shop-profile-card">
+            <div class="shop-logo-container">
+                <img id="shop-logo" src="assets/img/placeholder.png" alt="Logo" class="shop-logo-img">
+            </div>
+            <div class="shop-info">
+                <h1 class="shop-name" id="shop-name">Chargement...</h1>
+                <p id="shop-slogan" class="shop-slogan"></p>
+                <p id="shop-desc" class="shop-desc">...</p>
+                <div class="shop-badges">
+                    <span class="badge-pill" id="badge-verified" style="display:none; color:green; background:#eaffea; border-color:#ccffcc;">
+                        <i data-lucide="badge-check" style="width:14px;"></i> Vérifié
+                    </span>
+                    <span class="badge-pill">
+                        <i data-lucide="star" style="width:14px; fill:#D4AF37; color:#D4AF37;"></i>
+                        <span id="shop-rating">5.0</span>/5
+                    </span>
+                </div>
+            </div>
+            <div class="shop-cta">
+                <button class="btn btn-gold" id="contact-btn">
+                    <i data-lucide="message-circle"></i> Contacter
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="shop-toolbar" style="max-width:900px; margin:0 auto 40px;">
+      <div class="shop-search" style="display:flex; background:#f9f9f9; padding:10px; border-radius:12px; align-items:center;">
+          <i data-lucide="search" style="color:#999; margin:0 10px;"></i>
+          <input id="shop-search-input" type="search" placeholder="Chercher un article dans cette boutique..." style="border:none; background:transparent; flex:1; outline:none; font-size:16px;">
+      </div>
+    </section>
+
+    <section class="container shop-products" style="margin-bottom:80px;">
+      <h2 style="margin-bottom:20px; font-family:'Playfair Display', serif;">Collection</h2>
+      <div id="shop-products-grid" class="grid grid-4">
+          <p style="grid-column: 1/-1; text-align:center; color:#999;">Chargement des produits...</p>
+      </div>
+    </section>
+  </main>
+
+    <footer class="footer">
+    <div class="container">
+      <div class="cols" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
+        <div>
+          <h3>AURUM</h3>
+          <p>La première marketplace premium du Burkina Faso. Qualité, confiance et élégance.</p>
+        </div>
+        <div>
+          <h4>Navigation</h4>
+          <ul style="list-style:none; padding:0; line-height:2;">
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="catalogue.html">Catalogue</a></li>
+            <li><a href="seller.html">Devenir Vendeur</a></li>
+            <li><a href="profile.html">Mon Compte</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Légal</h4>
+            <ul style="list-style:none; padding:0; line-height:2;">
+              <li><a href="cgu.html">CGU</a></li>
+              <li><a href="faq.html">FAQ</a></li>
+              <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+        <div>
+          <h4>Suivez-nous</h4>
+          <div class="footer-socials" style="display:flex; gap:15px;">
+            <a href="#" class="social-link"><i data-lucide="facebook"></i></a>
+            <a href="#" class="social-link"><i data-lucide="instagram"></i></a>
+            <a href="#" class="social-link"><i data-lucide="twitter"></i></a>
           </div>
-          <div class="product-card-info">
-            <h3 class="product-card-title">${p.name}</h3>
-            <p class="text-muted-foreground">${p.features || p.desc || ''}</p>
-            <div class="product-card-price">${formatPrice(p.price || 0)}</div>
-          </div>
-        </article>
-      `).join('');
-    };
+        </div>
+      </div>
+      <div class="footer-bottom" style="margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
+        &copy; 2026 Aurum Marketplace. Tous droits réservés.
+      </div>
+    </div>
+  </footer>
 
-    const shopProducts = productsData.filter(p => (p.shopId === shopId) || (p.sellerId === shopId));
-    const crossPool = productsData.filter(p => (p.shopId !== shopId) && (p.sellerId !== shopId));
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // --- 1. GESTION MENU MOBILE (FIX) ---
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeBtn = document.getElementById('close-btn');
+        const drawer = document.getElementById('mobile-drawer');
+        const overlay = document.getElementById('menu-overlay');
 
-    const applyFilters = () => {
-      const term = (searchInput?.value || '').toLowerCase();
-      const cat = (categorySelect?.value || '').toLowerCase();
-      const filtered = shopProducts.filter(p => {
-        const nameText = (p.name || '').toLowerCase();
-        const infoText = (p.features || p.desc || '').toLowerCase();
-        const matchText = !term || nameText.includes(term) || infoText.includes(term);
-        const productCat = (p.category || '').toLowerCase();
-        const matchCat = !cat || productCat.includes(cat);
-        return matchText && matchCat;
-      });
-      renderProducts(filtered, productsContainer);
-    };
+        function openMenu() {
+            drawer.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
 
-    // Initial render
-    renderProducts(shopProducts, productsContainer);
+        function closeMenu() {
+            drawer.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
 
-    // Cross-sell: 4 aléatoires hors boutique
-    const shuffled = [...crossPool].sort(() => Math.random() - 0.5).slice(0, 4);
-    renderProducts(shuffled, crossContainer);
+        if(menuToggle) menuToggle.addEventListener('click', openMenu);
+        if(closeBtn) closeBtn.addEventListener('click', closeMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
 
-    if (searchInput) searchInput.addEventListener('input', applyFilters);
-    if (categorySelect) categorySelect.addEventListener('change', applyFilters);
 
-    if (window.lucide && window.lucide.createIcons) {
-      lucide.createIcons();
-    }
-  });
-</script>
+        // --- 2. LOGIQUE FIREBASE BOUTIQUE ---
+        const db = firebase.firestore();
+        const params = new URLSearchParams(window.location.search);
+        const shopId = params.get('id');
+
+        const els = {
+            banner: document.getElementById('shop-banner'),
+            logo: document.getElementById('shop-logo'),
+            name: document.getElementById('shop-name'),
+            slogan: document.getElementById('shop-slogan'),
+            desc: document.getElementById('shop-desc'),
+            verified: document.getElementById('badge-verified'),
+            contactBtn: document.getElementById('contact-btn'),
+            grid: document.getElementById('shop-products-grid'),
+            search: document.getElementById('shop-search-input')
+        };
+
+        let allShopProducts = [];
+
+        if (!shopId) {
+            els.name.innerText = "Boutique introuvable";
+            els.grid.innerHTML = "";
+            return;
+        }
+
+        // Charger Info Boutique
+        db.collection('shops').doc(shopId).get().then(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+                els.name.innerText = data.name;
+                els.slogan.innerText = data.slogan || "";
+                els.desc.innerText = data.description || "Bienvenue dans notre boutique.";
+                
+                if (data.banner) els.banner.src = data.banner;
+                if (data.logo) els.logo.src = data.logo;
+                if (data.status === 'active') els.verified.style.display = 'inline-flex';
+
+                if (data.phone) {
+                    els.contactBtn.onclick = () => {
+                        window.open(`https://wa.me/${data.phone.replace(/[^\d]/g, '')}`, '_blank');
+                    };
+                } else {
+                    els.contactBtn.style.display = 'none';
+                }
+            } else {
+                els.name.innerText = "Boutique fermée ou inexistante";
+            }
+        });
+
+        // Charger Produits
+        db.collection('products').where('shopId', '==', shopId).get().then(snap => {
+            els.grid.innerHTML = "";
+            if (snap.empty) {
+                els.grid.innerHTML = "<p>Aucun produit disponible pour le moment.</p>";
+                return;
+            }
+            snap.forEach(doc => {
+                const p = { id: doc.id, ...doc.data() };
+                allShopProducts.push(p);
+                renderCard(p);
+            });
+            lucide.createIcons();
+        });
+
+        function renderCard(p) {
+            const price = new Intl.NumberFormat('fr-FR').format(p.price);
+            const img = p.image || 'assets/img/placeholder.png';
+            
+            els.grid.innerHTML += `
+                <div class="card product-card">
+                    <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;">
+                        <div class="card-img" style="height:250px; overflow:hidden;">
+                            <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
+                        </div>
+                    </a>
+                    <div class="card-body" style="padding:15px;">
+                        <h4 style="font-size:16px; margin:0 0 5px 0;">${p.name}</h4>
+                        <div style="font-weight:bold; color:#D4AF37;">${price} FCFA</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Filtre
+        els.search.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            els.grid.innerHTML = "";
+            const filtered = allShopProducts.filter(p => p.name.toLowerCase().includes(term));
+            if(filtered.length === 0) els.grid.innerHTML = "<p>Aucun résultat.</p>";
+            else filtered.forEach(p => renderCard(p));
+            lucide.createIcons();
+        });
+        
+        lucide.createIcons();
+    });
+  </script>
 </body>
 </html>
