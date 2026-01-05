@@ -28,18 +28,21 @@
           box-shadow: 0 10px 30px rgba(31, 138, 112, 0.2);
       }
       
+      /* --- STYLE FACTURE IMPRESSION --- */
       .invoice-card {
-          background: white; border-radius: 0; /* Carré pour l'impression */
+          background: white; 
+          /* Largeur fixe idéale pour A4 */
+          width: 794px; /* Largeur A4 en pixels (96dpi) */
+          margin: 0 auto;
           border: 1px solid #eee;
           overflow: hidden; 
-          box-shadow: 0 10px 40px rgba(0,0,0,0.05);
           background-color: #ffffff;
-          max-width: 800px; margin: 0 auto; /* Centrer la carte */
+          padding: 0; /* Important pour le PDF */
       }
       
       .invoice-header {
           background: #fcfcfc; padding: 40px; border-bottom: 2px solid #f0f0f0;
-          display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;
+          display: flex; justify-content: space-between; align-items: flex-start;
       }
       
       .invoice-body { padding: 40px; }
@@ -48,9 +51,9 @@
       .invoice-table th { text-align: left; color: #666; font-size: 12px; text-transform: uppercase; padding: 10px 0; border-bottom: 1px solid #eee; }
       .invoice-table td { padding: 15px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
       
-      /* FORCE LA POLICE POUR LES CHIFFRES (Corrige le bug &4&5...) */
+      /* Police système pour éviter les bugs de caractères */
       .price-text {
-          font-family: Arial, sans-serif !important; 
+          font-family: Arial, Helvetica, sans-serif !important; 
           font-weight: 600;
           white-space: nowrap;
       }
@@ -62,17 +65,12 @@
       .invoice-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
       
       .invoice-actions {
-          padding: 30px 40px; background: #fafafa; border-top: 1px solid #eee;
+          padding: 30px 40px; margin-top: 30px;
           display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;
-          max-width: 800px; margin: 0 auto;
       }
 
-      @media (max-width: 768px) {
-          .invoice-header { flex-direction: column; }
-          .invoice-body { padding: 20px; }
-          .invoice-actions { flex-direction: column; }
-          .invoice-actions .btn { width: 100%; }
-      }
+      /* Cache le scrollbar lors de la capture */
+      .no-scroll { overflow: hidden; }
   </style>
 </head>
 
@@ -184,6 +182,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         const db = firebase.firestore();
+        const auth = firebase.auth();
         const params = new URLSearchParams(window.location.search);
         const orderId = params.get('orderId');
 
@@ -201,7 +200,6 @@
             }
         }).catch(console.error);
 
-        // FORMATAGE PRIX ROBUSTE (Sans caractères bizarres)
         function formatMoney(amount) {
             return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " FCFA";
         }
@@ -210,15 +208,14 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('invoice-content').style.display = 'block';
 
-            // Infos
             const date = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString();
             document.getElementById('inv-ref').innerText = "AUR-" + id.substr(0, 6).toUpperCase();
             document.getElementById('inv-date').innerText = date;
+            
             document.getElementById('client-name').innerText = order.userName || "Client";
             document.getElementById('client-phone').innerText = order.userPhone || "";
             document.getElementById('client-email').innerText = order.userEmail || "";
 
-            // Tableau
             const tbody = document.getElementById('invoice-items');
             tbody.innerHTML = "";
             let total = 0;
@@ -245,15 +242,20 @@
         }
 
         function setupActions(order, id, totalStr) {
-            // PDF DOWNLOAD FIXÉ
+            
+            // --- LOGIQUE PDF CORRIGÉE (PLEINE LARGEUR) ---
             document.getElementById('btn-download').addEventListener('click', () => {
                 const btn = document.getElementById('btn-download');
                 btn.innerText = "Génération...";
                 btn.disabled = true;
 
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'pt', 'a4');
                 const element = document.getElementById('invoice-document');
+                
+                // On utilise 'mm' comme unité et 'a4' comme format
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+                const pageHeight = doc.internal.pageSize.getHeight();
 
                 doc.html(element, {
                     callback: function (doc) {
@@ -262,11 +264,16 @@
                         btn.disabled = false;
                         lucide.createIcons();
                     },
-                    x: 10,
-                    y: 10,
-                    width: 575, // Largeur A4 (595pt) moins marges
-                    windowWidth: 800, // Force une largeur desktop pour le rendu
-                    html2canvas: { scale: 0.8, useCORS: true } // Meilleure qualité
+                    x: 0,
+                    y: 0,
+                    // Cette option est cruciale : elle adapte le HTML à la largeur A4 (environ 190mm utilisables)
+                    width: 210, 
+                    windowWidth: 794, // Force html2canvas à voir l'élément comme s'il faisait 794px
+                    html2canvas: {
+                        scale: 0.26, // Ratio magique (210mm / 794px approx) pour faire rentrer pile poil
+                        useCORS: true,
+                        logging: false
+                    }
                 });
             });
 
