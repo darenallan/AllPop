@@ -228,11 +228,10 @@
   </footer>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+   document.addEventListener('DOMContentLoaded', () => {
         // --- CONFIG FIREBASE ---
-        // Vérifie si Firebase est déjà init (via auth.js)
         if (!firebase.apps.length) {
-            console.error("Firebase non initialisé ! Vérifiez auth.js");
+            console.error("Firebase non initialisé !");
             return;
         }
         const db = firebase.firestore();
@@ -259,8 +258,7 @@
             loadCartData();
         }
 
-        // --- FONCTIONS ---
-
+        // --- FONCTIONS AFFICHAGE (Inchangées) ---
         function showEmptyState() {
             loadingEl.style.display = 'none';
             emptyEl.style.display = 'flex';
@@ -269,7 +267,6 @@
         }
 
         function loadCartData() {
-            // Récupérer chaque produit depuis Firestore
             const promises = cart.map(item => db.collection('products').doc(item.pid).get());
 
             Promise.all(promises).then(snapshots => {
@@ -288,9 +285,7 @@
                     }
                 });
 
-                // Si après filtrage, plus rien (produits supprimés)
                 if (cartProductsData.length === 0) {
-                    // Nettoyer LS
                     localStorage.removeItem('ac_cart');
                     showEmptyState();
                 } else {
@@ -298,7 +293,7 @@
                 }
             }).catch(err => {
                 console.error("Erreur chargement panier:", err);
-                loadingEl.innerHTML = "<p style='color:red'>Erreur de chargement. Vérifiez votre connexion.</p>";
+                loadingEl.innerHTML = "<p style='color:red'>Erreur de chargement.</p>";
             });
         }
 
@@ -315,7 +310,7 @@
                 const lineTotal = p.price * p.qty;
                 total += lineTotal;
                 count += p.qty;
-                const img = p.image || (p.images && p.images[0]) || 'assets/img/placeholder.png';
+                const img = p.image || 'assets/img/placeholder.png';
 
                 listEl.innerHTML += `
                     <div class="cart-item">
@@ -323,6 +318,7 @@
                         <div class="cart-item-info">
                             <a href="product.html?id=${p.id}" class="cart-item-title">${p.name}</a>
                             <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA</div>
+                            <div style="font-size:12px; color:#999; margin-top:4px;">Vendeur: ${p.shopName || 'Aurum'}</div>
                         </div>
                         <div class="cart-item-actions">
                             <div class="qty-selector-sm">
@@ -337,84 +333,120 @@
                 `;
             });
 
-            // Update UI Totals
             const totalStr = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
             subtotalEl.innerText = totalStr;
             totalEl.innerText = totalStr;
             countLabel.innerText = count;
-            
             if(typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // --- CHECKOUT LOGIC (C'EST ICI QUE ÇA SE JOUE) ---
-        checkoutBtn.addEventListener('click', () => {
-            console.log("Clic sur Commander"); // Debug
-
-            // 1. Check Auth
+        // --- CHECKOUT MARKETPLACE INTELLIGENT ---
+        checkoutBtn.addEventListener('click', async () => {
             const user = auth.currentUser;
             if (!user) {
-                // Pas connecté -> Login
                 sessionStorage.setItem('ac_checkout_pending', 'true');
                 window.location.href = "login.html?redirect=cart.html";
                 return;
             }
 
-            // 2. Check Panier
-            if (cartProductsData.length === 0) {
-                alert("Panier vide");
-                return;
-            }
+            if (cartProductsData.length === 0) return alert("Panier vide");
 
-            // 3. UI Loading
             checkoutBtn.disabled = true;
-            checkoutBtn.innerText = "Création de la commande...";
+            checkoutBtn.innerText = "Traitement de la commande...";
 
-            // 4. Calcul Total
-            const totalAmount = cartProductsData.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            try {
+                const batch = db.batch(); // Utilisation de batch pour tout envoyer d'un coup
+                const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                
+                // 1. Calcul Total Global
+                const totalAmount = cartProductsData.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                
+                // 2. Création de la Commande Globale (Pour le Client et l'Admin)
+                const orderRef = db.collection('orders').doc(); // ID généré auto
+                const orderId = orderRef.id;
+                const reference = "AUR-" + Date.now().toString().slice(-6);
 
-            // 5. Objet Commande
-            const newOrder = {
-                userId: user.uid,
-                userEmail: user.email,
-                userName: user.displayName || "Client",
-                userPhone: "", // À compléter si dispo dans profil
-                items: cartProductsData.map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    price: p.price,
-                    qty: p.qty,
-                    image: p.image || null
-                })),
-                total: totalAmount,
-                status: "pending",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
+                const globalOrder = {
+                    id: orderId,
+                    reference: reference,
+                    userId: user.uid,
+                    userName: user.displayName || "Client",
+                    userEmail: user.email,
+                    total: totalAmount,
+                    status: "pending", // En attente de paiement
+                    createdAt: timestamp,
+                    items: cartProductsData.map(p => ({
+                        id: p.id, name: p.name, price: p.price, qty: p.qty, shopId: p.shopId || 'admin'
+                    }))
+                };
+                
+                batch.set(orderRef, globalOrder);
 
-            // 6. Envoi Firestore
-            db.collection('orders').add(newOrder)
-            .then((docRef) => {
-                console.log("Commande créée avec ID: ", docRef.id);
-                // Vider panier local
+                // 3. Notification ADMIN (Dashboard Admin)
+                const adminNotifRef = db.collection('notifications').doc();
+                batch.set(adminNotifRef, {
+                    type: 'new_order_admin',
+                    orderId: orderId,
+                    reference: reference,
+                    amount: totalAmount,
+                    client: user.displayName,
+                    read: false,
+                    target: 'admin',
+                    createdAt: timestamp
+                });
+
+                // 4. Dispatching : Grouper les produits par Vendeur (ShopId)
+                const itemsByShop = {};
+                cartProductsData.forEach(item => {
+                    // Si pas de shopId, on attribue à 'admin' ou 'aurum'
+                    const shopId = item.shopId || 'aurum_main'; 
+                    if (!itemsByShop[shopId]) itemsByShop[shopId] = [];
+                    itemsByShop[shopId].push(item);
+                });
+
+                // 5. Créer les Notifications/Sous-commandes pour CHAQUE Vendeur
+                for (const [shopId, items] of Object.entries(itemsByShop)) {
+                    if(shopId === 'aurum_main') continue; // On ne notifie pas l'admin deux fois ici
+
+                    const sellerOrderRef = db.collection('seller_orders').doc();
+                    const subTotal = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+                    // Notification/Ordre pour le Vendeur (Dashboard Vendeur)
+                    batch.set(sellerOrderRef, {
+                        orderId: orderId, // Lien vers la commande mère
+                        globalReference: reference,
+                        shopId: shopId,
+                        items: items.map(i => ({ name: i.name, qty: i.qty, image: i.image || null })),
+                        totalToCollect: subTotal,
+                        status: "pending",
+                        clientName: user.displayName,
+                        clientPhone: "", // Ajouter tel si dispo
+                        createdAt: timestamp,
+                        type: 'sale_notification'
+                    });
+                }
+
+                // 6. Exécution du Batch
+                await batch.commit();
+
+                // 7. Succès
                 localStorage.removeItem('ac_cart');
-                // Redirection Facture
-                window.location.href = `invoice.html?orderId=${docRef.id}`;
-            })
-            .catch((error) => {
-                console.error("Erreur ajout commande: ", error);
-                alert("Erreur technique lors de la commande: " + error.message);
+                window.location.href = `invoice.html?orderId=${orderId}`;
+
+            } catch (error) {
+                console.error("Erreur checkout:", error);
+                alert("Erreur lors de la commande. Contactez le support.");
                 checkoutBtn.disabled = false;
                 checkoutBtn.innerText = "Procéder au paiement";
-            });
+            }
         });
 
-        // --- ACTIONS GLOBALES (Attachées à window pour onclick) ---
+        // --- GLOBAL ACTIONS ---
         window.updateCartQty = function(pid, delta) {
             const pIndex = cartProductsData.findIndex(p => p.id === pid);
             if (pIndex > -1) {
                 cartProductsData[pIndex].qty += delta;
                 if(cartProductsData[pIndex].qty < 1) cartProductsData[pIndex].qty = 1;
-                
-                // Update LocalStorage
                 const lsIndex = cart.findIndex(i => i.pid === pid);
                 if(lsIndex > -1) {
                     cart[lsIndex].qty = cartProductsData[pIndex].qty;
@@ -426,31 +458,24 @@
 
         window.removeCartItem = function(pid) {
             if(!confirm("Supprimer ?")) return;
-            
             cartProductsData = cartProductsData.filter(p => p.id !== pid);
             cart = cart.filter(i => i.pid !== pid);
             localStorage.setItem('ac_cart', JSON.stringify(cart));
-            
             if(cart.length === 0) showEmptyState();
             else renderCart();
         };
 
-        // --- MENU MOBILE ---
+        // Menu Mobile (Code Standard)
         const menuToggle = document.getElementById('menu-toggle');
         const closeBtn = document.getElementById('close-btn');
         const drawer = document.getElementById('mobile-drawer');
         const overlay = document.getElementById('menu-overlay');
-        
-        function toggleMenu() {
-            drawer.classList.toggle('active');
-            overlay.classList.toggle('active');
-            if(drawer.classList.contains('active')) document.body.style.overflow='hidden';
-            else document.body.style.overflow='';
-        }
-        if(menuToggle) menuToggle.addEventListener('click', toggleMenu);
-        if(closeBtn) closeBtn.addEventListener('click', toggleMenu);
-        if(overlay) overlay.addEventListener('click', toggleMenu);
+        function tgl() { drawer.classList.toggle('active'); overlay.classList.toggle('active'); }
+        if(menuToggle) menuToggle.addEventListener('click', tgl);
+        if(closeBtn) closeBtn.addEventListener('click', tgl);
+        if(overlay) overlay.addEventListener('click', tgl);
     });
+  </script>
   </script>
 </body>
 </html>
