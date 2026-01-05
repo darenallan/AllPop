@@ -29,10 +29,12 @@
       }
       
       .invoice-card {
-          background: white; border-radius: 16px; border: 1px solid #eee;
-          overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-          /* Important pour le PDF : fond blanc forcé */
-          background-color: #ffffff; 
+          background: white; border-radius: 0; /* Carré pour l'impression */
+          border: 1px solid #eee;
+          overflow: hidden; 
+          box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+          background-color: #ffffff;
+          max-width: 800px; margin: 0 auto; /* Centrer la carte */
       }
       
       .invoice-header {
@@ -42,23 +44,27 @@
       
       .invoice-body { padding: 40px; }
       
-      .invoice-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
-      .invoice-label { color: #666; font-weight: 500; }
-      .invoice-val { font-weight: 600; color: #000; }
-      
       .invoice-table { width: 100%; border-collapse: collapse; margin: 30px 0; }
       .invoice-table th { text-align: left; color: #666; font-size: 12px; text-transform: uppercase; padding: 10px 0; border-bottom: 1px solid #eee; }
       .invoice-table td { padding: 15px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
-      .invoice-table td:last-child, .invoice-table th:last-child { text-align: right; }
+      
+      /* FORCE LA POLICE POUR LES CHIFFRES (Corrige le bug &4&5...) */
+      .price-text {
+          font-family: Arial, sans-serif !important; 
+          font-weight: 600;
+          white-space: nowrap;
+      }
       
       .invoice-total-section { 
           background: #fafafa; padding: 20px; border-radius: 12px; 
           margin-left: auto; width: 100%; max-width: 300px;
       }
+      .invoice-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
       
       .invoice-actions {
           padding: 30px 40px; background: #fafafa; border-top: 1px solid #eee;
           display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;
+          max-width: 800px; margin: 0 auto;
       }
 
       @media (max-width: 768px) {
@@ -96,8 +102,7 @@
             <div>
                 <h2 style="margin:0 0 5px 0; font-size:18px;">Commande confirmée !</h2>
                 <p style="margin:0; opacity:0.9; font-size:14px; line-height:1.5;">
-                    Votre commande a bien été enregistrée. Voici votre facture officielle. 
-                    Veuillez la télécharger et nous contacter pour finaliser le paiement.
+                    Votre commande a bien été enregistrée. Voici votre facture officielle.
                 </p>
             </div>
         </div>
@@ -115,7 +120,7 @@
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:14px; color:#999; text-transform:uppercase; margin-bottom:5px;">Facture N°</div>
-                    <div style="font-size:20px; font-weight:700;" id="inv-ref">...</div>
+                    <div style="font-size:20px; font-weight:700; font-family:Arial,sans-serif;" id="inv-ref">...</div>
                     <div style="margin-top:5px; font-size:14px; color:#666;" id="inv-date">...</div>
                 </div>
             </div>
@@ -133,8 +138,8 @@
                         <tr>
                             <th>Description</th>
                             <th style="text-align:center;">Qté</th>
-                            <th>Prix Unit.</th>
-                            <th>Total</th>
+                            <th style="text-align:right;">Prix Unit.</th>
+                            <th style="text-align:right;">Total</th>
                         </tr>
                     </thead>
                     <tbody id="invoice-items"></tbody>
@@ -144,7 +149,7 @@
                     <div class="invoice-total-section">
                         <div class="invoice-row">
                             <span class="invoice-label">Sous-total</span>
-                            <span class="invoice-val" id="inv-subtotal">...</span>
+                            <span class="invoice-val price-text" id="inv-subtotal">...</span>
                         </div>
                         <div class="invoice-row">
                             <span class="invoice-label">Livraison</span>
@@ -153,12 +158,13 @@
                         <div style="border-top:1px solid #ddd; margin:10px 0;"></div>
                         <div class="invoice-row" style="margin-bottom:0;">
                             <span class="invoice-label" style="font-size:16px; color:#000;">Total à payer</span>
-                            <span class="invoice-val" style="font-size:18px; color:#D4AF37;" id="inv-total">...</span>
+                            <span class="invoice-val price-text" style="font-size:18px; color:#D4AF37;" id="inv-total">...</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="invoice-actions">
             <button class="btn btn-gold" id="btn-download">
                 <i data-lucide="download"></i> Télécharger PDF
@@ -178,43 +184,41 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         const db = firebase.firestore();
-        const auth = firebase.auth();
         const params = new URLSearchParams(window.location.search);
         const orderId = params.get('orderId');
 
         if (!orderId) {
-            alert("Aucune commande spécifiée.");
+            alert("Aucune commande trouvée.");
             window.location.href = "cart.html";
             return;
         }
 
         db.collection('orders').doc(orderId).get().then(doc => {
             if (doc.exists) {
-                const order = doc.data();
-                renderInvoice(order, doc.id);
+                renderInvoice(doc.data(), doc.id);
             } else {
                 alert("Commande introuvable.");
-                window.location.href = "index.html";
             }
-        }).catch(err => {
-            console.error(err);
-            alert("Erreur de chargement.");
-        });
+        }).catch(console.error);
+
+        // FORMATAGE PRIX ROBUSTE (Sans caractères bizarres)
+        function formatMoney(amount) {
+            return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " FCFA";
+        }
 
         function renderInvoice(order, id) {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('invoice-content').style.display = 'block';
 
-            // Remplissage infos
+            // Infos
             const date = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString();
             document.getElementById('inv-ref').innerText = "AUR-" + id.substr(0, 6).toUpperCase();
             document.getElementById('inv-date').innerText = date;
-            
             document.getElementById('client-name').innerText = order.userName || "Client";
             document.getElementById('client-phone').innerText = order.userPhone || "";
             document.getElementById('client-email').innerText = order.userEmail || "";
 
-            // Items
+            // Tableau
             const tbody = document.getElementById('invoice-items');
             tbody.innerHTML = "";
             let total = 0;
@@ -222,60 +226,55 @@
             order.items.forEach(item => {
                 const lineTotal = item.price * item.qty;
                 total += lineTotal;
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.name}</td>
-                    <td style="text-align:center;">${item.qty}</td>
-                    <td>${new Intl.NumberFormat('fr-FR').format(item.price)} FCFA</td>
-                    <td>${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA</td>
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td style="text-align:center;">${item.qty}</td>
+                        <td style="text-align:right;" class="price-text">${formatMoney(item.price)}</td>
+                        <td style="text-align:right;" class="price-text">${formatMoney(lineTotal)}</td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
             });
 
-            const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
-            document.getElementById('inv-subtotal').innerText = formattedTotal;
-            document.getElementById('inv-total').innerText = formattedTotal;
+            const totalStr = formatMoney(total);
+            document.getElementById('inv-subtotal').innerText = totalStr;
+            document.getElementById('inv-total').innerText = totalStr;
 
-            setupActions(order, id, formattedTotal);
+            setupActions(order, id, totalStr);
             lucide.createIcons();
         }
 
         function setupActions(order, id, totalStr) {
-            // PDF Download
-            const btnDownload = document.getElementById('btn-download');
-            
-            btnDownload.addEventListener('click', () => {
-                // Feedback utilisateur
-                const originalText = btnDownload.innerHTML;
-                btnDownload.innerText = "Génération du PDF...";
-                btnDownload.disabled = true;
+            // PDF DOWNLOAD FIXÉ
+            document.getElementById('btn-download').addEventListener('click', () => {
+                const btn = document.getElementById('btn-download');
+                btn.innerText = "Génération...";
+                btn.disabled = true;
 
-                // Initialisation jsPDF
                 const { jsPDF } = window.jspdf;
-                // 'p' = portrait, 'pt' = points, 'a4' = format papier
                 const doc = new jsPDF('p', 'pt', 'a4');
-                
-                const content = document.getElementById('invoice-document');
+                const element = document.getElementById('invoice-document');
 
-                doc.html(content, {
+                doc.html(element, {
                     callback: function (doc) {
                         doc.save(`Facture_AURUM_${id.substr(0,6)}.pdf`);
-                        // Reset bouton
-                        btnDownload.innerHTML = originalText;
-                        btnDownload.disabled = false;
+                        btn.innerHTML = '<i data-lucide="download"></i> Télécharger PDF';
+                        btn.disabled = false;
+                        lucide.createIcons();
                     },
-                    x: 15,    // Marge gauche
-                    y: 15,    // Marge haut
-                    width: 565, // Largeur contenue (A4 est 595pt)
-                    windowWidth: 900 // Largeur fenêtre virtuelle (pour garder le CSS desktop)
+                    x: 10,
+                    y: 10,
+                    width: 575, // Largeur A4 (595pt) moins marges
+                    windowWidth: 800, // Force une largeur desktop pour le rendu
+                    html2canvas: { scale: 0.8, useCORS: true } // Meilleure qualité
                 });
             });
 
-            // WhatsApp
+            // WHATSAPP
             document.getElementById('btn-whatsapp').addEventListener('click', () => {
-                const phone = "22664502626"; 
-                const msg = `Bonjour Aurum,\n\nJe viens de passer commande (Réf: AUR-${id.substr(0,6).toUpperCase()}) pour un total de ${totalStr}.\n\nJe souhaite procéder au paiement.`;
+                const phone = "22664502626";
+                const ref = "AUR-" + id.substr(0,6).toUpperCase();
+                const msg = `Bonjour Aurum,\n\nJe souhaite régler ma commande ${ref} d'un montant de ${totalStr}.\n\nQuels sont les moyens de paiement ?`;
                 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
             });
         }
