@@ -391,19 +391,62 @@
                 renderCart();
             }
         };
-
-        // --- CHECKOUT ---
+      
+        // --- CHECKOUT (CRÉATION COMMANDE + REDIRECTION FACTURE) ---
         checkoutBtn.addEventListener('click', () => {
             if(!auth.currentUser) {
-                // Sauvegarde l'intention de checkout pour rediriger après login
+                // Sauvegarde l'intention
                 sessionStorage.setItem('ac_checkout_pending', 'true');
                 window.location.href = "login.html?redirect=cart.html";
-            } else {
-                // Rediriger vers la page de commande (à créer plus tard)
-                // Pour l'instant, simple alerte
-                alert("Redirection vers la page de paiement sécurisé... (Prochaine étape)");
-                // window.location.href = "checkout.html"; 
+                return;
             }
+
+            // Vérification panier vide
+            if(cartProductsData.length === 0) {
+                alert("Votre panier est vide.");
+                return;
+            }
+
+            // 1. Désactiver le bouton pour éviter double clic
+            checkoutBtn.disabled = true;
+            checkoutBtn.innerText = "Création de la commande...";
+
+            // 2. Calcul des totaux finaux
+            const totalAmount = cartProductsData.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            // 3. Création de l'objet Commande
+            const newOrder = {
+                userId: auth.currentUser.uid,
+                userEmail: auth.currentUser.email,
+                userName: auth.currentUser.displayName || "Client Aurum",
+                items: cartProductsData.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    qty: p.qty,
+                    image: p.image || null
+                })),
+                total: totalAmount,
+                status: "pending", // En attente de paiement (WhatsApp)
+                createdAt: new Date(),
+                reference: "AUR-" + Date.now().toString().slice(-6) // Référence simple
+            };
+
+            // 4. Envoi à Firebase
+            db.collection('orders').add(newOrder)
+            .then((docRef) => {
+                // 5. Vider le panier local
+                localStorage.removeItem('ac_cart');
+                
+                // 6. Redirection vers la facture avec l'ID de la commande
+                window.location.href = `invoice.html?orderId=${docRef.id}`;
+            })
+            .catch((error) => {
+                console.error("Erreur commande : ", error);
+                alert("Une erreur est survenue. Veuillez réessayer.");
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerText = "Procéder au paiement";
+            });
         });
 
         // --- MENU MOBILE ---
