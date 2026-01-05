@@ -1,151 +1,281 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Générer une Facture - Aurum</title>
-<meta name="description" content="Générez votre facture Aurum en quelques clics" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css" />
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" href="assets/img/placeholder-product-1.svg" />
-<script defer src="assets/js/utils.js"></script>
-<script defer src="assets/js/data.js"></script>
-<script defer src="assets/js/app.js"></script>
-<script defer src="assets/js/auth.js"></script>
-<script defer src="assets/js/invoice.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Votre Facture - Aurum</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <script src="assets/js/auth.js"></script>
+
+  <style>
+      .invoice-container { padding: 40px 20px; max-width: 900px; margin: 0 auto; }
+      
+      .success-banner {
+          background: linear-gradient(135deg, #1F8A70 0%, #156652 100%);
+          color: white; padding: 25px; border-radius: 12px; margin-bottom: 30px;
+          display: flex; align-items: flex-start; gap: 16px;
+          box-shadow: 0 10px 30px rgba(31, 138, 112, 0.2);
+      }
+      
+      .invoice-card {
+          background: white; border-radius: 16px; border: 1px solid #eee;
+          overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+      }
+      
+      .invoice-header {
+          background: #fcfcfc; padding: 40px; border-bottom: 2px solid #f0f0f0;
+          display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;
+      }
+      
+      .invoice-body { padding: 40px; }
+      
+      .invoice-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+      .invoice-label { color: #666; font-weight: 500; }
+      .invoice-val { font-weight: 600; color: #000; }
+      
+      .invoice-table { width: 100%; border-collapse: collapse; margin: 30px 0; }
+      .invoice-table th { text-align: left; color: #666; font-size: 12px; text-transform: uppercase; padding: 10px 0; border-bottom: 1px solid #eee; }
+      .invoice-table td { padding: 15px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
+      .invoice-table td:last-child, .invoice-table th:last-child { text-align: right; }
+      
+      .invoice-total-section { 
+          background: #fafafa; padding: 20px; border-radius: 12px; 
+          margin-left: auto; width: 100%; max-width: 300px;
+      }
+      
+      .invoice-actions {
+          padding: 30px 40px; background: #fafafa; border-top: 1px solid #eee;
+          display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;
+      }
+
+      @media (max-width: 768px) {
+          .invoice-header { flex-direction: column; }
+          .invoice-body { padding: 20px; }
+          .invoice-actions { flex-direction: column; }
+          .invoice-actions .btn { width: 100%; }
+      }
+  </style>
 </head>
+
 <body>
-<header id="app-header" class="header"></header>
-
-<main class="container">
-  <section class="section">
-    <div class="invoice-header">
-      <h1>Générer une Facture</h1>
-    </div>
-
-    <!-- Message de bienvenue après commande -->
-    <div id="order-success-banner" class="hidden" style="background: linear-gradient(135deg, #C9A961 0%, #B89751 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(201, 169, 97, 0.3);">
-      <div style="display: flex; align-items: flex-start; gap: 16px;">
-        <i data-lucide="check-circle" style="width: 40px; height: 40px; min-width: 40px; margin-top: 4px;"></i>
-        <div>
-          <h3 style="margin: 0 0 8px 0; color: white; font-size: 1.1rem;">Commande confirmée avec succès !</h3>
-          <p style="margin: 0; opacity: 0.95; font-size: 0.95rem;">Votre facture est en cours de génération. Veuillez la télécharger et nous la transmettre par WhatsApp pour procéder au paiement.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="invoice-form-container">
-      <form id="invoice-form" class="invoice-form">
-        <div class="form-section">
-          <h3>Informations Client</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label required-label">Nom complet du client</label>
-              <input class="input" name="clientName" type="text" placeholder="Ex: Jean Dupont" required />
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label required-label">Email</label>
-              <input class="input" name="clientEmail" type="email" placeholder="client@example.com" required />
-            </div>
-            <div class="form-group">
-              <label class="form-label required-label">Téléphone</label>
-              <input class="input" name="clientPhone" type="tel" placeholder="+226 XX XX XX XX" required />
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h3>Détails du Service</h3>
-          <div class="form-group">
-            <label class="form-label required-label">Description du service / événement</label>
-            <textarea class="input" name="serviceDescription" rows="4" placeholder="Décrivez le service ou l'événement..." required></textarea>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label required-label">Montant (FCFA)</label>
-              <input class="input" name="amount" type="number" min="0" placeholder="50000" required />
-            </div>
-            <div class="form-group">
-              <label class="form-label required-label">Mode de paiement</label>
-              <select class="input" name="paymentMethod" required>
-                <option value="">-- Choisir --</option>
-                <option value="Orange Money">Orange Money</option>
-                <option value="Moov Money">Moov Money</option>
-                <option value="Wave">Wave</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label required-label">Date</label>
-            <input class="input" name="invoiceDate" type="date" required />
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button class="btn btn-gold btn-xl" type="submit">
-            <i data-lucide="file-text"></i>
-            Générer la Facture
-          </button>
-        </div>
-      </form>
-
-      <!-- Prévisualisation et actions -->
-      <div id="invoice-preview" class="invoice-preview hidden">
-        <div class="invoice-preview-header">
-          <h3>Facture Générée</h3>
-          <div id="invoice-reference" class="invoice-ref"></div>
-        </div>
-
-        <div class="invoice-preview-content" id="invoice-preview-content">
-          <!-- Le contenu de la facture sera généré ici -->
-        </div>
-
-        <div class="invoice-actions">
-          <button class="btn btn-gold" id="download-invoice-btn">
-            <i data-lucide="download"></i>
-            Télécharger PDF
-          </button>
-          <button class="btn btn-primary" id="email-invoice-btn">
-            <i data-lucide="mail"></i>
-            Envoyer par Email
-          </button>
-          <button class="btn btn-success" id="whatsapp-invoice-btn">
-            <i data-lucide="message-circle"></i>
-            WhatsApp
-          </button>
-          <button class="btn btn-dark" id="snapchat-invoice-btn">
-            <i data-lucide="camera"></i>
-            Snapchat
-          </button>
-          <a href="order.html" class="btn btn-outline">
-            <i data-lucide="package"></i>
-            Voir mes commandes
+  <header id="app-header" class="header">
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
           </a>
-        </div>
-
-        <div class="invoice-info-box">
-          <i data-lucide="info"></i>
-          <p>
-            <strong>Prochaine étape :</strong> votre facture est envoyée dans le tableau de bord admin avec son numéro. 
-            L'administrateur peut la valider, la rejeter ou la modifier. Vous serez notifié par email et dans l'espace vendeur dès validation.
-          </p>
-        </div>
+          <nav class="nav-actions">
+              <a href="cart.html" class="icon-btn"><i data-lucide="shopping-bag"></i></a>
+          </nav>
       </div>
-    </div>
-  </section>
-</main>
+  </header>
 
-<footer id="app-footer" class="footer"></footer>
-<div class="toast-container" id="toast-container"></div>
+  <main class="invoice-container">
+    
+    <div id="loading" style="text-align:center; padding:100px;">
+        <i data-lucide="loader" class="spin" style="animation:spin 1s linear infinite; width:40px; height:40px; color:var(--gold);"></i>
+        <p style="margin-top:20px; color:#666;">Génération de votre facture...</p>
+    </div>
+
+    <div id="invoice-content" style="display:none;">
+        
+        <div class="success-banner">
+            <i data-lucide="check-circle" style="width:32px; height:32px; flex-shrink:0;"></i>
+            <div>
+                <h2 style="margin:0 0 5px 0; font-size:18px;">Commande confirmée !</h2>
+                <p style="margin:0; opacity:0.9; font-size:14px; line-height:1.5;">
+                    Votre commande a bien été enregistrée. Voici votre facture officielle. 
+                    Veuillez la télécharger et nous contacter pour finaliser le paiement.
+                </p>
+            </div>
+        </div>
+
+        <div class="invoice-card" id="invoice-document">
+            
+            <div class="invoice-header">
+                <div>
+                    <h1 style="font-family:'Playfair Display', serif; font-size:32px; margin:0; color:#D4AF37;">AURUM</h1>
+                    <p style="margin:5px 0 0; color:#666; font-size:13px;">Excellence à votre portée</p>
+                    <div style="margin-top:15px; font-size:13px; color:#444; line-height:1.6;">
+                        Ouagadougou, Burkina Faso<br>
+                        Tél: +226 64 50 26 26<br>
+                        Email: contact@aurum.bf
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:14px; color:#999; text-transform:uppercase; margin-bottom:5px;">Facture N°</div>
+                    <div style="font-size:20px; font-weight:700;" id="inv-ref">...</div>
+                    <div style="margin-top:5px; font-size:14px; color:#666;" id="inv-date">...</div>
+                </div>
+            </div>
+
+            <div class="invoice-body">
+                <div style="margin-bottom:30px;">
+                    <h3 style="font-size:14px; text-transform:uppercase; color:#999; margin-bottom:10px;">Facturé à</h3>
+                    <div style="font-weight:600; font-size:16px;" id="client-name">...</div>
+                    <div style="color:#555; margin-top:5px;" id="client-phone">...</div>
+                    <div style="color:#555;" id="client-email">...</div>
+                </div>
+
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th style="text-align:center;">Qté</th>
+                            <th>Prix Unit.</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-items">
+                        </tbody>
+                </table>
+
+                <div style="display:flex; justify-content:flex-end;">
+                    <div class="invoice-total-section">
+                        <div class="invoice-row">
+                            <span class="invoice-label">Sous-total</span>
+                            <span class="invoice-val" id="inv-subtotal">...</span>
+                        </div>
+                        <div class="invoice-row">
+                            <span class="invoice-label">Livraison</span>
+                            <span class="invoice-val">À calculer</span>
+                        </div>
+                        <div style="border-top:1px solid #ddd; margin:10px 0;"></div>
+                        <div class="invoice-row" style="margin-bottom:0;">
+                            <span class="invoice-label" style="font-size:16px; color:#000;">Total à payer</span>
+                            <span class="invoice-val" style="font-size:18px; color:#D4AF37;" id="inv-total">...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="invoice-actions">
+                <button class="btn btn-gold" id="btn-download">
+                    <i data-lucide="download"></i> Télécharger PDF
+                </button>
+                <button class="btn btn-success" id="btn-whatsapp" style="background:#25D366; color:white; border:none;">
+                    <i data-lucide="message-circle"></i> Envoyer sur WhatsApp
+                </button>
+            </div>
+        </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+      <div class="container text-center"><p>&copy; 2026 Aurum Marketplace</p></div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const { jsPDF } = window.jspdf;
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        // Récupérer l'ID de la commande depuis l'URL
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('orderId');
+
+        // Si pas d'ID, on utilise le panier local pour simuler une facture (Checkout immédiat)
+        // Mais idéalement, il faut d'abord créer la commande dans Firebase.
+        
+        // Simulation pour l'exemple si pas d'ID (à adapter avec ton flux réel)
+        // Ici on va chercher la commande réelle dans Firebase
+        
+        if (!orderId) {
+            alert("Aucune commande spécifiée.");
+            window.location.href = "cart.html";
+            return;
+        }
+
+        db.collection('orders').doc(orderId).get().then(doc => {
+            if (doc.exists) {
+                const order = doc.data();
+                renderInvoice(order, doc.id);
+            } else {
+                alert("Commande introuvable.");
+                window.location.href = "index.html";
+            }
+        }).catch(err => {
+            console.error(err);
+            alert("Erreur de chargement.");
+        });
+
+        function renderInvoice(order, id) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('invoice-content').style.display = 'block';
+
+            // Remplissage infos
+            const date = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString();
+            document.getElementById('inv-ref').innerText = "AUR-" + id.substr(0, 6).toUpperCase();
+            document.getElementById('inv-date').innerText = date;
+            
+            document.getElementById('client-name').innerText = order.userName || "Client";
+            document.getElementById('client-phone').innerText = order.userPhone || "";
+            document.getElementById('client-email').innerText = order.userEmail || "";
+
+            // Items
+            const tbody = document.getElementById('invoice-items');
+            tbody.innerHTML = "";
+            let total = 0;
+
+            order.items.forEach(item => {
+                const lineTotal = item.price * item.qty;
+                total += lineTotal;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.name}</td>
+                    <td style="text-align:center;">${item.qty}</td>
+                    <td>${new Intl.NumberFormat('fr-FR').format(item.price)} FCFA</td>
+                    <td>${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
+            document.getElementById('inv-subtotal').innerText = formattedTotal;
+            document.getElementById('inv-total').innerText = formattedTotal;
+
+            // Setup Boutons
+            setupActions(order, id, formattedTotal);
+            lucide.createIcons();
+        }
+
+        function setupActions(order, id, totalStr) {
+            // PDF Download
+            document.getElementById('btn-download').addEventListener('click', () => {
+                const doc = new jsPDF();
+                const content = document.getElementById('invoice-document');
+                
+                doc.html(content, {
+                    callback: function (doc) {
+                        doc.save(`Facture_AURUM_${id}.pdf`);
+                    },
+                    x: 10,
+                    y: 10,
+                    width: 190,
+                    windowWidth: 900 
+                });
+            });
+
+            // WhatsApp
+            document.getElementById('btn-whatsapp').addEventListener('click', () => {
+                const phone = "22664502626"; // Ton numéro business
+                const msg = `Bonjour Aurum,\n\nJe viens de passer commande (Réf: AUR-${id.substr(0,6).toUpperCase()}) pour un total de ${totalStr}.\n\nPouvez-vous me confirmer les moyens de paiement disponibles ?\n\nMerci.`;
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+            });
+        }
+    });
+  </script>
 </body>
 </html>
