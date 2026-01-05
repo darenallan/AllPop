@@ -229,10 +229,16 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // --- CONFIG FIREBASE ---
+        // Vérifie si Firebase est déjà init (via auth.js)
+        if (!firebase.apps.length) {
+            console.error("Firebase non initialisé ! Vérifiez auth.js");
+            return;
+        }
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Éléments DOM
+        // --- DOM ELEMENTS ---
         const loadingEl = document.getElementById('loading');
         const emptyEl = document.getElementById('cart-empty');
         const contentEl = document.getElementById('cart-content');
@@ -242,56 +248,16 @@
         const totalEl = document.getElementById('total-display');
         const checkoutBtn = document.getElementById('btn-checkout');
 
-        // 1. Lire le LocalStorage
+        // --- STATE ---
         let cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-        let cartProductsData = []; // Stockera les infos complètes des produits
+        let cartProductsData = [];
 
-        console.log("Panier initial (LocalStorage) :", cart);
-
+        // --- INIT ---
         if (cart.length === 0) {
             showEmptyState();
-            return;
+        } else {
+            loadCartData();
         }
-
-        // 2. Récupérer les infos fraîches depuis Firestore
-        // On crée un tableau de promesses pour récupérer chaque produit
-        const promises = cart.map(item => db.collection('products').doc(item.pid).get());
-
-        Promise.all(promises)
-            .then(snapshots => {
-                snapshots.forEach(doc => {
-                    if (doc.exists) {
-                        // On combine les données Firestore avec la quantité du panier local
-                        const productData = doc.data();
-                        const cartItem = cart.find(i => i.pid === doc.id);
-                        cartProductsData.push({
-                            id: doc.id,
-                            ...productData,
-                            qty: cartItem ? cartItem.qty : 1
-                        });
-                    }
-                });
-
-                // Nettoyage : Si des produits du localStorage n'existent plus dans Firebase
-                if (cartProductsData.length < cart.length) {
-                    console.warn("Certains produits du panier n'existent plus. Mise à jour du panier local.");
-                    // On ne garde que ce qui a été trouvé en base
-                    const validIds = cartProductsData.map(p => p.id);
-                    cart = cart.filter(item => validIds.includes(item.pid));
-                    localStorage.setItem('ac_cart', JSON.stringify(cart));
-                }
-
-                if (cartProductsData.length === 0) {
-                    showEmptyState();
-                } else {
-                    renderCart();
-                }
-            })
-            .catch(err => {
-                console.error("Erreur chargement panier :", err);
-                loadingEl.innerHTML = "<p style='color:red;'>Erreur lors du chargement. Veuillez rafraîchir.</p>";
-            });
-
 
         // --- FONCTIONS ---
 
@@ -299,7 +265,41 @@
             loadingEl.style.display = 'none';
             emptyEl.style.display = 'flex';
             contentEl.style.display = 'none';
-            lucide.createIcons();
+            if(typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function loadCartData() {
+            // Récupérer chaque produit depuis Firestore
+            const promises = cart.map(item => db.collection('products').doc(item.pid).get());
+
+            Promise.all(promises).then(snapshots => {
+                cartProductsData = [];
+                snapshots.forEach(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const localItem = cart.find(i => i.pid === doc.id);
+                        if(localItem) {
+                            cartProductsData.push({
+                                id: doc.id,
+                                ...data,
+                                qty: localItem.qty
+                            });
+                        }
+                    }
+                });
+
+                // Si après filtrage, plus rien (produits supprimés)
+                if (cartProductsData.length === 0) {
+                    // Nettoyer LS
+                    localStorage.removeItem('ac_cart');
+                    showEmptyState();
+                } else {
+                    renderCart();
+                }
+            }).catch(err => {
+                console.error("Erreur chargement panier:", err);
+                loadingEl.innerHTML = "<p style='color:red'>Erreur de chargement. Vérifiez votre connexion.</p>";
+            });
         }
 
         function renderCart() {
@@ -309,116 +309,75 @@
             
             listEl.innerHTML = "";
             let total = 0;
-            let itemCount = 0;
+            let count = 0;
 
             cartProductsData.forEach(p => {
                 const lineTotal = p.price * p.qty;
                 total += lineTotal;
-                itemCount += p.qty;
-                const img = p.image || p.images?.[0] || 'assets/img/placeholder.png';
+                count += p.qty;
+                const img = p.image || (p.images && p.images[0]) || 'assets/img/placeholder.png';
 
                 listEl.innerHTML += `
                     <div class="cart-item">
-                        <a href="product.html?id=${p.id}">
-                            <img src="${img}" class="cart-item-img" alt="${p.name}">
-                        </a>
+                        <a href="product.html?id=${p.id}"><img src="${img}" class="cart-item-img" alt="${p.name}"></a>
                         <div class="cart-item-info">
                             <a href="product.html?id=${p.id}" class="cart-item-title">${p.name}</a>
-                            <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA / unité</div>
+                            <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA</div>
                         </div>
                         <div class="cart-item-actions">
                             <div class="qty-selector-sm">
-                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', -1)">-</button>
+                                <button class="qty-btn-sm" onclick="updateCartQty('${p.id}', -1)">-</button>
                                 <span class="qty-val-sm">${p.qty}</span>
-                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', 1)">+</button>
+                                <button class="qty-btn-sm" onclick="updateCartQty('${p.id}', 1)">+</button>
                             </div>
-                            <div class="item-total">
-                                ${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA
-                            </div>
-                            <div class="btn-delete" onclick="removeItem('${p.id}')">
-                                <i data-lucide="trash-2"></i>
-                            </div>
+                            <div class="item-total">${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA</div>
+                            <div class="btn-delete" onclick="removeCartItem('${p.id}')"><i data-lucide="trash-2"></i></div>
                         </div>
                     </div>
                 `;
             });
 
-            // Mise à jour des totaux
-            const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
-            subtotalEl.innerText = formattedTotal;
-            totalEl.innerText = formattedTotal;
-            countLabel.innerText = itemCount;
-
-            lucide.createIcons();
+            // Update UI Totals
+            const totalStr = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
+            subtotalEl.innerText = totalStr;
+            totalEl.innerText = totalStr;
+            countLabel.innerText = count;
+            
+            if(typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // --- ACTIONS GLOBALES (accessibles via onclick) ---
-
-        window.changeQty = function(pid, delta) {
-            // 1. Mise à jour données locales
-            const product = cartProductsData.find(p => p.id === pid);
-            if(product) {
-                product.qty += delta;
-                if(product.qty < 1) product.qty = 1;
-            }
-            
-            // 2. Mise à jour LocalStorage
-            const lsItem = cart.find(i => i.pid === pid);
-            if(lsItem) {
-                lsItem.qty += delta;
-                if(lsItem.qty < 1) lsItem.qty = 1;
-                localStorage.setItem('ac_cart', JSON.stringify(cart));
-            }
-
-            // 3. Rerender
-            renderCart();
-        };
-
-        window.removeItem = function(pid) {
-            if(!confirm("Retirer cet article du panier ?")) return;
-
-            // 1. Filtre les données
-            cartProductsData = cartProductsData.filter(p => p.id !== pid);
-            cart = cart.filter(i => i.pid !== pid);
-            
-            // 2. Sauvegarde LS
-            localStorage.setItem('ac_cart', JSON.stringify(cart));
-
-            // 3. Rerender ou état vide
-            if(cart.length === 0) {
-                showEmptyState();
-            } else {
-                renderCart();
-            }
-        };
-      
-        // --- CHECKOUT (CRÉATION COMMANDE + REDIRECTION FACTURE) ---
+        // --- CHECKOUT LOGIC (C'EST ICI QUE ÇA SE JOUE) ---
         checkoutBtn.addEventListener('click', () => {
-            if(!auth.currentUser) {
-                // Sauvegarde l'intention
+            console.log("Clic sur Commander"); // Debug
+
+            // 1. Check Auth
+            const user = auth.currentUser;
+            if (!user) {
+                // Pas connecté -> Login
                 sessionStorage.setItem('ac_checkout_pending', 'true');
                 window.location.href = "login.html?redirect=cart.html";
                 return;
             }
 
-            // Vérification panier vide
-            if(cartProductsData.length === 0) {
-                alert("Votre panier est vide.");
+            // 2. Check Panier
+            if (cartProductsData.length === 0) {
+                alert("Panier vide");
                 return;
             }
 
-            // 1. Désactiver le bouton pour éviter double clic
+            // 3. UI Loading
             checkoutBtn.disabled = true;
             checkoutBtn.innerText = "Création de la commande...";
 
-            // 2. Calcul des totaux finaux
+            // 4. Calcul Total
             const totalAmount = cartProductsData.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
-            // 3. Création de l'objet Commande
+            // 5. Objet Commande
             const newOrder = {
-                userId: auth.currentUser.uid,
-                userEmail: auth.currentUser.email,
-                userName: auth.currentUser.displayName || "Client Aurum",
+                userId: user.uid,
+                userEmail: user.email,
+                userName: user.displayName || "Client",
+                userPhone: "", // À compléter si dispo dans profil
                 items: cartProductsData.map(p => ({
                     id: p.id,
                     name: p.name,
@@ -427,50 +386,70 @@
                     image: p.image || null
                 })),
                 total: totalAmount,
-                status: "pending", // En attente de paiement (WhatsApp)
-                createdAt: new Date(),
-                reference: "AUR-" + Date.now().toString().slice(-6) // Référence simple
+                status: "pending",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            // 4. Envoi à Firebase
+            // 6. Envoi Firestore
             db.collection('orders').add(newOrder)
             .then((docRef) => {
-                // 5. Vider le panier local
+                console.log("Commande créée avec ID: ", docRef.id);
+                // Vider panier local
                 localStorage.removeItem('ac_cart');
-                
-                // 6. Redirection vers la facture avec l'ID de la commande
+                // Redirection Facture
                 window.location.href = `invoice.html?orderId=${docRef.id}`;
             })
             .catch((error) => {
-                console.error("Erreur commande : ", error);
-                alert("Une erreur est survenue. Veuillez réessayer.");
+                console.error("Erreur ajout commande: ", error);
+                alert("Erreur technique lors de la commande: " + error.message);
                 checkoutBtn.disabled = false;
                 checkoutBtn.innerText = "Procéder au paiement";
             });
         });
 
+        // --- ACTIONS GLOBALES (Attachées à window pour onclick) ---
+        window.updateCartQty = function(pid, delta) {
+            const pIndex = cartProductsData.findIndex(p => p.id === pid);
+            if (pIndex > -1) {
+                cartProductsData[pIndex].qty += delta;
+                if(cartProductsData[pIndex].qty < 1) cartProductsData[pIndex].qty = 1;
+                
+                // Update LocalStorage
+                const lsIndex = cart.findIndex(i => i.pid === pid);
+                if(lsIndex > -1) {
+                    cart[lsIndex].qty = cartProductsData[pIndex].qty;
+                    localStorage.setItem('ac_cart', JSON.stringify(cart));
+                }
+                renderCart();
+            }
+        };
+
+        window.removeCartItem = function(pid) {
+            if(!confirm("Supprimer ?")) return;
+            
+            cartProductsData = cartProductsData.filter(p => p.id !== pid);
+            cart = cart.filter(i => i.pid !== pid);
+            localStorage.setItem('ac_cart', JSON.stringify(cart));
+            
+            if(cart.length === 0) showEmptyState();
+            else renderCart();
+        };
+
         // --- MENU MOBILE ---
         const menuToggle = document.getElementById('menu-toggle');
         const closeBtn = document.getElementById('close-btn');
         const drawer = document.getElementById('mobile-drawer');
-        const menuOverlay = document.getElementById('menu-overlay');
-
-        function openMenu() {
-            drawer.classList.add('active');
-            menuOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
+        const overlay = document.getElementById('menu-overlay');
+        
+        function toggleMenu() {
+            drawer.classList.toggle('active');
+            overlay.classList.toggle('active');
+            if(drawer.classList.contains('active')) document.body.style.overflow='hidden';
+            else document.body.style.overflow='';
         }
-
-        function closeMenu() {
-            drawer.classList.remove('active');
-            menuOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        if (menuToggle) menuToggle.addEventListener('click', openMenu);
-        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
-        if (menuOverlay) menuOverlay.addEventListener('click', closeMenu);
-
+        if(menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if(closeBtn) closeBtn.addEventListener('click', toggleMenu);
+        if(overlay) overlay.addEventListener('click', toggleMenu);
     });
   </script>
 </body>
