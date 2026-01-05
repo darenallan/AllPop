@@ -397,7 +397,7 @@
     <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 3000;"></div>
 
     <script>
-        // 1. CONFIGURATION FIREBASE (Ta config)
+        // 1. CONFIGURATION FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
             authDomain: "aurum-bf.firebaseapp.com",
@@ -413,9 +413,9 @@
 
         // Variables Globales
         let myShop = null;
-        let productImages = []; // Pour l'upload produit
-        let logoBase64 = "";    // Pour le profil
-        let bannerBase64 = "";  // Pour le profil
+        let productImages = [];
+        let logoBase64 = "";
+        let bannerBase64 = "";
 
         // 2. DÉMARRAGE
         document.addEventListener('DOMContentLoaded', () => {
@@ -424,17 +424,13 @@
                 const loader = document.getElementById('loader');
                 
                 if (user) {
-                    console.log("Connecté en tant que :", user.email);
-                    
                     // RECHERCHE DE LA BOUTIQUE
                     db.collection('shops').where('ownerEmail', '==', user.email).get()
                     .then(snapshot => {
                         loader.style.display = 'none';
 
                         if (!snapshot.empty) {
-                            // Boutique trouvée !
                             myShop = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
-                            console.log("Boutique chargée :", myShop.name);
                             
                             // Affichage
                             document.getElementById('seller-content').classList.remove('hidden');
@@ -444,15 +440,12 @@
                             document.getElementById('shop-status-display').innerText = myShop.status;
                             document.getElementById('shop-category-display').innerText = myShop.category;
                             
-                            // Chargement Paramètres
+                            // Init Fonctions
                             loadShopSettings();
-
-                            // Écoute Produits & Commandes
                             listenProducts();
-                            listenOrders();
+                            listenOrders(); // <--- LANCEMENT ÉCOUTE COMMANDES
 
                         } else {
-                            // Pas de boutique
                             document.getElementById('no-shop-warning').classList.remove('hidden');
                             document.getElementById('user-email-display').innerText = user.email;
                         }
@@ -468,8 +461,8 @@
             });
 
             lucide.createIcons();
-            setupProductUpload(); // Initialiser le drag & drop produit
-            setupProfileUpload(); // Initialiser le drag & drop profil
+            setupProductUpload();
+            setupProfileUpload();
         });
 
         // 3. ÉCOUTE PRODUITS
@@ -509,45 +502,57 @@
             });
         }
 
-        // --- NOUVELLE FONCTION : ÉCOUTER LES COMMANDES ---
+        // --- CORRECTIF FONCTION : ÉCOUTER LES COMMANDES (SANS TRI SERVEUR) ---
         function listenOrders() {
-            // Ecoute la collection 'seller_orders' où shopId correspond à ma boutique
+            // On retire .orderBy('createdAt', 'desc') pour éviter l'erreur d'index manquant
             db.collection('seller_orders')
               .where('shopId', '==', myShop.id)
-              .orderBy('createdAt', 'desc')
               .onSnapshot(snap => {
                   const list = document.getElementById('orders-list');
                   list.innerHTML = "";
                   
                   let totalSales = 0;
                   let pendingCount = 0;
+                  
+                  // Conversion en tableau pour trier en JS (C'est la ruse pour contourner l'index)
+                  let orders = [];
+                  snap.forEach(doc => {
+                      orders.push({ id: doc.id, ...doc.data() });
+                  });
 
-                  if(snap.empty) {
+                  // Tri manuel par date décroissante
+                  orders.sort((a, b) => {
+                      const tA = a.createdAt ? a.createdAt.seconds : 0;
+                      const tB = b.createdAt ? b.createdAt.seconds : 0;
+                      return tB - tA;
+                  });
+
+                  if(orders.length === 0) {
                       document.getElementById('no-orders').style.display = 'block';
                   } else {
                       document.getElementById('no-orders').style.display = 'none';
-                      snap.forEach(doc => {
-                          const order = doc.data();
+                      
+                      orders.forEach(order => {
                           // Stats
                           if(order.status !== 'cancelled') totalSales += order.totalToCollect;
                           if(order.status === 'pending') pendingCount++;
 
-                          const date = new Date(order.createdAt.seconds * 1000).toLocaleDateString();
+                          const date = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : "N/A";
                           const itemsSummary = order.items.map(i => `${i.name} (x${i.qty})`).join(', ');
                           const statusClass = order.status === 'pending' ? 'badge-pending' : 'badge-shipped';
                           const statusLabel = order.status === 'pending' ? 'En attente' : 'Expédié';
 
                           list.innerHTML += `
                             <tr>
-                                <td>#${order.globalReference}</td>
+                                <td>#${order.globalReference || '???'}</td>
                                 <td>${date}</td>
-                                <td><strong>${order.clientName}</strong></td>
+                                <td><strong>${order.clientName || 'Client'}</strong></td>
                                 <td><small>${itemsSummary}</small></td>
                                 <td style="font-weight:bold; color:#D4AF37;">${new Intl.NumberFormat('fr-FR').format(order.totalToCollect)} FCFA</td>
                                 <td><span class="badge ${statusClass}">${statusLabel}</span></td>
                                 <td>
                                     ${order.status === 'pending' ? 
-                                    `<button class="btn-gold" style="font-size:11px; padding:5px 10px;" onclick="markShipped('${doc.id}')">Expédier</button>` 
+                                    `<button class="btn-gold" style="font-size:11px; padding:5px 10px;" onclick="markShipped('${order.id}')">Expédier</button>` 
                                     : '<i data-lucide="check-circle" style="color:green"></i>'}
                                 </td>
                             </tr>
@@ -556,7 +561,7 @@
                   }
 
                   // Update KPI
-                  document.getElementById('stat-sales').innerText = new Intl.NumberFormat('fr-FR').format(totalSales);
+                  document.getElementById('stat-sales').innerText = new Intl.NumberFormat('fr-FR').format(totalSales) + " FCFA";
                   document.getElementById('stat-orders').innerText = pendingCount;
                   
                   // Badge Sidebar
@@ -569,6 +574,9 @@
                   }
                   
                   lucide.createIcons();
+              }, error => {
+                  console.error("Erreur lecture commandes:", error);
+                  // Pas d'alerte pour ne pas bloquer, mais log pour debug
               });
         }
 
@@ -578,42 +586,23 @@
             }
         };
 
-        // 4. GESTION UPLOAD PRODUIT (Drag & Drop Multiple)
+        // 4. UPLOAD
         function setupProductUpload() {
             const dropZone = document.getElementById('drop-zone');
             const fileInput = document.getElementById('p-files');
-            const gallery = document.getElementById('preview-gallery');
-
-            // Ouvrir sélecteur
             dropZone.addEventListener('click', () => fileInput.click());
-
-            // Drag Events
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
             dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('dragover');
-                handleProductFiles(e.dataTransfer.files);
-            });
-
-            // Input Change
+            dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleProductFiles(e.dataTransfer.files); });
             fileInput.addEventListener('change', () => handleProductFiles(fileInput.files));
         }
 
         function handleProductFiles(files) {
-            if (productImages.length + files.length > 5) {
-                alert("Maximum 5 images autorisées.");
-                return;
-            }
-
+            if (productImages.length + files.length > 5) { alert("Maximum 5 images autorisées."); return; }
             Array.from(files).forEach(file => {
                 if (!file.type.startsWith('image/')) return;
-                
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    productImages.push(e.target.result); // Base64
-                    renderProductGallery();
-                };
+                reader.onload = (e) => { productImages.push(e.target.result); renderProductGallery(); };
                 reader.readAsDataURL(file);
             });
         }
@@ -622,51 +611,20 @@
             const gallery = document.getElementById('preview-gallery');
             gallery.innerHTML = "";
             productImages.forEach((img, index) => {
-                gallery.innerHTML += `
-                    <div class="preview-item">
-                        <img src="${img}">
-                        <button type="button" class="preview-remove" onclick="removeProductImage(${index})">&times;</button>
-                    </div>
-                `;
+                gallery.innerHTML += `<div class="preview-item"><img src="${img}"><button type="button" class="preview-remove" onclick="removeProductImage(${index})">&times;</button></div>`;
             });
         }
+        window.removeProductImage = (index) => { productImages.splice(index, 1); renderProductGallery(); };
 
-        window.removeProductImage = (index) => {
-            productImages.splice(index, 1);
-            renderProductGallery();
-        };
-
-        // 5. GESTION PROFIL (Logo & Banner)
+        // 5. PROFIL
         function setupProfileUpload() {
-            // Logo
-            const logoZone = document.getElementById('upload-logo');
-            const logoInput = document.getElementById('file-logo');
-            logoZone.addEventListener('click', () => logoInput.click());
-            logoInput.addEventListener('change', () => {
-                if(logoInput.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        logoBase64 = e.target.result;
-                        document.getElementById('preview-logo').src = logoBase64;
-                    };
-                    reader.readAsDataURL(logoInput.files[0]);
-                }
-            });
+            const logoIn = document.getElementById('file-logo');
+            document.getElementById('upload-logo').onclick = () => logoIn.click();
+            logoIn.onchange = () => { if(logoIn.files[0]) { const r = new FileReader(); r.onload = e => { logoBase64 = e.target.result; document.getElementById('preview-logo').src = logoBase64; }; r.readAsDataURL(logoIn.files[0]); }};
 
-            // Banner
-            const bannerZone = document.getElementById('upload-banner');
-            const bannerInput = document.getElementById('file-banner');
-            bannerZone.addEventListener('click', () => bannerInput.click());
-            bannerInput.addEventListener('change', () => {
-                if(bannerInput.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        bannerBase64 = e.target.result;
-                        document.getElementById('preview-banner').src = bannerBase64;
-                    };
-                    reader.readAsDataURL(bannerInput.files[0]);
-                }
-            });
+            const banIn = document.getElementById('file-banner');
+            document.getElementById('upload-banner').onclick = () => banIn.click();
+            banIn.onchange = () => { if(banIn.files[0]) { const r = new FileReader(); r.onload = e => { bannerBase64 = e.target.result; document.getElementById('preview-banner').src = bannerBase64; }; r.readAsDataURL(banIn.files[0]); }};
         }
 
         function loadShopSettings() {
@@ -676,19 +634,12 @@
                 document.getElementById('set-desc').value = myShop.description || "";
                 document.getElementById('set-slogan').value = myShop.slogan || "";
                 document.getElementById('set-phone').value = myShop.phone || "";
-                
-                if(myShop.logo) {
-                    document.getElementById('preview-logo').src = myShop.logo;
-                    logoBase64 = myShop.logo;
-                }
-                if(myShop.banner) {
-                    document.getElementById('preview-banner').src = myShop.banner;
-                    bannerBase64 = myShop.banner;
-                }
+                if(myShop.logo) document.getElementById('preview-logo').src = myShop.logo;
+                if(myShop.banner) document.getElementById('preview-banner').src = myShop.banner;
             }
         }
 
-        // --- SOUMISSION PRODUIT ---
+        // --- SUBMITS ---
         document.getElementById('form-add-product').addEventListener('submit', (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit-product');
@@ -699,86 +650,51 @@
 
             if(!name || !price) { alert("Nom et prix obligatoires."); return; }
 
-            btn.innerText = "Publication...";
-            btn.disabled = true;
-
-            // Image principale = la première, ou placeholder
+            btn.innerText = "Publication..."; btn.disabled = true;
             const mainImage = productImages.length > 0 ? productImages[0] : 'assets/img/placeholder.png';
 
             db.collection('products').add({
-                shopId: myShop.id,
-                shopName: myShop.name,
-                name: name,
-                price: Number(price),
-                description: desc,
-                category: category,
-                image: mainImage,       // Pour affichage liste
-                images: productImages,  // Tableau complet
-                createdAt: new Date()
+                shopId: myShop.id, shopName: myShop.name,
+                name: name, price: Number(price), description: desc, category: category,
+                image: mainImage, images: productImages, createdAt: new Date()
             }).then(() => {
                 alert("✅ Produit mis en vente !");
-                e.target.reset();
-                productImages = [];
-                renderProductGallery();
-                btn.innerText = "Mettre en vente";
-                btn.disabled = false;
+                e.target.reset(); productImages = []; renderProductGallery();
+                btn.innerText = "Mettre en vente"; btn.disabled = false;
                 nav('products', document.querySelectorAll('.admin-nav-item')[1]);
-            }).catch(err => {
-                alert("Erreur: " + err.message);
-                btn.disabled = false;
-                btn.innerText = "Mettre en vente";
-            });
+            }).catch(err => { alert("Erreur: " + err.message); btn.disabled = false; btn.innerText = "Mettre en vente"; });
         });
 
-        // --- SOUMISSION PARAMÈTRES ---
         document.getElementById('form-settings').addEventListener('submit', (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
-            btn.innerText = "Enregistrement...";
-            btn.disabled = true;
-
+            btn.innerText = "Enregistrement..."; btn.disabled = true;
             const updateData = {
                 name: document.getElementById('set-name').value,
                 description: document.getElementById('set-desc').value,
                 slogan: document.getElementById('set-slogan').value,
                 phone: document.getElementById('set-phone').value
             };
-
             if(logoBase64) updateData.logo = logoBase64;
             if(bannerBase64) updateData.banner = bannerBase64;
 
-            db.collection('shops').doc(myShop.id).update(updateData)
-            .then(() => {
+            db.collection('shops').doc(myShop.id).update(updateData).then(() => {
                 alert("✅ Boutique mise à jour !");
-                btn.innerText = "Enregistrer les modifications";
-                btn.disabled = false;
-                myShop = { ...myShop, ...updateData }; // Update local
+                btn.innerText = "Enregistrer les modifications"; btn.disabled = false;
+                myShop = { ...myShop, ...updateData };
                 document.getElementById('shop-title-display').innerText = myShop.name;
-            })
-            .catch(err => {
-                alert("Erreur: " + err.message);
-                btn.disabled = false;
-            });
+            }).catch(err => { alert("Erreur: " + err.message); btn.disabled = false; });
         });
 
-        // Supprimer Produit
-        window.delProduct = (id) => {
-            if(confirm("Supprimer ce produit ?")) {
-                db.collection('products').doc(id).delete();
-            }
-        };
+        window.delProduct = (id) => { if(confirm("Supprimer ?")) db.collection('products').doc(id).delete(); };
 
-        // Navigation Sidebar
         window.nav = (id, btn) => {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active-section'));
-            
             document.getElementById('sec-'+id).classList.remove('hidden');
             document.getElementById('sec-'+id).classList.add('active-section');
-
             document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
-
             if(window.innerWidth < 900) document.getElementById('seller-sidebar').classList.remove('mobile-open');
         };
 
