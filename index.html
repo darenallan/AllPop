@@ -3,15 +3,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Espace Vendeur — Aurum</title>
+    <title>Aurum Admin - Dashboard</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
     <link rel="stylesheet" href="assets/css/styles.css" />
-    
+
     <style>
-        /* --- TON CSS EXACT (INCHANGÉ) --- */
+        /* LAYOUT PC FORCE */
         @media (min-width: 900px) {
             body.admin-layout {
                 display: grid !important;
@@ -40,21 +40,9 @@
             .admin-mobile-toggle { display: none !important; }
         }
 
-        /* Styles Mobile */
-        @media (max-width: 899px) {
-            body.admin-layout { display: block !important; }
-            .admin-sidebar { display: none; position: fixed; inset: 0; z-index: 999; }
-            .admin-sidebar.mobile-open { display: flex !important; }
-            .admin-main { padding: 20px; padding-top: 80px; }
-            .admin-mobile-toggle { 
-                display: flex !important; position: fixed; top: 15px; right: 15px; 
-                background: #D4AF37; padding: 10px; border-radius: 50%; z-index: 2000; border: none; 
-            }
-        }
-
-        /* Styles Généraux Admin/Vendeur */
+        /* STYLES GÉNÉRAUX */
         .admin-sidebar-header { padding: 40px 30px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
-        .admin-sidebar-title { font-family: 'Playfair Display', serif; color: #D4AF37; font-size: 24px; margin: 0; }
+        .admin-sidebar-title { font-family: 'Playfair Display', serif; color: #D4AF37; font-size: 28px; margin: 0; }
         
         .admin-nav-item {
             display: flex; align-items: center; gap: 15px; padding: 16px 30px;
@@ -67,95 +55,45 @@
             color: #D4AF37; border-left-color: #D4AF37;
         }
 
-        .admin-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 30px; }
         .admin-page-title { font-family: 'Playfair Display', serif; font-size: 32px; margin-bottom: 10px; color: #111; }
+        .admin-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 30px; }
         
-        .input, select.input, textarea.input { width: 100%; padding: 12px 18px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 15px; display: block; box-sizing: border-box; background: #fff; color: #000; }
+        /* Formulaires */
+        .input, select.input { width: 100%; padding: 12px 18px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 15px; display: block; box-sizing: border-box; background: #fff; color: #000; }
         .btn-gold { background: #D4AF37; color: #000; font-weight: 600; padding: 14px 30px; border: none; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; }
-        
-        /* Liste Produits */
-        .product-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; }
-        .product-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; margin-right: 15px; }
-        
-        /* Utilitaires */
-        .hidden { display: none !important; }
-        .active-section { display: block !important; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        .btn-gold:hover { background: #bfa030; }
 
-        /* --- NOUVEAU STYLE UPLOAD --- */
-        .upload-area {
-            border: 2px dashed #ddd;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            background: #fdfdfd;
-            cursor: pointer;
-            transition: 0.3s;
-            position: relative;
-            min-height: 150px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-        .upload-area:hover, .upload-area.dragover {
-            border-color: #D4AF37;
-            background: rgba(212, 175, 55, 0.05);
-        }
-        
-        /* Galerie de prévisualisation */
-        .preview-gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .preview-item {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #ddd;
-            background: #fff;
-        }
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .preview-remove {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .preview-remove:hover {
-            background: red;
-        }
+        /* Listes */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e6fffa; color: #007a5e; }
 
-        /* Upload Profile Hover Effect */
-        .upload-area-mini:hover { border-color: #D4AF37 !important; }
-        .upload-area-mini:hover div { opacity: 1 !important; }
-
-        /* Styles Tableau Commandes */
-        .table-responsive { overflow-x: auto; }
+        /* Tableaux */
         .admin-table { width: 100%; border-collapse: collapse; min-width: 600px; }
         .admin-table th { text-align: left; padding: 15px; color: #666; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #eee; }
         .admin-table td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
         .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .badge-pending { background: #fff3cd; color: #856404; }
         .badge-shipped { background: #d4edda; color: #155724; }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: #fff; padding: 25px; border-radius: 12px; border-left: 5px solid #D4AF37; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .stat-val { font-size: 32px; font-weight: 700; font-family: 'Playfair Display'; margin-top: 5px; color: #000; }
+        .stat-label { text-transform: uppercase; font-size: 12px; color: #666; }
+
+        /* Utilitaire */
+        .hidden { display: none !important; }
+        .active-section { display: block !important; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+        
+        /* Mobile */
+        @media (max-width: 899px) {
+            body.admin-layout { display: block !important; }
+            .admin-sidebar { display: none; position: fixed; inset: 0; }
+            .admin-sidebar.mobile-open { display: flex !important; }
+            .admin-main { padding: 20px; padding-top: 80px; }
+            .admin-mobile-toggle { display: flex !important; position: fixed; top: 15px; right: 15px; background: #D4AF37; padding: 10px; border-radius: 50%; z-index: 2000; border: none; }
+        }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -165,239 +103,152 @@
 </head>
 <body class="admin-layout">
 
-    <aside class="admin-sidebar" id="seller-sidebar">
+    <aside class="admin-sidebar" id="admin-sidebar">
         <div class="admin-sidebar-header">
-            <h1 class="admin-sidebar-title">Aurum Seller</h1>
+            <h1 class="admin-sidebar-title">Aurum</h1>
         </div>
         <nav>
             <div class="admin-nav-item active" onclick="nav('dashboard', this)">
-                <i data-lucide="layout-grid"></i> Vue d'ensemble
-            </div>
-            <div class="admin-nav-item" onclick="nav('products', this)">
-                <i data-lucide="package"></i> Mes Produits
-            </div>
-            <div class="admin-nav-item" onclick="nav('add', this)">
-                <i data-lucide="plus-circle"></i> Ajouter un produit
+                <i data-lucide="layout-dashboard"></i> Tableau de bord
             </div>
             <div class="admin-nav-item" onclick="nav('orders', this)">
-                <i data-lucide="shopping-bag"></i> Commandes
-                <span id="nav-order-count" style="background:#d4af37; color:black; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:auto; display:none; font-weight:bold;">0</span>
+                <i data-lucide="shopping-bag"></i> Commandes Globales
             </div>
-            <div class="admin-nav-item" onclick="nav('settings', this)">
-                <i data-lucide="settings"></i> Paramètres
+            <div class="admin-nav-item" onclick="nav('sellers', this)">
+                <i data-lucide="user-plus"></i> Créer Vendeur
             </div>
-            <a href="index.html" class="admin-nav-item" style="margin-top: 40px; color: #ff6b6b; border-top: 1px solid rgba(255,255,255,0.1);">
-                <i data-lucide="log-out"></i> Déconnexion
+            <div class="admin-nav-item" onclick="nav('shops', this)">
+                <i data-lucide="store"></i> Boutiques
+            </div>
+            <div class="admin-nav-item" onclick="nav('categories', this)">
+                <i data-lucide="tag"></i> Catégories
+            </div>
+            <div class="admin-nav-item" onclick="nav('users', this)">
+                <i data-lucide="users"></i> Comptes
+            </div>
+            <div class="admin-nav-item" onclick="nav('promos', this)">
+                <i data-lucide="percent"></i> Codes Promo
+            </div>
+            <a href="index.html" class="admin-nav-item" style="margin-top:auto; color:#ff6b6b; border-top:1px solid #333;">
+                <i data-lucide="log-out"></i> Quitter
             </a>
         </nav>
     </aside>
 
-    <button class="admin-mobile-toggle" onclick="document.getElementById('seller-sidebar').classList.toggle('mobile-open')">
+    <button class="admin-mobile-toggle" onclick="document.getElementById('admin-sidebar').classList.toggle('mobile-open')">
         <i data-lucide="menu"></i>
     </button>
 
     <main class="admin-main">
         
-        <div id="loader" style="text-align: center; margin-top: 20%; color: #666;">
-            <i data-lucide="loader" class="spin" style="animation: spin 1s infinite linear;"></i>
-            <p style="margin-top: 10px;">Chargement de votre boutique...</p>
+        <div id="loader" style="text-align:center; margin-top:20%;">
+            <p>Chargement des données...</p>
         </div>
 
-        <div id="no-shop-warning" class="hidden" style="text-align: center; margin-top: 100px;">
-            <div class="admin-card" style="max-width: 500px; margin: 0 auto; border-left: 4px solid red;">
-                <h3 style="color:red;">⚠️ Aucune boutique trouvée</h3>
-                <p>Aucune boutique n'est associée à l'email : <strong id="user-email-display">...</strong></p>
-                <p style="font-size: 14px; color: #666;">Contactez l'administrateur pour qu'il crée votre boutique avec cet email exact.</p>
-            </div>
-        </div>
+        <div id="dashboard-content" class="hidden">
 
-        <div id="seller-content" class="hidden">
-            
             <section id="sec-dashboard" class="admin-section active-section">
-                <h1 class="admin-page-title">Ma Boutique : <span id="shop-title-display" style="color: #D4AF37;">...</span></h1>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                    <div class="admin-card" style="border-left: 5px solid #D4AF37; padding: 20px;">
-                        <div style="text-transform: uppercase; font-size: 12px; color: #666;">Produits en ligne</div>
-                        <div style="font-size: 32px; font-weight: 700;" id="stat-products">0</div>
+                <h1 class="admin-page-title">Tableau de Bord</h1>
+                <div class="stats-grid" id="stats-container">
                     </div>
-                    <div class="admin-card" style="border-left: 5px solid #D4AF37; padding: 20px;">
-                        <div style="text-transform: uppercase; font-size: 12px; color: #666;">Ventes (FCFA)</div>
-                        <div style="font-size: 32px; font-weight: 700;" id="stat-sales">0</div>
-                    </div>
-                    <div class="admin-card" style="border-left: 5px solid #D4AF37; padding: 20px;">
-                        <div style="text-transform: uppercase; font-size: 12px; color: #666;">Commandes en cours</div>
-                        <div style="font-size: 32px; font-weight: 700;" id="stat-orders">0</div>
-                    </div>
-                </div>
-
                 <div class="admin-card">
-                    <h3>État de la boutique</h3>
-                    <p>Statut : <span id="shop-status-display" style="font-weight: bold; color: green;">Actif</span></p>
-                    <p>Catégorie : <span id="shop-category-display">...</span></p>
-                </div>
-            </section>
-
-            <section id="sec-products" class="admin-section hidden">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h1 class="admin-page-title" style="margin: 0;">Mes Produits</h1>
-                    <button class="btn-gold" style="width: auto; margin: 0;" onclick="nav('add', document.querySelectorAll('.admin-nav-item')[2])">
-                        + Ajouter
-                    </button>
-                </div>
-                <div class="admin-card">
-                    <div id="products-list">Chargement...</div>
-                </div>
-            </section>
-
-            <section id="sec-add" class="admin-section hidden">
-                <h1 class="admin-page-title">Nouveau Produit</h1>
-                <div class="admin-card">
-                    <form id="form-add-product">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div>
-                                <label>Nom du produit</label>
-                                <input class="input" id="p-name" required placeholder="Ex: Montre Or">
-                            </div>
-                            <div>
-                                <label>Prix (FCFA)</label>
-                                <input class="input" id="p-price" type="number" required placeholder="50000">
-                            </div>
-                        </div>
-                        
-                        <div style="margin-bottom: 15px;">
-                            <label>Catégorie</label>
-                            <select class="input" id="p-cat">
-                                <option>Mode & Vêtements</option>
-                                <option>Électronique</option>
-                                <option>Maison & Déco</option>
-                                <option>Beauté & Hygiène</option>
-                                <option>Véhicules</option>
-                            </select>
-                        </div>
-
-                        <label>Description</label>
-                        <textarea class="input" id="p-desc" rows="4" placeholder="Détails du produit..."></textarea>
-                        
-                        <label>Photos du produit (Max 5)</label>
-                        <div class="upload-area" id="drop-zone">
-                            <input type="file" id="p-files" accept="image/*" multiple hidden>
-                            <div class="upload-content" id="upload-content">
-                                <i data-lucide="image-plus" style="width: 48px; height: 48px; color: #D4AF37; margin-bottom: 10px;"></i>
-                                <p style="margin: 0; font-weight: 500;">Glissez vos images ici ou <span style="color: #D4AF37; cursor: pointer; text-decoration: underline;">parcourez</span></p>
-                                <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">JPG, PNG (Max 2Mo par image)</p>
-                            </div>
-                        </div>
-
-                        <div id="preview-gallery" class="preview-gallery"></div>
-
-                        <button class="btn-gold" id="btn-submit-product" style="margin-top: 20px;">Mettre en vente</button>
-                    </form>
+                    <h3>Activité Récente</h3>
+                    <p style="color:#666;">Système synchronisé avec la base de données.</p>
                 </div>
             </section>
 
             <section id="sec-orders" class="admin-section hidden">
-                <h1 class="admin-page-title">Commandes Reçues</h1>
-                <div class="admin-card">
-                    <div class="table-responsive">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Ref</th>
-                                    <th>Date</th>
-                                    <th>Client</th>
-                                    <th>Produits</th>
-                                    <th>Total</th>
-                                    <th>Statut</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="orders-list">
-                                </tbody>
-                        </table>
-                    </div>
-                    <div id="no-orders" style="text-align:center; padding:40px; color:#999; display:none;">
-                        Aucune commande pour le moment.
-                    </div>
+                <h1 class="admin-page-title">Toutes les Commandes</h1>
+                <div class="admin-card" style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Référence</th>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Total</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-orders-list">
+                            </tbody>
+                    </table>
+                    <div id="no-orders-msg" style="display:none; text-align:center; padding:20px; color:#999;">Aucune commande.</div>
                 </div>
             </section>
 
-            <section id="sec-settings" class="admin-section hidden">
-                <h1 class="admin-page-title">Ma Vitrine</h1>
+            <section id="sec-sellers" class="admin-section hidden">
+                <h1 class="admin-page-title">Créer Vendeur</h1>
                 <div class="admin-card">
-                    <form id="form-settings">
-                        
-                        <h3 style="margin-top:0;">Identité Visuelle</h3>
-                        <p class="text-muted" style="font-size:13px; margin-bottom:20px;">Personnalisez l'apparence de votre boutique.</p>
-
-                        <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                            <div style="text-align:center;">
-                                <label style="display:block; margin-bottom:8px;">Logo</label>
-                                <div class="upload-area-mini" id="upload-logo" style="width:100px; height:100px; border-radius:50%; border:2px dashed #ddd; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative; margin:0 auto;">
-                                    <img id="preview-logo" src="assets/img/placeholder.png" style="width:100%; height:100%; object-fit:cover;">
-                                    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; opacity:0; transition:0.2s;">
-                                        <i data-lucide="camera"></i>
-                                    </div>
-                                </div>
-                                <input type="file" id="file-logo" accept="image/*" hidden>
-                            </div>
-
-                            <div style="flex:1; min-width:200px;">
-                                <label style="display:block; margin-bottom:8px;">Bannière</label>
-                                <div class="upload-area-mini" id="upload-banner" style="width:100%; height:120px; border-radius:10px; border:2px dashed #ddd; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative;">
-                                    <img id="preview-banner" src="assets/img/placeholder-banner.jpg" style="width:100%; height:100%; object-fit:cover;">
-                                    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; opacity:0; transition:0.2s;">
-                                        <i data-lucide="image"></i> Modifier
-                                    </div>
-                                </div>
-                                <input type="file" id="file-banner" accept="image/*" hidden>
-                            </div>
-                        </div>
-
-                        <hr style="border:0; border-top:1px solid #eee; margin:30px 0;">
-
-                        <h3>Informations</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div>
-                                <label>Nom de la boutique</label>
-                                <input class="input" id="set-name" required>
-                            </div>
-                            <div>
-                                <label>Slogan</label>
-                                <input class="input" id="set-slogan" placeholder="Ex: L'élégance au quotidien">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label>Description complète</label>
-                            <textarea class="input" id="set-desc" rows="4" placeholder="Parlez de votre histoire..."></textarea>
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div>
-                                <label>Email Contact</label>
-                                <input class="input" id="set-email" readonly style="background:#eee;">
-                            </div>
-                            <div>
-                                <label>Téléphone / WhatsApp</label>
-                                <input class="input" id="set-phone" placeholder="+226...">
-                            </div>
-                        </div>
-
-                        <div style="text-align:right; margin-top:20px;">
-                            <button class="btn-gold" type="submit" style="width:auto; padding:12px 40px;">Enregistrer les modifications</button>
-                        </div>
+                    <form id="form-seller">
+                        <label>Nom Complet</label>
+                        <input class="input" id="sel-name" required placeholder="Ex: Jean Dupont">
+                        <label>Email</label>
+                        <input class="input" id="sel-email" type="email" required placeholder="email@vendeur.com">
+                        <label>Téléphone</label>
+                        <input class="input" id="sel-phone" required placeholder="+226 XX XX XX XX">
+                        <label>Mot de passe</label>
+                        <input class="input" id="sel-pass" required placeholder="******">
+                        <button class="btn-gold">Créer le compte</button>
                     </form>
+                </div>
+            </section>
+
+            <section id="sec-shops" class="admin-section hidden">
+                <h1 class="admin-page-title">Boutiques</h1>
+                <div class="admin-card">
+                    <h3>Nouvelle Boutique</h3>
+                    <form id="form-shop">
+                        <input class="input" id="shop-name" placeholder="Nom de la boutique" required>
+                        <input class="input" id="shop-owner" placeholder="Email du Propriétaire" required>
+                        <select class="input" id="shop-cat-select" required></select>
+                        <input class="input" id="shop-desc" placeholder="Description courte">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <input class="input" type="number" id="shop-duration" value="30" placeholder="Durée (jours)">
+                            <input class="input" type="number" id="shop-limit" value="50" placeholder="Limite articles">
+                        </div>
+                        <button class="btn-gold">Ajouter la boutique</button>
+                    </form>
+                </div>
+                <div class="admin-card">
+                    <h3>Liste des Boutiques</h3>
+                    <div id="shops-list">Chargement...</div>
+                </div>
+            </section>
+
+            <section id="sec-categories" class="admin-section hidden">
+                <h1 class="admin-page-title">Catégories</h1>
+                <div class="admin-card">
+                    <form id="form-cat" style="display:flex; gap:10px; margin-bottom:20px;">
+                        <input class="input" id="cat-name" placeholder="Nouvelle catégorie" style="margin:0;">
+                        <button class="btn-gold" style="width:auto; margin:0;">Ajouter</button>
+                    </form>
+                    <div id="categories-list"></div>
+                </div>
+            </section>
+
+            <section id="sec-users" class="admin-section hidden">
+                <h1 class="admin-page-title">Comptes Utilisateurs</h1>
+                <div class="admin-card" id="users-list">Chargement...</div>
+            </section>
+
+            <section id="sec-promos" class="admin-section hidden">
+                <h1 class="admin-page-title">Codes Promo</h1>
+                <div class="admin-card">
+                    <form id="form-promo" style="display:flex; gap:10px; margin-bottom:20px;">
+                        <input class="input" id="promo-code" placeholder="CODE" style="margin:0;">
+                        <input class="input" id="promo-val" type="number" placeholder="%" style="width:80px; margin:0;">
+                        <button class="btn-gold" style="width:auto; margin:0;">Créer</button>
+                    </form>
+                    <div id="promos-list"></div>
                 </div>
             </section>
 
         </div>
     </main>
 
-    <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 3000;"></div>
-
     <script>
-        // CONFIG FIREBASE
+        // 1. CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
             authDomain: "aurum-bf.firebaseapp.com",
@@ -411,291 +262,230 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Variables Globales
-        let myShop = null;
-        let productImages = []; // Pour l'upload produit
-        let logoBase64 = "";    // Pour le profil
-        let bannerBase64 = "";  // Pour le profil
-
-        // 2. DÉMARRAGE
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            auth.onAuthStateChanged((user) => {
-                const loader = document.getElementById('loader');
-                
-                if (user) {
-                    // RECHERCHE DE LA BOUTIQUE
-                    db.collection('shops').where('ownerEmail', '==', user.email).get()
-                    .then(snapshot => {
-                        loader.style.display = 'none';
-
-                        if (!snapshot.empty) {
-                            myShop = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
-                            
-                            // Affichage
-                            document.getElementById('seller-content').classList.remove('hidden');
-                            
-                            // Remplissage Dashboard
-                            document.getElementById('shop-title-display').innerText = myShop.name;
-                            document.getElementById('shop-status-display').innerText = myShop.status;
-                            document.getElementById('shop-category-display').innerText = myShop.category;
-                            
-                            // Init Fonctions
-                            loadShopSettings();
-                            listenProducts();
-                            listenOrders(); // <--- LANCEMENT ÉCOUTE COMMANDES
-
-                        } else {
-                            document.getElementById('no-shop-warning').classList.remove('hidden');
-                            document.getElementById('user-email-display').innerText = user.email;
-                        }
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert("Erreur de connexion à la base de données.");
-                    });
-
-                } else {
-                    window.location.href = "login.html";
-                }
-            });
-
-            lucide.createIcons();
-            setupProductUpload();
-            setupProfileUpload();
-        });
-
-        // 3. ÉCOUTE PRODUITS
-        function listenProducts() {
-            db.collection('products').where('shopId', '==', myShop.id)
-            .onSnapshot(snap => {
-                const list = document.getElementById('products-list');
-                list.innerHTML = "";
-                let count = 0;
-
-                if (snap.empty) {
-                    list.innerHTML = "<p style='color:#777; text-align:center;'>Aucun produit en ligne.</p>";
-                }
-
-                snap.forEach(doc => {
-                    count++;
-                    const p = doc.data();
-                    const displayImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image || 'assets/img/placeholder.png');
-                    
-                    list.innerHTML += `
-                    <div class="product-item">
-                        <div style="display:flex; align-items:center;">
-                            <img src="${displayImg}" class="product-img">
-                            <div>
-                                <div style="font-weight:bold;">${p.name}</div>
-                                <div style="color:#D4AF37; font-weight:bold;">${p.price} FCFA</div>
-                            </div>
-                        </div>
-                        <button onclick="delProduct('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer;">
-                            <i data-lucide="trash-2"></i>
-                        </button>
-                    </div>`;
-                });
-                
-                document.getElementById('stat-products').innerText = count;
-                lucide.createIcons();
-            });
-        }
-
-        // --- CORRECTIF FONCTION : ÉCOUTER LES COMMANDES (SANS TRI SERVEUR) ---
-        function listenOrders() {
-            // On retire .orderBy('createdAt', 'desc') pour éviter l'erreur d'index manquant
-            db.collection('seller_orders')
-              .where('shopId', '==', myShop.id)
-              .onSnapshot(snap => {
-                  const list = document.getElementById('orders-list');
-                  list.innerHTML = "";
-                  
-                  let totalSales = 0;
-                  let pendingCount = 0;
-                  
-                  // Conversion en tableau pour trier en JS (C'est la ruse pour contourner l'index)
-                  let orders = [];
-                  snap.forEach(doc => {
-                      orders.push({ id: doc.id, ...doc.data() });
-                  });
-
-                  // Tri manuel par date décroissante
-                  orders.sort((a, b) => {
-                      const tA = a.createdAt ? a.createdAt.seconds : 0;
-                      const tB = b.createdAt ? b.createdAt.seconds : 0;
-                      return tB - tA;
-                  });
-
-                  if(orders.length === 0) {
-                      document.getElementById('no-orders').style.display = 'block';
-                  } else {
-                      document.getElementById('no-orders').style.display = 'none';
-                      
-                      orders.forEach(order => {
-                          // Stats
-                          if(order.status !== 'cancelled') totalSales += order.totalToCollect;
-                          if(order.status === 'pending') pendingCount++;
-
-                          const date = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : "N/A";
-                          const itemsSummary = order.items.map(i => `${i.name} (x${i.qty})`).join(', ');
-                          const statusClass = order.status === 'pending' ? 'badge-pending' : 'badge-shipped';
-                          const statusLabel = order.status === 'pending' ? 'En attente' : 'Expédié';
-
-                          list.innerHTML += `
-                            <tr>
-                                <td>#${order.globalReference || '???'}</td>
-                                <td>${date}</td>
-                                <td><strong>${order.clientName || 'Client'}</strong></td>
-                                <td><small>${itemsSummary}</small></td>
-                                <td style="font-weight:bold; color:#D4AF37;">${new Intl.NumberFormat('fr-FR').format(order.totalToCollect)} FCFA</td>
-                                <td><span class="badge ${statusClass}">${statusLabel}</span></td>
-                                <td>
-                                    ${order.status === 'pending' ? 
-                                    `<button class="btn-gold" style="font-size:11px; padding:5px 10px;" onclick="markShipped('${order.id}')">Expédier</button>` 
-                                    : '<i data-lucide="check-circle" style="color:green"></i>'}
-                                </td>
-                            </tr>
-                          `;
-                      });
-                  }
-
-                  // Update KPI
-                  document.getElementById('stat-sales').innerText = new Intl.NumberFormat('fr-FR').format(totalSales) + " FCFA";
-                  document.getElementById('stat-orders').innerText = pendingCount;
-                  
-                  // Badge Sidebar
-                  const navBadge = document.getElementById('nav-order-count');
-                  if(pendingCount > 0) {
-                      navBadge.innerText = pendingCount;
-                      navBadge.style.display = 'inline-block';
-                  } else {
-                      navBadge.style.display = 'none';
-                  }
-                  
-                  lucide.createIcons();
-              }, error => {
-                  console.error("Erreur lecture commandes:", error);
-                  // Pas d'alerte pour ne pas bloquer, mais log pour debug
-              });
-        }
-
-        window.markShipped = function(id) {
-            if(confirm("Confirmer l'expédition de cette commande ?")) {
-                db.collection('seller_orders').doc(id).update({ status: 'shipped' });
-            }
+        // 2. DONNÉES DE DÉMARRAGE (Injection si vide)
+        const SEED = {
+            cats: [
+                { name: "Mode & Vêtements", icon: "shirt" },
+                { name: "Véhicules & Pièces", icon: "car" },
+                { name: "Maison & Déco", icon: "home" },
+                { name: "Électronique", icon: "smartphone" },
+                { name: "Beauté & Hygiène", icon: "sparkles" }
+            ],
+            shops: [
+                { name: "Luxe Motors", ownerEmail: "vente.lll@gmail.com", category: "Véhicules & Pièces", status: "Active", itemLimit: 50 },
+                { name: "Boutique Faso", ownerEmail: "client.add@gmail.com", category: "Mode & Vêtements", status: "Active", itemLimit: 100 }
+            ],
+            users: [
+                { name: "Super Admin", email: "aurumcorporate.d@gmail.com", role: "superadmin" },
+                { name: "Vendeur Test", email: "vente.lll@gmail.com", role: "seller" }
+            ],
+            promos: [
+                { code: "AURUM10", percent: 10, status: "Active" }
+            ]
         };
 
-        // 4. UPLOAD
-        function setupProductUpload() {
-            const dropZone = document.getElementById('drop-zone');
-            const fileInput = document.getElementById('p-files');
-            dropZone.addEventListener('click', () => fileInput.click());
-            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-            dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleProductFiles(e.dataTransfer.files); });
-            fileInput.addEventListener('change', () => handleProductFiles(fileInput.files));
-        }
+        // 3. LOGIQUE PRINCIPALE (SANS RESTRICTION D'AUTH)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Affichage direct sans vérifier si l'utilisateur est admin
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('dashboard-content').classList.remove('hidden');
+            
+            lucide.createIcons();
+            checkAndSeed();
+            listenRealTime();
+        });
 
-        function handleProductFiles(files) {
-            if (productImages.length + files.length > 5) { alert("Maximum 5 images autorisées."); return; }
-            Array.from(files).forEach(file => {
-                if (!file.type.startsWith('image/')) return;
-                const reader = new FileReader();
-                reader.onload = (e) => { productImages.push(e.target.result); renderProductGallery(); };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function renderProductGallery() {
-            const gallery = document.getElementById('preview-gallery');
-            gallery.innerHTML = "";
-            productImages.forEach((img, index) => {
-                gallery.innerHTML += `<div class="preview-item"><img src="${img}"><button type="button" class="preview-remove" onclick="removeProductImage(${index})">&times;</button></div>`;
-            });
-        }
-        window.removeProductImage = (index) => { productImages.splice(index, 1); renderProductGallery(); };
-
-        // 5. PROFIL
-        function setupProfileUpload() {
-            const logoIn = document.getElementById('file-logo');
-            document.getElementById('upload-logo').onclick = () => logoIn.click();
-            logoIn.onchange = () => { if(logoIn.files[0]) { const r = new FileReader(); r.onload = e => { logoBase64 = e.target.result; document.getElementById('preview-logo').src = logoBase64; }; r.readAsDataURL(logoIn.files[0]); }};
-
-            const banIn = document.getElementById('file-banner');
-            document.getElementById('upload-banner').onclick = () => banIn.click();
-            banIn.onchange = () => { if(banIn.files[0]) { const r = new FileReader(); r.onload = e => { bannerBase64 = e.target.result; document.getElementById('preview-banner').src = bannerBase64; }; r.readAsDataURL(banIn.files[0]); }};
-        }
-
-        function loadShopSettings() {
-            if(myShop) {
-                document.getElementById('set-name').value = myShop.name || "";
-                document.getElementById('set-email').value = myShop.ownerEmail || "";
-                document.getElementById('set-desc').value = myShop.description || "";
-                document.getElementById('set-slogan').value = myShop.slogan || "";
-                document.getElementById('set-phone').value = myShop.phone || "";
-                if(myShop.logo) document.getElementById('preview-logo').src = myShop.logo;
-                if(myShop.banner) document.getElementById('preview-banner').src = myShop.banner;
+        // 4. MIGRATION AUTOMATIQUE
+        async function checkAndSeed() {
+            const snap = await db.collection('categories').get();
+            if (snap.empty) {
+                console.log("⚡ Injection des données...");
+                SEED.cats.forEach(c => db.collection('categories').add(c));
+                SEED.shops.forEach(s => db.collection('shops').add({...s, createdAt: new Date()}));
+                SEED.users.forEach(u => db.collection('users').add({...u, createdAt: new Date()}));
+                SEED.promos.forEach(p => db.collection('promos').add({...p, createdAt: new Date()}));
+                alert("Données restaurées dans Firebase !");
             }
         }
 
-        // --- SUBMITS ---
-        document.getElementById('form-add-product').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-submit-product');
-            const name = document.getElementById('p-name').value;
-            const price = document.getElementById('p-price').value;
-            const desc = document.getElementById('p-desc').value;
-            const category = document.getElementById('p-cat').value;
+        // 5. ÉCOUTE TEMPS RÉEL (Affichage)
+        function listenRealTime() {
+            
+            // --- COMMANDES & VENTES (NOUVEAU) ---
+            db.collection('orders').onSnapshot(snap => {
+                const list = document.getElementById('all-orders-list');
+                list.innerHTML = "";
+                
+                let totalRevenue = 0;
+                
+                // Tri Client-Side pour éviter erreur index
+                let orders = [];
+                snap.forEach(doc => orders.push(doc.data()));
+                
+                // Tri par date (si dispo)
+                orders.sort((a,b) => {
+                    const ta = a.createdAt?.seconds || 0;
+                    const tb = b.createdAt?.seconds || 0;
+                    return tb - ta;
+                });
 
-            if(!name || !price) { alert("Nom et prix obligatoires."); return; }
+                if(orders.length === 0) {
+                    document.getElementById('no-orders-msg').style.display = 'block';
+                } else {
+                    document.getElementById('no-orders-msg').style.display = 'none';
+                    orders.forEach(order => {
+                        // Calcul total
+                        if(order.status !== 'cancelled') totalRevenue += (order.total || 0);
 
-            btn.innerText = "Publication..."; btn.disabled = true;
-            const mainImage = productImages.length > 0 ? productImages[0] : 'assets/img/placeholder.png';
+                        const date = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+                        const statusClass = order.status === 'pending' ? 'badge-pending' : 'badge-shipped';
+                        const statusLabel = order.status === 'pending' ? 'En attente' : 'Terminé';
 
-            db.collection('products').add({
-                shopId: myShop.id, shopName: myShop.name,
-                name: name, price: Number(price), description: desc, category: category,
-                image: mainImage, images: productImages, createdAt: new Date()
-            }).then(() => {
-                alert("✅ Produit mis en vente !");
-                e.target.reset(); productImages = []; renderProductGallery();
-                btn.innerText = "Mettre en vente"; btn.disabled = false;
-                nav('products', document.querySelectorAll('.admin-nav-item')[1]);
-            }).catch(err => { alert("Erreur: " + err.message); btn.disabled = false; btn.innerText = "Mettre en vente"; });
-        });
+                        list.innerHTML += `
+                            <tr>
+                                <td style="font-weight:bold;">${order.reference || 'REF?'}</td>
+                                <td>${date}</td>
+                                <td>${order.userName || 'Client'}</td>
+                                <td style="color:#D4AF37; font-weight:bold;">${new Intl.NumberFormat('fr-FR').format(order.total)} FCFA</td>
+                                <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+                            </tr>
+                        `;
+                    });
+                }
 
-        document.getElementById('form-settings').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerText = "Enregistrement..."; btn.disabled = true;
-            const updateData = {
-                name: document.getElementById('set-name').value,
-                description: document.getElementById('set-desc').value,
-                slogan: document.getElementById('set-slogan').value,
-                phone: document.getElementById('set-phone').value
-            };
-            if(logoBase64) updateData.logo = logoBase64;
-            if(bannerBase64) updateData.banner = bannerBase64;
+                // MISE A JOUR STATS VENTES
+                updateStat(2, "Ventes (Total)", new Intl.NumberFormat('fr-FR').format(totalRevenue) + " FCFA");
+            });
 
-            db.collection('shops').doc(myShop.id).update(updateData).then(() => {
-                alert("✅ Boutique mise à jour !");
-                btn.innerText = "Enregistrer les modifications"; btn.disabled = false;
-                myShop = { ...myShop, ...updateData };
-                document.getElementById('shop-title-display').innerText = myShop.name;
-            }).catch(err => { alert("Erreur: " + err.message); btn.disabled = false; });
-        });
+            // Boutiques
+            db.collection('shops').onSnapshot(snap => {
+                const list = document.getElementById('shops-list');
+                let count = 0;
+                list.innerHTML = "";
+                snap.forEach(doc => {
+                    count++;
+                    const s = doc.data();
+                    list.innerHTML += `
+                    <div class="list-item">
+                        <div>
+                            <strong>${s.name}</strong><br>
+                            <span style="font-size:13px; color:#777;">${s.category} • ${s.ownerEmail}</span>
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="status-badge">${s.status}</span><br>
+                            <button onclick="del('shops','${doc.id}')" style="color:red; border:none; background:none; cursor:pointer; font-size:12px; margin-top:5px;">Supprimer</button>
+                        </div>
+                    </div>`;
+                });
+                updateStat(0, "Boutiques", count);
+            });
 
-        window.delProduct = (id) => { if(confirm("Supprimer ?")) db.collection('products').doc(id).delete(); };
+            // Catégories
+            db.collection('categories').onSnapshot(snap => {
+                const list = document.getElementById('categories-list');
+                const select = document.getElementById('shop-cat-select');
+                list.innerHTML = "";
+                select.innerHTML = "<option>Choisir...</option>";
+                
+                snap.forEach(doc => {
+                    const c = doc.data();
+                    list.innerHTML += `<div class="list-item"><b>${c.name}</b> <button onclick="del('categories','${doc.id}')" style="color:red; border:none; background:none;">X</button></div>`;
+                    select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+                });
+            });
 
-        window.nav = (id, btn) => {
+            // Users
+            db.collection('users').onSnapshot(snap => {
+                const list = document.getElementById('users-list');
+                let count = 0;
+                list.innerHTML = "";
+                snap.forEach(doc => {
+                    count++;
+                    const u = doc.data();
+                    list.innerHTML += `<div class="list-item"><div><strong>${u.name}</strong><br>${u.email}</div><span class="status-badge" style="background:#eee; color:#333;">${u.role}</span></div>`;
+                });
+                updateStat(1, "Utilisateurs", count);
+            });
+
+            // Promos
+            db.collection('promos').onSnapshot(snap => {
+                document.getElementById('promos-list').innerHTML = snap.docs.map(d => `<div class="list-item"><b>${d.data().code}</b> <button onclick="del('promos','${d.id}')" style="color:red; border:none; background:none;">X</button></div>`).join('');
+            });
+        }
+
+        // Helper Stats
+        function updateStat(index, label, val) {
+            const container = document.getElementById('stats-container');
+            // On s'assure qu'il y a assez de cartes
+            while(container.children.length <= index) {
+                container.innerHTML += `<div class="stat-card"><div class="stat-label"></div><div class="stat-val">0</div></div>`;
+            }
+            const card = container.children[index];
+            card.querySelector('.stat-label').innerText = label;
+            card.querySelector('.stat-val').innerText = val;
+        }
+
+        // 6. GESTION NAVIGATION
+        window.nav = function(id, btn) {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active-section'));
             document.getElementById('sec-'+id).classList.remove('hidden');
             document.getElementById('sec-'+id).classList.add('active-section');
+            
             document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
-            if(window.innerWidth < 900) document.getElementById('seller-sidebar').classList.remove('mobile-open');
+            btn.classList.add('active');
+            
+            // Fermer mobile
+            if(window.innerWidth < 900) document.getElementById('admin-sidebar').classList.remove('mobile-open');
+        };
+
+        // 7. ACTIONS FORMULAIRES
+        document.getElementById('form-shop').onsubmit = (e) => {
+            e.preventDefault();
+            db.collection('shops').add({
+                name: document.getElementById('shop-name').value,
+                ownerEmail: document.getElementById('shop-owner').value,
+                category: document.getElementById('shop-cat-select').value,
+                description: document.getElementById('shop-desc').value,
+                status: 'Active',
+                createdAt: new Date()
+            });
+            e.target.reset();
+            alert("Boutique ajoutée !");
+        };
+
+        document.getElementById('form-seller').onsubmit = (e) => {
+            e.preventDefault();
+            const email = document.getElementById('sel-email').value;
+            const pass = document.getElementById('sel-pass').value;
+            const name = document.getElementById('sel-name').value;
+            
+            // Création Auth
+            auth.createUserWithEmailAndPassword(email, pass).then(cred => {
+                // Sauvegarde DB
+                db.collection('users').add({
+                    name: name, email: email, phone: document.getElementById('sel-phone').value, role: 'seller', createdAt: new Date()
+                });
+                alert("Vendeur créé !");
+                e.target.reset();
+            }).catch(err => alert("Erreur: " + err.message));
+        };
+
+        document.getElementById('form-cat').onsubmit = (e) => {
+            e.preventDefault();
+            db.collection('categories').add({ name: document.getElementById('cat-name').value, icon: 'tag' });
+            e.target.reset();
+        };
+
+        document.getElementById('form-promo').onsubmit = (e) => {
+            e.preventDefault();
+            db.collection('promos').add({ code: document.getElementById('promo-code').value, percent: document.getElementById('promo-val').value });
+            e.target.reset();
+        };
+
+        // Delete Global
+        window.del = (col, id) => {
+            if(confirm("Supprimer ?")) db.collection(col).doc(id).delete();
         };
 
     </script>
