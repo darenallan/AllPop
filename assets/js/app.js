@@ -36,23 +36,38 @@ function showToast(msg, type = 'info') {
 
 // --- 2. INITIALISATION DOM ---
 document.addEventListener('DOMContentLoaded', () => {
-    
     // A. MENU BURGER & DRAWER (Mobile)
-    const burgerBtn = document.getElementById('burger-btn'); // Bouton dans le header
-    const closeBtn = document.getElementById('close-btn');   // Croix dans le menu
-    const drawer = document.getElementById('mobile-drawer'); // Le menu lui-même
-    const overlay = document.getElementById('menu-overlay'); // Fond gris
+    const drawer = document.getElementById('mobile-drawer');
+    const overlay = document.getElementById('menu-overlay');
+    // Supporter à la fois #burger-btn et #menu-toggle selon les pages
+    const burgerBtn = document.getElementById('burger-btn') || document.getElementById('menu-toggle');
+    const closeBtn = document.getElementById('close-btn');
 
-    function toggleMenu() {
-        if(drawer && overlay) {
-            drawer.classList.toggle('open');
-            overlay.classList.toggle('active');
-        }
+    function openDrawer(){
+        if(!drawer || !overlay) return;
+        drawer.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer(){
+        if(!drawer || !overlay) return;
+        drawer.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    function toggleDrawer(){
+        if(!drawer || !overlay) return;
+        if(drawer.classList.contains('active')) closeDrawer(); else openDrawer();
     }
 
-    if(burgerBtn) burgerBtn.addEventListener('click', toggleMenu);
-    if(closeBtn) closeBtn.addEventListener('click', toggleMenu);
-    if(overlay) overlay.addEventListener('click', toggleMenu);
+    // Toujours partir d'un état propre au chargement
+    closeDrawer();
+
+    // Ne pas attacher de gestionnaires ici pour éviter les doublons
+    // avec les scripts inline des pages (setupHeaderMenu()).
+    // Les pages gèrent l'ouverture/fermeture; on garde juste ESC + reset.
+    // Fermeture via ESC
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDrawer(); });
 
     // B. AUTHENTIFICATION UI (Adapter le menu si connecté)
     if(typeof firebase !== 'undefined') {
@@ -156,6 +171,16 @@ function toggleWishlist(pid) {
 
 function isInWishlist(pid) {
     return Wishlist.includes(pid);
+}
+
+function clearWishlist() {
+    Wishlist.length = 0; // Vider le tableau
+    persistWishlist();
+    showToast('Liste de souhaits vidée', 'info');
+}
+
+function getWishlistItems() {
+    return Wishlist.map(pid => ({ id: pid }));
 }
 
 
