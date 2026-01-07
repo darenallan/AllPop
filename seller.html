@@ -16,26 +16,35 @@
             body.admin-layout {
                 display: grid !important;
                 grid-template-columns: 260px 1fr !important;
+                grid-template-rows: auto 1fr;
                 min-height: 100vh;
                 margin: 0; padding: 0;
                 overflow: hidden;
                 background-color: #F9F7F2;
+            }
+            .admin-layout .header {
+                grid-column: 1 / -1;
+                z-index: 500;
             }
             .admin-sidebar {
                 display: flex !important;
                 flex-direction: column;
                 background-color: #050505 !important;
                 color: #fff;
-                height: 100vh;
+                height: 100%;
+                min-height: 0;
                 position: relative !important;
                 z-index: 100;
                 border-right: 1px solid rgba(212, 175, 55, 0.1);
+                grid-row: 2;
             }
             .admin-main {
-                height: 100vh;
+                height: 100%;
+                min-height: 0;
                 overflow-y: auto;
                 padding: 40px 50px !important;
                 background-color: #F9F7F2;
+                grid-row: 2;
             }
             .admin-mobile-toggle { display: none !important; }
         }
@@ -147,15 +156,6 @@
         /* Upload Profile Hover Effect */
         .upload-area-mini:hover { border-color: #D4AF37 !important; }
         .upload-area-mini:hover div { opacity: 1 !important; }
-
-        /* Styles Tableau Commandes */
-        .table-responsive { overflow-x: auto; }
-        .admin-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        .admin-table th { text-align: left; padding: 15px; color: #666; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #eee; }
-        .admin-table td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
-        .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .badge-pending { background: #fff3cd; color: #856404; }
-        .badge-shipped { background: #d4edda; color: #155724; }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -164,6 +164,41 @@
 
 </head>
 <body class="admin-layout">
+
+    <header id="app-header" class="header">
+        <div class="container navbar">
+            <a href="index.html" class="brand">
+                <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+            </a>
+            
+            <nav class="nav-actions">
+                <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
+                
+                <a href="cart.html" class="icon-btn" style="position:relative;">
+                    <i data-lucide="shopping-bag"></i>
+                    <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
+                </a>
+                
+                <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="mobile-drawer" id="mobile-drawer">
+        <div class="drawer-header">
+            <span class="drawer-title">Menu</span>
+            <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
+        </div>
+        <nav class="drawer-nav">
+            <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
+            <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
+            <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
+            <div class="drawer-divider"></div>
+            <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
+            <a href="profile.html" class="drawer-link"><i data-lucide="user"></i> Mon Profil</a>
+        </nav>
+    </div>
+    <div id="menu-overlay"></div>
 
     <aside class="admin-sidebar" id="seller-sidebar">
         <div class="admin-sidebar-header">
@@ -181,7 +216,6 @@
             </div>
             <div class="admin-nav-item" onclick="nav('orders', this)">
                 <i data-lucide="shopping-bag"></i> Commandes
-                <span id="nav-order-count" style="background:#d4af37; color:black; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:auto; display:none; font-weight:bold;">0</span>
             </div>
             <div class="admin-nav-item" onclick="nav('settings', this)">
                 <i data-lucide="settings"></i> Paramètres
@@ -223,11 +257,11 @@
                     </div>
                     <div class="admin-card" style="border-left: 5px solid #D4AF37; padding: 20px;">
                         <div style="text-transform: uppercase; font-size: 12px; color: #666;">Ventes (FCFA)</div>
-                        <div style="font-size: 32px; font-weight: 700;" id="stat-sales">0</div>
+                        <div style="font-size: 32px; font-weight: 700;">0</div>
                     </div>
                     <div class="admin-card" style="border-left: 5px solid #D4AF37; padding: 20px;">
-                        <div style="text-transform: uppercase; font-size: 12px; color: #666;">Commandes en cours</div>
-                        <div style="font-size: 32px; font-weight: 700;" id="stat-orders">0</div>
+                        <div style="text-transform: uppercase; font-size: 12px; color: #666;">Vues Totales</div>
+                        <div style="font-size: 32px; font-weight: 700;">0</div>
                     </div>
                 </div>
 
@@ -265,17 +299,6 @@
                             </div>
                         </div>
                         
-                        <div style="margin-bottom: 15px;">
-                            <label>Catégorie</label>
-                            <select class="input" id="p-cat">
-                                <option>Mode & Vêtements</option>
-                                <option>Électronique</option>
-                                <option>Maison & Déco</option>
-                                <option>Beauté & Hygiène</option>
-                                <option>Véhicules</option>
-                            </select>
-                        </div>
-
                         <label>Description</label>
                         <textarea class="input" id="p-desc" rows="4" placeholder="Détails du produit..."></textarea>
                         
@@ -297,28 +320,9 @@
             </section>
 
             <section id="sec-orders" class="admin-section hidden">
-                <h1 class="admin-page-title">Commandes Reçues</h1>
+                <h1 class="admin-page-title">Commandes</h1>
                 <div class="admin-card">
-                    <div class="table-responsive">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Ref</th>
-                                    <th>Date</th>
-                                    <th>Client</th>
-                                    <th>Produits</th>
-                                    <th>Total</th>
-                                    <th>Statut</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="orders-list">
-                                </tbody>
-                        </table>
-                    </div>
-                    <div id="no-orders" style="text-align:center; padding:40px; color:#999; display:none;">
-                        Aucune commande pour le moment.
-                    </div>
+                    <p class="text-muted">Aucune commande pour le moment.</p>
                 </div>
             </section>
 
@@ -413,9 +417,40 @@
 
         // Variables Globales
         let myShop = null;
-        let productImages = [];
-        let logoBase64 = "";
-        let bannerBase64 = "";
+        let productImages = []; // Pour l'upload produit
+        let logoBase64 = "";    // Pour le profil
+        let bannerBase64 = "";  // Pour le profil
+
+        // --- GESTION HEADER & MENU ---
+        function setupHeaderMenu() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeBtn = document.getElementById('close-btn');
+            const drawer = document.getElementById('mobile-drawer');
+            const overlay = document.getElementById('menu-overlay');
+
+            const toggleMenu = () => {
+                if (!drawer || !overlay) return;
+                drawer.classList.toggle('active');
+                overlay.classList.toggle('active');
+                document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
+            };
+
+            if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+            if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+            if (overlay) overlay.addEventListener('click', toggleMenu);
+
+            const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+            const badge = document.getElementById('cart-badge');
+            if (badge) {
+                const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
+                if (count > 0) {
+                    badge.innerText = count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
 
         // 2. DÉMARRAGE
         document.addEventListener('DOMContentLoaded', () => {
@@ -424,13 +459,17 @@
                 const loader = document.getElementById('loader');
                 
                 if (user) {
+                    console.log("Connecté en tant que :", user.email);
+                    
                     // RECHERCHE DE LA BOUTIQUE
                     db.collection('shops').where('ownerEmail', '==', user.email).get()
                     .then(snapshot => {
                         loader.style.display = 'none';
 
                         if (!snapshot.empty) {
+                            // Boutique trouvée !
                             myShop = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+                            console.log("Boutique chargée :", myShop.name);
                             
                             // Affichage
                             document.getElementById('seller-content').classList.remove('hidden');
@@ -440,12 +479,14 @@
                             document.getElementById('shop-status-display').innerText = myShop.status;
                             document.getElementById('shop-category-display').innerText = myShop.category;
                             
-                            // Init Fonctions
+                            // Chargement Paramètres
                             loadShopSettings();
+
+                            // Écoute Produits
                             listenProducts();
-                            listenOrders(); // <--- LANCEMENT ÉCOUTE COMMANDES
 
                         } else {
+                            // Pas de boutique
                             document.getElementById('no-shop-warning').classList.remove('hidden');
                             document.getElementById('user-email-display').innerText = user.email;
                         }
@@ -460,9 +501,10 @@
                 }
             });
 
+            setupHeaderMenu();
             lucide.createIcons();
-            setupProductUpload();
-            setupProfileUpload();
+            setupProductUpload(); // Initialiser le drag & drop produit
+            setupProfileUpload(); // Initialiser le drag & drop profil
         });
 
         // 3. ÉCOUTE PRODUITS
@@ -480,6 +522,7 @@
                 snap.forEach(doc => {
                     count++;
                     const p = doc.data();
+                    // On prend la première image ou le placeholder
                     const displayImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image || 'assets/img/placeholder.png');
                     
                     list.innerHTML += `
@@ -502,107 +545,42 @@
             });
         }
 
-        // --- CORRECTIF FONCTION : ÉCOUTER LES COMMANDES (SANS TRI SERVEUR) ---
-        function listenOrders() {
-            // On retire .orderBy('createdAt', 'desc') pour éviter l'erreur d'index manquant
-            db.collection('seller_orders')
-              .where('shopId', '==', myShop.id)
-              .onSnapshot(snap => {
-                  const list = document.getElementById('orders-list');
-                  list.innerHTML = "";
-                  
-                  let totalSales = 0;
-                  let pendingCount = 0;
-                  
-                  // Conversion en tableau pour trier en JS (C'est la ruse pour contourner l'index)
-                  let orders = [];
-                  snap.forEach(doc => {
-                      orders.push({ id: doc.id, ...doc.data() });
-                  });
-
-                  // Tri manuel par date décroissante
-                  orders.sort((a, b) => {
-                      const tA = a.createdAt ? a.createdAt.seconds : 0;
-                      const tB = b.createdAt ? b.createdAt.seconds : 0;
-                      return tB - tA;
-                  });
-
-                  if(orders.length === 0) {
-                      document.getElementById('no-orders').style.display = 'block';
-                  } else {
-                      document.getElementById('no-orders').style.display = 'none';
-                      
-                      orders.forEach(order => {
-                          // Stats
-                          if(order.status !== 'cancelled') totalSales += order.totalToCollect;
-                          if(order.status === 'pending') pendingCount++;
-
-                          const date = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : "N/A";
-                          const itemsSummary = order.items.map(i => `${i.name} (x${i.qty})`).join(', ');
-                          const statusClass = order.status === 'pending' ? 'badge-pending' : 'badge-shipped';
-                          const statusLabel = order.status === 'pending' ? 'En attente' : 'Expédié';
-
-                          list.innerHTML += `
-                            <tr>
-                                <td>#${order.globalReference || '???'}</td>
-                                <td>${date}</td>
-                                <td><strong>${order.clientName || 'Client'}</strong></td>
-                                <td><small>${itemsSummary}</small></td>
-                                <td style="font-weight:bold; color:#D4AF37;">${new Intl.NumberFormat('fr-FR').format(order.totalToCollect)} FCFA</td>
-                                <td><span class="badge ${statusClass}">${statusLabel}</span></td>
-                                <td>
-                                    ${order.status === 'pending' ? 
-                                    `<button class="btn-gold" style="font-size:11px; padding:5px 10px;" onclick="markShipped('${order.id}')">Expédier</button>` 
-                                    : '<i data-lucide="check-circle" style="color:green"></i>'}
-                                </td>
-                            </tr>
-                          `;
-                      });
-                  }
-
-                  // Update KPI
-                  document.getElementById('stat-sales').innerText = new Intl.NumberFormat('fr-FR').format(totalSales) + " FCFA";
-                  document.getElementById('stat-orders').innerText = pendingCount;
-                  
-                  // Badge Sidebar
-                  const navBadge = document.getElementById('nav-order-count');
-                  if(pendingCount > 0) {
-                      navBadge.innerText = pendingCount;
-                      navBadge.style.display = 'inline-block';
-                  } else {
-                      navBadge.style.display = 'none';
-                  }
-                  
-                  lucide.createIcons();
-              }, error => {
-                  console.error("Erreur lecture commandes:", error);
-                  // Pas d'alerte pour ne pas bloquer, mais log pour debug
-              });
-        }
-
-        window.markShipped = function(id) {
-            if(confirm("Confirmer l'expédition de cette commande ?")) {
-                db.collection('seller_orders').doc(id).update({ status: 'shipped' });
-            }
-        };
-
-        // 4. UPLOAD
+        // 4. GESTION UPLOAD PRODUIT (Drag & Drop Multiple)
         function setupProductUpload() {
             const dropZone = document.getElementById('drop-zone');
             const fileInput = document.getElementById('p-files');
+            const gallery = document.getElementById('preview-gallery');
+
+            // Ouvrir sélecteur
             dropZone.addEventListener('click', () => fileInput.click());
+
+            // Drag Events
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
             dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-            dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleProductFiles(e.dataTransfer.files); });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                handleProductFiles(e.dataTransfer.files);
+            });
+
+            // Input Change
             fileInput.addEventListener('change', () => handleProductFiles(fileInput.files));
         }
 
         function handleProductFiles(files) {
-            if (productImages.length + files.length > 5) { alert("Maximum 5 images autorisées."); return; }
+            if (productImages.length + files.length > 5) {
+                alert("Maximum 5 images autorisées.");
+                return;
+            }
+
             Array.from(files).forEach(file => {
                 if (!file.type.startsWith('image/')) return;
+                
                 const reader = new FileReader();
-                reader.onload = (e) => { productImages.push(e.target.result); renderProductGallery(); };
+                reader.onload = (e) => {
+                    productImages.push(e.target.result); // Base64
+                    renderProductGallery();
+                };
                 reader.readAsDataURL(file);
             });
         }
@@ -611,20 +589,51 @@
             const gallery = document.getElementById('preview-gallery');
             gallery.innerHTML = "";
             productImages.forEach((img, index) => {
-                gallery.innerHTML += `<div class="preview-item"><img src="${img}"><button type="button" class="preview-remove" onclick="removeProductImage(${index})">&times;</button></div>`;
+                gallery.innerHTML += `
+                    <div class="preview-item">
+                        <img src="${img}">
+                        <button type="button" class="preview-remove" onclick="removeProductImage(${index})">&times;</button>
+                    </div>
+                `;
             });
         }
-        window.removeProductImage = (index) => { productImages.splice(index, 1); renderProductGallery(); };
 
-        // 5. PROFIL
+        window.removeProductImage = (index) => {
+            productImages.splice(index, 1);
+            renderProductGallery();
+        };
+
+        // 5. GESTION PROFIL (Logo & Banner)
         function setupProfileUpload() {
-            const logoIn = document.getElementById('file-logo');
-            document.getElementById('upload-logo').onclick = () => logoIn.click();
-            logoIn.onchange = () => { if(logoIn.files[0]) { const r = new FileReader(); r.onload = e => { logoBase64 = e.target.result; document.getElementById('preview-logo').src = logoBase64; }; r.readAsDataURL(logoIn.files[0]); }};
+            // Logo
+            const logoZone = document.getElementById('upload-logo');
+            const logoInput = document.getElementById('file-logo');
+            logoZone.addEventListener('click', () => logoInput.click());
+            logoInput.addEventListener('change', () => {
+                if(logoInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        logoBase64 = e.target.result;
+                        document.getElementById('preview-logo').src = logoBase64;
+                    };
+                    reader.readAsDataURL(logoInput.files[0]);
+                }
+            });
 
-            const banIn = document.getElementById('file-banner');
-            document.getElementById('upload-banner').onclick = () => banIn.click();
-            banIn.onchange = () => { if(banIn.files[0]) { const r = new FileReader(); r.onload = e => { bannerBase64 = e.target.result; document.getElementById('preview-banner').src = bannerBase64; }; r.readAsDataURL(banIn.files[0]); }};
+            // Banner
+            const bannerZone = document.getElementById('upload-banner');
+            const bannerInput = document.getElementById('file-banner');
+            bannerZone.addEventListener('click', () => bannerInput.click());
+            bannerInput.addEventListener('change', () => {
+                if(bannerInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        bannerBase64 = e.target.result;
+                        document.getElementById('preview-banner').src = bannerBase64;
+                    };
+                    reader.readAsDataURL(bannerInput.files[0]);
+                }
+            });
         }
 
         function loadShopSettings() {
@@ -634,67 +643,108 @@
                 document.getElementById('set-desc').value = myShop.description || "";
                 document.getElementById('set-slogan').value = myShop.slogan || "";
                 document.getElementById('set-phone').value = myShop.phone || "";
-                if(myShop.logo) document.getElementById('preview-logo').src = myShop.logo;
-                if(myShop.banner) document.getElementById('preview-banner').src = myShop.banner;
+                
+                if(myShop.logo) {
+                    document.getElementById('preview-logo').src = myShop.logo;
+                    logoBase64 = myShop.logo;
+                }
+                if(myShop.banner) {
+                    document.getElementById('preview-banner').src = myShop.banner;
+                    bannerBase64 = myShop.banner;
+                }
             }
         }
 
-        // --- SUBMITS ---
+        // --- SOUMISSION PRODUIT ---
         document.getElementById('form-add-product').addEventListener('submit', (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit-product');
             const name = document.getElementById('p-name').value;
             const price = document.getElementById('p-price').value;
             const desc = document.getElementById('p-desc').value;
-            const category = document.getElementById('p-cat').value;
 
             if(!name || !price) { alert("Nom et prix obligatoires."); return; }
 
-            btn.innerText = "Publication..."; btn.disabled = true;
+            btn.innerText = "Publication...";
+            btn.disabled = true;
+
+            // Image principale = la première, ou placeholder
             const mainImage = productImages.length > 0 ? productImages[0] : 'assets/img/placeholder.png';
 
             db.collection('products').add({
-                shopId: myShop.id, shopName: myShop.name,
-                name: name, price: Number(price), description: desc, category: category,
-                image: mainImage, images: productImages, createdAt: new Date()
+                shopId: myShop.id,
+                shopName: myShop.name,
+                name: name,
+                price: Number(price),
+                description: desc,
+                image: mainImage,       // Pour affichage liste
+                images: productImages,  // Tableau complet
+                category: myShop.category,
+                createdAt: new Date()
             }).then(() => {
                 alert("✅ Produit mis en vente !");
-                e.target.reset(); productImages = []; renderProductGallery();
-                btn.innerText = "Mettre en vente"; btn.disabled = false;
+                e.target.reset();
+                productImages = [];
+                renderProductGallery();
+                btn.innerText = "Mettre en vente";
+                btn.disabled = false;
                 nav('products', document.querySelectorAll('.admin-nav-item')[1]);
-            }).catch(err => { alert("Erreur: " + err.message); btn.disabled = false; btn.innerText = "Mettre en vente"; });
+            }).catch(err => {
+                alert("Erreur: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Mettre en vente";
+            });
         });
 
+        // --- SOUMISSION PARAMÈTRES ---
         document.getElementById('form-settings').addEventListener('submit', (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
-            btn.innerText = "Enregistrement..."; btn.disabled = true;
+            btn.innerText = "Enregistrement...";
+            btn.disabled = true;
+
             const updateData = {
                 name: document.getElementById('set-name').value,
                 description: document.getElementById('set-desc').value,
                 slogan: document.getElementById('set-slogan').value,
                 phone: document.getElementById('set-phone').value
             };
+
             if(logoBase64) updateData.logo = logoBase64;
             if(bannerBase64) updateData.banner = bannerBase64;
 
-            db.collection('shops').doc(myShop.id).update(updateData).then(() => {
+            db.collection('shops').doc(myShop.id).update(updateData)
+            .then(() => {
                 alert("✅ Boutique mise à jour !");
-                btn.innerText = "Enregistrer les modifications"; btn.disabled = false;
-                myShop = { ...myShop, ...updateData };
+                btn.innerText = "Enregistrer les modifications";
+                btn.disabled = false;
+                myShop = { ...myShop, ...updateData }; // Update local
                 document.getElementById('shop-title-display').innerText = myShop.name;
-            }).catch(err => { alert("Erreur: " + err.message); btn.disabled = false; });
+            })
+            .catch(err => {
+                alert("Erreur: " + err.message);
+                btn.disabled = false;
+            });
         });
 
-        window.delProduct = (id) => { if(confirm("Supprimer ?")) db.collection('products').doc(id).delete(); };
+        // Supprimer Produit
+        window.delProduct = (id) => {
+            if(confirm("Supprimer ce produit ?")) {
+                db.collection('products').doc(id).delete();
+            }
+        };
 
+        // Navigation Sidebar
         window.nav = (id, btn) => {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active-section'));
+            
             document.getElementById('sec-'+id).classList.remove('hidden');
             document.getElementById('sec-'+id).classList.add('active-section');
+
             document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
+
             if(window.innerWidth < 900) document.getElementById('seller-sidebar').classList.remove('mobile-open');
         };
 
