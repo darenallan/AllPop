@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Candidature Vendeur — Aurum</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  
+  <!-- Firebase SDK v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="assets/js/auth.js"></script>
+  
+  <style>
+    .application-form-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .form-section {
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .form-section h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: var(--aurum-black);
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--aurum-gold);
+      padding-bottom: 10px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--aurum-black);
+      font-size: 14px;
+    }
+    .form-group label .required {
+      color: var(--aurum-red-unique);
+      margin-left: 4px;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--aurum-gold);
+    }
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .file-upload-area {
+      border: 2px dashed #d0d0d0;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #fafafa;
+    }
+    .file-upload-area:hover {
+      border-color: var(--aurum-gold);
+      background: rgba(198, 149, 63, 0.05);
+    }
+    .file-upload-area i {
+      color: var(--aurum-gold);
+      margin-bottom: 10px;
+    }
+    .file-upload-area.has-file {
+      border-color: var(--aurum-gold);
+      background: rgba(198, 149, 63, 0.1);
+    }
+    .file-name {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
+      font-weight: 600;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+    .submit-section {
+      text-align: center;
+      margin-top: 40px;
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, var(--aurum-red-unique) 0%, var(--aurum-red-deep) 100%);
+      color: #fff;
+      font-weight: 600;
+      padding: 16px 48px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(139, 0, 0, 0.35);
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .progress-container {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--aurum-gold), var(--aurum-red-unique));
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .progress-text {
+      font-size: 14px;
+      color: #666;
+    }
+    .success-message {
+      display: none;
+      background: #f0fdf4;
+      border: 2px solid #86efac;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .success-message i {
+      color: #16a34a;
+      margin-bottom: 10px;
+    }
+    .success-message h4 {
+      color: #16a34a;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .success-message p {
+      color: #166534;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header id="app-header" class="header">
+    <div class="container navbar">
+      <a href="index.html" class="brand">
+        <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
+        <div style="display:flex; flex-direction:column; margin-left:10px;">
+          <span class="brand-name" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">AURUM</span>
+          <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
+        </div>
+      </a>
+      <nav class="nav-actions">
+        <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
+        <a href="cart.html" class="icon-btn" style="position:relative;">
+          <i data-lucide="shopping-bag"></i>
+          <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
+        </a>
+        <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>
+        <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">Menu</span>
+      <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
+    </div>
+    <nav class="drawer-nav">
+      <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
+      <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
+      <a href="boutique-list.html" class="drawer-link"><i data-lucide="store"></i> Nos Boutiques</a>
+      <div class="drawer-divider"></div>
+      <a href="seller-onboarding.html" class="drawer-link"><i data-lucide="info"></i> Infos requises</a>
+      <a href="contact.html" class="drawer-link"><i data-lucide="mail"></i> Nous contacter</a>
+    </nav>
+  </div>
+  <div id="menu-overlay"></div>
+
+  <main style="background: #F9F7F2; min-height: 100vh; padding-top: 100px; padding-bottom: 60px;">
+    <div class="application-form-container">
+      <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; color: var(--aurum-black); margin-bottom: 10px;">Candidature Vendeur</h1>
+        <p style="color: #666; font-size: 16px;">Remplissez ce formulaire pour rejoindre Aurum Marketplace</p>
+        <p style="color: #999; font-size: 14px; margin-top: 8px;">
+          <i data-lucide="info" style="width: 16px; height: 16px; vertical-align: middle;"></i>
+          Besoin d'aide ? <a href="seller-onboarding.html" style="color: var(--aurum-gold); text-decoration: none; font-weight: 600;">Voir la liste des informations requises</a>
+        </p>
+      </div>
+
+      <form id="seller-application-form">
+        <!-- Section 1: Identité & Légal -->
+        <div class="form-section">
+          <h3><i data-lucide="building" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"></i>Identité & Légal</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom de la boutique <span class="required">*</span></label>
+              <input type="text" name="shop_name" required placeholder="Ex: La Maison du Luxe">
+            </div>
+            <div class="form-group">
+              <label>Statut juridique <span class="required">*</span></label>
+              <select name="legal_status" required>
+                <option value="">Sélectionnez...</option>
+                <option value="entreprise_individuelle">Entreprise individuelle</option>
+                <option value="sarl">SARL</option>
+                <option value="sa">SA</option>
+                <option value="auto_entrepreneur">Auto-entrepreneur</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>N° RCCM / Registre de commerce</label>
+              <input type="text" name="rccm" placeholder="BF-OUA-01-2023-A12-00001">
+            </div>
+            <div class="form-group">
+              <label>IFU / N° Identification fiscale</label>
+              <input type="text" name="ifu" placeholder="00000000A">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom et prénom du responsable <span class="required">*</span></label>
+              <input type="text" name="owner_name" required placeholder="Jean OUÉDRAOGO">
+            </div>
+            <div class="form-group">
+              <label>Fonction <span class="required">*</span></label>
+              <input type="text" name="owner_role" required placeholder="Ex: Gérant, Directeur">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Téléphone <span class="required">*</span></label>
+              <input type="tel" name="phone" required placeholder="+226 XX XX XX XX">
+            </div>
+            <div class="form-group">
+              <label>Email officiel <span class="required">*</span></label>
+              <input type="email" name="email" required placeholder="contact@maboutique.com">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Adresse complète <span class="required">*</span></label>
+            <input type="text" name="address" required placeholder="Quartier, Secteur, Avenue, Ville">
+          </div>
+        </div>
+
+        <!-- Section 2: Paiements & Facturation -->
+        <div class="form-section">
+          <h3><i data-lucide="credit-card" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"></i>Paiements & Facturation</h3>
+          
+          <div class="form-group">
+            <label>Coordonnées bancaires (IBAN ou N° compte)</label>
+            <input type="text" name="bank_account" placeholder="BF00 0000 0000 0000 0000 00">
+          </div>
+
+          <div class="form-group">
+            <label>Moyens de paiement acceptés <span class="required">*</span></label>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
+                <input type="checkbox" name="payment_mobile_money" value="mobile_money"> Mobile Money
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
+                <input type="checkbox" name="payment_cash" value="cash"> Espèces
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
+                <input type="checkbox" name="payment_card" value="card"> Carte bancaire
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
+                <input type="checkbox" name="payment_transfer" value="transfer"> Virement bancaire
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Adresse de facturation</label>
+            <input type="text" name="billing_address" placeholder="Si différente de l'adresse principale">
+          </div>
+        </div>
+
+        <!-- Section 3: Branding & Catalogue -->
+        <div class="form-section">
+          <h3><i data-lucide="sparkles" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"></i>Branding & Catalogue</h3>
+          
+          <div class="form-group">
+            <label>Catégories de produits <span class="required">*</span></label>
+            <input type="text" name="categories" required placeholder="Ex: Mode femme, Bijoux, Chaussures">
+          </div>
+
+          <div class="form-group">
+            <label>Histoire de votre marque (150-300 mots) <span class="required">*</span></label>
+            <textarea name="brand_story" required placeholder="Parlez-nous de votre entreprise, vos valeurs, ce qui vous rend unique..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Délai de livraison moyen</label>
+              <input type="text" name="delivery_time" placeholder="Ex: 2-5 jours ouvrés">
+            </div>
+            <div class="form-group">
+              <label>Politique de retours</label>
+              <input type="text" name="return_policy" placeholder="Ex: 14 jours, remboursement intégral">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Liens réseaux sociaux</label>
+            <input type="url" name="social_facebook" placeholder="https://facebook.com/maboutique" style="margin-bottom: 10px;">
+            <input type="url" name="social_instagram" placeholder="https://instagram.com/maboutique" style="margin-bottom: 10px;">
+            <input type="url" name="social_website" placeholder="https://maboutique.com">
+          </div>
+        </div>
+
+        <!-- Section 4: Documents -->
+        <div class="form-section">
+          <h3><i data-lucide="file-text" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"></i>Documents</h3>
+          
+          <div class="form-group">
+            <label>Logo de la boutique (PNG/JPG, max 5MB) <span class="required">*</span></label>
+            <div class="file-upload-area" id="logo-upload-area" onclick="document.getElementById('logo-input').click()">
+              <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+              <p>Cliquez pour sélectionner votre logo</p>
+              <p class="file-name" id="logo-file-name"></p>
+            </div>
+            <input type="file" id="logo-input" accept="image/*" style="display: none;" required>
+          </div>
+
+          <div class="form-group">
+            <label>Pièce d'identité du responsable (Scan recto-verso)</label>
+            <div class="file-upload-area" id="id-upload-area" onclick="document.getElementById('id-input').click()">
+              <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+              <p>Cliquez pour sélectionner la pièce d'identité</p>
+              <p class="file-name" id="id-file-name"></p>
+            </div>
+            <input type="file" id="id-input" accept="image/*,application/pdf" style="display: none;">
+          </div>
+
+          <div class="form-group">
+            <label>Copie du RCCM / Registre de commerce</label>
+            <div class="file-upload-area" id="rccm-upload-area" onclick="document.getElementById('rccm-input').click()">
+              <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+              <p>Cliquez pour sélectionner le document</p>
+              <p class="file-name" id="rccm-file-name"></p>
+            </div>
+            <input type="file" id="rccm-input" accept="image/*,application/pdf" style="display: none;">
+          </div>
+
+          <div class="form-group">
+            <label>Attestation IFU / Fiscale</label>
+            <div class="file-upload-area" id="ifu-upload-area" onclick="document.getElementById('ifu-input').click()">
+              <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+              <p>Cliquez pour sélectionner le document</p>
+              <p class="file-name" id="ifu-file-name"></p>
+            </div>
+            <input type="file" id="ifu-input" accept="image/*,application/pdf" style="display: none;">
+          </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="submit-section">
+          <button type="submit" class="btn-submit" id="submit-btn">
+            <i data-lucide="send" style="width: 20px; height: 20px;"></i>
+            Envoyer ma candidature
+          </button>
+
+          <div class="progress-container" id="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <p class="progress-text" id="progress-text">Upload en cours...</p>
+          </div>
+
+          <div class="success-message" id="success-message">
+            <i data-lucide="check-circle" style="width: 48px; height: 48px;"></i>
+            <h4>Candidature envoyée avec succès !</h4>
+            <p>Merci pour votre intérêt. Notre équipe va examiner votre dossier et vous contacter dans les 48-72 heures.</p>
+            <p style="margin-top: 16px;">
+              <a href="index.html" style="color: var(--aurum-gold); text-decoration: none; font-weight: 600;">Retour à l'accueil</a>
+            </p>
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
+        <div class="footer-col">
+          <h3 style="font-family:'Playfair Display'; margin-bottom:15px;">AURUM</h3>
+          <p style="color:#aaa; font-size:14px; line-height:1.6;">La première marketplace premium du Burkina Faso. Qualité, confiance et élégance à votre portée.</p>
+        </div>
+        <div class="footer-col">
+          <h4 style="margin-bottom:15px; color:#fff;">Navigation</h4>
+          <ul style="list-style:none; padding:0; margin:0; line-height:2;">
+            <li><a href="index.html" style="color:#aaa; text-decoration:none;">Accueil</a></li>
+            <li><a href="catalogue.html" style="color:#aaa; text-decoration:none;">Catalogue</a></li>
+            <li><a href="seller.html" style="color:#aaa; text-decoration:none;">Devenir Vendeur</a></li>
+            <li><a href="admin.html" style="color:#aaa; text-decoration:none;">Administration</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 style="margin-bottom:15px; color:#fff;">Informations</h4>
+          <ul style="list-style:none; padding:0; margin:0; line-height:2;">
+            <li><a href="cgu.html" style="color:#aaa; text-decoration:none;">CGU & CGV</a></li>
+            <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Politique de confidentialité</a></li>
+            <li><a href="faq.html" style="color:#aaa; text-decoration:none;">FAQ</a></li>
+            <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Nous contacter</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 style="margin-bottom:15px; color:#fff;">Suivez-nous</h4>
+          <div class="social-links" style="display:flex; gap:15px;">
+            <a href="https://www.facebook.com/share/1CRt3jkL1c/" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="https://www.instagram.com/aurum_bf?igsh=NXNkaXExeTVhNXgy" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+            <a href="https://www.tiktok.com/@aurum_bf?_r=1&_t=ZM-92qMqptMlOV" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom" style="border-top:1px solid rgba(255,255,255,0.1); margin-top:40px; padding-top:20px; text-align:center; color:#666; font-size:13px;">
+        &copy; <span id="year">2026</span> Aurum Marketplace. Tous droits réservés.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Setup header menu
+    function setupHeaderMenu() {
+      const menuToggle = document.getElementById('menu-toggle');
+      const closeBtn = document.getElementById('close-btn');
+      const drawer = document.getElementById('mobile-drawer');
+      const overlay = document.getElementById('menu-overlay');
+      const toggleMenu = () => {
+        if (!drawer || !overlay) return;
+        drawer.classList.toggle('active');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
+      };
+      if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+      if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+      if (overlay) overlay.addEventListener('click', toggleMenu);
+    }
+
+    // File upload preview
+    function setupFileUpload(inputId, areaId, nameId) {
+      const input = document.getElementById(inputId);
+      const area = document.getElementById(areaId);
+      const nameDisplay = document.getElementById(nameId);
+      
+      input.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          const fileName = e.target.files[0].name;
+          const fileSize = (e.target.files[0].size / 1024 / 1024).toFixed(2);
+          nameDisplay.textContent = `${fileName} (${fileSize} MB)`;
+          area.classList.add('has-file');
+        }
+      });
+    }
+
+    // Firebase Application Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      // Setup
+      const yearSpan = document.getElementById('year');
+      if (yearSpan) yearSpan.innerText = new Date().getFullYear();
+      setupHeaderMenu();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      // File uploads
+      setupFileUpload('logo-input', 'logo-upload-area', 'logo-file-name');
+      setupFileUpload('id-input', 'id-upload-area', 'id-file-name');
+      setupFileUpload('rccm-input', 'rccm-upload-area', 'rccm-file-name');
+      setupFileUpload('ifu-input', 'ifu-upload-area', 'ifu-file-name');
+
+      // Form submission
+      const form = document.getElementById('seller-application-form');
+      const submitBtn = document.getElementById('submit-btn');
+      const progressContainer = document.getElementById('progress-container');
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+      const successMessage = document.getElementById('success-message');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (typeof firebase === 'undefined') {
+          alert('Firebase n\'est pas configuré. Veuillez vérifier votre configuration.');
+          return;
+        }
+
+        // Disable submit button
+        submitBtn.disabled = true;
+        progressContainer.style.display = 'block';
+
+        try {
+          const db = firebase.firestore();
+          const storage = firebase.storage();
+          
+          // Get form data
+          const formData = new FormData(form);
+          const shopName = formData.get('shop_name').replace(/\s+/g, '_').toLowerCase();
+          const timestamp = Date.now();
+          const folderPath = `candidatures/${shopName}_${timestamp}`;
+
+          // Collect payment methods
+          const paymentMethods = [];
+          if (formData.get('payment_mobile_money')) paymentMethods.push('Mobile Money');
+          if (formData.get('payment_cash')) paymentMethods.push('Espèces');
+          if (formData.get('payment_card')) paymentMethods.push('Carte bancaire');
+          if (formData.get('payment_transfer')) paymentMethods.push('Virement');
+
+          // Prepare application data
+          const applicationData = {
+            // Identity
+            shop_name: formData.get('shop_name'),
+            legal_status: formData.get('legal_status'),
+            rccm: formData.get('rccm') || '',
+            ifu: formData.get('ifu') || '',
+            owner_name: formData.get('owner_name'),
+            owner_role: formData.get('owner_role'),
+            phone: formData.get('phone'),
+            email: formData.get('email'),
+            address: formData.get('address'),
+            
+            // Payments
+            bank_account: formData.get('bank_account') || '',
+            payment_methods: paymentMethods,
+            billing_address: formData.get('billing_address') || '',
+            
+            // Branding
+            categories: formData.get('categories'),
+            brand_story: formData.get('brand_story'),
+            delivery_time: formData.get('delivery_time') || '',
+            return_policy: formData.get('return_policy') || '',
+            social_facebook: formData.get('social_facebook') || '',
+            social_instagram: formData.get('social_instagram') || '',
+            social_website: formData.get('social_website') || '',
+            
+            // Status
+            status: 'pending',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          // Upload files to Storage
+          progressText.textContent = 'Upload des fichiers...';
+          const files = [
+            { id: 'logo-input', field: 'logo_url', name: 'logo' },
+            { id: 'id-input', field: 'id_card_url', name: 'id_card' },
+            { id: 'rccm-input', field: 'rccm_doc_url', name: 'rccm_doc' },
+            { id: 'ifu-input', field: 'ifu_doc_url', name: 'ifu_doc' }
+          ];
+
+          let uploadedCount = 0;
+          const totalFiles = files.filter(f => document.getElementById(f.id).files.length > 0).length;
+
+          for (const fileInfo of files) {
+            const fileInput = document.getElementById(fileInfo.id);
+            if (fileInput.files.length > 0) {
+              const file = fileInput.files[0];
+              const fileExtension = file.name.split('.').pop();
+              const filePath = `${folderPath}/${fileInfo.name}.${fileExtension}`;
+              
+              const storageRef = storage.ref(filePath);
+              const uploadTask = storageRef.put(file);
+
+              await new Promise((resolve, reject) => {
+                uploadTask.on('state_changed',
+                  (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    const overallProgress = ((uploadedCount + (progress / 100)) / totalFiles) * 100;
+                    progressFill.style.width = overallProgress + '%';
+                  },
+                  (error) => reject(error),
+                  async () => {
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    applicationData[fileInfo.field] = downloadURL;
+                    uploadedCount++;
+                    resolve();
+                  }
+                );
+              });
+            }
+          }
+
+          // Save to Firestore
+          progressText.textContent = 'Enregistrement de la candidature...';
+          progressFill.style.width = '100%';
+          
+          await db.collection('seller_applications').add(applicationData);
+
+          // Show success
+          form.style.display = 'none';
+          progressContainer.style.display = 'none';
+          successMessage.style.display = 'block';
+          
+          // Scroll to success message
+          successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Une erreur est survenue lors de l\'envoi de votre candidature. Veuillez réessayer.');
+          submitBtn.disabled = false;
+          progressContainer.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
+<!-- 
+═══════════════════════════════════════════════════════════════════════════════
+BACKEND: EXEMPLE DE CLOUD FUNCTION (Node.js)
+═══════════════════════════════════════════════════════════════════════════════
+
+Créez ce fichier dans functions/index.js de votre projet Firebase:
+
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const nodemailer = require('nodemailer');
+
+admin.initializeApp();
+
+// Configuration du transporteur email (exemple avec Gmail)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'votre-email@gmail.com',
+    pass: 'votre-mot-de-passe-app' // Utilisez un mot de passe d'application
+  }
+});
+
+exports.onSellerApplicationCreated = functions.firestore
+  .document('seller_applications/{docId}')
+  .onCreate(async (snap, context) => {
+    const data = snap.data();
+    const docId = context.params.docId;
+
+    // Préparer le contenu de l'email
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #D4AF37;">Nouvelle candidature vendeur sur Aurum</h2>
+        
+        <h3>Informations de la boutique:</h3>
+        <ul>
+          <li><strong>Nom:</strong> ${data.shop_name}</li>
+          <li><strong>Statut juridique:</strong> ${data.legal_status}</li>
+          <li><strong>RCCM:</strong> ${data.rccm || 'Non fourni'}</li>
+          <li><strong>IFU:</strong> ${data.ifu || 'Non fourni'}</li>
+        </ul>
+
+        <h3>Responsable:</h3>
+        <ul>
+          <li><strong>Nom:</strong> ${data.owner_name}</li>
+          <li><strong>Fonction:</strong> ${data.owner_role}</li>
+          <li><strong>Téléphone:</strong> ${data.phone}</li>
+          <li><strong>Email:</strong> ${data.email}</li>
+          <li><strong>Adresse:</strong> ${data.address}</li>
+        </ul>
+
+        <h3>Informations commerciales:</h3>
+        <ul>
+          <li><strong>Catégories:</strong> ${data.categories}</li>
+          <li><strong>Moyens de paiement:</strong> ${data.payment_methods.join(', ')}</li>
+          <li><strong>Délai de livraison:</strong> ${data.delivery_time || 'Non spécifié'}</li>
+          <li><strong>Politique de retours:</strong> ${data.return_policy || 'Non spécifiée'}</li>
+        </ul>
+
+        <h3>Histoire de la marque:</h3>
+        <p>${data.brand_story}</p>
+
+        <h3>Documents joints:</h3>
+        <ul>
+          ${data.logo_url ? `<li><a href="${data.logo_url}">Logo</a></li>` : ''}
+          ${data.id_card_url ? `<li><a href="${data.id_card_url}">Pièce d'identité</a></li>` : ''}
+          ${data.rccm_doc_url ? `<li><a href="${data.rccm_doc_url}">RCCM</a></li>` : ''}
+          ${data.ifu_doc_url ? `<li><a href="${data.ifu_doc_url}">IFU</a></li>` : ''}
+        </ul>
+
+        <h3>Réseaux sociaux:</h3>
+        <ul>
+          ${data.social_facebook ? `<li><a href="${data.social_facebook}">Facebook</a></li>` : ''}
+          ${data.social_instagram ? `<li><a href="${data.social_instagram}">Instagram</a></li>` : ''}
+          ${data.social_website ? `<li><a href="${data.social_website}">Site web</a></li>` : ''}
+        </ul>
+
+        <p style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-left: 4px solid #D4AF37;">
+          <strong>ID de la candidature:</strong> ${docId}<br>
+          <strong>Date:</strong> ${new Date().toLocaleString('fr-FR')}
+        </p>
+
+        <p style="margin-top: 20px; color: #666; font-size: 12px;">
+          Pour approuver ou rejeter cette candidature, connectez-vous à votre <a href="https://votre-site.com/admin.html">panneau d'administration</a>.
+        </p>
+      </div>
+    `;
+
+    // Envoyer l'email
+    const mailOptions = {
+      from: 'Aurum Marketplace <noreply@aurum.bf>',
+      to: 'aurumcorporate.d@gmail.com',
+      subject: `[Aurum] Nouvelle candidature vendeur: ${data.shop_name}`,
+      html: emailHtml
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log('Email sent successfully for application:', docId);
+      
+      // Optionnel: Envoyer un email de confirmation au candidat
+      const confirmationEmail = {
+        from: 'Aurum Marketplace <noreply@aurum.bf>',
+        to: data.email,
+        subject: 'Candidature reçue - Aurum Marketplace',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #D4AF37;">Bonjour ${data.owner_name},</h2>
+            <p>Nous avons bien reçu votre candidature pour rejoindre Aurum Marketplace.</p>
+            <p><strong>Nom de la boutique:</strong> ${data.shop_name}</p>
+            <p>Notre équipe va examiner votre dossier et vous contactera dans les 48-72 heures.</p>
+            <p>Merci de votre confiance !</p>
+            <p style="margin-top: 30px; color: #666;">
+              L'équipe Aurum<br>
+              <a href="https://votre-site.com">votre-site.com</a>
+            </p>
+          </div>
+        `
+      };
+      
+      await transporter.sendMail(confirmationEmail);
+      console.log('Confirmation email sent to:', data.email);
+
+      return null;
+    } catch (error) {
+      console.error('Error sending email:', error);
+      return null;
+    }
+  });
+
+═══════════════════════════════════════════════════════════════════════════════
+INSTALLATION DE LA CLOUD FUNCTION:
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Initialiser Firebase Functions:
+   firebase init functions
+
+2. Installer les dépendances:
+   cd functions
+   npm install nodemailer
+
+3. Déployer:
+   firebase deploy --only functions
+
+4. Pour Gmail, créer un mot de passe d'application:
+   - Allez dans votre compte Google
+   - Sécurité > Validation en deux étapes > Mots de passe des applications
+   - Créez un mot de passe pour "Mail"
+   - Utilisez ce mot de passe dans la config nodemailer
+
+═══════════════════════════════════════════════════════════════════════════════
+RÈGLES FIRESTORE (pour sécuriser):
+═══════════════════════════════════════════════════════════════════════════════
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /seller_applications/{docId} {
+      // Permettre à tout le monde de créer une candidature
+      allow create: if request.auth != null || true;
+      
+      // Seuls les admins peuvent lire/modifier
+      allow read, update, delete: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+RÈGLES STORAGE (pour sécuriser):
+═══════════════════════════════════════════════════════════════════════════════
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /candidatures/{allPaths=**} {
+      // Permettre l'upload pendant la candidature
+      allow write: if request.resource.size < 5 * 1024 * 1024; // Max 5MB
+      
+      // Seuls les admins peuvent lire
+      allow read: if request.auth != null && 
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}
+
+-->
