@@ -1041,16 +1041,16 @@ a:hover { color: var(--gold); }
    HERO SECTION PREMIUM
    --------------------------------------------------------------- */
 .hero {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 48px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 32px;
   align-items: center;
-  padding: 80px 48px;
-  background: linear-gradient(135deg, var(--midnight) 0%, var(--black) 100%);
-  color: #fff;
-  min-height: 500px;
+  padding: 64px 20px;
+  background: #0c101a;
+  color: var(--aurum-white);
+  min-height: auto;
+  position: relative;
 }
-
 .hero h1 { 
   font-family: var(--font-serif);
   font-size: clamp(2.5rem, 5vw, 4rem);
@@ -1092,7 +1092,7 @@ a:hover { color: var(--gold); }
   border: 1px solid rgba(255,255,255,0.06);
   box-shadow: 0 12px 40px rgba(2,6,20,0.45);
 }
-@media (max-width: 900px){ .hero { grid-template-columns: 1fr; } }
+@media (max-width: 900px){ .hero { flex-wrap: wrap; } }
 
 /* ===== Category Carousel - Glovo Style ===== */
 .category-carousel-wrapper {
