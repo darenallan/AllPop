@@ -101,13 +101,19 @@
   <header id="app-header" class="header">
       <div class="container navbar">
           <a href="index.html" class="brand">
-              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+              <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
+              <div style="display:flex; flex-direction:column; margin-left:10px;">
+                  <span class="brand-name" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">AURUM</span>
+                  <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
+              </div>
           </a>
           <nav class="nav-actions">
+              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
-                  <span class="badge" id="cart-badge" style="display:none;">0</span>
+                  <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
               </a>
+              <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>
               <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
           </nav>
       </div>
@@ -122,8 +128,15 @@
           <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
           <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
           <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
+          <a href="wishlist.html" class="drawer-link"><i data-lucide="heart"></i> Mes Favoris</a>
+          <a href="boutique-list.html" class="drawer-link"><i data-lucide="store"></i> Nos Boutiques</a>
           <div class="drawer-divider"></div>
           <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
+          <a href="profile.html" class="drawer-link"><i data-lucide="user"></i> Mon Profil</a>
+          <div class="drawer-divider"></div>
+          <a href="#" id="mobile-logout-btn" class="drawer-link" style="color: #ef4444;">
+              <i data-lucide="log-out"></i> Déconnexion
+          </a>
       </nav>
   </div>
   <div id="menu-overlay"></div>
@@ -190,54 +203,74 @@
 
   <footer class="footer">
       <div class="container">
-          <div class="cols" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
-              <div>
-                  <h3>AURUM</h3>
-                  <p>La première marketplace premium du Burkina Faso. Qualité, confiance et élégance.</p>
+          <div class="footer-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
+              
+              <div class="footer-col">
+                  <h3 style="font-family:'Playfair Display'; margin-bottom:15px;">AURUM</h3>
+                  <p style="color:#aaa; font-size:14px; line-height:1.6;">
+                      La première marketplace premium du Burkina Faso. Qualité, confiance et élégance à votre portée.
+                  </p>
               </div>
-              <div>
-                  <h4>Navigation</h4>
-                  <ul style="list-style:none; padding:0; line-height:2;">
-                      <li><a href="index.html">Accueil</a></li>
-                      <li><a href="catalogue.html">Catalogue</a></li>
-                      <li><a href="seller.html">Devenir Vendeur</a></li>
-                      <li><a href="profile.html">Mon Compte</a></li>
+
+              <div class="footer-col">
+                  <h4 style="margin-bottom:15px; color:#fff;">Navigation</h4>
+                  <ul style="list-style:none; padding:0; margin:0; line-height:2;">
+                      <li><a href="index.html" style="color:#aaa; text-decoration:none;">Accueil</a></li>
+                      <li><a href="catalogue.html" style="color:#aaa; text-decoration:none;">Catalogue</a></li>
+                      <li><a href="seller.html" style="color:#aaa; text-decoration:none;">Devenir Vendeur</a></li>
+                      <li><a href="admin.html" style="color:#aaa; text-decoration:none;">Administration</a></li>
                   </ul>
               </div>
-              <div>
-                  <h4>Légal</h4>
-                  <ul style="list-style:none; padding:0; line-height:2;">
-                      <li><a href="cgu.html">Conditions Générales</a></li>
-                      <li><a href="contact.html">Politique de Confidentialité</a></li>
-                      <li><a href="faq.html">FAQ</a></li>
+
+              <div class="footer-col">
+                  <h4 style="margin-bottom:15px; color:#fff;">Informations</h4>
+                  <ul style="list-style:none; padding:0; margin:0; line-height:2;">
+                      <li><a href="cgu.html" style="color:#aaa; text-decoration:none;">CGU & CGV</a></li>
+                      <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Politique de confidentialité</a></li>
+                      <li><a href="faq.html" style="color:#aaa; text-decoration:none;">FAQ</a></li>
+                      <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Nous contacter</a></li>
                   </ul>
               </div>
-              <div>
-                  <h4>Suivez-nous</h4>
-                  <div class="footer-socials" style="display:flex; gap:15px;">
-                      <a href="#" class="social-link"><i data-lucide="facebook"></i></a>
-                      <a href="#" class="social-link"><i data-lucide="instagram"></i></a>
-                      <a href="#" class="social-link"><i data-lucide="twitter"></i></a>
+
+              <div class="footer-col">
+                  <h4 style="margin-bottom:15px; color:#fff;">Suivez-nous</h4>
+                  <div class="social-links" style="display:flex; gap:15px;">
+                      <a href="https://www.facebook.com/share/1CRt3jkL1c/" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                          </svg>
+                      </a>
+                      <a href="https://www.instagram.com/aurum_bf?igsh=NXNkaXExeTVhNXgy" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                          </svg>
+                      </a>
+                      <a href="https://www.tiktok.com/@aurum_bf?_r=1&_t=ZM-92qMqptMlOV" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                          </svg>
+                      </a>
                   </div>
               </div>
           </div>
-          <div class="footer-bottom" style="margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
-              &copy; 2026 Aurum Marketplace. Tous droits réservés.
+
+          <div class="footer-bottom" style="border-top:1px solid rgba(255,255,255,0.1); margin-top:40px; padding-top:20px; text-align:center; color:#666; font-size:13px;">
+              &copy; <span id="year">2026</span> Aurum Marketplace. Tous droits réservés.
           </div>
       </div>
   </footer>
 
   <script>
-   document.addEventListener('DOMContentLoaded', () => {
-        // --- CONFIG FIREBASE ---
-        if (!firebase.apps.length) {
-            console.error("Firebase non initialisé !");
-            return;
+    document.addEventListener('DOMContentLoaded', () => {
+        const yearSpan = document.getElementById('year');
+        if (yearSpan) {
+            yearSpan.innerText = new Date().getFullYear();
         }
+
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- DOM ELEMENTS ---
+        // Éléments DOM
         const loadingEl = document.getElementById('loading');
         const emptyEl = document.getElementById('cart-empty');
         const contentEl = document.getElementById('cart-content');
@@ -247,54 +280,64 @@
         const totalEl = document.getElementById('total-display');
         const checkoutBtn = document.getElementById('btn-checkout');
 
-        // --- STATE ---
+        // 1. Lire le LocalStorage
         let cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-        let cartProductsData = [];
+        let cartProductsData = []; // Stockera les infos complètes des produits
 
-        // --- INIT ---
+        console.log("Panier initial (LocalStorage) :", cart);
+
         if (cart.length === 0) {
             showEmptyState();
-        } else {
-            loadCartData();
+            return;
         }
 
-        // --- FONCTIONS AFFICHAGE (Inchangées) ---
-        function showEmptyState() {
-            loadingEl.style.display = 'none';
-            emptyEl.style.display = 'flex';
-            contentEl.style.display = 'none';
-            if(typeof lucide !== 'undefined') lucide.createIcons();
-        }
+        // 2. Récupérer les infos fraîches depuis Firestore
+        // On crée un tableau de promesses pour récupérer chaque produit
+        const promises = cart.map(item => db.collection('products').doc(item.pid).get());
 
-        function loadCartData() {
-            const promises = cart.map(item => db.collection('products').doc(item.pid).get());
-
-            Promise.all(promises).then(snapshots => {
-                cartProductsData = [];
+        Promise.all(promises)
+            .then(snapshots => {
                 snapshots.forEach(doc => {
                     if (doc.exists) {
-                        const data = doc.data();
-                        const localItem = cart.find(i => i.pid === doc.id);
-                        if(localItem) {
-                            cartProductsData.push({
-                                id: doc.id,
-                                ...data,
-                                qty: localItem.qty
-                            });
-                        }
+                        // On combine les données Firestore avec la quantité du panier local
+                        const productData = doc.data();
+                        const cartItem = cart.find(i => i.pid === doc.id);
+                        cartProductsData.push({
+                            id: doc.id,
+                            ...productData,
+                            qty: cartItem ? cartItem.qty : 1
+                        });
                     }
                 });
 
+                // Nettoyage : Si des produits du localStorage n'existent plus dans Firebase
+                if (cartProductsData.length < cart.length) {
+                    console.warn("Certains produits du panier n'existent plus. Mise à jour du panier local.");
+                    // On ne garde que ce qui a été trouvé en base
+                    const validIds = cartProductsData.map(p => p.id);
+                    cart = cart.filter(item => validIds.includes(item.pid));
+                    localStorage.setItem('ac_cart', JSON.stringify(cart));
+                }
+
                 if (cartProductsData.length === 0) {
-                    localStorage.removeItem('ac_cart');
                     showEmptyState();
                 } else {
                     renderCart();
                 }
-            }).catch(err => {
-                console.error("Erreur chargement panier:", err);
-                loadingEl.innerHTML = "<p style='color:red'>Erreur de chargement.</p>";
+            })
+            .catch(err => {
+                console.error("Erreur chargement panier :", err);
+                loadingEl.innerHTML = "<p style='color:red;'>Erreur lors du chargement. Veuillez rafraîchir.</p>";
             });
+
+
+        // --- FONCTIONS ---
+
+        function showEmptyState() {
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'flex';
+            contentEl.style.display = 'none';
+            lucide.createIcons();
         }
 
         function renderCart() {
@@ -304,178 +347,137 @@
             
             listEl.innerHTML = "";
             let total = 0;
-            let count = 0;
+            let itemCount = 0;
 
             cartProductsData.forEach(p => {
                 const lineTotal = p.price * p.qty;
                 total += lineTotal;
-                count += p.qty;
-                const img = p.image || 'assets/img/placeholder.png';
+                itemCount += p.qty;
+                const img = p.image || p.images?.[0] || 'assets/img/placeholder.png';
 
                 listEl.innerHTML += `
                     <div class="cart-item">
-                        <a href="product.html?id=${p.id}"><img src="${img}" class="cart-item-img" alt="${p.name}"></a>
+                        <a href="product.html?id=${p.id}">
+                            <img src="${img}" class="cart-item-img" alt="${p.name}">
+                        </a>
                         <div class="cart-item-info">
                             <a href="product.html?id=${p.id}" class="cart-item-title">${p.name}</a>
-                            <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA</div>
-                            <div style="font-size:12px; color:#999; margin-top:4px;">Vendeur: ${p.shopName || 'Aurum'}</div>
+                            <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA / unité</div>
                         </div>
                         <div class="cart-item-actions">
                             <div class="qty-selector-sm">
-                                <button class="qty-btn-sm" onclick="updateCartQty('${p.id}', -1)">-</button>
+                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', -1)">-</button>
                                 <span class="qty-val-sm">${p.qty}</span>
-                                <button class="qty-btn-sm" onclick="updateCartQty('${p.id}', 1)">+</button>
+                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', 1)">+</button>
                             </div>
-                            <div class="item-total">${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA</div>
-                            <div class="btn-delete" onclick="removeCartItem('${p.id}')"><i data-lucide="trash-2"></i></div>
+                            <div class="item-total">
+                                ${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA
+                            </div>
+                            <div class="btn-delete" onclick="removeItem('${p.id}')">
+                                <i data-lucide="trash-2"></i>
+                            </div>
                         </div>
                     </div>
                 `;
             });
 
-            const totalStr = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
-            subtotalEl.innerText = totalStr;
-            totalEl.innerText = totalStr;
-            countLabel.innerText = count;
-            if(typeof lucide !== 'undefined') lucide.createIcons();
+            // Mise à jour des totaux
+            const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
+            subtotalEl.innerText = formattedTotal;
+            totalEl.innerText = formattedTotal;
+            countLabel.innerText = itemCount;
+
+            lucide.createIcons();
         }
 
-        // --- CHECKOUT MARKETPLACE INTELLIGENT ---
-        checkoutBtn.addEventListener('click', async () => {
-            const user = auth.currentUser;
-            if (!user) {
-                sessionStorage.setItem('ac_checkout_pending', 'true');
-                window.location.href = "login.html?redirect=cart.html";
-                return;
+        // --- ACTIONS GLOBALES (accessibles via onclick) ---
+
+        window.changeQty = function(pid, delta) {
+            // 1. Mise à jour données locales
+            const product = cartProductsData.find(p => p.id === pid);
+            if(product) {
+                product.qty += delta;
+                if(product.qty < 1) product.qty = 1;
+            }
+            
+            // 2. Mise à jour LocalStorage
+            const lsItem = cart.find(i => i.pid === pid);
+            if(lsItem) {
+                lsItem.qty += delta;
+                if(lsItem.qty < 1) lsItem.qty = 1;
+                localStorage.setItem('ac_cart', JSON.stringify(cart));
             }
 
-            if (cartProductsData.length === 0) return alert("Panier vide");
+            // 3. Rerender
+            renderCart();
+        };
 
-            checkoutBtn.disabled = true;
-            checkoutBtn.innerText = "Traitement de la commande...";
+        window.removeItem = function(pid) {
+            if(!confirm("Retirer cet article du panier ?")) return;
 
-            try {
-                const batch = db.batch(); // Utilisation de batch pour tout envoyer d'un coup
-                const timestamp = firebase.firestore.FieldValue.serverTimestamp();
-                
-                // 1. Calcul Total Global
-                const totalAmount = cartProductsData.reduce((sum, item) => sum + (item.price * item.qty), 0);
-                
-                // 2. Création de la Commande Globale (Pour le Client et l'Admin)
-                const orderRef = db.collection('orders').doc(); // ID généré auto
-                const orderId = orderRef.id;
-                const reference = "AUR-" + Date.now().toString().slice(-6);
+            // 1. Filtre les données
+            cartProductsData = cartProductsData.filter(p => p.id !== pid);
+            cart = cart.filter(i => i.pid !== pid);
+            
+            // 2. Sauvegarde LS
+            localStorage.setItem('ac_cart', JSON.stringify(cart));
 
-                const globalOrder = {
-                    id: orderId,
-                    reference: reference,
-                    userId: user.uid,
-                    userName: user.displayName || "Client",
-                    userEmail: user.email,
-                    total: totalAmount,
-                    status: "pending", // En attente de paiement
-                    createdAt: timestamp,
-                    items: cartProductsData.map(p => ({
-                        id: p.id, name: p.name, price: p.price, qty: p.qty, shopId: p.shopId || 'admin'
-                    }))
-                };
-                
-                batch.set(orderRef, globalOrder);
-
-                // 3. Notification ADMIN (Dashboard Admin)
-                const adminNotifRef = db.collection('notifications').doc();
-                batch.set(adminNotifRef, {
-                    type: 'new_order_admin',
-                    orderId: orderId,
-                    reference: reference,
-                    amount: totalAmount,
-                    client: user.displayName,
-                    read: false,
-                    target: 'admin',
-                    createdAt: timestamp
-                });
-
-                // 4. Dispatching : Grouper les produits par Vendeur (ShopId)
-                const itemsByShop = {};
-                cartProductsData.forEach(item => {
-                    // Si pas de shopId, on attribue à 'admin' ou 'aurum'
-                    const shopId = item.shopId || 'aurum_main'; 
-                    if (!itemsByShop[shopId]) itemsByShop[shopId] = [];
-                    itemsByShop[shopId].push(item);
-                });
-
-                // 5. Créer les Notifications/Sous-commandes pour CHAQUE Vendeur
-                for (const [shopId, items] of Object.entries(itemsByShop)) {
-                    if(shopId === 'aurum_main') continue; // On ne notifie pas l'admin deux fois ici
-
-                    const sellerOrderRef = db.collection('seller_orders').doc();
-                    const subTotal = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-
-                    // Notification/Ordre pour le Vendeur (Dashboard Vendeur)
-                    batch.set(sellerOrderRef, {
-                        orderId: orderId, // Lien vers la commande mère
-                        globalReference: reference,
-                        shopId: shopId,
-                        items: items.map(i => ({ name: i.name, qty: i.qty, image: i.image || null })),
-                        totalToCollect: subTotal,
-                        status: "pending",
-                        clientName: user.displayName,
-                        clientPhone: "", // Ajouter tel si dispo
-                        createdAt: timestamp,
-                        type: 'sale_notification'
-                    });
-                }
-
-                // 6. Exécution du Batch
-                await batch.commit();
-
-                // 7. Succès
-                localStorage.removeItem('ac_cart');
-                window.location.href = `invoice.html?orderId=${orderId}`;
-
-            } catch (error) {
-                console.error("Erreur checkout:", error);
-                alert("Erreur lors de la commande. Contactez le support.");
-                checkoutBtn.disabled = false;
-                checkoutBtn.innerText = "Procéder au paiement";
-            }
-        });
-
-        // --- GLOBAL ACTIONS ---
-        window.updateCartQty = function(pid, delta) {
-            const pIndex = cartProductsData.findIndex(p => p.id === pid);
-            if (pIndex > -1) {
-                cartProductsData[pIndex].qty += delta;
-                if(cartProductsData[pIndex].qty < 1) cartProductsData[pIndex].qty = 1;
-                const lsIndex = cart.findIndex(i => i.pid === pid);
-                if(lsIndex > -1) {
-                    cart[lsIndex].qty = cartProductsData[pIndex].qty;
-                    localStorage.setItem('ac_cart', JSON.stringify(cart));
-                }
+            // 3. Rerender ou état vide
+            if(cart.length === 0) {
+                showEmptyState();
+            } else {
                 renderCart();
             }
         };
 
-        window.removeCartItem = function(pid) {
-            if(!confirm("Supprimer ?")) return;
-            cartProductsData = cartProductsData.filter(p => p.id !== pid);
-            cart = cart.filter(i => i.pid !== pid);
-            localStorage.setItem('ac_cart', JSON.stringify(cart));
-            if(cart.length === 0) showEmptyState();
-            else renderCart();
-        };
+        // --- CHECKOUT ---
+        checkoutBtn.addEventListener('click', () => {
+            if(!auth.currentUser) {
+                // Sauvegarde l'intention de checkout pour rediriger après login
+                sessionStorage.setItem('ac_checkout_pending', 'true');
+                window.location.href = "login.html?redirect=cart.html";
+            } else {
+                // Rediriger vers la page de commande (à créer plus tard)
+                // Pour l'instant, simple alerte
+                alert("Redirection vers la page de paiement sécurisé... (Prochaine étape)");
+                // window.location.href = "checkout.html"; 
+            }
+        });
 
-        // Menu Mobile (Code Standard)
-        const menuToggle = document.getElementById('menu-toggle');
-        const closeBtn = document.getElementById('close-btn');
-        const drawer = document.getElementById('mobile-drawer');
-        const overlay = document.getElementById('menu-overlay');
-        function tgl() { drawer.classList.toggle('active'); overlay.classList.toggle('active'); }
-        if(menuToggle) menuToggle.addEventListener('click', tgl);
-        if(closeBtn) closeBtn.addEventListener('click', tgl);
-        if(overlay) overlay.addEventListener('click', tgl);
+        // --- MENU HEADER ---
+        function setupHeaderMenu() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeBtn = document.getElementById('close-btn');
+            const drawer = document.getElementById('mobile-drawer');
+            const overlay = document.getElementById('menu-overlay');
+
+            const toggleMenu = () => {
+                if (!drawer || !overlay) return;
+                drawer.classList.toggle('active');
+                overlay.classList.toggle('active');
+                document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
+            };
+
+            if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+            if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+            if (overlay) overlay.addEventListener('click', toggleMenu);
+
+            const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+            const badge = document.getElementById('cart-badge');
+            if (badge) {
+                const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
+                if (count > 0) {
+                    badge.innerText = count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        setupHeaderMenu();
+
     });
-  </script>
   </script>
 </body>
 </html>
