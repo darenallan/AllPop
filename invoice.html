@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="assets/css/styles.css" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -28,49 +27,43 @@
           box-shadow: 0 10px 30px rgba(31, 138, 112, 0.2);
       }
       
-      /* --- STYLE FACTURE IMPRESSION --- */
       .invoice-card {
-          background: white; 
-          /* Largeur fixe idéale pour A4 */
-          width: 794px; /* Largeur A4 en pixels (96dpi) */
-          margin: 0 auto;
-          border: 1px solid #eee;
-          overflow: hidden; 
-          background-color: #ffffff;
-          padding: 0; /* Important pour le PDF */
+          background: white; border-radius: 16px; border: 1px solid #eee;
+          overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
       }
       
       .invoice-header {
           background: #fcfcfc; padding: 40px; border-bottom: 2px solid #f0f0f0;
-          display: flex; justify-content: space-between; align-items: flex-start;
+          display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;
       }
       
       .invoice-body { padding: 40px; }
       
+      .invoice-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+      .invoice-label { color: #666; font-weight: 500; }
+      .invoice-val { font-weight: 600; color: #000; }
+      
       .invoice-table { width: 100%; border-collapse: collapse; margin: 30px 0; }
       .invoice-table th { text-align: left; color: #666; font-size: 12px; text-transform: uppercase; padding: 10px 0; border-bottom: 1px solid #eee; }
       .invoice-table td { padding: 15px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
-      
-      /* Police système pour éviter les bugs de caractères */
-      .price-text {
-          font-family: Arial, Helvetica, sans-serif !important; 
-          font-weight: 600;
-          white-space: nowrap;
-      }
+      .invoice-table td:last-child, .invoice-table th:last-child { text-align: right; }
       
       .invoice-total-section { 
           background: #fafafa; padding: 20px; border-radius: 12px; 
           margin-left: auto; width: 100%; max-width: 300px;
       }
-      .invoice-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
       
       .invoice-actions {
-          padding: 30px 40px; margin-top: 30px;
+          padding: 30px 40px; background: #fafafa; border-top: 1px solid #eee;
           display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;
       }
 
-      /* Cache le scrollbar lors de la capture */
-      .no-scroll { overflow: hidden; }
+      @media (max-width: 768px) {
+          .invoice-header { flex-direction: column; }
+          .invoice-body { padding: 20px; }
+          .invoice-actions { flex-direction: column; }
+          .invoice-actions .btn { width: 100%; }
+      }
   </style>
 </head>
 
@@ -78,13 +71,45 @@
   <header id="app-header" class="header">
       <div class="container navbar">
           <a href="index.html" class="brand">
-              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+              <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
+              <div style="display:flex; flex-direction:column; margin-left:10px;">
+                  <span class="brand-name" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">AURUM</span>
+                  <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
+              </div>
           </a>
           <nav class="nav-actions">
-              <a href="cart.html" class="icon-btn"><i data-lucide="shopping-bag"></i></a>
+              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
+              <a href="cart.html" class="icon-btn" style="position:relative;">
+                  <i data-lucide="shopping-bag"></i>
+                  <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
+              </a>
+              <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>
+              <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
           </nav>
       </div>
   </header>
+
+  <div class="mobile-drawer" id="mobile-drawer">
+      <div class="drawer-header">
+          <span class="drawer-title">Menu</span>
+          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
+      </div>
+      <nav class="drawer-nav">
+          <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
+          <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
+          <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
+          <a href="wishlist.html" class="drawer-link"><i data-lucide="heart"></i> Mes Favoris</a>
+          <a href="boutique-list.html" class="drawer-link"><i data-lucide="store"></i> Nos Boutiques</a>
+          <div class="drawer-divider"></div>
+          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
+          <a href="profile.html" class="drawer-link"><i data-lucide="user"></i> Mon Profil</a>
+          <div class="drawer-divider"></div>
+          <a href="#" id="mobile-logout-btn" class="drawer-link" style="color: #ef4444;">
+              <i data-lucide="log-out"></i> Déconnexion
+          </a>
+      </nav>
+  </div>
+  <div id="menu-overlay"></div>
 
   <main class="invoice-container">
     
@@ -100,12 +125,14 @@
             <div>
                 <h2 style="margin:0 0 5px 0; font-size:18px;">Commande confirmée !</h2>
                 <p style="margin:0; opacity:0.9; font-size:14px; line-height:1.5;">
-                    Votre commande a bien été enregistrée. Voici votre facture officielle.
+                    Votre commande a bien été enregistrée. Voici votre facture officielle. 
+                    Veuillez la télécharger et nous contacter pour finaliser le paiement.
                 </p>
             </div>
         </div>
 
         <div class="invoice-card" id="invoice-document">
+            
             <div class="invoice-header">
                 <div>
                     <h1 style="font-family:'Playfair Display', serif; font-size:32px; margin:0; color:#D4AF37;">AURUM</h1>
@@ -118,7 +145,7 @@
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:14px; color:#999; text-transform:uppercase; margin-bottom:5px;">Facture N°</div>
-                    <div style="font-size:20px; font-weight:700; font-family:Arial,sans-serif;" id="inv-ref">...</div>
+                    <div style="font-size:20px; font-weight:700;" id="inv-ref">...</div>
                     <div style="margin-top:5px; font-size:14px; color:#666;" id="inv-date">...</div>
                 </div>
             </div>
@@ -136,18 +163,19 @@
                         <tr>
                             <th>Description</th>
                             <th style="text-align:center;">Qté</th>
-                            <th style="text-align:right;">Prix Unit.</th>
-                            <th style="text-align:right;">Total</th>
+                            <th>Prix Unit.</th>
+                            <th>Total</th>
                         </tr>
                     </thead>
-                    <tbody id="invoice-items"></tbody>
+                    <tbody id="invoice-items">
+                        </tbody>
                 </table>
 
                 <div style="display:flex; justify-content:flex-end;">
                     <div class="invoice-total-section">
                         <div class="invoice-row">
                             <span class="invoice-label">Sous-total</span>
-                            <span class="invoice-val price-text" id="inv-subtotal">...</span>
+                            <span class="invoice-val" id="inv-subtotal">...</span>
                         </div>
                         <div class="invoice-row">
                             <span class="invoice-label">Livraison</span>
@@ -156,58 +184,174 @@
                         <div style="border-top:1px solid #ddd; margin:10px 0;"></div>
                         <div class="invoice-row" style="margin-bottom:0;">
                             <span class="invoice-label" style="font-size:16px; color:#000;">Total à payer</span>
-                            <span class="invoice-val price-text" style="font-size:18px; color:#D4AF37;" id="inv-total">...</span>
+                            <span class="invoice-val" style="font-size:18px; color:#D4AF37;" id="inv-total">...</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="invoice-actions">
-            <button class="btn btn-gold" id="btn-download">
-                <i data-lucide="download"></i> Télécharger PDF
-            </button>
-            <button class="btn btn-success" id="btn-whatsapp" style="background:#25D366; color:white; border:none;">
-                <i data-lucide="message-circle"></i> Envoyer sur WhatsApp
-            </button>
+            <div class="invoice-actions">
+                <button class="btn btn-gold" id="btn-download">
+                    <i data-lucide="download"></i> Télécharger PDF
+                </button>
+                <button class="btn btn-success" id="btn-whatsapp" style="background:#25D366; color:white; border:none;">
+                    <i data-lucide="message-circle"></i> Envoyer sur WhatsApp
+                </button>
+            </div>
         </div>
 
     </div>
   </main>
 
   <footer class="footer">
-      <div class="container text-center"><p>&copy; 2026 Aurum Marketplace</p></div>
+      <div class="container">
+          <div class="footer-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
+              
+              <div class="footer-col">
+                  <h3 style="font-family:'Playfair Display'; margin-bottom:15px;">AURUM</h3>
+                  <p style="color:#aaa; font-size:14px; line-height:1.6;">
+                      La première marketplace premium du Burkina Faso. Qualité, confiance et élégance à votre portée.
+                  </p>
+              </div>
+
+              <div class="footer-col">
+                  <h4 style="margin-bottom:15px; color:#fff;">Navigation</h4>
+                  <ul style="list-style:none; padding:0; margin:0; line-height:2;">
+                      <li><a href="index.html" style="color:#aaa; text-decoration:none;">Accueil</a></li>
+                      <li><a href="catalogue.html" style="color:#aaa; text-decoration:none;">Catalogue</a></li>
+                      <li><a href="seller.html" style="color:#aaa; text-decoration:none;">Devenir Vendeur</a></li>
+                      <li><a href="admin.html" style="color:#aaa; text-decoration:none;">Administration</a></li>
+                  </ul>
+              </div>
+
+              <div class="footer-col">
+                  <h4 style="margin-bottom:15px; color:#fff;">Informations</h4>
+                  <ul style="list-style:none; padding:0; margin:0; line-height:2;">
+                      <li><a href="cgu.html" style="color:#aaa; text-decoration:none;">CGU & CGV</a></li>
+                      <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Politique de confidentialité</a></li>
+                      <li><a href="faq.html" style="color:#aaa; text-decoration:none;">FAQ</a></li>
+                      <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Nous contacter</a></li>
+                  </ul>
+              </div>
+
+              <div class="footer-col">
+                  <h4 style="margin-bottom:15px; color:#fff;">Suivez-nous</h4>
+                  <div class="social-links" style="display:flex; gap:15px;">
+                      <a href="https://www.facebook.com/share/1CRt3jkL1c/" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                          </svg>
+                      </a>
+                      <a href="https://www.instagram.com/aurum_bf?igsh=NXNkaXExeTVhNXgy" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                          </svg>
+                      </a>
+                      <a href="https://www.tiktok.com/@aurum_bf?_r=1&_t=ZM-92qMqptMlOV" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                          </svg>
+                      </a>
+                  </div>
+              </div>
+          </div>
+
+          <div class="footer-bottom" style="border-top:1px solid rgba(255,255,255,0.1); margin-top:40px; padding-top:20px; text-align:center; color:#666; font-size:13px;">
+              &copy; <span id="year">2026</span> Aurum Marketplace. Tous droits réservés.
+          </div>
+      </div>
   </footer>
 
   <script>
+    function setupHeaderMenu() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeBtn = document.getElementById('close-btn');
+        const drawer = document.getElementById('mobile-drawer');
+        const overlay = document.getElementById('menu-overlay');
+
+        const toggleMenu = () => {
+            if (!drawer || !overlay) return;
+            drawer.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
+        };
+
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
+
+        const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+        const badge = document.getElementById('cart-badge');
+        if (badge) {
+            const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
+            if (count > 0) {
+                badge.innerText = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+        setupHeaderMenu();
+        
+        const yearSpan = document.getElementById('year');
+        if (yearSpan) {
+            yearSpan.innerText = new Date().getFullYear();
+        }
+
+        // Gestion de la déconnexion
+        const logoutBtn = document.getElementById('mobile-logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                firebase.auth().signOut().then(() => {
+                    window.location.href = "login.html";
+                });
+            });
+        }
+
+        const { jsPDF } = window.jspdf;
         const db = firebase.firestore();
         const auth = firebase.auth();
+        
+        // Récupérer l'ID de la commande depuis l'URL
         const params = new URLSearchParams(window.location.search);
         const orderId = params.get('orderId');
 
+        // Si pas d'ID, on utilise le panier local pour simuler une facture (Checkout immédiat)
+        // Mais idéalement, il faut d'abord créer la commande dans Firebase.
+        
+        // Simulation pour l'exemple si pas d'ID (à adapter avec ton flux réel)
+        // Ici on va chercher la commande réelle dans Firebase
+        
         if (!orderId) {
-            alert("Aucune commande trouvée.");
+            alert("Aucune commande spécifiée.");
             window.location.href = "cart.html";
             return;
         }
 
         db.collection('orders').doc(orderId).get().then(doc => {
             if (doc.exists) {
-                renderInvoice(doc.data(), doc.id);
+                const order = doc.data();
+                renderInvoice(order, doc.id);
             } else {
                 alert("Commande introuvable.");
+                window.location.href = "index.html";
             }
-        }).catch(console.error);
-
-        function formatMoney(amount) {
-            return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " FCFA";
-        }
+        }).catch(err => {
+            console.error(err);
+            alert("Erreur de chargement.");
+        });
 
         function renderInvoice(order, id) {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('invoice-content').style.display = 'block';
 
+            // Remplissage infos
             const date = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString();
             document.getElementById('inv-ref').innerText = "AUR-" + id.substr(0, 6).toUpperCase();
             document.getElementById('inv-date').innerText = date;
@@ -216,6 +360,7 @@
             document.getElementById('client-phone').innerText = order.userPhone || "";
             document.getElementById('client-email').innerText = order.userEmail || "";
 
+            // Items
             const tbody = document.getElementById('invoice-items');
             tbody.innerHTML = "";
             let total = 0;
@@ -223,65 +368,47 @@
             order.items.forEach(item => {
                 const lineTotal = item.price * item.qty;
                 total += lineTotal;
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td style="text-align:center;">${item.qty}</td>
-                        <td style="text-align:right;" class="price-text">${formatMoney(item.price)}</td>
-                        <td style="text-align:right;" class="price-text">${formatMoney(lineTotal)}</td>
-                    </tr>
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.name}</td>
+                    <td style="text-align:center;">${item.qty}</td>
+                    <td>${new Intl.NumberFormat('fr-FR').format(item.price)} FCFA</td>
+                    <td>${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA</td>
                 `;
+                tbody.appendChild(tr);
             });
 
-            const totalStr = formatMoney(total);
-            document.getElementById('inv-subtotal').innerText = totalStr;
-            document.getElementById('inv-total').innerText = totalStr;
+            const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
+            document.getElementById('inv-subtotal').innerText = formattedTotal;
+            document.getElementById('inv-total').innerText = formattedTotal;
 
-            setupActions(order, id, totalStr);
+            // Setup Boutons
+            setupActions(order, id, formattedTotal);
             lucide.createIcons();
         }
 
         function setupActions(order, id, totalStr) {
-            
-            // --- LOGIQUE PDF CORRIGÉE (PLEINE LARGEUR) ---
+            // PDF Download
             document.getElementById('btn-download').addEventListener('click', () => {
-                const btn = document.getElementById('btn-download');
-                btn.innerText = "Génération...";
-                btn.disabled = true;
-
-                const { jsPDF } = window.jspdf;
-                const element = document.getElementById('invoice-document');
+                const doc = new jsPDF();
+                const content = document.getElementById('invoice-document');
                 
-                // On utilise 'mm' comme unité et 'a4' comme format
-                const doc = new jsPDF('p', 'mm', 'a4');
-                const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
-                const pageHeight = doc.internal.pageSize.getHeight();
-
-                doc.html(element, {
+                doc.html(content, {
                     callback: function (doc) {
-                        doc.save(`Facture_AURUM_${id.substr(0,6)}.pdf`);
-                        btn.innerHTML = '<i data-lucide="download"></i> Télécharger PDF';
-                        btn.disabled = false;
-                        lucide.createIcons();
+                        doc.save(`Facture_AURUM_${id}.pdf`);
                     },
-                    x: 0,
-                    y: 0,
-                    // Cette option est cruciale : elle adapte le HTML à la largeur A4 (environ 190mm utilisables)
-                    width: 210, 
-                    windowWidth: 794, // Force html2canvas à voir l'élément comme s'il faisait 794px
-                    html2canvas: {
-                        scale: 0.26, // Ratio magique (210mm / 794px approx) pour faire rentrer pile poil
-                        useCORS: true,
-                        logging: false
-                    }
+                    x: 10,
+                    y: 10,
+                    width: 190,
+                    windowWidth: 900 
                 });
             });
 
-            // WHATSAPP
+            // WhatsApp
             document.getElementById('btn-whatsapp').addEventListener('click', () => {
-                const phone = "22664502626";
-                const ref = "AUR-" + id.substr(0,6).toUpperCase();
-                const msg = `Bonjour Aurum,\n\nJe souhaite régler ma commande ${ref} d'un montant de ${totalStr}.\n\nQuels sont les moyens de paiement ?`;
+                const phone = "22664502626"; // Ton numéro business
+                const msg = `Bonjour Aurum,\n\nJe viens de passer commande (Réf: AUR-${id.substr(0,6).toUpperCase()}) pour un total de ${totalStr}.\n\nPouvez-vous me confirmer les moyens de paiement disponibles ?\n\nMerci.`;
                 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
             });
         }
