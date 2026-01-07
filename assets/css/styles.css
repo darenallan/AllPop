@@ -1043,6 +1043,31 @@ a:hover { color: var(--gold); }
 .hero {
   display: flex;
   flex-wrap: nowrap;
+  gap: 48px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 80px 60px;
+  background: #0c101a;
+  color: var(--aurum-white);
+  min-height: 550px;
+  position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.8));
+  pointer-events: none;
+}
+/*.hero {
+  display: flex;
+  flex-wrap: nowrap;
   gap: 32px;
   align-items: center;
   padding: 64px 20px;
@@ -1050,7 +1075,7 @@ a:hover { color: var(--gold); }
   color: var(--aurum-white);
   min-height: auto;
   position: relative;
-}
+}*/
 .hero h1 { 
   font-family: var(--font-serif);
   font-size: clamp(2.5rem, 5vw, 4rem);
