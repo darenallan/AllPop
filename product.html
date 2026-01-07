@@ -15,49 +15,151 @@
   
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/whishlist.js" defer></script>
 
   <style>
-      /* --- Styles existants (layout) --- */
-      .product-container { padding-top: 40px; padding-bottom: 80px; }
-      .product-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; margin-bottom: 80px; }
-      .gallery-main { width: 100%; height: 500px; background: #f9f9f9; border-radius: 20px; overflow: hidden; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; }
-      .gallery-main img { width: 100%; height: 100%; object-fit: contain; }
-      .gallery-thumbs { display: flex; gap: 12px; }
-      .thumb { width: 80px; height: 80px; border-radius: 12px; background: #f5f5f5; cursor: pointer; overflow: hidden; border: 2px solid transparent; transition: 0.2s; }
-      .thumb.active { border-color: var(--gold); }
-      .thumb img { width: 100%; height: 100%; object-fit: cover; }
-      .product-info h1 { font-size: 42px; margin-bottom: 10px; line-height: 1.1; }
-      .product-price-xl { font-size: 28px; color: var(--gold); font-weight: 700; margin-bottom: 24px; font-family: var(--font-sans); }
-      .seller-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; color: #666; margin-bottom: 16px; text-decoration: none; }
-      .seller-link:hover { color: var(--black); }
-      .qty-selector { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; width: fit-content; }
-      .qty-btn { padding: 12px 16px; background: transparent; border: none; cursor: pointer; font-size: 18px; }
-      .qty-value { font-weight: 600; width: 30px; text-align: center; }
-      .action-row { display: flex; gap: 16px; margin-top: 30px; }
-      .reviews-section { background: #f9f9f9; padding: 60px; border-radius: 20px; }
-      .review-card { background: white; padding: 24px; border-radius: 16px; margin-bottom: 16px; }
-      @media (max-width: 900px) { .product-layout { grid-template-columns: 1fr; gap: 30px; } .gallery-main { height: 350px; } .product-info h1 { font-size: 32px; } .reviews-section { padding: 20px; } }
+      /* Styles spécifiques à la fiche produit pour correspondre à tes captures */
+      .product-container {
+          padding-top: 40px;
+          padding-bottom: 80px;
+      }
+      
+      .product-layout {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr; /* Image plus grande à gauche */
+          gap: 60px;
+          margin-bottom: 80px;
+      }
 
-      /* --- NOUVEAUX STYLES POUR LES AVIS --- */
-      .star-picker-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ddd; transition: 0.2s; padding: 0 5px; }
-      .star-picker-btn.active, .star-picker-btn:hover { color: var(--gold); }
-      #review-form-container { background: #fff; padding: 30px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #eee; }
+      /* Galerie */
+      .gallery-main {
+          width: 100%;
+          height: 500px;
+          background: #f9f9f9;
+          border-radius: 20px;
+          overflow: hidden;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+      .gallery-main img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain; /* ou cover selon préférence */
+      }
+      .gallery-thumbs {
+          display: flex;
+          gap: 12px;
+      }
+      .thumb {
+          width: 80px;
+          height: 80px;
+          border-radius: 12px;
+          background: #f5f5f5;
+          cursor: pointer;
+          overflow: hidden;
+          border: 2px solid transparent;
+          transition: 0.2s;
+      }
+      .thumb.active {
+          border-color: var(--gold);
+      }
+      .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+      /* Infos */
+      .product-info h1 {
+          font-size: 42px;
+          margin-bottom: 10px;
+          line-height: 1.1;
+      }
+      .product-price-xl {
+          font-size: 28px;
+          color: var(--gold);
+          font-weight: 700;
+          margin-bottom: 24px;
+          font-family: var(--font-sans);
+      }
+      .seller-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 600;
+          color: #666;
+          margin-bottom: 16px;
+          text-decoration: none;
+      }
+      .seller-link:hover { color: var(--black); }
+
+      /* Actions */
+      .qty-selector {
+          display: flex;
+          align-items: center;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          width: fit-content;
+      }
+      .qty-btn {
+          padding: 12px 16px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          font-size: 18px;
+      }
+      .qty-value {
+          font-weight: 600;
+          width: 30px;
+          text-align: center;
+      }
+      
+      .action-row {
+          display: flex;
+          gap: 16px;
+          margin-top: 30px;
+      }
+
+      /* Avis */
+      .reviews-section {
+          background: #f9f9f9;
+          padding: 60px;
+          border-radius: 20px;
+      }
+      .review-card {
+          background: white;
+          padding: 24px;
+          border-radius: 16px;
+          margin-bottom: 16px;
+      }
+
+      @media (max-width: 900px) {
+          .product-layout { grid-template-columns: 1fr; gap: 30px; }
+          .gallery-main { height: 350px; }
+          .product-info h1 { font-size: 32px; }
+          .reviews-section { padding: 20px; }
+      }
   </style>
 </head>
 
 <body>
   <header id="app-header" class="header">
       <div class="container navbar">
-          <a href="index.html" class="brand">
-              <span class="brand-name">AURUM</span>
-          </a>
+                    <a href="index.html" class="brand">
+                        <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
+                        <div style="display:flex; flex-direction:column; margin-left:10px;">
+                            <span class="brand-name" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">AURUM</span>
+                            <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
+                        </div>
+                    </a>
+          
           <nav class="nav-actions">
               <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
-                  <span class="badge" id="cart-badge" style="display:none;">0</span>
-              </a>
-              <button class="menu-toggle" id="menu-toggle"><i data-lucide="menu"></i></button>
+                  <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
+              </a>              <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>              <button class="menu-toggle" id="menu-toggle" style="background:transparent; border:none; color:inherit;"><i data-lucide="menu"></i></button>
           </nav>
       </div>
   </header>
@@ -71,8 +173,18 @@
           <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
           <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
           <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
+          <a href="wishlist.html" class="drawer-link"><i data-lucide="heart"></i> Mes Favoris</a>
+          <a href="boutique-list.html" class="drawer-link"><i data-lucide="store"></i> Nos Boutiques</a>
+          <div class="drawer-divider"></div>
+          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
+          <a href="profile.html" class="drawer-link"><i data-lucide="user"></i> Mon Profil</a>
+          <div class="drawer-divider"></div>
+          <a href="#" id="mobile-logout-btn" class="drawer-link" style="color: #ef4444;">
+              <i data-lucide="log-out"></i> Déconnexion
+          </a>
       </nav>
   </div>
+  
   <div id="menu-overlay"></div>
 
   <main class="container product-container">
@@ -84,20 +196,26 @@
     <div id="product-content" style="display:none;">
         
         <div class="product-layout">
+            
             <div class="product-gallery">
                 <div class="gallery-main">
                     <img id="p-main-img" src="" alt="Produit">
                 </div>
-                <div class="gallery-thumbs" id="p-thumbs"></div>
+                <div class="gallery-thumbs" id="p-thumbs">
+                    </div>
             </div>
 
             <div class="product-info">
                 <a href="#" id="p-seller-link" class="seller-link">
                     <i data-lucide="store" style="width:16px;"></i> <span id="p-seller-name">...</span>
                 </a>
+                
                 <h1 id="p-name">...</h1>
                 <div class="product-price-xl" id="p-price">... FCFA</div>
-                <p id="p-desc" style="color:#555; line-height:1.8; margin-bottom:30px;">Chargement...</p>
+                
+                <p id="p-desc" style="color:#555; line-height:1.8; margin-bottom:30px;">
+                    Chargement de la description...
+                </p>
 
                 <div style="margin-bottom: 20px;">
                     <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px;">Quantité</label>
@@ -109,412 +227,351 @@
                 </div>
 
                 <div class="action-row">
-                    <button id="btn-add-cart" class="btn btn-gold btn-xl" style="flex:1;">Ajouter au panier</button>
-                    <button class="btn btn-outline btn-xl"><i data-lucide="heart"></i></button>
+                    <button id="btn-add-cart" class="btn btn-gold btn-xl" style="flex:1;">
+                        Ajouter au panier
+                    </button>
+                    <button id="btn-add-wishlist" class="btn btn-outline btn-xl" title="Ajouter aux favoris">
+                        <i data-lucide="heart"></i>
+                    </button>
                 </div>
 
                 <div style="margin-top:40px; border-top:1px solid #eee; padding-top:20px;">
                     <div style="display:flex; gap:15px; margin-bottom:15px;">
                         <i data-lucide="truck" style="color:var(--gold);"></i>
-                        <div><strong style="display:block; font-size:14px;">Livraison Rapide</strong><span style="font-size:13px; color:#666;">Expédié sous 24h-48h</span></div>
+                        <div>
+                            <strong style="display:block; font-size:14px;">Livraison Rapide</strong>
+                            <span style="font-size:13px; color:#666;">Expédié sous 24h-48h</span>
+                        </div>
                     </div>
                     <div style="display:flex; gap:15px;">
                         <i data-lucide="shield-check" style="color:var(--gold);"></i>
-                        <div><strong style="display:block; font-size:14px;">Garantie Qualité</strong><span style="font-size:13px; color:#666;">Authenticité garantie</span></div>
+                        <div>
+                            <strong style="display:block; font-size:14px;">Garantie Qualité</strong>
+                            <span style="font-size:13px; color:#666;">Authenticité garantie par Aurum</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="reviews-section" id="reviews-anchor">
+        <div class="reviews-section">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
                 <h2 style="margin:0;">Avis Clients</h2>
-                <div style="text-align:right;">
-                    <div style="font-size:24px; font-weight:700; color:var(--gold);">
-                        <span id="avg-rating-display">-</span> <span style="font-size:16px; color:#000;">/ 5</span>
-                    </div>
-                    <small style="color:#666;" id="total-reviews-display">(0 avis)</small>
-                </div>
-            </div>
-
-            <button class="btn-outline" id="btn-toggle-review" style="margin-bottom: 20px;">Écrire un avis</button>
-
-            <div id="review-form-container" style="display:none;">
-                <h3 style="margin-top:0;">Votre avis compte</h3>
-                <form id="review-form">
-                    <div style="margin-bottom:15px;">
-                        <label style="display:block; font-weight:600; margin-bottom:5px;">Note</label>
-                        <div class="star-picker">
-                            <button type="button" class="star-picker-btn" data-value="1">★</button>
-                            <button type="button" class="star-picker-btn" data-value="2">★</button>
-                            <button type="button" class="star-picker-btn" data-value="3">★</button>
-                            <button type="button" class="star-picker-btn" data-value="4">★</button>
-                            <button type="button" class="star-picker-btn" data-value="5">★</button>
-                        </div>
-                        <input type="hidden" id="review-rating" value="0" required>
-                    </div>
-                    
-                    <div style="margin-bottom:15px;">
-                        <label style="display:block; font-weight:600; margin-bottom:5px;">Commentaire</label>
-                        <textarea class="input" id="review-comment" rows="4" placeholder="Partagez votre expérience..." required></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-gold">Publier l'avis</button>
-                </form>
+                <div style="font-size:24px; font-weight:700; color:var(--gold);">4.8 <span style="font-size:16px; color:#000;">/ 5</span></div>
             </div>
 
             <div id="reviews-list">
-                <p>Chargement des avis...</p>
-            </div>
+                <div class="review-card">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <div style="width:40px; height:40px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">M</div>
+                        <div>
+                            <div style="font-weight:600;">Mariam O.</div>
+                            <div style="color:var(--gold); font-size:12px;">★★★★★</div>
+                        </div>
+                    </div>
+                    <p style="color:#555; font-size:14px;">Produit conforme et de très bonne qualité. Je recommande !</p>
+                </div>
+                </div>
         </div>
 
         <section class="section">
             <h2 class="section-title">Vous aimerez aussi</h2>
-            <div id="similar-products" class="grid grid-4"></div>
+            <div id="similar-products" class="grid grid-4">
+                </div>
         </section>
 
     </div>
   </main>
 
   <footer class="footer">
-      <div class="container text-center"><p>&copy; 2026 Aurum Marketplace</p></div>
+      <div class="container">
+          <div class="footer-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
+              
+              <div class="footer-col">
+                  <h3 style="font-family:'Playfair Display'; margin-bottom:15px;">AURUM</h3>
+                  <p style="color:#aaa; font-size:14px; line-height:1.6;">
+                      La première marketplace premium du Burkina Faso. Qualité, confiance et élégance à votre portée.
+                  </p>
+              </div>
+
+              <div class="footer-col">
+                  <h4 style="margin-bottom:15px; color:#fff;">Navigation</h4>
+                  <ul style="list-style:none; padding:0; margin:0; line-height:2;">
+                      <li><a href="index.html" style="color:#aaa; text-decoration:none;">Accueil</a></li>
+                      <li><a href="catalogue.html" style="color:#aaa; text-decoration:none;">Catalogue</a></li>
+                      <li><a href="seller.html" style="color:#aaa; text-decoration:none;">Devenir Vendeur</a></li>
+                      <li><a href="admin.html" style="color:#aaa; text-decoration:none;">Administration</a></li>
+                  </ul>
+              </div>
+
+              <div class="footer-col">
+                  <h4 style="margin-bottom:15px; color:#fff;">Informations</h4>
+                  <ul style="list-style:none; padding:0; margin:0; line-height:2;">
+                      <li><a href="cgu.html" style="color:#aaa; text-decoration:none;">CGU & CGV</a></li>
+                      <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Politique de confidentialité</a></li>
+                      <li><a href="faq.html" style="color:#aaa; text-decoration:none;">FAQ</a></li>
+                      <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Nous contacter</a></li>
+                  </ul>
+              </div>
+
+              <div class="footer-col">
+                  <h4 style="margin-bottom:15px; color:#fff;">Suivez-nous</h4>
+                  <div class="social-links" style="display:flex; gap:15px;">
+                      <a href="https://www.facebook.com/share/1CRt3jkL1c/" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                          </svg>
+                      </a>
+                      <a href="https://www.instagram.com/aurum_bf?igsh=NXNkaXExeTVhNXgy" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                          </svg>
+                      </a>
+                      <a href="https://www.tiktok.com/@aurum_bf?_r=1&_t=ZM-92qMqptMlOV" target="_blank" style="color:#fff; transition:0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                          </svg>
+                      </a>
+                  </div>
+              </div>
+          </div>
+
+          <div class="footer-bottom" style="border-top:1px solid rgba(255,255,255,0.1); margin-top:40px; padding-top:20px; text-align:center; color:#666; font-size:13px;">
+              &copy; <span id="year">2026</span> Aurum Marketplace. Tous droits réservés.
+          </div>
+      </div>
   </footer>
 
   <div class="toast-container" id="toast-container"></div>
 
-<script>
+  <script>
     let currentProduct = null;
     let currentQty = 1;
-    let selectedRating = 0; 
+
+    function setupHeaderMenu() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeBtn = document.getElementById('close-btn');
+        const drawer = document.getElementById('mobile-drawer');
+        const overlay = document.getElementById('menu-overlay');
+
+        const toggleMenu = () => {
+            if (!drawer || !overlay) return;
+            drawer.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
+        };
+
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
+
+        const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+        const badge = document.getElementById('cart-badge');
+        if (badge) {
+            const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
+            if (count > 0) {
+                badge.innerText = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Vérification de sécurité pour Firebase
-        if (typeof firebase === 'undefined') {
-            console.error("Firebase n'est pas chargé !");
-            document.getElementById('loading').innerHTML = "<p style='color:red'>Erreur technique : Firebase manquant.</p>";
-            return;
+        setupHeaderMenu();
+
+        const yearSpan = document.getElementById('year');
+        if (yearSpan) {
+            yearSpan.innerText = new Date().getFullYear();
         }
 
-        const db = firebase.firestore();
+        // Gestion de la déconnexion
+        const logoutBtn = document.getElementById('mobile-logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                firebase.auth().signOut().then(() => {
+                    window.location.href = "login.html";
+                });
+            });
+        }
+
+        // --- AUTHENTIFICATION ---
         const auth = firebase.auth();
+
+        // --- 3. LOGIQUE PRODUIT ---
+        const db = firebase.firestore();
         const params = new URLSearchParams(window.location.search);
         const productId = params.get('id');
 
-        console.log("ID Produit demandé :", productId); // Debug
-
+        // 1. VÉRIFICATION ID
         if (!productId) {
-            document.getElementById('loading').innerHTML = "<p>Aucun produit spécifié.</p><a href='catalogue.html' class='btn btn-outline'>Retour au catalogue</a>";
+            document.getElementById('loading').innerHTML = "<p>Produit introuvable.</p>";
             return;
         }
 
-        // 1. CHARGER LE PRODUIT
-        db.collection('products').doc(productId).get()
-        .then(doc => {
+        // 2. RÉCUPÉRATION DU PRODUIT
+        db.collection('products').doc(productId).get().then(doc => {
             if (doc.exists) {
-                console.log("Produit trouvé :", doc.data()); // Debug
                 currentProduct = { id: doc.id, ...doc.data() };
                 renderProductPage(currentProduct);
-                
-                // Charger les infos complémentaires
-                if(currentProduct.category) loadSimilarProducts(currentProduct.category);
-                loadReviews(productId);
+                loadSimilarProducts(currentProduct.category);
             } else {
-                console.warn("Produit introuvable dans la base.");
-                document.getElementById('loading').innerHTML = "<p>Ce produit n'existe plus.</p><a href='catalogue.html' class='btn btn-outline'>Retour au catalogue</a>";
+                document.getElementById('loading').innerHTML = "<p>Ce produit n'existe plus.</p>";
             }
-        })
-        .catch(err => {
-            console.error("Erreur chargement produit :", err);
-            document.getElementById('loading').innerHTML = "<p style='color:red'>Erreur de chargement. Vérifiez votre connexion.</p>";
+        }).catch(err => {
+            console.error(err);
+            document.getElementById('loading').innerHTML = "<p>Erreur de chargement.</p>";
         });
 
-        // --- FONCTIONS D'AFFICHAGE ---
+        // 3. FONCTION D'AFFICHAGE
         function renderProductPage(p) {
-            // Cacher le loader
+            // Masquer loader, afficher contenu
             document.getElementById('loading').style.display = 'none';
-            // Afficher le contenu
             document.getElementById('product-content').style.display = 'block';
 
-            // Remplir les textes (avec sécurité si champ manquant)
-            document.getElementById('p-name').innerText = p.name || "Produit sans nom";
-            document.getElementById('p-price').innerText = new Intl.NumberFormat('fr-FR').format(p.price || 0) + " FCFA";
+            // Remplir les textes
+            document.getElementById('p-name').innerText = p.name;
+            document.getElementById('p-price').innerText = new Intl.NumberFormat('fr-FR').format(p.price) + " FCFA";
             document.getElementById('p-desc').innerText = p.description || "Aucune description disponible.";
             
             // Lien Vendeur
             const sellerName = p.shopName || "Boutique Partenaire";
             document.getElementById('p-seller-name').innerText = sellerName;
-            // Lien vers la boutique (si shopId existe)
-            const shopLink = document.getElementById('p-seller-link');
-            if(p.shopId) {
-                shopLink.href = `boutique.html?id=${p.shopId}`;
-            } else {
-                shopLink.style.pointerEvents = "none"; // Désactive le lien si pas d'ID
-                shopLink.style.color = "#999";
-            }
-            
-            // Afficher la note moyenne
-            updateRatingDisplay(p.rating, p.reviewCount);
+            document.getElementById('p-seller-link').href = `boutique.html?id=${p.shopId}`;
 
-            // Galerie Images
+            // Gestion Images (Galerie)
             const mainImg = document.getElementById('p-main-img');
             const thumbsContainer = document.getElementById('p-thumbs');
+            
+            // Image principale
             const primarySrc = p.image || 'assets/img/placeholder.png';
-            
-            // Image principale par défaut
             mainImg.src = primarySrc;
-            mainImg.onerror = function() { this.src = 'assets/img/placeholder.png'; }; // Fallback si erreur lien
 
-            // Vider les miniatures avant de remplir
-            thumbsContainer.innerHTML = "";
-
-            // Générer les miniatures
-            // On combine l'image principale et le tableau d'images secondaires
-            let allImages = [];
-            if(p.image) allImages.push(p.image);
-            if(p.images && Array.isArray(p.images)) allImages = [...allImages, ...p.images];
-            
-            // Dédoublonner
-            allImages = [...new Set(allImages)];
-
-            if (allImages.length > 0) {
-                allImages.forEach((src, index) => {
+            // Miniatures (si tableau images existe)
+            if (p.images && p.images.length > 0) {
+                // Ajouter l'image principale en premier
+                // p.images devrait contenir toutes les images uploadées
+                p.images.forEach((src, index) => {
                     const thumb = document.createElement('div');
                     thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
                     thumb.innerHTML = `<img src="${src}" onclick="switchImage('${src}', this)">`;
                     thumbsContainer.appendChild(thumb);
                 });
             } else {
+                // Si pas de galerie, juste une miniature
                 thumbsContainer.innerHTML = `<div class="thumb active"><img src="${primarySrc}"></div>`;
             }
 
-            // Mettre à jour le titre de l'onglet
+            // Mise à jour du titre de la page
             document.title = `${p.name} - Aurum`;
+            lucide.createIcons();
+        }
+
+        // 4. CHARGER PRODUITS SIMILAIRES
+        function loadSimilarProducts(category) {
+            if(!category) return;
             
-            // Initialiser les icônes
-            if(typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        function updateRatingDisplay(rating, count) {
-            const avgDisplay = document.getElementById('avg-rating-display');
-            const totalDisplay = document.getElementById('total-reviews-display');
-            
-            if (rating) {
-                avgDisplay.innerText = rating.toFixed(1);
-            } else {
-                avgDisplay.innerText = "-";
-            }
-            
-            if (count) {
-                totalDisplay.innerText = `(${count} avis)`;
-            } else {
-                 totalDisplay.innerText = `(0 avis)`;
-            }
-        }
-
-        // --- GESTION DES AVIS ---
-        const formContainer = document.getElementById('review-form-container');
-        const btnToggleReview = document.getElementById('btn-toggle-review');
-        
-        if(btnToggleReview) {
-            btnToggleReview.addEventListener('click', () => {
-                if(!auth.currentUser) {
-                    alert("Veuillez vous connecter pour laisser un avis.");
-                    // Redirection vers login avec retour
-                    window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
-                    return;
-                }
-                formContainer.style.display = formContainer.style.display === 'none' ? 'block' : 'none';
-            });
-        }
-
-        // Sélecteur d'étoiles
-        const starBtns = document.querySelectorAll('.star-picker-btn');
-        starBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                selectedRating = parseInt(e.target.dataset.value);
-                document.getElementById('review-rating').value = selectedRating;
-                starBtns.forEach((b, index) => {
-                    if(index < selectedRating) b.classList.add('active');
-                    else b.classList.remove('active');
-                });
-            });
-        });
-
-        // Soumission Avis
-        const reviewForm = document.getElementById('review-form');
-        if(reviewForm) {
-            reviewForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                if(selectedRating === 0) { alert("Veuillez sélectionner une note."); return; }
-                
-                const user = auth.currentUser;
-                const comment = document.getElementById('review-comment').value;
-                const submitBtn = e.target.querySelector('button[type="submit"]');
-
-                submitBtn.disabled = true;
-                submitBtn.innerText = "Envoi...";
-
-                db.collection('products').doc(productId).collection('reviews').add({
-                    userId: user.uid,
-                    userName: user.displayName || user.email.split('@')[0] || 'Client',
-                    rating: selectedRating,
-                    comment: comment,
-                    createdAt: new Date()
-                }).then(() => {
-                    e.target.reset();
-                    selectedRating = 0;
-                    starBtns.forEach(b => b.classList.remove('active'));
-                    formContainer.style.display = 'none';
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "Publier l'avis";
-                    
-                    // Mise à jour de la note globale
-                    updateProductRatingSummary(productId);
-                    alert("Merci pour votre avis !");
-
-                }).catch(err => {
-                    console.error(err);
-                    alert("Erreur lors de la publication.");
-                    submitBtn.disabled = false;
-                });
-            });
-        }
-
-        // Charger Avis
-        function loadReviews(pid) {
-            db.collection('products').doc(pid).collection('reviews')
-              .orderBy('createdAt', 'desc')
-              .onSnapshot(snap => {
-                  const list = document.getElementById('reviews-list');
-                  if(!list) return;
+            db.collection('products')
+              .where('category', '==', category)
+              .limit(4)
+              .get()
+              .then(snap => {
+                  const container = document.getElementById('similar-products');
+                  container.innerHTML = "";
                   
-                  list.innerHTML = "";
-                  if(snap.empty) {
-                      list.innerHTML = "<p style='color:#777; font-style:italic;'>Soyez le premier à donner votre avis !</p>";
-                      return;
-                  }
-
                   snap.forEach(doc => {
-                      const r = doc.data();
-                      // Conversion date Firestore -> JS
-                      let dateStr = "Récemment";
-                      if(r.createdAt && r.createdAt.seconds) {
-                          dateStr = new Date(r.createdAt.seconds * 1000).toLocaleDateString('fr-FR');
-                      }
-
-                      let starsHtml = "";
-                      for(let i=0; i<5; i++) { 
-                          starsHtml += (i < r.rating) ? '<span style="color:var(--gold)">★</span>' : '<span style="color:#ddd">★</span>'; 
-                      }
-
-                      list.innerHTML += `
-                        <div class="review-card">
-                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <div style="width:40px; height:40px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; text-transform:uppercase; color:#555;">
-                                        ${(r.userName || 'A').charAt(0)}
-                                    </div>
-                                    <div>
-                                        <div style="font-weight:600;">${r.userName}</div>
-                                        <div style="font-size:14px;">${starsHtml}</div>
-                                    </div>
+                      if(doc.id === currentProduct.id) return; // Ne pas afficher le produit actuel
+                      const p = doc.data();
+                      const price = new Intl.NumberFormat('fr-FR').format(p.price);
+                      
+                      container.innerHTML += `
+                        <div class="card product-card">
+                            <a href="product.html?id=${doc.id}" style="text-decoration:none; color:inherit;">
+                                <div class="card-img">
+                                    <img src="${p.image || 'assets/img/placeholder.png'}" style="width:100%; height:100%; object-fit:cover;">
                                 </div>
-                                <small style="color:#999;">${dateStr}</small>
+                            </a>
+                            <div class="card-body">
+                                <h4 style="font-size:14px; margin:0;">${p.name}</h4>
+                                <div style="font-weight:bold; color:var(--gold); margin-top:5px;">${price} FCFA</div>
                             </div>
-                            <p style="color:#555; font-size:14px; line-height:1.6;">${r.comment}</p>
                         </div>
                       `;
                   });
               });
         }
 
-        // Recalcul Note
-        function updateProductRatingSummary(pid) {
-            db.collection('products').doc(pid).collection('reviews').get().then(snap => {
-                let totalRating = 0;
-                let count = 0;
-                snap.forEach(doc => {
-                    totalRating += doc.data().rating;
-                    count++;
-                });
-
-                const newAverage = count > 0 ? (totalRating / count) : 0;
-
-                db.collection('products').doc(pid).update({
-                    rating: newAverage,
-                    reviewCount: count
-                }).then(() => {
-                   updateRatingDisplay(newAverage, count);
-                });
-            });
-        }
-
-        // Produits Similaires
-        function loadSimilarProducts(category) {
-            if(!category) return;
-            const container = document.getElementById('similar-products');
-            if(!container) return;
-
-            db.collection('products').where('category', '==', category).limit(4).get().then(snap => {
-                  container.innerHTML = "";
-                  let found = 0;
-                  snap.forEach(doc => {
-                      if(doc.id === currentProduct.id) return; // Exclure produit actuel
-                      found++;
-                      const p = doc.data();
-                      const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                      const img = p.image || 'assets/img/placeholder.png';
-                      
-                      container.innerHTML += `
-                        <div class="card product-card" style="cursor:pointer;" onclick="window.location.href='product.html?id=${doc.id}'">
-                            <div class="card-img">
-                                <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
-                            </div>
-                            <div class="card-body">
-                                <h4 style="font-size:14px; margin:0;">${p.name}</h4>
-                                <div style="font-weight:bold; color:var(--gold); margin-top:5px;">${price} FCFA</div>
-                            </div>
-                        </div>`;
-                  });
-                  
-                  if(found === 0) container.innerHTML = "<p>Aucun autre produit similaire.</p>";
-              });
-        }
-
-        // Ajout Panier
+        // 5. AJOUT AU PANIER
         const btnCart = document.getElementById('btn-add-cart');
         if(btnCart) {
             btnCart.addEventListener('click', () => {
-                // Utilise la fonction addToCart de app.js si dispo, sinon fallback simple
                 if(typeof addToCart === 'function') {
                     addToCart(currentProduct.id, currentQty);
+                    
+                    // Feedback visuel
+                    const originalText = btnCart.innerText;
+                    btnCart.innerText = "Ajouté !";
+                    btnCart.style.background = "#1F8A70"; // Vert succès
+                    setTimeout(() => {
+                        btnCart.innerText = originalText;
+                        btnCart.style.background = ""; // Retour au style CSS (Gold)
+                    }, 2000);
                 } else {
-                    // Fallback manuel si app.js n'est pas chargé
-                    let cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-                    const existing = cart.find(i => i.pid === currentProduct.id);
-                    if(existing) existing.qty += currentQty;
-                    else cart.push({ pid: currentProduct.id, qty: currentQty });
-                    localStorage.setItem('ac_cart', JSON.stringify(cart));
-                    alert("Ajouté au panier !");
+                    console.error("Fonction addToCart introuvable dans app.js");
                 }
-                
-                // Animation bouton
-                const originalText = btnCart.innerText;
-                btnCart.innerText = "Ajouté !";
-                btnCart.style.background = "#1F8A70";
-                setTimeout(() => { btnCart.innerText = originalText; btnCart.style.background = ""; }, 2000);
             });
+        }
+
+        // 6. AJOUT À LA WISHLIST
+        const btnWishlist = document.getElementById('btn-add-wishlist');
+        if(btnWishlist) {
+            // Mettre à jour l'état visuel du bouton
+            const updateWishlistButton = () => {
+                if(typeof isInWishlist === 'function' && currentProduct) {
+                    const inWishlist = isInWishlist(currentProduct.id);
+                    const icon = btnWishlist.querySelector('i');
+                    if(inWishlist) {
+                        btnWishlist.style.background = 'var(--aurum-red-unique)';
+                        btnWishlist.style.color = '#fff';
+                        btnWishlist.style.borderColor = 'var(--aurum-red-unique)';
+                        if(icon) icon.setAttribute('data-lucide', 'heart');
+                    } else {
+                        btnWishlist.style.background = '';
+                        btnWishlist.style.color = '';
+                        btnWishlist.style.borderColor = '';
+                        if(icon) icon.setAttribute('data-lucide', 'heart');
+                    }
+                    if(typeof lucide !== 'undefined') lucide.createIcons();
+                }
+            };
+
+            btnWishlist.addEventListener('click', () => {
+                if(typeof toggleWishlist === 'function' && currentProduct) {
+                    toggleWishlist(currentProduct.id);
+                    updateWishlistButton();
+                } else {
+                    console.error("Fonction toggleWishlist introuvable dans app.js");
+                }
+            });
+
+            // Initialiser l'état du bouton au chargement
+            updateWishlistButton();
         }
     });
 
-    // --- FONCTIONS GLOBALES (accessibles depuis le HTML) ---
+    // --- FONCTIONS GLOBALES ---
 
+    // Changer l'image principale au clic sur miniature
     window.switchImage = function(src, thumbElement) {
         document.getElementById('p-main-img').src = src;
+        // Gérer la classe active
         document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
-        thumbElement.classList.add('active');
+        thumbElement.parentElement.classList.add('active');
     };
 
+    // Gestion Quantité (+ / -)
     window.updateQty = function(change) {
         currentQty += change;
         if (currentQty < 1) currentQty = 1;
