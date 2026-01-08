@@ -142,8 +142,8 @@
 
   <div class="toast-container" id="toast-container"></div>
 
-  <script>
-    function setupHeaderMenu() {
+    <script>
+      function setupHeaderMenu() {
         const menuToggle = document.getElementById('menu-toggle');
         const closeBtn = document.getElementById('close-btn');
         const drawer = document.getElementById('mobile-drawer');
@@ -183,33 +183,38 @@
             yearSpan.innerText = new Date().getFullYear();
         }
 
-        // Gestion de la déconnexion
-        const logoutBtn = document.getElementById('mobile-logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                firebase.auth().signOut().then(() => {
-                    window.location.href = "login.html";
-                });
-            });
-        }
-
         // --- AUTHENTIFICATION ---
         const auth = firebase.auth();
-        const db = firebase.firestore();
-                logoutLink.style.display = 'none';
+        const authLink = document.getElementById('mobile-auth-link');
+        const logoutLink = document.getElementById('logout-btn-mobile');
+
+        // Gestion de l'état de connexion (Menu mobile)
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                if (authLink) {
+                    authLink.innerHTML = '<i data-lucide="user-check"></i> Mon Compte';
+                    authLink.href = 'profile.html';
+                }
+                if (logoutLink) logoutLink.style.display = 'flex';
+            } else {
+                if (authLink) {
+                    authLink.innerHTML = '<i data-lucide="user"></i> Connexion';
+                    authLink.href = 'login.html';
+                }
+                if (logoutLink) logoutLink.style.display = 'none';
             }
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
 
+        // Gestion de la déconnexion (Menu mobile)
         if (logoutLink) {
             logoutLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                auth.signOut().then(() => window.location.reload());
+                auth.signOut().then(() => window.location.href = "login.html");
             });
         }
 
-        // --- 3. LOGIQUE CONNEXION ---
+        // --- LOGIQUE CONNEXION (Formulaire) ---
         const form = document.getElementById('form-login');
         const btn = document.getElementById('btn-submit');
 
@@ -226,13 +231,24 @@
 
                 auth.signInWithEmailAndPassword(email, pass)
                     .then((userCredential) => {
-                        alert("Bienvenue !");
+                        // Connexion réussie
+                        console.log("Connecté :", userCredential.user);
+                        
+                        // Redirection selon le rôle (optionnel, sinon index)
+                        // Ici on redirige simplement vers l'accueil
                         window.location.href = "index.html";
                     })
                     .catch((error) => {
-                        let msg = "Erreur de connexion.";
-                        if (error.code === 'auth/user-not-found') msg = "Compte introuvable.";
-                        if (error.code === 'auth/wrong-password') msg = "Mot de passe incorrect.";
+                        console.error("Erreur connexion:", error);
+                        let msg = "Erreur de connexion (" + error.code + ")";
+                        
+                        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
+                            msg = "Compte introuvable. Vérifiez votre email.";
+                        } else if (error.code === 'auth/wrong-password') {
+                            msg = "Mot de passe incorrect.";
+                        } else if (error.code === 'auth/too-many-requests') {
+                            msg = "Trop de tentatives. Réessayez plus tard.";
+                        }
                         
                         alert("⚠️ " + msg);
                         
@@ -242,8 +258,10 @@
             });
         }
         
-        lucide.createIcons();
+        if(typeof lucide !== 'undefined') lucide.createIcons();
     });
-  </script>
+
+     </script>
 </body>
 </html>
+  
