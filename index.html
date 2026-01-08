@@ -61,6 +61,9 @@
           <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
           <a href="profile.html" class="drawer-link"><i data-lucide="user"></i> Mon Profil</a>
           <div class="drawer-divider"></div>
+        <a href="login.html" id="mobile-login-btn" class="drawer-link">
+          <i data-lucide="log-in"></i> Connexion
+        </a>
           <a href="#" id="mobile-logout-btn" class="drawer-link" style="color: #ef4444;">
               <i data-lucide="log-out"></i> Déconnexion
           </a>
@@ -287,12 +290,15 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script>
+   <script>
+    // Fonctionnalité du menu mobile
     function setupHeaderMenu() {
         const menuToggle = document.getElementById('menu-toggle');
         const closeBtn = document.getElementById('close-btn');
         const drawer = document.getElementById('mobile-drawer');
         const overlay = document.getElementById('menu-overlay');
 
+        // Fonction pour basculer le menu
         const toggleMenu = () => {
             if (!drawer || !overlay) return;
             drawer.classList.toggle('active');
@@ -300,10 +306,12 @@
             document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
         };
 
+        // Écouteurs d'événements
         if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
         if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
         if (overlay) overlay.addEventListener('click', toggleMenu);
 
+        // Mettre à jour le badge du panier
         const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
         const badge = document.getElementById('cart-badge');
         if (badge) {
@@ -317,6 +325,7 @@
         }
     }
 
+    // Initialisation après le chargement du DOM
     document.addEventListener('DOMContentLoaded', () => {
         const yearSpan = document.getElementById('year');
         if (yearSpan) {
@@ -324,33 +333,59 @@
         }
         setupHeaderMenu();
 
-        // Gestion de la déconnexion
-        const logoutBtn = document.getElementById('mobile-logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                firebase.auth().signOut().then(() => {
-                    window.location.href = "login.html";
-                });
-            });
-        }
-
-        // --- LOGIQUE FIREBASE ---
-        if(typeof firebase !== 'undefined') {
+        // --- LOGIQUE FIREBASE & AUTHENTIFICATION ---
+        if (typeof firebase !== 'undefined') {
             const db = firebase.firestore();
             const auth = firebase.auth();
+
+            // Gestion dynamique du menu (Connexion / Déconnexion)
+            // On suppose que vous avez ajouté un lien avec l'ID 'mobile-login-btn' dans votre HTML
+            // Si ce n'est pas fait, ajoutez <a href="login.html" id="mobile-login-btn" ...>Connexion</a> dans la nav
+            
+            const loginBtn = document.getElementById('mobile-login-btn'); // À créer si absent
+            const logoutBtn = document.getElementById('mobile-logout-btn');
+            const profileLink = document.querySelector('a[href="profile.html"]'); // Sélectionne le lien Profil
+
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // Utilisateur connecté
+                    console.log("Utilisateur connecté :", user.email);
+                    if (logoutBtn) logoutBtn.style.display = 'flex'; // Afficher Déconnexion
+                    if (loginBtn) loginBtn.style.display = 'none';   // Cacher Connexion
+                    if (profileLink) profileLink.style.display = 'flex'; // Afficher Profil
+                } else {
+                    // Utilisateur déconnecté
+                    console.log("Utilisateur déconnecté");
+                    if (logoutBtn) logoutBtn.style.display = 'none'; // Cacher Déconnexion
+                    if (loginBtn) loginBtn.style.display = 'flex';   // Afficher Connexion
+                    if (profileLink) profileLink.style.display = 'none'; // Cacher Profil (optionnel)
+                }
+            });
+
+            // Gestion du clic sur Déconnexion
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.signOut().then(() => {
+                        alert("Vous avez été déconnecté.");
+                        window.location.reload(); // Recharger la page pour mettre à jour l'état
+                    }).catch((error) => {
+                        console.error("Erreur déconnexion:", error);
+                    });
+                });
+            }
 
             // Charger les CATÉGORIES
             db.collection('categories').get().then(snap => {
                 const box = document.getElementById('category-carousel');
-                if(!snap.empty) {
+                if (!snap.empty) {
                     box.innerHTML = "";
                     snap.forEach(doc => {
                         const d = doc.data();
                         box.innerHTML += `
                             <a href="catalogue.html?cat=${d.name}" class="category-card" style="min-width:100px; text-align:center; text-decoration:none; color:black;">
                                 <div class="category-card-icon" style="width:70px; height:70px; background:#f5f5f5; border-radius:50%; display:grid; place-items:center; margin:0 auto 10px;">
-                                    <i data-lucide="${d.icon||'tag'}"></i>
+                                    <i data-lucide="${d.icon || 'tag'}"></i>
                                 </div>
                                 <span class="category-card-label" style="font-weight:600; font-size:13px;">${d.name}</span>
                             </a>`;
@@ -362,12 +397,12 @@
             // C. Charger les NOUVEAUTÉS
             db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
                 const grid = document.getElementById('home-new');
-                if(!snap.empty) {
+                if (!snap.empty) {
                     grid.innerHTML = "";
                     snap.forEach(doc => {
                         const p = doc.data();
                         const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                        
+
                         grid.innerHTML += `
                             <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
                                 <a href="product.html?id=${doc.id}">
@@ -390,9 +425,10 @@
                 } else { grid.innerHTML = "<p>Aucun produit récent.</p>"; }
             });
         }
-        
-                if(typeof lucide !== 'undefined') lucide.createIcons();
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     });
+</script>
   </script>
 </body>
 </html>
