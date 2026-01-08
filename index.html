@@ -289,7 +289,7 @@
 
   <div class="toast-container" id="toast-container"></div>
 
- <script>
+  <script>
     // --- 1. FONCTIONNALITÉS UI (Menu & Panier) ---
     function setupHeaderMenu() {
         const menuToggle = document.getElementById('menu-toggle');
@@ -313,7 +313,7 @@
         const badge = document.getElementById('cart-badge');
         if (badge) {
             const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
-            if (count > 0) {
+            if(count > 0) {
                 badge.innerText = count;
                 badge.style.display = 'flex';
             } else {
@@ -322,7 +322,7 @@
         }
     }
 
-    // --- 2. INITIALISATION GÉNÉRALE ---
+    // --- 2. INITIALISATION ---
     document.addEventListener('DOMContentLoaded', () => {
         // Date Copyright
         const yearSpan = document.getElementById('year');
@@ -330,127 +330,98 @@
         
         setupHeaderMenu();
 
-        // Gestion Déconnexion
-        const logoutBtn = document.getElementById('mobile-logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if(typeof firebase !== 'undefined') {
-                    firebase.auth().signOut().then(() => window.location.href = "login.html");
+        // --- 3. LOGIQUE D'AUTHENTIFICATION ---
+        if(typeof firebase !== 'undefined') {
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            // Éléments du DOM
+            const loginBtn = document.getElementById('mobile-login-btn');
+            const logoutBtn = document.getElementById('mobile-logout-btn');
+            const profileLink = document.getElementById('mobile-profile-link');
+
+            // Surveiller l'état de connexion
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // UTILISATEUR CONNECTÉ
+                    console.log("Connecté :", user.email);
+                    if(loginBtn) loginBtn.style.display = 'none';        // Cacher Connexion
+                    if(logoutBtn) logoutBtn.style.display = 'flex';      // Afficher Déconnexion
+                    if(profileLink) profileLink.style.display = 'flex';  // Afficher Profil
+                } else {
+                    // UTILISATEUR DÉCONNECTÉ
+                    console.log("Déconnecté");
+                    if(loginBtn) loginBtn.style.display = 'flex';        // Afficher Connexion
+                    if(logoutBtn) logoutBtn.style.display = 'none';      // Cacher Déconnexion
+                    if(profileLink) profileLink.style.display = 'none';  // Cacher Profil
+                }
+            });
+
+            // Action de Déconnexion
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.signOut().then(() => {
+                        // On recharge la page pour rafraîchir l'état visuel
+                        window.location.reload(); 
+                    });
+                });
+            }
+
+            // --- 4. CHARGEMENT DES DONNÉES (Publique) ---
+            // Note : Ces données s'affichent pour tout le monde, même déconnecté. C'est normal.
+            
+            // Catégories
+            db.collection('categories').get().then(snap => {
+                const box = document.getElementById('category-carousel');
+                if(!snap.empty && box) {
+                    box.innerHTML = "";
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        box.innerHTML += `
+                            <a href="catalogue.html?cat=${d.name}" class="category-card" style="min-width:100px; text-align:center; text-decoration:none; color:black;">
+                                <div class="category-card-icon" style="width:70px; height:70px; background:#f5f5f5; border-radius:50%; display:grid; place-items:center; margin:0 auto 10px;">
+                                    <i data-lucide="${d.icon||'tag'}"></i>
+                                </div>
+                                <span class="category-card-label" style="font-weight:600; font-size:13px;">${d.name}</span>
+                            </a>`;
+                    });
+                    lucide.createIcons();
+                }
+            });
+
+            // Nouveautés
+            db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
+                const grid = document.getElementById('home-new');
+                if(!snap.empty && grid) {
+                    grid.innerHTML = "";
+                    snap.forEach(doc => {
+                        const p = doc.data();
+                        const price = new Intl.NumberFormat('fr-FR').format(p.price);
+                        grid.innerHTML += `
+                            <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
+                                <a href="product.html?id=${doc.id}">
+                                    <div style="height:250px; overflow:hidden;">
+                                        <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" style="width:100%; height:100%; object-fit:cover;">
+                                    </div>
+                                </a>
+                                <div style="padding:15px;">
+                                    <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px;">
+                                        <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
+                                    </div>
+                                    <h3 style="font-size:16px; margin:5px 0;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
+                                    <div style="font-weight:bold; color:#D4AF37; margin-top:5px;">${price} FCFA</div>
+                                </div>
+                            </div>`;
+                    });
+                    lucide.createIcons();
                 }
             });
         }
-
-        // --- 3. CHARGEMENT DONNÉES FIREBASE ---
-        if(typeof firebase !== 'undefined') {
-            const db = firebase.firestore();
-            
-            // A. CHARGER CATÉGORIES
-            const catBox = document.getElementById('category-carousel');
-            db.collection('categories').get()
-                .then(snap => {
-                    if(!snap.empty) {
-                        catBox.innerHTML = "";
-                        snap.forEach(doc => {
-                            const d = doc.data();
-                            catBox.innerHTML += `
-                                <a href="catalogue.html?cat=${d.name}" class="category-card" style="min-width:100px; text-align:center; text-decoration:none; color:black;">
-                                    <div class="category-card-icon" style="width:70px; height:70px; background:#f5f5f5; border-radius:50%; display:grid; place-items:center; margin:0 auto 10px;">
-                                        <i data-lucide="${d.icon||'tag'}"></i>
-                                    </div>
-                                    <span class="category-card-label" style="font-weight:600; font-size:13px;">${d.name}</span>
-                                </a>`;
-                        });
-                        lucide.createIcons();
-                    } else {
-                        catBox.innerHTML = "<p>Aucune catégorie disponible.</p>";
-                    }
-                })
-                .catch(err => {
-                    console.error("Erreur Catégories:", err);
-                    catBox.innerHTML = "<p style='color:red'>Erreur de chargement.</p>";
-                });
-
-            // B. CHARGER NOUVEAUTÉS
-            const newGrid = document.getElementById('home-new');
-            db.collection('products').orderBy('createdAt', 'desc').limit(8).get()
-                .then(snap => {
-                    if(!snap.empty) {
-                        newGrid.innerHTML = "";
-                        snap.forEach(doc => {
-                            const p = doc.data();
-                            const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                            const img = p.image || 'assets/img/placeholder-product-1.svg';
-                            
-                            newGrid.innerHTML += `
-                                <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
-                                    <a href="product.html?id=${doc.id}">
-                                        <div style="height:250px; overflow:hidden;">
-                                            <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
-                                        </div>
-                                    </a>
-                                    <div style="padding:15px;">
-                                        <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px;">
-                                            <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
-                                        </div>
-                                        <h3 style="font-size:16px; margin:5px 0;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
-                                        <div style="font-weight:bold; color:#D4AF37; margin-top:5px;">${price} FCFA</div>
-                                    </div>
-                                </div>`;
-                        });
-                        lucide.createIcons();
-                    } else {
-                        newGrid.innerHTML = "<p>Aucun produit pour le moment.</p>";
-                    }
-                })
-                .catch(err => {
-                    console.error("Erreur Nouveautés:", err);
-                    newGrid.innerHTML = "<p style='color:red'>Impossible de charger les produits.</p>";
-                });
-
-            // C. CHARGER PROMOTIONS (Code ajouté)
-            const promoGrid = document.getElementById('home-promos');
-            // Note: On prend juste 4 produits au hasard ou triés par prix pour l'instant
-            db.collection('products').orderBy('price', 'asc').limit(4).get()
-                .then(snap => {
-                    if(!snap.empty) {
-                        promoGrid.innerHTML = "";
-                        snap.forEach(doc => {
-                            const p = doc.data();
-                            const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                            const img = p.image || 'assets/img/placeholder-product-1.svg';
-
-                            promoGrid.innerHTML += `
-                                <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden; position:relative;">
-                                    <span style="position:absolute; top:10px; left:10px; background:red; color:white; padding:2px 8px; font-size:10px; border-radius:4px; font-weight:bold;">HOT</span>
-                                    <a href="product.html?id=${doc.id}">
-                                        <div style="height:250px; overflow:hidden;">
-                                            <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
-                                        </div>
-                                    </a>
-                                    <div style="padding:15px;">
-                                        <h3 style="font-size:16px; margin:5px 0;">${p.name}</h3>
-                                        <div style="font-weight:bold; color:#D4AF37;">${price} FCFA</div>
-                                    </div>
-                                </div>`;
-                        });
-                    } else {
-                        promoGrid.innerHTML = "<p>Aucune promotion.</p>";
-                    }
-                })
-                .catch(err => {
-                    console.error("Erreur Promos:", err); 
-                    // On ne bloque pas l'affichage si cette section échoue
-                    promoGrid.innerHTML = ""; 
-                });
-
-        } else {
-            console.error("Firebase n'est pas chargé ! Vérifiez votre connexion.");
-        }
         
-        // Initialisation icônes finale (sécurité)
-        if(typeof lucide !== 'undefined') setTimeout(() => lucide.createIcons(), 1000);
+        if(typeof lucide !== 'undefined') lucide.createIcons();
     });
-</script>
+ </script>
+
 </body>
 </html>
