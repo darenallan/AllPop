@@ -1,17 +1,21 @@
 /* =========================================================
-   AURUM - APPLICATION PRINCIPALE (APP.JS)
-   Gère : Recherche, Menu, Panier, Wishlist, Catalogue
+   AURUM - APP.JS (VERSION OPTIMISÉE)
+   Code GLOBAL uniquement : Menu, Panier, Wishlist, Auth UI
    ========================================================= */
 
-// --- 1. VARIABLES GLOBALES & UTILITAIRES ---
-let currentUser = JSON.parse(localStorage.getItem('ac_currentUser') || 'null');
-
-// Récupération des données locales (pour le panier/wishlist invité)
+// --- VARIABLES GLOBALES ---
+let currentUser = null;
 const Cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
 const Wishlist = JSON.parse(localStorage.getItem('ac_wishlist') || '[]');
 
-function persistCart() { localStorage.setItem('ac_cart', JSON.stringify(Cart)); updateCartBadge(); }
-function persistWishlist() { localStorage.setItem('ac_wishlist', JSON.stringify(Wishlist)); }
+function persistCart() { 
+    localStorage.setItem('ac_cart', JSON.stringify(Cart)); 
+    updateCartBadge(); 
+}
+
+function persistWishlist() { 
+    localStorage.setItem('ac_wishlist', JSON.stringify(Wishlist)); 
+}
 
 function showToast(msg, type = 'info') {
     const container = document.getElementById('toast-container');
@@ -19,14 +23,11 @@ function showToast(msg, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.innerText = msg;
-    toast.style.background = type === 'success' ? '#1F8A70' : '#333';
-    toast.style.color = '#fff';
-    toast.style.padding = '12px 20px';
-    toast.style.borderRadius = '8px';
-    toast.style.marginTop = '10px';
-    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-    toast.style.animation = 'fadeIn 0.3s forwards';
-    
+    toast.style.cssText = `
+        background: ${type === 'success' ? '#1F8A70' : '#333'};
+        color: #fff; padding: 12px 20px; border-radius: 8px;
+        margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    `;
     container.appendChild(toast);
     setTimeout(() => {
         toast.style.opacity = '0';
@@ -34,101 +35,70 @@ function showToast(msg, type = 'info') {
     }, 3000);
 }
 
-// --- 2. INITIALISATION DOM ---
-document.addEventListener('DOMContentLoaded', () => {
-    // A. MENU BURGER & DRAWER (Mobile)
+// --- MENU BURGER GLOBAL ---
+function setupMobileMenu() {
     const drawer = document.getElementById('mobile-drawer');
     const overlay = document.getElementById('menu-overlay');
-    // Supporter à la fois #burger-btn et #menu-toggle selon les pages
-    const burgerBtn = document.getElementById('burger-btn') || document.getElementById('menu-toggle');
+    const menuToggle = document.getElementById('menu-toggle');
     const closeBtn = document.getElementById('close-btn');
 
-    function openDrawer(){
-        if(!drawer || !overlay) return;
-        drawer.classList.add('active');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-    function closeDrawer(){
-        if(!drawer || !overlay) return;
+    function closeDrawer() {
+        if (!drawer || !overlay) return;
         drawer.classList.remove('active');
         overlay.classList.remove('active');
         document.body.style.overflow = '';
     }
-    function toggleDrawer(){
-        if(!drawer || !overlay) return;
-        if(drawer.classList.contains('active')) closeDrawer(); else openDrawer();
+
+    function toggleDrawer() {
+        if (!drawer || !overlay) return;
+        const isActive = drawer.classList.contains('active');
+        if (isActive) {
+            closeDrawer();
+        } else {
+            drawer.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
     }
 
-    // Toujours partir d'un état propre au chargement
-    closeDrawer();
+    closeDrawer(); // Reset initial
 
-    // Ne pas attacher de gestionnaires ici pour éviter les doublons
-    // avec les scripts inline des pages (setupHeaderMenu()).
-    // Les pages gèrent l'ouverture/fermeture; on garde juste ESC + reset.
-    // Fermeture via ESC
-    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDrawer(); });
+    if (menuToggle) menuToggle.addEventListener('click', toggleDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if (overlay) overlay.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+}
 
-    // B. AUTHENTIFICATION UI (Adapter le menu si connecté)
-    if(typeof firebase !== 'undefined') {
-        firebase.auth().onAuthStateChanged((user) => {
-            currentUser = user;
-            const guestLinks = document.getElementById('auth-guest');
-            const userLinks = document.getElementById('auth-user');
-            const desktopAuth = document.getElementById('desktop-auth-link');
+// --- AUTH UI GLOBAL ---
+function setupAuthUI() {
+    if (typeof firebase === 'undefined') return;
+    
+    firebase.auth().onAuthStateChanged((user) => {
+        currentUser = user;
+        const mobileLogin = document.getElementById('mobile-login-btn');
+        const mobileLogout = document.getElementById('mobile-logout-btn');
 
-            if (user) {
-                // Connecté
-                if(guestLinks) guestLinks.style.display = 'none';
-                if(userLinks) userLinks.style.display = 'block';
-                if(desktopAuth) {
-                    desktopAuth.innerText = "Mon Compte";
-                    desktopAuth.href = "profile.html"; // ou seller.html si vendeur
-                }
-                
-                // Bouton Déconnexion
-                const logoutBtn = document.getElementById('logout-btn');
-                if(logoutBtn) {
-                    logoutBtn.addEventListener('click', () => {
-                        firebase.auth().signOut().then(() => window.location.reload());
-                    });
-                }
-            } else {
-                // Visiteur
-                if(guestLinks) guestLinks.style.display = 'block';
-                if(userLinks) userLinks.style.display = 'none';
-                if(desktopAuth) {
-                    desktopAuth.innerText = "Connexion";
-                    desktopAuth.href = "login.html";
-                }
-            }
+        if (user) {
+            if (mobileLogin) mobileLogin.style.display = 'none';
+            if (mobileLogout) mobileLogout.style.display = 'block';
+        } else {
+            if (mobileLogin) mobileLogin.style.display = 'block';
+            if (mobileLogout) mobileLogout.style.display = 'none';
+        }
+    });
+
+    const logoutBtn = document.getElementById('mobile-logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'login.html';
+            });
         });
     }
+}
 
-    // C. RECHERCHE (Ton code original préservé)
-    const searchBtn = document.querySelector('[data-search-btn]');
-    // Si tu as un bouton loupe spécifique dans le header pour ouvrir la recherche
-    // Sinon, la logique est gérée par catalogue.html
-    
-    // D. CATALOGUE & ACCUEIL (Init)
-    if(document.getElementById('catalogue-list')) {
-        initCatalogue(); // Charge les filtres
-        initLoadMore();  // Charge la pagination
-    }
-    
-    // E. MISES À JOUR BADGES
-    updateCartBadge();
-    
-    // F. NEWSLETTER
-    setupNewsletter();
-
-    // G. ICÔNES
-    if(typeof lucide !== 'undefined') lucide.createIcons();
-});
-
-
-// --- 3. GESTION PANIER & WISHLIST ---
-
+// --- PANIER & WISHLIST ---
 function updateCartBadge() {
     const badge = document.getElementById('cart-badge');
     if (!badge) return;
@@ -173,71 +143,28 @@ function isInWishlist(pid) {
     return Wishlist.includes(pid);
 }
 
+function clearCart() {
+    Cart.length = 0;
+    persistCart();
+}
+
 function clearWishlist() {
-    Wishlist.length = 0; // Vider le tableau
+    Wishlist.length = 0;
     persistWishlist();
-    showToast('Liste de souhaits vidée', 'info');
+}
+
+function getCartItems() {
+    return Cart;
 }
 
 function getWishlistItems() {
-    return Wishlist.map(pid => ({ id: pid }));
+    return Wishlist;
 }
 
-
-// --- 4. CATALOGUE & FILTRES (Ton code adapté) ---
-
-function initCatalogue() {
-    // Cette fonction gère l'affichage des options de filtres
-    // Note : Le rendu des produits est géré par le script dans catalogue.html (Firebase)
-    // Ici on gère juste l'interface UI des filtres
-    
-    const fc = document.getElementById('filter-category');
-    
-    // Affichage conditionnel des sous-filtres
-    if(fc) {
-        fc.addEventListener('change', () => {
-            const val = fc.value;
-            // Logique pour afficher/masquer les filtres spécifiques (Tech, Beauté...)
-            // Reprise de ta logique existante :
-            document.querySelectorAll('.beauty-filter, .tech-filter, .home-filter').forEach(el => el.classList.add('hidden'));
-            
-            if(val === 'Beauté, Hygiène & Bien-être') document.querySelectorAll('.beauty-filter').forEach(el => el.classList.remove('hidden'));
-            if(val === 'Électronique') document.querySelectorAll('.tech-filter').forEach(el => el.classList.remove('hidden'));
-            // ... autres conditions
-        });
-    }
-}
-
-// --- 5. LOAD MORE (Pagination Visuelle) ---
-function initLoadMore() {
-    const btn = document.getElementById('load-more-btn');
-    const container = document.getElementById('catalogue-list'); // ou 'catalogue-grid' selon ton HTML
-    
-    if(btn && container) {
-        btn.addEventListener('click', () => {
-            // Ici, idéalement on chargerait plus de produits depuis Firebase
-            // Pour l'instant, on peut juste simuler ou afficher les éléments cachés
-            const hiddenItems = container.querySelectorAll('.hidden-item');
-            hiddenItems.forEach((el, index) => {
-                if(index < 4) el.classList.remove('hidden-item'); // Affiche 4 de plus
-            });
-            if(container.querySelectorAll('.hidden-item').length === 0) btn.style.display = 'none';
-        });
-    }
-}
-
-// --- 6. NEWSLETTER ---
-function setupNewsletter() {
-    const form = document.querySelector('.newsletter-form');
-    if(form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = form.querySelector('input').value;
-            if(email) {
-                // Sauvegarde simple (ou Firebase si tu veux)
-                showToast("Merci pour votre inscription !", "success");
-                form.reset();
-            }
-        });
-    }
-}
+// --- INIT GLOBAL ---
+document.addEventListener('DOMContentLoaded', () => {
+    setupMobileMenu();
+    setupAuthUI();
+    updateCartBadge();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+});
