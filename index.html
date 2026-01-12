@@ -16,6 +16,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
   <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
   <meta name="description" content="Aurum est la première marketplace premium du Burkina Faso. Achetez et vendez des produits de qualité en toute confiance.">
 <meta property="og:title" content="Aurum - L'Excellence à Votre Portée">
 <meta property="og:description" content="La marketplace de référence au Burkina Faso. Mode, Électronique, Déco.">
@@ -61,8 +62,8 @@
           <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
           <a href="profile.html" class="drawer-link"><i data-lucide="user"></i> Mon Profil</a>
           <div class="drawer-divider"></div>
-        <a href="login.html" id="mobile-login-btn" class="drawer-link">
-          <i data-lucide="log-in"></i> Connexion
+          <a href="login.html" id="mobile-login-btn" class="drawer-link">
+            <i data-lucide="log-in"></i> Connexion
         </a>
           <a href="#" id="mobile-logout-btn" class="drawer-link" style="color: #ef4444;">
               <i data-lucide="log-out"></i> Déconnexion
@@ -73,7 +74,7 @@
   
     <main>
         <!-- Hero full-width, responsive row -->
-       <section class="hero">
+        <section class="hero">
             <div style="flex:1;">
                 <h1 style="font-family:'Playfair Display', serif; font-size:60px; line-height:1.05; margin-bottom:18px;">L'Excellence à Votre Portée</h1>
                 <p style="color:#d4d7de; font-size:18px; line-height:1.8; margin-bottom:26px;">Le meilleur du style Burkinabè, livré chez vous.</p>
@@ -86,23 +87,8 @@
                 <div style="width:100%; max-width:700px; aspect-ratio: 16 / 9; border-radius:18px; background:#0f0f0f url('assets/img/hero.png') center/cover no-repeat; box-shadow:0 24px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.05);"></div>
             </div>
         </section>
-        <!--<section class="hero" style="background:#0c101a; color:#fff; padding:64px 0;">
-            <div style="max-width:1280px; margin:0 auto; padding:0 20px; display:flex; flex-wrap:wrap; align-items:center; gap:32px;">
-                <div style="flex:1 1 520px; min-width:320px;">
-                    <h1 style="font-family:'Playfair Display', serif; font-size:60px; line-height:1.05; margin-bottom:18px;">L'Excellence à Votre Portée</h1>
-                    <p style="color:#d4d7de; font-size:18px; line-height:1.8; margin-bottom:26px;">Le meilleur du style Burkinabè, livré chez vous.</p>
-                    <div style="display:flex; gap:14px; flex-wrap:wrap;">
-                        <a href="catalogue.html" class="btn btn-gold" style="min-width:190px; text-align:center;">Découvrir la collection</a>
-                        <a href="seller-onboarding.html" class="btn" style="border:1px solid rgba(255,255,255,0.25); color:#fff; min-width:190px; text-align:center;">Devenir vendeur</a>
-                    </div>
-                </div>
-                <div style="flex:1 1 520px; min-width:320px; display:flex; justify-content:flex-end;">
-                    <div style="width:100%; max-width:700px; aspect-ratio: 16 / 9; border-radius:18px; background:#0f0f0f url('assets/img/hero.png') center/cover no-repeat; box-shadow:0 24px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.05);"></div>
-                </div>
-            </div>
-        </section>-->
 
-    <section class="section container">
+    <section class="section container category-section">
       <h2 class="section-title">Nos Univers</h2>
       <div class="category-carousel-wrapper">
         <div class="category-carousel" id="category-carousel" style="display:flex; gap:15px; overflow-x:auto; padding-bottom:15px;">
@@ -130,7 +116,7 @@
                 <i data-lucide="truck" style="color: var(--gold); width: 30px; height: 30px;"></i>
             </div>
             <h3 style="font-size: 18px; margin-bottom: 10px;">Livraison Rapide</h3>
-            <p style="font-size: 14px; color: #777;">Livraison express partout à Ouagadougou et expédition en province.</p>
+            <p style="font-size: 14px; color: #777;">Livraison express partout à Ouagadougou et expédition en province. Pour tout les Vendeur locaux</p>
         </div>
 
         <div style="text-align: center; padding: 20px;">
@@ -157,20 +143,19 @@
           </div>
     </section>
     <section class="section container" style="margin-top: 60px; margin-bottom: 60px;">
-    <div style="background: #000; color: #fff; border-radius: 20px; padding: 60px 40px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 40px;">
-        <div style="flex: 1; min-width: 300px;">
-            <span style="color: var(--gold); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 12px;">Business</span>
-            <h2 style="font-family: 'Playfair Display', serif; font-size: 36px; margin: 15px 0; color: var(--gold);">Vous êtes commerçant ?</h2>
-            <p style="color: var(--gold); font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+    <div style="background: #000; color: #fff; border-radius: 20px; padding: 60px 40px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 40px;" class="business-block">
+        <div style="flex: 1; min-width: 300px;" class="business-text">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 36px; margin: 15px 0; color: var(--gold);" class="business-title">Vous êtes commerçant ?</h2>
+            <p style="color: var(--gold); font-size: 16px; line-height: 1.6; margin-bottom: 30px;" class="business-desc">
                 Ne laissez pas votre stock dormir. Rejoignez Aurum et touchez des milliers de clients premium dès aujourd'hui. 
                 Une boutique en ligne clé en main, sans frais cachés.
             </p>
-            <div style="display: flex; gap: 15px;">
+            <div style="display: flex; gap: 15px;" class="business-buttons">
                 <a href="seller.html" class="btn btn-gold">Créer ma boutique</a>
                 <a href="contact.html" style="padding: 12px 25px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: #fff; text-decoration: none; transition: 0.3s;">En savoir plus</a>
             </div>
         </div>
-        <div style="flex: 1; min-width: 300px; display: flex; justify-content: center;">
+        <!--<div style="flex: 1; min-width: 300px; display: flex; justify-content: center;" class="business-card">
             <div style="background: #1a1a1a; padding: 20px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #333;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                     <div style="width: 40px; height: 40px; background: #333; border-radius: 50%;"></div>
@@ -186,7 +171,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div>-->
     </div>
 </section>
 
@@ -290,114 +275,43 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script>
-    // --- 1. FONCTIONNALITÉS UI (Menu & Panier) ---
-    function setupHeaderMenu() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const closeBtn = document.getElementById('close-btn');
-        const drawer = document.getElementById('mobile-drawer');
-        const overlay = document.getElementById('menu-overlay');
-
-        const toggleMenu = () => {
-            if (!drawer || !overlay) return;
-            drawer.classList.toggle('active');
-            overlay.classList.toggle('active');
-            document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
-        };
-
-        if(menuToggle) menuToggle.addEventListener('click', toggleMenu);
-        if(closeBtn) closeBtn.addEventListener('click', toggleMenu);
-        if(overlay) overlay.addEventListener('click', toggleMenu);
-
-        // Badge Panier
-        const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-        const badge = document.getElementById('cart-badge');
-        if (badge) {
-            const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
-            if(count > 0) {
-                badge.innerText = count;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-    }
-
-    // --- 2. INITIALISATION ---
+    // === PAGE HOME - LOGIQUE SPÉCIFIQUE ===
     document.addEventListener('DOMContentLoaded', () => {
-        // Date Copyright
         const yearSpan = document.getElementById('year');
         if (yearSpan) yearSpan.innerText = new Date().getFullYear();
-        
-        setupHeaderMenu();
 
-        // --- 3. LOGIQUE D'AUTHENTIFICATION ---
+        // FIREBASE - Chargement dynamique
         if(typeof firebase !== 'undefined') {
-            const auth = firebase.auth();
             const db = firebase.firestore();
 
-            // Éléments du DOM
-            const loginBtn = document.getElementById('mobile-login-btn');
-            const logoutBtn = document.getElementById('mobile-logout-btn');
-            const profileLink = document.getElementById('mobile-profile-link');
-
-            // Surveiller l'état de connexion
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    // UTILISATEUR CONNECTÉ
-                    console.log("Connecté :", user.email);
-                    if(loginBtn) loginBtn.style.display = 'none';        // Cacher Connexion
-                    if(logoutBtn) logoutBtn.style.display = 'flex';      // Afficher Déconnexion
-                    if(profileLink) profileLink.style.display = 'flex';  // Afficher Profil
-                } else {
-                    // UTILISATEUR DÉCONNECTÉ
-                    console.log("Déconnecté");
-                    if(loginBtn) loginBtn.style.display = 'flex';        // Afficher Connexion
-                    if(logoutBtn) logoutBtn.style.display = 'none';      // Cacher Déconnexion
-                    if(profileLink) profileLink.style.display = 'none';  // Cacher Profil
-                }
-            });
-
-            // Action de Déconnexion
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    auth.signOut().then(() => {
-                        // On recharge la page pour rafraîchir l'état visuel
-                        window.location.reload(); 
-                    });
-                });
-            }
-
-            // --- 4. CHARGEMENT DES DONNÉES (Publique) ---
-            // Note : Ces données s'affichent pour tout le monde, même déconnecté. C'est normal.
-            
-            // Catégories
+            // 1. Charger CATÉGORIES
             db.collection('categories').get().then(snap => {
                 const box = document.getElementById('category-carousel');
-                if(!snap.empty && box) {
+                if(!snap.empty) {
                     box.innerHTML = "";
                     snap.forEach(doc => {
                         const d = doc.data();
                         box.innerHTML += `
-                            <a href="catalogue.html?cat=${d.name}" class="category-card" style="min-width:100px; text-align:center; text-decoration:none; color:black;">
-                                <div class="category-card-icon" style="width:70px; height:70px; background:#f5f5f5; border-radius:50%; display:grid; place-items:center; margin:0 auto 10px;">
+                            <a href="catalogue.html?category=${encodeURIComponent(d.name)}" class="category-card">
+                                <div class="category-card-icon">
                                     <i data-lucide="${d.icon||'tag'}"></i>
                                 </div>
-                                <span class="category-card-label" style="font-weight:600; font-size:13px;">${d.name}</span>
+                                <span class="category-card-label">${d.name}</span>
                             </a>`;
                     });
                     lucide.createIcons();
-                }
+                } else { box.innerHTML = "<p>Aucune catégorie.</p>"; }
             });
 
-            // Nouveautés
+            // 2. Charger NOUVEAUTÉS
             db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
                 const grid = document.getElementById('home-new');
-                if(!snap.empty && grid) {
+                if(!snap.empty) {
                     grid.innerHTML = "";
                     snap.forEach(doc => {
                         const p = doc.data();
                         const price = new Intl.NumberFormat('fr-FR').format(p.price);
+                        
                         grid.innerHTML += `
                             <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
                                 <a href="product.html?id=${doc.id}">
@@ -407,7 +321,9 @@
                                 </a>
                                 <div style="padding:15px;">
                                     <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px;">
-                                        <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
+                                        <a href="boutique.html?id=${p.shopId}" style="text-decoration:none; color:#888;">
+                                            <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
+                                        </a>
                                     </div>
                                     <h3 style="font-size:16px; margin:5px 0;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
                                     <div style="font-weight:bold; color:#D4AF37; margin-top:5px;">${price} FCFA</div>
@@ -415,13 +331,25 @@
                             </div>`;
                     });
                     lucide.createIcons();
-                }
+                } else { grid.innerHTML = "<p>Aucun produit récent.</p>"; }
             });
+
+            // 3. Newsletter
+            const newsletterForm = document.querySelector('.newsletter-form');
+            if(newsletterForm) {
+                newsletterForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const email = newsletterForm.querySelector('input').value;
+                    if(email) {
+                        showToast("Merci pour votre inscription !", "success");
+                        newsletterForm.reset();
+                    }
+                });
+            }
         }
         
         if(typeof lucide !== 'undefined') lucide.createIcons();
     });
- </script>
-
+  </script>
 </body>
 </html>
