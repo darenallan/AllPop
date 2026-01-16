@@ -1,991 +1,675 @@
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
     <meta charset="utf-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <title>Aurum Admin - Dashboard</title>
-
     
-
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-
-
     <link rel="stylesheet" href="assets/css/styles.css" />
-
-
+    <link rel="stylesheet" href="assets/css/admin.css" />
 
     <style>
-
         /* LAYOUT PC FORCE */
-
         @media (min-width: 900px) {
-
             body.admin-layout {
-
                 display: grid !important;
-
                 grid-template-columns: 260px 1fr !important;
-
                 min-height: 100vh;
-
                 margin: 0; padding: 0;
-
                 overflow: hidden;
-
                 background-color: #F9F7F2;
-
             }
-
             .admin-sidebar {
-
                 display: flex !important;
-
                 flex-direction: column;
-
                 background-color: #050505 !important;
-
                 color: #fff;
-
                 height: 100vh;
-
                 position: relative !important;
-
                 z-index: 100;
-
                 border-right: 1px solid rgba(212, 175, 55, 0.1);
-
             }
-
             .admin-main {
-
                 height: 100vh;
-
                 overflow-y: auto;
-
                 padding: 40px 50px !important;
-
                 background-color: #F9F7F2;
-
             }
-
             .admin-mobile-toggle { display: none !important; }
-
         }
-
-
 
         /* STYLES GÉNÉRAUX */
-
         .admin-sidebar-header { padding: 40px 30px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
-
         .admin-sidebar-title { font-family: 'Playfair Display', serif; color: #D4AF37; font-size: 28px; margin: 0; }
-
         
-
         .admin-nav-item {
-
             display: flex; align-items: center; gap: 15px; padding: 16px 30px;
-
             color: #a0a0a0; text-decoration: none; font-family: 'Inter', sans-serif;
-
             font-size: 15px; transition: 0.3s; cursor: pointer; border-left: 3px solid transparent;
-
         }
-
         .admin-nav-item:hover { background: rgba(255,255,255,0.03); color: #fff; }
-
         .admin-nav-item.active {
-
             background: linear-gradient(90deg, rgba(212, 175, 55, 0.15) 0%, transparent 100%);
-
             color: #D4AF37; border-left-color: #D4AF37;
-
         }
-
-
 
         .admin-page-title { font-family: 'Playfair Display', serif; font-size: 32px; margin-bottom: 10px; color: #111; }
-
         .admin-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 30px; }
-
         
-
         /* Formulaires */
-
         .input, select.input { width: 100%; padding: 12px 18px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 15px; display: block; box-sizing: border-box; background: #fff; color: #000; }
-
         .btn-gold { background: #D4AF37; color: #000; font-weight: 600; padding: 14px 30px; border: none; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; }
-
         .btn-gold:hover { background: #bfa030; }
 
-
-
         /* Listes */
-
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
-
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e6fffa; color: #007a5e; }
 
-
-
-        /* Tableaux (Ajouté pour les commandes) */
-
-        .admin-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-
-        .admin-table th { text-align: left; padding: 15px; color: #666; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #eee; }
-
-        .admin-table td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
-
-        .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-
-        .badge-pending { background: #fff3cd; color: #856404; }
-
-        .badge-shipped { background: #d4edda; color: #155724; }
-
-
-
         /* Stats */
-
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
-
         .stat-card { background: #fff; padding: 25px; border-radius: 12px; border-left: 5px solid #D4AF37; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-
         .stat-val { font-size: 32px; font-weight: 700; font-family: 'Playfair Display'; margin-top: 5px; color: #000; }
-
         .stat-label { text-transform: uppercase; font-size: 12px; color: #666; }
 
-
-
         /* Utilitaire */
-
         .hidden { display: none !important; }
-
         .active-section { display: block !important; animation: fadeIn 0.3s; }
-
         @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
-
         
-
         /* Mobile */
-
         @media (max-width: 899px) {
-
             body.admin-layout { display: block !important; }
-
             .admin-sidebar { display: none; position: fixed; inset: 0; }
-
             .admin-sidebar.mobile-open { display: flex !important; }
-
             .admin-main { padding: 20px; padding-top: 80px; }
-
             .admin-mobile-toggle { display: flex !important; position: fixed; top: 15px; right: 15px; background: #D4AF37; padding: 10px; border-radius: 50%; z-index: 2000; border: none; }
-
         }
-
     </style>
 
-
-
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
+    <script>
+    /* =========================================================
+       ESPACE ADMIN - GESTION GLOBALE AURUM (TOUT EN INLINE)
+       ========================================================= */
 
+    // Configuration Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
+        authDomain: "aurum-bf.firebaseapp.com",
+        projectId: "aurum-bf",
+        storageBucket: "aurum-bf.firebasestorage.app",
+        messagingSenderId: "858318726586",
+        appId: "1:858318726586:web:14687fff6d4d08527a6983",
+        measurementId: "G-SY7DY6WV97"
+    };
 
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // --- 1. LES DONNÉES DE BASE ---
+    const INITIAL_DATA = {
+        shops: [
+            { name: 'Luxe Motors', category: 'Auto & Moto', ownerEmail: 'vente.lll@gmail.com', status: 'active', itemLimit: 50, createdAt: new Date() },
+            { name: 'Boutique Faso', category: 'Mode & Vêtements', ownerEmail: 'client.add@gmail.com', status: 'active', itemLimit: 100, createdAt: new Date() },
+            { name: 'Electro World', category: 'Électronique', ownerEmail: 'tech@store.bf', status: 'active', itemLimit: 200, createdAt: new Date() }
+        ],
+        users: [
+            { name: "Super Admin", email: "aurumcorporate.d@gmail.com", role: "superadmin", phone: "+226 00 00 00 00" },
+            { name: "Vendeur Auto", email: "vente.lll@gmail.com", role: "seller", phone: "+226 70 00 00 01" },
+            { name: "Client Test", email: "client.add@gmail.com", role: "client", phone: "+226 70 00 00 02" }
+        ],
+        promos: [
+            { code: "AURUM10", percent: 10, expires: "2025-12-31", status: "active" },
+            { code: "BIENVENUE", percent: 15, expires: "2025-06-01", status: "active" }
+        ]
+    };
+
+    // Variables pour l'affichage
+    let Store = { 
+        shops: [], 
+        users: [], 
+        promos: [],
+        categories: [],
+        products: [],
+        orders: []
+    };
+
+    // --- 2. DÉMARRAGE ---
+    const ADMIN_EMAIL = 'aurumcorporate.d@gmail.com';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('✅ DOM Chargé, initialisation admin...');
+        
+        auth.onAuthStateChanged((user) => {
+            console.log('🔐 Auth state changed:', user?.email || 'Non connecté');
+            
+            if (!user) {
+                // Non connecté
+                console.log("⚠️ Utilisateur non connecté -> Redirection");
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            if (user.email !== ADMIN_EMAIL) {
+                // Connecté mais pas admin
+                console.log("❌ Accès refusé - Email non autorisé:", user.email);
+                document.body.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100vh; font-family:Arial; text-align:center;"><div><h1 style="color:#ff6b6b;">Accès Refusé</h1><p style="font-size:18px;">Vous n\'êtes pas autorisé à accéder à cette page.</p><p style="color:#666;">Email: ' + user.email + '</p><a href="index.html" style="margin-top:20px; display:inline-block; padding:10px 20px; background:#007bff; color:white; text-decoration:none; border-radius:5px;">Retourner à l\'accueil</a></div></div>';
+                return;
+            }
+            
+            // Accès autorisé
+            console.log("✅ Accès administrateur autorisé");
+            startRealTimeSync();
+            setupNavigation();
+        });
+    });
+
+    // --- 3. AUTO-REMPLISSAGE (SEEDING) ---
+    async function checkAndSeedDatabase() {
+        const snapshot = await db.collection('shops').limit(1).get();
+        
+        if (snapshot.empty) {
+            console.log("⚡ Base de données vide -> Injection des données de démo...");
+            INITIAL_DATA.shops.forEach(shop => db.collection('shops').add(shop));
+            INITIAL_DATA.users.forEach(user => db.collection('users').add(user));
+            INITIAL_DATA.promos.forEach(promo => db.collection('promos').add(promo));
+            alert("🎉 Base de données initialisée !");
+        } else {
+            console.log("👍 Base de données déjà remplie.");
+        }
+    }
+
+    // --- 4. SYNCHRONISATION (Lecture Firebase) ---
+    function startRealTimeSync() {
+        console.log('📡 Démarrage sync temps réel...');
+        
+        // Masquer le loader et afficher le contenu immédiatement
+        setTimeout(() => {
+            const loader = document.getElementById('loader');
+            const content = document.getElementById('dashboard-content');
+            if(loader) loader.style.display = 'none';
+            if(content) content.classList.remove('hidden');
+            console.log('✅ Interface affichée');
+        }, 500);
+        
+        // Écoute Boutiques
+        db.collection('shops').onSnapshot(snap => {
+            console.log('📦 Boutiques:', snap.size);
+            Store.shops = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderShops();
+            renderStats();
+        }, err => console.error('❌ Erreur shops:', err));
+
+        // Écoute Users
+        db.collection('users').onSnapshot(snap => {
+            console.log('👥 Utilisateurs:', snap.size);
+            Store.users = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderUsers();
+            renderStats();
+        }, err => console.error('❌ Erreur users:', err));
+
+        // Écoute Promos
+        db.collection('promos').onSnapshot(snap => {
+            console.log('🎁 Promos:', snap.size);
+            Store.promos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderPromos();
+            renderStats();
+        }, err => console.error('❌ Erreur promos:', err));
+
+        // Écoute Catégories
+        db.collection('categories').onSnapshot(snap => {
+            console.log('🏷️ Catégories:', snap.size);
+            Store.categories = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderCategories();
+        }, err => console.error('❌ Erreur categories:', err));
+
+        // Nettoyage automatique des codes promo expirés (une fois par heure)
+        setInterval(() => {
+            const today = new Date().toISOString().split('T')[0];
+            Store.promos.forEach(promo => {
+                if(promo.expires && promo.expires < today) {
+                    console.log('🗑️ Suppression promo expiré:', promo.code);
+                    db.collection('promos').doc(promo.id).delete();
+                }
+            });
+        }, 3600000); // 1 heure
+
+        // Écoute Produits (optionnel)
+        try {
+            db.collectionGroup('products').onSnapshot(snap => {
+                console.log('🛍️ Produits:', snap.size);
+                Store.products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderStats();
+            }, err => {
+                console.warn('⚠️ Produits indisponible:', err.message);
+                Store.products = [];
+            });
+        } catch (e) {
+            console.warn('⚠️ CollectionGroup non supporté');
+        }
+
+        // Écoute Commandes (optionnel)
+        try {
+            db.collection('orders').onSnapshot(snap => {
+                console.log('💰 Commandes:', snap.size);
+                Store.orders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderStats();
+            }, err => {
+                console.warn('⚠️ Orders indisponible:', err.message);
+                Store.orders = [];
+            });
+        } catch (e) {
+            console.warn('⚠️ Collection orders non trouvée');
+        }
+
+        // Icônes
+        if(typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    // --- 5. AFFICHAGE (Render) ---
+    function renderStats() {
+        const div = document.getElementById('admin-stats');
+        if(!div) return;
+        
+        let totalAmount = 0;
+        Store.orders.forEach(order => {
+            if(order.amount) {
+                totalAmount += parseFloat(order.amount) || 0;
+            } else if(order.items && Array.isArray(order.items)) {
+                order.items.forEach(item => {
+                    totalAmount += (parseFloat(item.price) || 0) * (item.qty || 1);
+                });
+            }
+        });
+        
+        const formattedAmount = new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: 'XOF'
+        }).format(totalAmount);
+        
+        div.innerHTML = `
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Boutiques Actives</div>
+                <div class="admin-stat-value">${Store.shops.length}</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Comptes Utilisateurs</div>
+                <div class="admin-stat-value">${Store.users.length}</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Produits</div>
+                <div class="admin-stat-value">${Store.products.length}</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Ventes</div>
+                <div class="admin-stat-value">${Store.orders.length}</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Montant Total</div>
+                <div class="admin-stat-value" style="font-size:1.6em;">${formattedAmount}</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-label">Promos Actives</div>
+                <div class="admin-stat-value">${Store.promos.length}</div>
+            </div>
+        `;
+    }
+
+    function renderShops() {
+        const div = document.getElementById('admin-shops');
+        if(!div) return;
+        div.innerHTML = Store.shops.length === 0 
+            ? '<p>Chargement...</p>'
+            : Store.shops.map(s => `
+                <div class="admin-card" style="padding:15px; margin-bottom:10px;">
+                    <h4>${s.name}</h4>
+                    <div style="font-size:13px; color:#666;">${s.category} — ${s.ownerEmail}</div>
+                </div>
+            `).join('');
+    }
+
+    function renderUsers() {
+        const div = document.getElementById('admin-users');
+        if(!div) return;
+        div.innerHTML = Store.users.map(u => `
+            <div class="admin-card" style="padding:15px; margin-bottom:10px;">
+                <strong>${u.name}</strong> <span>${u.role}</span><br>
+                ${u.email}
+            </div>
+        `).join('');
+    }
+
+    function renderPromos() {
+        const div = document.getElementById('admin-promos');
+        if(!div) return;
+        
+        const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+        
+        div.innerHTML = Store.promos.length === 0 
+            ? '<p>Aucun code promo</p>'
+            : Store.promos.map(p => {
+                const isExpired = p.expires && p.expires < today;
+                const statusColor = isExpired ? '#999' : '#1a7f4a';
+                const statusText = isExpired ? 'EXPIRÉ' : 'ACTIF';
+                
+                return `
+                    <div class="admin-card" style="padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; ${isExpired ? 'opacity:0.6;' : ''}">
+                        <div style="flex:1;">
+                            <strong style="font-size:16px; ${isExpired ? 'text-decoration:line-through;' : ''}">${p.code}</strong>
+                            <div style="font-size:13px; color:#666;">
+                                -${p.percent}% 
+                                ${p.expires ? `• Expire: ${p.expires}` : '• Sans date'}
+                                <span style="color:${statusColor}; font-weight:bold; margin-left:10px;">${statusText}</span>
+                            </div>
+                        </div>
+                        <button onclick="deleteItem('promos', '${p.id}')" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">✕ Supprimer</button>
+                    </div>
+                `;
+            }).join('');
+    }
+
+    function renderCategories() {
+        const div = document.getElementById('categories-list');
+        if(!div) return;
+        
+        // Remplir aussi le select pour le formulaire de boutique
+        const select = document.getElementById('shop-cat-select');
+        if(select) {
+            select.innerHTML = '<option value="">Choisir une catégorie...</option>' + 
+                Store.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        }
+        
+        // Afficher la liste des catégories
+        div.innerHTML = Store.categories.length === 0 
+            ? '<p>Aucune catégorie</p>'
+            : Store.categories.map(c => `
+                <div class="admin-card" style="padding:15px; margin-bottom:10px; display:flex; justify-content:space-between;">
+                    <strong>${c.name}</strong>
+                    <button onclick="deleteItem('categories', '${c.id}')" style="color:red; background:none; border:none; cursor:pointer;">Supprimer</button>
+                </div>
+            `).join('');
+    }
+
+    // --- 6. NAVIGATION ---
+    function setupNavigation() {
+        console.log('🔗 Configuration navigation...');
+    }
+
+    // Fonction globale de navigation (appelée par onclick)
+    window.nav = function(sectionId, clickedBtn) {
+        console.log('📍 Navigation vers:', sectionId);
+        
+        // Masquer toutes les sections
+        document.querySelectorAll('.admin-section').forEach(section => {
+            section.classList.add('hidden');
+            section.classList.remove('active-section');
+        });
+        
+        // Afficher la section demandée
+        const targetSection = document.getElementById('sec-' + sectionId);
+        if(targetSection) {
+            targetSection.classList.remove('hidden');
+            targetSection.classList.add('active-section');
+        }
+        
+        // Mettre à jour les boutons actifs
+        document.querySelectorAll('.admin-nav-item').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if(clickedBtn) {
+            clickedBtn.classList.add('active');
+        }
+        
+        // Fermer le menu mobile si ouvert
+        const sidebar = document.getElementById('admin-sidebar');
+        if(sidebar && window.innerWidth < 900) {
+            sidebar.classList.remove('mobile-open');
+        }
+    };
+
+    // --- GLOBAL DELETE ---
+    window.deleteItem = function(col, id) {
+        if(confirm("Supprimer ?")) {
+            db.collection(col).doc(id).delete();
+        }
+    };
+
+    // --- LOGOUT ---
+    window.logout = function() {
+        if(confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
+            firebase.auth().signOut().then(function() {
+                window.location.href = 'index.html';
+            }).catch(function(error) {
+                console.error('Erreur déconnexion:', error);
+                window.location.href = 'index.html';
+            });
+        }
+    };
+
+    console.log('✅ Script admin.html chargé');
+    </script>
 </head>
-
 <body class="admin-layout">
 
-
-
     <aside class="admin-sidebar" id="admin-sidebar">
-
         <div class="admin-sidebar-header">
-
             <h1 class="admin-sidebar-title">Aurum</h1>
-
         </div>
-
         <nav>
-
             <div class="admin-nav-item active" onclick="nav('dashboard', this)">
-
                 <i data-lucide="layout-dashboard"></i> Tableau de bord
-
             </div>
-
-            <div class="admin-nav-item" onclick="nav('orders', this)">
-
-                <i data-lucide="shopping-bag"></i> Commandes Globales
-
-            </div>
-
             <div class="admin-nav-item" onclick="nav('sellers', this)">
-
                 <i data-lucide="user-plus"></i> Créer Vendeur
-
             </div>
-
             <div class="admin-nav-item" onclick="nav('shops', this)">
-
                 <i data-lucide="store"></i> Boutiques
-
             </div>
-
             <div class="admin-nav-item" onclick="nav('categories', this)">
-
                 <i data-lucide="tag"></i> Catégories
-
             </div>
-
             <div class="admin-nav-item" onclick="nav('users', this)">
-
                 <i data-lucide="users"></i> Comptes
-
             </div>
-
             <div class="admin-nav-item" onclick="nav('promos', this)">
-
                 <i data-lucide="percent"></i> Codes Promo
-
             </div>
-
-            <a href="index.html" class="admin-nav-item" style="margin-top:auto; color:#ff6b6b; border-top:1px solid #333;">
-
-                <i data-lucide="log-out"></i> Quitter
-
-            </a>
-
         </nav>
-
+        <div style="margin-top:30px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
+            <div class="admin-nav-item" style="color:#ff6b6b; cursor:pointer;" onclick="logout()">
+                <i data-lucide="log-out"></i> Déconnexion
+            </div>
+        </div>
     </aside>
 
-
-
     <button class="admin-mobile-toggle" onclick="document.getElementById('admin-sidebar').classList.toggle('mobile-open')">
-
         <i data-lucide="menu"></i>
-
     </button>
 
-
-
     <main class="admin-main">
-
         
-
         <div id="loader" style="text-align:center; margin-top:20%;">
-
             <p>Chargement des données...</p>
-
         </div>
-
-
 
         <div id="dashboard-content" class="hidden">
 
-
-
             <section id="sec-dashboard" class="admin-section active-section">
-
                 <h1 class="admin-page-title">Tableau de Bord</h1>
-
-                <div class="stats-grid" id="stats-container">
-
+                <div class="stats-grid" id="admin-stats">
                     </div>
-
                 <div class="admin-card">
-
                     <h3>Activité Récente</h3>
-
                     <p style="color:#666;">Système synchronisé avec la base de données.</p>
-
                 </div>
-
             </section>
-
-
-
-            <section id="sec-orders" class="admin-section hidden">
-
-                <h1 class="admin-page-title">Toutes les Commandes</h1>
-
-                <div class="admin-card" style="overflow-x:auto;">
-
-                    <table class="admin-table">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Référence</th>
-
-                                <th>Date</th>
-
-                                <th>Client</th>
-
-                                <th>Total</th>
-
-                                <th>Statut</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody id="all-orders-list">
-
-                            </tbody>
-
-                    </table>
-
-                    <div id="no-orders-msg" style="display:none; text-align:center; padding:20px; color:#999;">Aucune commande.</div>
-
-                </div>
-
-            </section>
-
-
 
             <section id="sec-sellers" class="admin-section hidden">
-
                 <h1 class="admin-page-title">Créer Vendeur</h1>
-
                 <div class="admin-card">
-
                     <form id="form-seller">
-
                         <label>Nom Complet</label>
-
                         <input class="input" id="sel-name" required placeholder="Ex: Jean Dupont">
-
                         <label>Email</label>
-
                         <input class="input" id="sel-email" type="email" required placeholder="email@vendeur.com">
-
                         <label>Téléphone</label>
-
                         <input class="input" id="sel-phone" required placeholder="+226 XX XX XX XX">
-
                         <label>Mot de passe</label>
-
                         <input class="input" id="sel-pass" required placeholder="******">
-
                         <button class="btn-gold">Créer le compte</button>
-
                     </form>
-
                 </div>
-
             </section>
-
-
 
             <section id="sec-shops" class="admin-section hidden">
-
                 <h1 class="admin-page-title">Boutiques</h1>
-
                 <div class="admin-card">
-
                     <h3>Nouvelle Boutique</h3>
-
                     <form id="form-shop">
-
                         <input class="input" id="shop-name" placeholder="Nom de la boutique" required>
-
                         <input class="input" id="shop-owner" placeholder="Email du Propriétaire" required>
-
                         <select class="input" id="shop-cat-select" required></select>
-
                         <input class="input" id="shop-desc" placeholder="Description courte">
-
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-
                             <input class="input" type="number" id="shop-duration" value="30" placeholder="Durée (jours)">
-
                             <input class="input" type="number" id="shop-limit" value="50" placeholder="Limite articles">
-
                         </div>
-
                         <button class="btn-gold">Ajouter la boutique</button>
-
                     </form>
-
                 </div>
-
                 <div class="admin-card">
-
                     <h3>Liste des Boutiques</h3>
-
-                    <div id="shops-list">Chargement...</div>
-
+                    <div id="admin-shops">Chargement...</div>
                 </div>
-
             </section>
-
-
 
             <section id="sec-categories" class="admin-section hidden">
-
                 <h1 class="admin-page-title">Catégories</h1>
-
                 <div class="admin-card">
-
                     <form id="form-cat" style="display:flex; gap:10px; margin-bottom:20px;">
-
                         <input class="input" id="cat-name" placeholder="Nouvelle catégorie" style="margin:0;">
-
                         <button class="btn-gold" style="width:auto; margin:0;">Ajouter</button>
-
                     </form>
-
                     <div id="categories-list"></div>
-
                 </div>
-
             </section>
-
-
 
             <section id="sec-users" class="admin-section hidden">
-
                 <h1 class="admin-page-title">Comptes Utilisateurs</h1>
-
-                <div class="admin-card" id="users-list">Chargement...</div>
-
+                <div class="admin-card" id="admin-users">Chargement...</div>
             </section>
-
-
 
             <section id="sec-promos" class="admin-section hidden">
-
                 <h1 class="admin-page-title">Codes Promo</h1>
-
                 <div class="admin-card">
-
-                    <form id="form-promo" style="display:flex; gap:10px; margin-bottom:20px;">
-
+                    <form id="form-promo" style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:flex-end;">
                         <input class="input" id="promo-code" placeholder="CODE" style="margin:0;">
-
                         <input class="input" id="promo-val" type="number" placeholder="%" style="width:80px; margin:0;">
-
+                        <input class="input" id="promo-expires" type="date" placeholder="Expiration" style="margin:0;">
                         <button class="btn-gold" style="width:auto; margin:0;">Créer</button>
-
                     </form>
-
-                    <div id="promos-list"></div>
-
+                    <div id="admin-promos"></div>
                 </div>
-
             </section>
 
-
-
         </div>
-
     </main>
 
-
-
     <script>
-
         // 1. CONFIGURATION
-
-        const firebaseConfig = {
-
-            apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
-
-            authDomain: "aurum-bf.firebaseapp.com",
-
-            projectId: "aurum-bf",
-
-            storageBucket: "aurum-bf.firebasestorage.app",
-
-            messagingSenderId: "858318726586",
-
-            appId: "1:858318726586:web:14687fff6d4d08527a6983",
-
-            measurementId: "G-SY7DY6WV97"
-
-        };
-
-        firebase.initializeApp(firebaseConfig);
-
-        const db = firebase.firestore();
-
-        const auth = firebase.auth();
-
-
-
-        // 2. DONNÉES DE DÉMARRAGE (Injection si vide)
-
-        const SEED = {
-
-            cats: [
-
-                { name: "Mode & Vêtements", icon: "shirt" },
-
-                { name: "Véhicules & Pièces", icon: "car" },
-
-                { name: "Maison & Déco", icon: "home" },
-
-                { name: "Électronique", icon: "smartphone" },
-
-                { name: "Beauté & Hygiène", icon: "sparkles" }
-
-            ],
-
-            shops: [
-
-                { name: "Luxe Motors", ownerEmail: "vente.lll@gmail.com", category: "Véhicules & Pièces", status: "Active", itemLimit: 50 },
-
-                { name: "Boutique Faso", ownerEmail: "client.add@gmail.com", category: "Mode & Vêtements", status: "Active", itemLimit: 100 }
-
-            ],
-
-            users: [
-
-                { name: "Super Admin", email: "aurumcorporate.d@gmail.com", role: "superadmin" },
-
-                { name: "Vendeur Test", email: "vente.lll@gmail.com", role: "seller" }
-
-            ],
-
-            promos: [
-
-                { code: "AURUM10", percent: 10, status: "Active" }
-
-            ]
-
-        };
-
-
-
-        // 3. LOGIQUE PRINCIPALE
-
-        document.addEventListener('DOMContentLoaded', () => {
-
-            
-
-            // Auth Listener
-
-            auth.onAuthStateChanged((user) => {
-
-                // Pour le test, on autorise l'affichage
-
-                if (true) { // Remettre user && ... plus tard
-
-                    document.getElementById('loader').style.display = 'none';
-
-                    document.getElementById('dashboard-content').classList.remove('hidden');
-
-                    
-
-                    checkAndSeed();
-
-                    listenRealTime();
-
-                } else {
-
-                    window.location.href = "login.html";
-
-                }
-
-            });
-
-            
-
-            lucide.createIcons();
-
-        });
-
-
-
-        // 4. MIGRATION AUTOMATIQUE
-
-        async function checkAndSeed() {
-
-            const snap = await db.collection('categories').get();
-
-            if (snap.empty) {
-
-                console.log("⚡ Injection des données...");
-
-                SEED.cats.forEach(c => db.collection('categories').add(c));
-
-                SEED.shops.forEach(s => db.collection('shops').add({...s, createdAt: new Date()}));
-
-                SEED.users.forEach(u => db.collection('users').add({...u, createdAt: new Date()}));
-
-                SEED.promos.forEach(p => db.collection('promos').add({...p, createdAt: new Date()}));
-
-                alert("Données restaurées dans Firebase !");
-
-            }
-
-        }
-
-
-
-        // 5. ÉCOUTE TEMPS RÉEL (Affichage)
-
-        function listenRealTime() {
-
-            
-
-            // --- COMMANDES & VENTES (NOUVEAU) ---
-
-            db.collection('orders').onSnapshot(snap => {
-
-                const list = document.getElementById('all-orders-list');
-
-                list.innerHTML = "";
-
-                
-
-                let totalRevenue = 0;
-
-                
-
-                // Tri Client-Side
-
-                let orders = [];
-
-                snap.forEach(doc => orders.push(doc.data()));
-
-                orders.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-
-
-                if(orders.length === 0) {
-
-                    document.getElementById('no-orders-msg').style.display = 'block';
-
-                } else {
-
-                    document.getElementById('no-orders-msg').style.display = 'none';
-
-                    orders.forEach(order => {
-
-                        // Calcul total
-
-                        if(order.status !== 'cancelled') totalRevenue += (order.total || 0);
-
-
-
-                        const date = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
-
-                        const statusClass = order.status === 'pending' ? 'badge-pending' : 'badge-shipped';
-
-                        const statusLabel = order.status === 'pending' ? 'En attente' : 'Terminé';
-
-
-
-                        list.innerHTML += `
-
-                            <tr>
-
-                                <td style="font-weight:bold;">${order.reference || 'REF?'}</td>
-
-                                <td>${date}</td>
-
-                                <td>${order.userName || 'Client'}</td>
-
-                                <td style="color:#D4AF37; font-weight:bold;">${new Intl.NumberFormat('fr-FR').format(order.total)} FCFA</td>
-
-                                <td><span class="badge ${statusClass}">${statusLabel}</span></td>
-
-                            </tr>
-
-                        `;
-
-                    });
-
-                }
-
-
-
-                // MISE A JOUR STATS VENTES
-
-                updateStat(2, "Ventes (Total)", new Intl.NumberFormat('fr-FR').format(totalRevenue) + " FCFA");
-
-            });
-
-
-
-            // Boutiques
-
-            db.collection('shops').onSnapshot(snap => {
-
-                const list = document.getElementById('shops-list');
-
-                let count = 0;
-
-                list.innerHTML = "";
-
-                snap.forEach(doc => {
-
-                    count++;
-
-                    const s = doc.data();
-
-                    list.innerHTML += `
-
-                    <div class="list-item">
-
-                        <div>
-
-                            <strong>${s.name}</strong><br>
-
-                            <span style="font-size:13px; color:#777;">${s.category} • ${s.ownerEmail}</span>
-
-                        </div>
-
-                        <div style="text-align:right;">
-
-                            <span class="status-badge">${s.status}</span><br>
-
-                            <button onclick="del('shops','${doc.id}')" style="color:red; border:none; background:none; cursor:pointer; font-size:12px; margin-top:5px;">Supprimer</button>
-
-                        </div>
-
-                    </div>`;
-
-                });
-
-                updateStat(0, "Boutiques", count);
-
-            });
-
-
-
-            // Catégories
-
-            db.collection('categories').onSnapshot(snap => {
-
-                const list = document.getElementById('categories-list');
-
-                const select = document.getElementById('shop-cat-select');
-
-                list.innerHTML = "";
-
-                select.innerHTML = "<option>Choisir...</option>";
-
-                
-
-                snap.forEach(doc => {
-
-                    const c = doc.data();
-
-                    list.innerHTML += `<div class="list-item"><b>${c.name}</b> <button onclick="del('categories','${doc.id}')" style="color:red; border:none; background:none;">X</button></div>`;
-
-                    select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
-
-                });
-
-            });
-
-
-
-            // Users
-
-            db.collection('users').onSnapshot(snap => {
-
-                const list = document.getElementById('users-list');
-
-                let count = 0;
-
-                list.innerHTML = "";
-
-                snap.forEach(doc => {
-
-                    count++;
-
-                    const u = doc.data();
-
-                    list.innerHTML += `<div class="list-item"><div><strong>${u.name}</strong><br>${u.email}</div><span class="status-badge" style="background:#eee; color:#333;">${u.role}</span></div>`;
-
-                });
-
-                updateStat(1, "Utilisateurs", count);
-
-            });
-
-
-
-            // Promos
-
-            db.collection('promos').onSnapshot(snap => {
-
-                document.getElementById('promos-list').innerHTML = snap.docs.map(d => `<div class="list-item"><b>${d.data().code}</b> <button onclick="del('promos','${d.id}')" style="color:red; border:none; background:none;">X</button></div>`).join('');
-
-            });
-
-        }
-
-
-
-        // Helper Stats
-
-        function updateStat(index, label, val) {
-
-            const container = document.getElementById('stats-container');
-
-            // On s'assure qu'il y a assez de cartes
-
-            while(container.children.length <= index) {
-
-                container.innerHTML += `<div class="stat-card"><div class="stat-label"></div><div class="stat-val">0</div></div>`;
-
-            }
-
-            const card = container.children[index];
-
-            card.querySelector('.stat-label').innerText = label;
-
-            card.querySelector('.stat-val').innerText = val;
-
-        }
-
-
+        // Firebase est désormais initialisé depuis assets/js/admin.js
+        // Les objets globaux db et auth sont fournis par ce script.
+
+        // Tout est géré par assets/js/admin.js
+        // Ne pas dupliquer le code Firebase ici
 
         // 6. GESTION NAVIGATION
-
         window.nav = function(id, btn) {
-
             document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
-
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active-section'));
-
             document.getElementById('sec-'+id).classList.remove('hidden');
-
             document.getElementById('sec-'+id).classList.add('active-section');
-
             
-
             document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
-
             btn.classList.add('active');
-
             
-
             // Fermer mobile
-
             if(window.innerWidth < 900) document.getElementById('admin-sidebar').classList.remove('mobile-open');
-
         };
-
-
 
         // 7. ACTIONS FORMULAIRES
-
         document.getElementById('form-shop').onsubmit = (e) => {
-
             e.preventDefault();
-
+            const durationDays = Number(document.getElementById('shop-duration').value) || 30;
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + durationDays);
+            
             db.collection('shops').add({
-
                 name: document.getElementById('shop-name').value,
-
                 ownerEmail: document.getElementById('shop-owner').value,
-
                 category: document.getElementById('shop-cat-select').value,
-
                 description: document.getElementById('shop-desc').value,
-
                 status: 'Active',
-
-                createdAt: new Date()
-
+                createdAt: new Date(),
+                expiresAt: expiresAt,
+                durationDays: durationDays
             });
-
             e.target.reset();
-
             alert("Boutique ajoutée !");
-
         };
-
-
 
         document.getElementById('form-seller').onsubmit = (e) => {
-
             e.preventDefault();
-
             const email = document.getElementById('sel-email').value;
-
             const pass = document.getElementById('sel-pass').value;
-
             const name = document.getElementById('sel-name').value;
-
             
-
             // Création Auth
-
             auth.createUserWithEmailAndPassword(email, pass).then(cred => {
-
                 // Sauvegarde DB
-
                 db.collection('users').add({
-
                     name: name, email: email, phone: document.getElementById('sel-phone').value, role: 'seller', createdAt: new Date()
-
                 });
-
                 alert("Vendeur créé !");
-
                 e.target.reset();
-
             }).catch(err => alert("Erreur: " + err.message));
-
         };
-
-
 
         document.getElementById('form-cat').onsubmit = (e) => {
-
             e.preventDefault();
-
             db.collection('categories').add({ name: document.getElementById('cat-name').value, icon: 'tag' });
-
             e.target.reset();
-
         };
-
-
 
         document.getElementById('form-promo').onsubmit = (e) => {
-
             e.preventDefault();
-
-            db.collection('promos').add({ code: document.getElementById('promo-code').value, percent: document.getElementById('promo-val').value });
-
+            const code = document.getElementById('promo-code').value;
+            const percent = document.getElementById('promo-val').value;
+            const expires = document.getElementById('promo-expires').value;
+            
+            db.collection('promos').add({ 
+                code: code, 
+                percent: parseInt(percent),
+                expires: expires || null,
+                createdAt: new Date(),
+                status: 'active'
+            });
             e.target.reset();
-
+            alert('✅ Code promo créé!');
         };
-
-
 
         // Delete Global
-
         window.del = (col, id) => {
-
             if(confirm("Supprimer ?")) db.collection(col).doc(id).delete();
-
         };
 
-
-
     </script>
-
 </body>
-
 </html>
