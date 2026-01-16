@@ -16,6 +16,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
   <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
 </head>
 
 <body>
@@ -163,81 +164,16 @@
 
   <div class="toast-container" id="toast-container"></div>
 
+  <script src="assets/js/app.js"></script>
   <script>
-    function setupHeaderMenu() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const closeBtn = document.getElementById('close-btn');
-        const drawer = document.getElementById('mobile-drawer');
-        const overlay = document.getElementById('menu-overlay');
-
-        const toggleMenu = () => {
-            if (!drawer || !overlay) return;
-            drawer.classList.toggle('active');
-            overlay.classList.toggle('active');
-            document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
-        };
-
-        if(menuToggle) menuToggle.addEventListener('click', toggleMenu);
-        if(closeBtn) closeBtn.addEventListener('click', toggleMenu);
-        if(overlay) overlay.addEventListener('click', toggleMenu);
-
-        const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-        const badge = document.getElementById('cart-badge');
-        if (badge) {
-            const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
-            if (count > 0) {
-                badge.innerText = count;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
+    // === PAGE REGISTER - LOGIQUE SPÉCIFIQUE ===
     document.addEventListener('DOMContentLoaded', () => {
-        setupHeaderMenu();
-
         const yearSpan = document.getElementById('year');
-        if (yearSpan) {
-            yearSpan.innerText = new Date().getFullYear();
-        }
+        if (yearSpan) yearSpan.innerText = new Date().getFullYear();
 
-        // Gestion de la déconnexion
-        const logoutBtn = document.getElementById('mobile-logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                firebase.auth().signOut().then(() => {
-                    window.location.href = "login.html";
-                });
-            });
-        }
-
-        // --- LOGIQUE REGISTER ---
+        // LOGIQUE D'INSCRIPTION (CODE SPÉCIFIQUE)
         const auth = firebase.auth();
         const db = firebase.firestore();
-
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                logoutLink.style.display = 'flex';
-            } else {
-                authLink.innerHTML = '<i data-lucide="log-in"></i> Connexion';
-                authLink.href = 'login.html';
-                logoutLink.style.display = 'none';
-            }
-            lucide.createIcons();
-        });
-
-        if (logoutLink) {
-            logoutLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                auth.signOut().then(() => window.location.reload());
-            });
-        }
-
-        // --- 3. LOGIQUE INSCRIPTION ---
         const btn = document.getElementById('btn-register');
         const errorDiv = document.getElementById('error-message');
 
@@ -299,7 +235,7 @@
             });
         }
         
-        lucide.createIcons();
+        if(typeof lucide !== 'undefined') lucide.createIcons();
     });
   </script>
 </body>
