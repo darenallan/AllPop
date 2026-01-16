@@ -16,6 +16,577 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
   <script src="assets/js/auth.js"></script>
+
+  <style>
+    /* === CATALOGUE LAYOUT === */
+    .catalogue-layout {
+      display: flex;
+      gap: 35px;
+      position: relative;
+      margin-top: 40px;
+    }
+
+    /* === SIDEBAR FILTRES === */
+    .filters-sidebar {
+      width: 300px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+      border: 1px solid rgba(212, 175, 55, 0.15);
+      border-radius: 16px;
+      padding: 0;
+      height: fit-content;
+      position: sticky;
+      top: 90px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.8) inset;
+      overflow: hidden;
+    }
+
+    .filters-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 24px 20px;
+      border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+      background: linear-gradient(135deg, #fff 0%, #fefdf8 100%);
+    }
+
+    .filters-header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+      color: #1a1a1a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .filters-header h3 i {
+      color: #D4AF37;
+      width: 22px;
+      height: 22px;
+    }
+
+    .filters-reset {
+      color: #D4AF37;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+    }
+
+    .filters-reset:hover {
+      background: rgba(212, 175, 55, 0.1);
+      border-color: rgba(212, 175, 55, 0.3);
+    }
+
+    .filter-group {
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    .filter-group:last-child {
+      border-bottom: none;
+    }
+
+    .filter-group-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 18px 24px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.3s ease;
+      background: #fff;
+    }
+
+    .filter-group-title:hover {
+      background: #fafafa;
+    }
+
+    .filter-group-title i {
+      width: 18px;
+      height: 18px;
+      color: #D4AF37;
+    }
+
+    .filter-group-title .chevron {
+      transition: transform 0.3s ease;
+      color: #666;
+    }
+
+    .filter-group.collapsed .chevron {
+      transform: rotate(-90deg);
+    }
+
+    .filter-group-content {
+      padding: 0 24px 20px;
+      max-height: 500px;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+
+    .filter-group.collapsed .filter-group-content {
+      max-height: 0;
+      padding: 0 24px;
+    }
+
+    /* Price Slider */
+    .price-inputs {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .price-input {
+      flex: 1;
+      padding: 12px 14px;
+      border: 2px solid #e8e8e8;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      width: 100%;
+      transition: all 0.3s ease;
+      background: #fafafa;
+    }
+
+    .price-input:focus {
+      outline: none;
+      border-color: #D4AF37;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+
+    .price-slider {
+      margin-top: 15px;
+    }
+
+    .price-slider input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: #e0e0e0;
+      outline: none;
+    }
+
+    .price-slider input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #D4AF37;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .price-slider input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #D4AF37;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Checkboxes */
+    .filter-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .filter-checkbox:hover {
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    .filter-checkbox input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #D4AF37;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .filter-checkbox label {
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #444;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      transition: color 0.2s;
+    }
+
+    .filter-checkbox:hover label {
+      color: #1a1a1a;
+    }
+
+    .filter-count {
+      color: #999;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: auto;
+      background: #f5f5f5;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* Color swatches */
+    .color-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 3px solid #e8e8e8;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .color-swatch:hover {
+      transform: translateY(-3px) scale(1.08);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    .color-swatch.selected {
+      border-color: #D4AF37;
+      border-width: 4px;
+      box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+    }
+
+    .color-swatch.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-weight: 900;
+      font-size: 18px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .colors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+      gap: 14px;
+      margin-top: 15px;
+      padding: 5px;
+    }
+
+    /* === RECHERCHE PREMIUM === */
+    .search-container {
+      position: relative;
+      margin-bottom: 35px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      padding: 6px 6px 6px 24px;
+      border-radius: 50px;
+      border: 3px solid transparent;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.02);
+    }
+
+    .search-input-wrapper:focus-within {
+      border-color: #D4AF37;
+      box-shadow: 0 8px 32px rgba(212, 175, 55, 0.25), 0 0 0 1px #D4AF37;
+      transform: translateY(-2px);
+    }
+
+    .search-input-wrapper i.search-icon {
+      color: #999;
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .search-input-wrapper input {
+      border: none;
+      background: transparent;
+      width: 100%;
+      margin: 0 16px;
+      outline: none;
+      font-size: 16px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .search-input-wrapper input::placeholder {
+      color: #aaa;
+      font-weight: 400;
+    }
+
+    .search-btn {
+      background: linear-gradient(135deg, #D4AF37 0%, #f0c94d 100%);
+      border: none;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+      flex-shrink: 0;
+    }
+
+    .search-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 6px 24px rgba(212, 175, 55, 0.45);
+    }
+
+    .search-btn:active {
+      transform: scale(0.98);
+    }
+
+    .search-btn i {
+      color: #000;
+      width: 24px;
+      height: 24px;
+    }
+
+    .search-autocomplete {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 2px solid rgba(212, 175, 55, 0.2);
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+      max-height: 420px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .search-autocomplete.show {
+      display: block;
+    }
+
+    .autocomplete-item {
+      padding: 16px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    .autocomplete-item:hover {
+      background: linear-gradient(90deg, rgba(212, 175, 55, 0.08) 0%, transparent 100%);
+      padding-left: 24px;
+    }
+
+    .autocomplete-img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #f0f0f0;
+    }
+
+    .autocomplete-info {
+      flex: 1;
+    }
+
+    .autocomplete-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 2px;
+    }
+
+    .autocomplete-price {
+      font-size: 13px;
+      color: #D4AF37;
+      font-weight: 600;
+    }
+
+    .autocomplete-no-results {
+      padding: 20px;
+      text-align: center;
+      color: #999;
+      font-size: 14px;
+    }
+
+    /* Location Select */
+    .location-select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e8e8e8;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 40px;
+    }
+
+    .location-select:focus {
+      outline: none;
+      border-color: #D4AF37;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+
+    /* === CATALOGUE CONTENT === */
+    .catalogue-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .active-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .filter-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #f5f5f5;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .filter-tag i {
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .filter-tag i:hover {
+      color: #333;
+    }
+
+    /* Mobile Filters Toggle */
+    .mobile-filters-toggle {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1024px) {
+      .filters-sidebar {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        height: 100vh;
+        z-index: 2000;
+        transition: left 0.3s ease;
+        width: 280px;
+        overflow-y: auto;
+      }
+
+      .filters-sidebar.open {
+        left: 0;
+      }
+
+      .filters-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1999;
+      }
+
+      .filters-overlay.show {
+        display: block;
+      }
+
+      .mobile-filters-toggle {
+        display: block;
+      }
+
+      .mobile-filters-btn {
+        width: 100%;
+        padding: 12px 20px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .mobile-filters-btn:hover {
+        background: #f9f9f9;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .catalogue-layout {
+        flex-direction: column;
+      }
+
+      .price-inputs {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -66,34 +637,260 @@
 
   <main class="container">
     <section class="section">
-      <h1 class="section-title">Catalogue</h1>
+      <h1 class="section-title" style="text-align: center; font-size: 42px; margin-bottom: 15px;">Catalogue Premium</h1>
+      <p style="text-align: center; color: #666; font-size: 16px; margin-bottom: 35px;">Découvrez notre sélection d'excellence</p>
       
-      <div class="catalogue-toolbar" style="background:#fff; padding:20px; border:1px solid #eee; border-radius:12px; margin-bottom:30px; box-shadow:0 4px 15px rgba(0,0,0,0.03);">
-        
-        <div class="catalogue-search" style="display:flex; align-items:center; background:#f9f9f9; padding:12px; border-radius:8px; margin-bottom:15px;">
-          <i data-lucide="search" style="color:#888;"></i>
-          <input id="search-input" placeholder="Rechercher un article..." style="border:none; background:transparent; width:100%; margin-left:10px; outline:none; font-size:15px;">
+      <!-- Recherche Premium avec Bouton Gold -->
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <i data-lucide="search" class="search-icon"></i>
+          <input 
+            id="search-input" 
+            type="text"
+            placeholder="Recherchez vos produits premium..." 
+            autocomplete="off"
+          >
+          <button class="search-btn" type="button" onclick="applyFilters()">
+            <i data-lucide="search"></i>
+          </button>
         </div>
-
-        <div class="catalogue-chips" style="display:flex; gap:10px; flex-wrap:wrap;">
-          <select id="filter-cat" class="chip-select" style="padding:10px 15px; border:1px solid #ddd; border-radius:20px; background:#fff; cursor:pointer;">
-              <option value="">Toutes les catégories</option>
-              </select>
-          
-          <select id="sort-select" class="chip-select" style="padding:10px 15px; border:1px solid #ddd; border-radius:20px; background:#fff; cursor:pointer;">
-            <option value="recent">Plus récent</option>
-            <option value="price-asc">Prix croissant</option>
-            <option value="price-desc">Prix décroissant</option>
-          </select>
-        </div>
+        <div class="search-autocomplete" id="search-autocomplete"></div>
       </div>
 
-      <div id="catalogue-grid" class="grid grid-4">
-          <p>Chargement du catalogue...</p>
+      <!-- Mobile Filters Toggle -->
+      <div class="mobile-filters-toggle">
+        <button class="mobile-filters-btn" id="toggle-filters">
+          <i data-lucide="sliders"></i>
+          Filtres
+        </button>
+      </div>
+
+      <!-- Layout avec Sidebar + Content -->
+      <div class="catalogue-layout">
+        
+        <!-- SIDEBAR FILTRES AVEC ACCORDÉON -->
+        <aside class="filters-sidebar" id="filters-sidebar">
+          <div class="filters-header">
+            <h3>
+              <i data-lucide="sliders"></i>
+              Filtres
+            </h3>
+            <a href="#" class="filters-reset" id="reset-filters">Réinitialiser</a>
+          </div>
+
+          <!-- Filtre Prix -->
+          <div class="filter-group" data-filter="price">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="dollar-sign"></i>
+                <span>Prix (FCFA)</span>
+              </div>
+              <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+              <div class="price-inputs">
+                <input 
+                  type="number" 
+                  class="price-input" 
+                  id="price-min" 
+                  placeholder="Min"
+                  min="0"
+                >
+                <span style="color: #D4AF37; font-weight: 700;">—</span>
+                <input 
+                  type="number" 
+                  class="price-input" 
+                  id="price-max" 
+                  placeholder="Max"
+                  min="0"
+                >
+              </div>
+              <div class="price-slider">
+                <input 
+                  type="range" 
+                  id="price-range-min" 
+                  min="0" 
+                  max="1000000" 
+                  step="1000"
+                  value="0"
+                >
+                <input 
+                  type="range" 
+                  id="price-range-max" 
+                  min="0" 
+                  max="1000000" 
+                  step="1000"
+                  value="1000000"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtre Catégories -->
+          <div class="filter-group" data-filter="category">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="grid"></i>
+                <span>Catégories</span>
+              </div>
+              <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+              <!-- Catégories prédéfinies + dynamiques -->
+              <div class="filter-checkbox">
+                <input type="checkbox" id="cat-mode" value="Mode" class="category-filter">
+                <label for="cat-mode">
+                  <span>Mode</span>
+                  <span class="filter-count" id="count-mode">(0)</span>
+                </label>
+              </div>
+              <div class="filter-checkbox">
+                <input type="checkbox" id="cat-electronique" value="Électronique" class="category-filter">
+                <label for="cat-electronique">
+                  <span>Électronique</span>
+                  <span class="filter-count" id="count-electronique">(0)</span>
+                </label>
+              </div>
+              <div class="filter-checkbox">
+                <input type="checkbox" id="cat-beaute" value="Beauté" class="category-filter">
+                <label for="cat-beaute">
+                  <span>Beauté</span>
+                  <span class="filter-count" id="count-beaute">(0)</span>
+                </label>
+              </div>
+              <div class="filter-checkbox">
+                <input type="checkbox" id="cat-maison" value="Maison" class="category-filter">
+                <label for="cat-maison">
+                  <span>Maison</span>
+                  <span class="filter-count" id="count-maison">(0)</span>
+                </label>
+              </div>
+              <div class="filter-checkbox">
+                <input type="checkbox" id="cat-vehicules" value="Véhicules" class="category-filter">
+                <label for="cat-vehicules">
+                  <span>Véhicules</span>
+                  <span class="filter-count" id="count-vehicules">(0)</span>
+                </label>
+              </div>
+              <div id="category-filters-dynamic">
+                <!-- Autres catégories chargées dynamiquement -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtre Note Vendeur -->
+          <div class="filter-group" data-filter="rating">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="star"></i>
+                <span>Note Vendeur</span>
+              </div>
+              <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+              <div class="filter-checkbox">
+                <input type="checkbox" id="rating-4plus" value="4">
+                <label for="rating-4plus">
+                  <span>⭐⭐⭐⭐ 4 étoiles et plus</span>
+                </label>
+              </div>
+              <div class="filter-checkbox">
+                <input type="checkbox" id="rating-3plus" value="3">
+                <label for="rating-3plus">
+                  <span>⭐⭐⭐ 3 étoiles et plus</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtre Couleurs (Cercles cliquables) -->
+          <div class="filter-group" data-filter="color">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="palette"></i>
+                <span>Couleurs</span>
+              </div>
+              <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+              <div class="colors-grid">
+                <div class="color-swatch" data-color="#000000" style="background: #000000;" title="Noir"></div>
+                <div class="color-swatch" data-color="#FFFFFF" style="background: #FFFFFF; border-color: #ddd;" title="Blanc"></div>
+                <div class="color-swatch" data-color="#D4AF37" style="background: #D4AF37;" title="Or"></div>
+                <div class="color-swatch" data-color="#FF0000" style="background: #FF0000;" title="Rouge"></div>
+                <div class="color-swatch" data-color="#0000FF" style="background: #0000FF;" title="Bleu"></div>
+                <div class="color-swatch" data-color="#00FF00" style="background: #00FF00;" title="Vert"></div>
+                <div class="color-swatch" data-color="#FFC0CB" style="background: #FFC0CB;" title="Rose"></div>
+                <div class="color-swatch" data-color="#FFA500" style="background: #FFA500;" title="Orange"></div>
+                <div id="color-filters-dynamic">
+                  <!-- Autres couleurs chargées dynamiquement -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtre Localisation (Select Stylisé) -->
+          <div class="filter-group" data-filter="location">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="map-pin"></i>
+                <span>Localisation</span>
+              </div>
+              <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+              <select id="location-select" class="location-select">
+                <option value="">Toutes les villes</option>
+                <option value="Ouagadougou">Ouagadougou</option>
+                <option value="Bobo-Dioulasso">Bobo-Dioulasso</option>
+                <option value="Koudougou">Koudougou</option>
+                <option value="Ouahigouya">Ouahigouya</option>
+                <option value="Banfora">Banfora</option>
+                <option value="Tenkodogo">Tenkodogo</option>
+                <option value="Dédougou">Dédougou</option>
+                <option value="Kaya">Kaya</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Filtre Tri -->
+          <div class="filter-group" data-filter="sort">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="arrow-down-up"></i>
+                <span>Trier par</span>
+              </div>
+              <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+              <select id="sort-select" class="location-select">
+                <option value="recent">Plus récent</option>
+                <option value="price-asc">Prix croissant</option>
+                <option value="price-desc">Prix décroissant</option>
+                <option value="popular">Plus populaire</option>
+              </select>
+            </div>
+          </div>
+        </aside>
+
+        <!-- CONTENU CATALOGUE -->
+        <div class="catalogue-content">
+          <!-- Tags Filtres Actifs -->
+          <div class="active-filters" id="active-filters"></div>
+
+          <!-- Grille Produits -->
+          <div id="catalogue-grid" class="grid grid-4">
+            <p>Chargement du catalogue...</p>
+          </div>
+        </div>
+
       </div>
       
     </section>
   </main>
+
+  <!-- Overlay pour mobile -->
+  <div class="filters-overlay" id="filters-overlay"></div>
 
   <footer class="footer">
       <div class="container">
@@ -154,135 +951,772 @@
       </div>
   </footer>
 
+  <script src="assets/js/app.js"></script>
+  
   <script>
+    // === CATALOGUE AVANCÉ - FILTRES & RECHERCHE INTELLIGENTE ===
     document.addEventListener('DOMContentLoaded', () => {
+        console.log('🚀 Catalogue - Initialisation...');
+        
+        // Vérifier Firebase
+        if (typeof firebase === 'undefined') {
+            console.error('❌ Firebase n\'est pas chargé !');
+            document.getElementById('catalogue-grid').innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff3cd; border-radius: 12px;">
+                    <h3 style="color: #856404;">Firebase n'est pas chargé</h3>
+                    <p style="color: #856404;">Vérifiez que les scripts Firebase sont correctement inclus.</p>
+                    <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #000; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
+                        Recharger
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        if (!firebase.apps || !firebase.apps.length) {
+            console.error('❌ Firebase n\'est pas initialisé !');
+            document.getElementById('catalogue-grid').innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff3cd; border-radius: 12px;">
+                    <h3 style="color: #856404;">Firebase n'est pas initialisé</h3>
+                    <p style="color: #856404;">Vérifiez votre configuration Firebase dans auth.js</p>
+                    <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #000; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
+                        Recharger
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        console.log('✅ Firebase OK');
+        
         const yearSpan = document.getElementById('year');
-        if (yearSpan) {
-            yearSpan.innerText = new Date().getFullYear();
-        }
-        
-        // --- 1. GESTION MENU MOBILE (FIX) ---
-        const menuToggle = document.getElementById('menu-toggle');
-        const closeBtn = document.getElementById('close-btn');
-        const drawer = document.getElementById('mobile-drawer');
-        const overlay = document.getElementById('menu-overlay');
+        if (yearSpan) yearSpan.innerText = new Date().getFullYear();
 
-        function openMenu() {
-            drawer.classList.add('active');
-            overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeMenu() {
-            drawer.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        if(menuToggle) menuToggle.addEventListener('click', openMenu);
-        if(closeBtn) closeBtn.addEventListener('click', closeMenu);
-        if(overlay) overlay.addEventListener('click', closeMenu);
-
-        // --- 2. LOGIQUE CATALOGUE ---
-        const auth = firebase.auth();
         const db = firebase.firestore();
+        console.log('✅ Firestore initialisé');
         
-        let products = [];
+        // === ÉTAT GLOBAL ===
+        let allProducts = [];
+        let allCategories = [];
+        let allColors = new Set();
+        let allLocations = new Set();
+        let searchDebounceTimer = null;
 
-        // Charger les catégories
-        db.collection('categories').get().then(snap => {
-            const sel = document.getElementById('filter-cat');
-            snap.forEach(doc => {
-                const d = doc.data();
-                sel.innerHTML += `<option value="${d.name}">${d.name}</option>`;
-            });
-        });
+        // === ÉLÉMENTS DOM ===
+        const searchInput = document.getElementById('search-input');
+        const searchAutocomplete = document.getElementById('search-autocomplete');
+        const priceMin = document.getElementById('price-min');
+        const priceMax = document.getElementById('price-max');
+        const priceRangeMin = document.getElementById('price-range-min');
+        const priceRangeMax = document.getElementById('price-range-max');
+        const categoryFilters = document.getElementById('category-filters-dynamic');
+        const colorFilters = document.getElementById('color-filters-dynamic');
+        const locationSelect = document.getElementById('location-select');
+        const sortSelect = document.getElementById('sort-select');
+        const catalogueGrid = document.getElementById('catalogue-grid');
+        const activeFiltersDiv = document.getElementById('active-filters');
+        const resetFiltersBtn = document.getElementById('reset-filters');
+        const toggleFiltersBtn = document.getElementById('toggle-filters');
+        const filtersSidebar = document.getElementById('filters-sidebar');
+        const filtersOverlay = document.getElementById('filters-overlay');
 
-        // Charger les produits
-        db.collection('products').get().then(snap => {
-            const grid = document.getElementById('catalogue-grid');
-            
-            if(snap.empty) {
-                grid.innerHTML = "<p>Aucun produit trouvé.</p>";
-                return;
-            }
+        // === INITIALISATION ===
+        initializeCatalogue();
 
-            snap.forEach(doc => {
-                products.push({ id: doc.id, ...doc.data() });
-            });
+        async function initializeCatalogue() {
+            try {
+                console.log('📦 Chargement du catalogue...');
+                catalogueGrid.innerHTML = "<p style='text-align:center; color:#888; padding: 40px;'><i data-lucide='loader' class='animate-spin'></i> Chargement du catalogue...</p>";
+                if (typeof lucide !== 'undefined') lucide.createIcons();
 
-            renderProducts(products);
-        });
+                // === OPTIMISATION MAJEURE : CHARGEMENT PARALLÈLE ===
+                // Charger TOUT en même temps pour gagner du temps
+                console.log('⚡ Chargement parallèle : catégories + shops + produits...');
+                
+                const [categoriesSnap, shopsSnap, productsSnap] = await Promise.all([
+                    db.collection('categories').get(),
+                    db.collection('shops').get(),
+                    db.collectionGroup('products').get()
+                ]);
 
-        function renderProducts(list) {
-            const grid = document.getElementById('catalogue-grid');
-            grid.innerHTML = "";
-            
-            if(list.length === 0) {
-                grid.innerHTML = "<p>Aucun produit ne correspond à votre recherche.</p>";
-                return;
-            }
-            
-            list.forEach(p => {
-                const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                grid.innerHTML += `
-                    <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
-                        <a href="product.html?id=${p.id}">
-                            <div style="height:250px; overflow:hidden;">
-                                <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" style="width:100%; height:100%; object-fit:cover;">
-                            </div>
-                        </a>
-                        <div style="padding:15px;">
-                            <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px;">
-                                <a href="boutique.html?id=${p.shopId}" style="text-decoration:none; color:#888;">
-                                    <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
-                                </a>
-                            </div>
-                            <h3 style="font-size:16px; margin:5px 0;"><a href="product.html?id=${p.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
-                            <div style="font-weight:bold; color:#D4AF37; margin-top:5px;">${price} FCFA</div>
+                console.log(`✅ Chargement terminé:`, {
+                    catégories: categoriesSnap.size,
+                    boutiques: shopsSnap.size,
+                    produits: productsSnap.size
+                });
+
+                // Traiter les catégories
+                categoriesSnap.forEach(doc => {
+                    allCategories.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Créer une Map des boutiques pour accès instantané (au lieu de requêtes répétées)
+                const shopsMap = new Map();
+                shopsSnap.forEach(doc => {
+                    shopsMap.set(doc.id, doc.data());
+                });
+                console.log(`📊 ${shopsMap.size} boutiques indexées en mémoire`);
+
+                if (productsSnap.empty) {
+                    catalogueGrid.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                            <i data-lucide="package-x" style="width: 64px; height: 64px; color: #ddd; margin-bottom: 20px;"></i>
+                            <h3 style="color: #999; font-weight: 600; margin-bottom: 10px;">Catalogue vide</h3>
+                            <p style="color: #bbb;">Aucun produit n'est disponible pour le moment.</p>
+                            <p style="color: #bbb; font-size: 14px; margin-top: 10px;">Les vendeurs peuvent ajouter des produits depuis leur espace vendeur.</p>
                         </div>
-                    </div>`;
-            });
-            lucide.createIcons();
+                    `;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    return;
+                }
+
+                // === CONSTRUCTION ULTRA-RAPIDE (tout est en mémoire) ===
+                console.log('🚀 Construction de la liste produits...');
+                productsSnap.forEach(doc => {
+                    const productData = doc.data();
+                    
+                    // Déterminer le shopId (selon la structure)
+                    let shopId;
+                    if (doc.ref.parent.parent) {
+                        // Structure : shops/{shopId}/products/{productId}
+                        shopId = doc.ref.parent.parent.id;
+                    } else if (productData.shopId) {
+                        // shopId stocké directement dans le produit
+                        shopId = productData.shopId;
+                    } else {
+                        shopId = 'unknown';
+                    }
+                    
+                    // Récupérer les infos boutique depuis la Map (instantané !)
+                    const shopData = shopsMap.get(shopId) || {};
+                    const shopName = shopData.name || 'Boutique';
+                    const shopRating = shopData.rating || 0;
+                    const shopCity = shopData.city || shopData.address || '';
+
+                    // Extraire couleurs si disponibles
+                    if (productData.colors && Array.isArray(productData.colors)) {
+                        productData.colors.forEach(c => allColors.add(c));
+                    }
+
+                    // Ajouter localisation
+                    if (shopCity) {
+                        allLocations.add(shopCity);
+                    }
+
+                    allProducts.push({
+                        id: doc.id,
+                        shopId,
+                        shopName,
+                        shopRating,
+                        shopCity,
+                        ...productData
+                    });
+                });
+
+                console.log(`✅ ${allProducts.length} produits chargés avec succès`);
+                console.log(`📊 Statistiques:`, {
+                    produits: allProducts.length,
+                    catégories: allCategories.length,
+                    couleurs: allColors.size,
+                    villes: allLocations.size
+                });
+
+                // Calculer min/max prix
+                const prices = allProducts.map(p => p.price || 0).filter(p => p > 0);
+                const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+                const maxPrice = prices.length > 0 ? Math.max(...prices) : 1000000;
+                
+                console.log(`💰 Prix: ${minPrice} - ${maxPrice} FCFA`);
+                
+                priceMin.value = minPrice;
+                priceMax.value = maxPrice;
+                priceMin.placeholder = minPrice;
+                priceMax.placeholder = maxPrice;
+                priceRangeMin.min = minPrice;
+                priceRangeMin.max = maxPrice;
+                priceRangeMin.value = minPrice;
+                priceRangeMax.min = minPrice;
+                priceRangeMax.max = maxPrice;
+                priceRangeMax.value = maxPrice;
+
+                // Initialiser les filtres UI
+                console.log('🎨 Initialisation des filtres UI...');
+                renderCategoryFilters();
+                renderColorFilters();
+                renderLocationFilters();
+
+                // Appliquer filtres initiaux (ex: depuis URL)
+                console.log('🔍 Application des filtres initiaux...');
+                applyFilters();
+                
+                console.log('✅ Catalogue initialisé avec succès !');
+
+            } catch (err) {
+                console.error('❌ ERREUR FIRESTORE:', err);
+                console.error('Message:', err.message);
+                console.error('Code:', err.code);
+                console.error('Stack:', err.stack);
+                
+                // Si c'est une erreur d'index manquant
+                if (err.code === 'failed-precondition' || err.message.includes('index')) {
+                    console.error('⚠️ INDEX MANQUANT DÉTECTÉ !');
+                    console.error('👉 SOLUTION: Cliquez sur le lien dans l\'erreur ci-dessus pour créer l\'index automatiquement.');
+                    console.error('ℹ️ Firebase va vous rediriger vers la console pour générer l\'index composite requis.');
+                    
+                    catalogueGrid.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff3cd; border-radius: 12px; border: 2px solid #ffc107;">
+                            <i data-lucide="alert-triangle" style="width: 64px; height: 64px; color: #ffc107; margin-bottom: 20px;"></i>
+                            <h3 style="color: #856404; font-weight: 700; margin-bottom: 10px;">Index Firestore Manquant</h3>
+                            <p style="color: #856404; margin-bottom: 15px;">Une requête nécessite un index composite.</p>
+                            <p style="color: #856404; font-size: 14px; margin-bottom: 20px;">Ouvrez la console du navigateur (F12) et cliquez sur le lien d'erreur pour créer l'index automatiquement.</p>
+                            <button onclick="location.reload()" style="padding: 12px 24px; background: #ffc107; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                Recharger la page
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    catalogueGrid.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                            <i data-lucide="alert-circle" style="width: 64px; height: 64px; color: #ef4444; margin-bottom: 20px;"></i>
+                            <h3 style="color: #ef4444; font-weight: 600; margin-bottom: 10px;">Erreur de chargement</h3>
+                            <p style="color: #999;">Impossible de charger le catalogue. Vérifiez votre connexion.</p>
+                            <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #000; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
+                                Réessayer
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
         }
 
-        // Gestion des filtres
-        const search = document.getElementById('search-input');
-        const catFilter = document.getElementById('filter-cat');
-        const sortSelect = document.getElementById('sort-select');
-
-        function applyFilters() {
-            const term = search.value.toLowerCase();
-            const cat = catFilter.value;
-            const sort = sortSelect.value;
+        // === RENDU DES FILTRES ===
+        function renderCategoryFilters() {
+            const predefinedCategories = ['Mode', 'Électronique', 'Beauté', 'Maison', 'Véhicules'];
             
-            let filtered = products.filter(p => {
-                const matchSearch = p.name.toLowerCase().includes(term);
-                const matchCat = cat === "" || p.category === cat;
-                return matchSearch && matchCat;
+            // Mettre à jour les compteurs des catégories prédéfinies
+            predefinedCategories.forEach(catName => {
+                const count = allProducts.filter(p => p.category === catName).length;
+                const countEl = document.getElementById(`count-${catName.toLowerCase()}`);
+                if (countEl) {
+                    countEl.textContent = `(${count})`;
+                }
             });
+
+            // Ajouter les catégories dynamiques (celles qui ne sont pas dans les prédéfinies)
+            categoryFilters.innerHTML = '';
+            allCategories.forEach(cat => {
+                if (!predefinedCategories.includes(cat.name)) {
+                    const count = allProducts.filter(p => p.category === cat.name).length;
+                    categoryFilters.innerHTML += `
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="cat-${cat.id}" value="${cat.name}" class="category-filter">
+                            <label for="cat-${cat.id}">
+                                <span>${cat.name}</span>
+                                <span class="filter-count">(${count})</span>
+                            </label>
+                        </div>
+                    `;
+                }
+            });
+
+            document.querySelectorAll('.category-filter').forEach(cb => {
+                cb.addEventListener('change', applyFilters);
+            });
+        }
+
+        function renderColorFilters() {
+            const predefinedColors = ['#000000', '#FFFFFF', '#D4AF37', '#FF0000', '#0000FF', '#00FF00', '#FFC0CB', '#FFA500'];
+            const colorNames = {
+                '#000000': 'Noir',
+                '#FFFFFF': 'Blanc',
+                '#FF0000': 'Rouge',
+                '#00FF00': 'Vert',
+                '#0000FF': 'Bleu',
+                '#FFFF00': 'Jaune',
+                '#FFC0CB': 'Rose',
+                '#FFA500': 'Orange',
+                '#800080': 'Violet',
+                '#A52A2A': 'Marron',
+                '#808080': 'Gris',
+                '#D4AF37': 'Or'
+            };
+
+            // Ajouter les couleurs dynamiques qui ne sont pas prédéfinies
+            colorFilters.innerHTML = '';
+            allColors.forEach(color => {
+                if (!predefinedColors.includes(color.toUpperCase())) {
+                    const colorHex = color.startsWith('#') ? color : '#000000';
+                    const colorName = colorNames[colorHex.toUpperCase()] || colorHex;
+                    colorFilters.innerHTML += `
+                        <div 
+                            class="color-swatch" 
+                            data-color="${color}"
+                            style="background: ${colorHex};"
+                            title="${colorName}"
+                        ></div>
+                    `;
+                }
+            });
+
+            // Ajouter les event listeners sur tous les swatches (prédéfinis + dynamiques)
+            document.querySelectorAll('.color-swatch').forEach(swatch => {
+                swatch.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    applyFilters();
+                });
+            });
+        }
+
+        function renderLocationFilters() {
+            // La localisation est maintenant gérée par le <select> directement dans le HTML
+            // Pas besoin de rendu dynamique, juste ajouter l'event listener
+            locationSelect.addEventListener('change', applyFilters);
+        }
+
+        // === RECHERCHE INTELLIGENTE (DEBOUNCE + AUTOCOMPLETE) ===
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.trim().toLowerCase();
+            
+            // Debounce 300ms
+            clearTimeout(searchDebounceTimer);
+            
+            if (term.length >= 2) {
+                searchDebounceTimer = setTimeout(() => {
+                    showAutocomplete(term);
+                }, 300);
+            } else {
+                hideAutocomplete();
+                if (term.length === 0) {
+                    applyFilters();
+                }
+            }
+        });
+
+        // Appliquer le filtre quand on appuie sur Entrée
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                hideAutocomplete();
+                applyFilters();
+            }
+        });
+
+        function showAutocomplete(term) {
+            // Recherche intelligente sur name, keywords, category
+            const matches = allProducts.filter(p => {
+                const nameMatch = p.name && p.name.toLowerCase().includes(term);
+                const keywordsMatch = p.keywords && Array.isArray(p.keywords) && 
+                    p.keywords.some(kw => kw.toLowerCase().includes(term));
+                const categoryMatch = p.category && p.category.toLowerCase().includes(term);
+                const descMatch = p.description && p.description.toLowerCase().includes(term);
+                
+                return nameMatch || keywordsMatch || categoryMatch || descMatch;
+            })
+            .slice(0, 8)  // Limiter à 8 résultats
+            .sort((a, b) => {
+                // Priorité aux matchs exacts dans le nom
+                const aExact = a.name.toLowerCase().startsWith(term) ? 1 : 0;
+                const bExact = b.name.toLowerCase().startsWith(term) ? 1 : 0;
+                return bExact - aExact;
+            });
+
+            if (matches.length === 0) {
+                searchAutocomplete.innerHTML = `
+                    <div class="autocomplete-no-results">
+                        <i data-lucide="search-x" style="width: 32px; height: 32px; color: #ddd; margin-bottom: 10px;"></i>
+                        <div>Aucun résultat pour "${term}"</div>
+                    </div>
+                `;
+                searchAutocomplete.classList.add('show');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+
+            searchAutocomplete.innerHTML = matches.map(p => {
+                const price = new Intl.NumberFormat('fr-FR').format(p.price);
+                // Highlight du terme recherché
+                const highlightedName = p.name.replace(
+                    new RegExp(term, 'gi'), 
+                    match => `<mark style="background: #fff3cd; padding: 2px 4px; border-radius: 3px;">${match}</mark>`
+                );
+                
+                return `
+                    <div class="autocomplete-item" data-product-id="${p.id}">
+                        <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" 
+                             class="autocomplete-img" 
+                             alt="${p.name}"
+                             onerror="this.src='assets/img/placeholder-product-1.svg'">
+                        <div class="autocomplete-info">
+                            <div class="autocomplete-name">${highlightedName}</div>
+                            <div class="autocomplete-price">${price} FCFA</div>
+                            ${p.category ? `<div style="font-size: 12px; color: #999; margin-top: 2px;">${p.category}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            searchAutocomplete.classList.add('show');
+
+            // Clic sur suggestion
+            document.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const productId = item.dataset.productId;
+                    window.location.href = `product.html?id=${productId}`;
+                });
+            });
+        }
+
+        function hideAutocomplete() {
+            searchAutocomplete.classList.remove('show');
+            searchAutocomplete.innerHTML = '';
+        }
+
+        // Cacher autocomplete au clic ailleurs
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchAutocomplete.contains(e.target)) {
+                hideAutocomplete();
+            }
+        });
+
+        // === LOGIQUE DE FILTRAGE (CÔTÉ CLIENT) ===
+        function applyFilters() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            
+            // === FILTRAGE PRIX (CÔTÉ CLIENT) ===
+            // On récupère les valeurs min/max depuis les inputs
+            const minPrice = parseFloat(priceMin.value) || 0;
+            const maxPrice = parseFloat(priceMax.value) || Infinity;
+
+            // Catégories sélectionnées
+            const selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked'))
+                .map(cb => cb.value);
+
+            // Notes sélectionnées
+            const rating4Plus = document.getElementById('rating-4plus')?.checked;
+            const rating3Plus = document.getElementById('rating-3plus')?.checked;
+
+            // Couleurs sélectionnées
+            const selectedColors = Array.from(document.querySelectorAll('.color-swatch.selected'))
+                .map(s => s.dataset.color);
+
+            // === LOCALISATION (CÔTÉ CLIENT) ===
+            const selectedLocation = locationSelect.value;
 
             // Tri
-            if(sort === 'price-asc') {
-                filtered.sort((a, b) => a.price - b.price);
-            } else if(sort === 'price-desc') {
-                filtered.sort((a, b) => b.price - a.price);
-            } else if(sort === 'recent') {
+            const sortBy = sortSelect.value;
+
+            // === FILTRAGE COMPLET CÔTÉ CLIENT ===
+            // IMPORTANT: Tout le filtrage se fait en JavaScript pour éviter les index Firestore complexes
+            let filtered = allProducts.filter(p => {
+                // Recherche textuelle
+                const matchSearch = searchTerm === '' || 
+                    (p.name && p.name.toLowerCase().includes(searchTerm)) ||
+                    (p.keywords && Array.isArray(p.keywords) && p.keywords.some(kw => kw.toLowerCase().includes(searchTerm))) ||
+                    (p.category && p.category.toLowerCase().includes(searchTerm)) ||
+                    (p.description && p.description.toLowerCase().includes(searchTerm));
+
+                // Filtrage prix (client-side)
+                const productPrice = parseFloat(p.price) || 0;
+                const matchPrice = productPrice >= minPrice && productPrice <= maxPrice;
+
+                // Catégorie
+                const matchCategory = selectedCategories.length === 0 || 
+                    selectedCategories.includes(p.category);
+
+                // Note vendeur
+                let matchRating = true;
+                if (rating4Plus) {
+                    matchRating = (p.shopRating || 0) >= 4;
+                } else if (rating3Plus) {
+                    matchRating = (p.shopRating || 0) >= 3;
+                }
+
+                // Couleur
+                const matchColor = selectedColors.length === 0 ||
+                    (p.colors && Array.isArray(p.colors) && p.colors.some(c => selectedColors.includes(c)));
+
+                // Localisation (client-side)
+                const matchLocation = selectedLocation === '' || p.shopCity === selectedLocation;
+
+                return matchSearch && matchPrice && matchCategory && matchRating && matchColor && matchLocation;
+            });
+
+            console.log(`🔍 Filtrage: ${filtered.length} produits trouvés sur ${allProducts.length}`);
+
+            // === TRI ===
+            if (sortBy === 'price-asc') {
+                filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
+            } else if (sortBy === 'price-desc') {
+                filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
+            } else if (sortBy === 'recent') {
                 filtered.sort((a, b) => {
                     const dateA = a.createdAt?.seconds || 0;
                     const dateB = b.createdAt?.seconds || 0;
                     return dateB - dateA;
                 });
+            } else if (sortBy === 'popular') {
+                filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
             }
+
+            // Afficher les filtres actifs
+            renderActiveFilters({
+                searchTerm,
+                minPrice,
+                maxPrice,
+                selectedCategories,
+                rating4Plus,
+                rating3Plus,
+                selectedColors,
+                selectedLocation
+            });
 
             renderProducts(filtered);
         }
 
-        search.addEventListener('input', applyFilters);
-        catFilter.addEventListener('change', applyFilters);
+        // === AFFICHAGE DES FILTRES ACTIFS ===
+        function renderActiveFilters(filters) {
+            activeFiltersDiv.innerHTML = '';
+            let hasActiveFilters = false;
+
+            if (filters.searchTerm) {
+                activeFiltersDiv.innerHTML += `
+                    <div class="filter-tag">
+                        <i data-lucide="search" style="width: 14px; height: 14px;"></i>
+                        "${filters.searchTerm}"
+                        <i data-lucide="x" onclick="document.getElementById('search-input').value=''; applyFilters();"></i>
+                    </div>
+                `;
+                hasActiveFilters = true;
+            }
+
+            const initialMinPrice = parseFloat(priceMin.placeholder) || 0;
+            const initialMaxPrice = parseFloat(priceMax.placeholder) || Infinity;
+            
+            if (filters.minPrice > initialMinPrice || filters.maxPrice < initialMaxPrice) {
+                const minDisplay = new Intl.NumberFormat('fr-FR').format(filters.minPrice);
+                const maxDisplay = filters.maxPrice === Infinity ? '∞' : new Intl.NumberFormat('fr-FR').format(filters.maxPrice);
+                
+                activeFiltersDiv.innerHTML += `
+                    <div class="filter-tag">
+                        <i data-lucide="dollar-sign" style="width: 14px; height: 14px;"></i>
+                        ${minDisplay} - ${maxDisplay} FCFA
+                        <i data-lucide="x" onclick="resetPriceFilter()"></i>
+                    </div>
+                `;
+                hasActiveFilters = true;
+            }
+
+            filters.selectedCategories.forEach(cat => {
+                activeFiltersDiv.innerHTML += `
+                    <div class="filter-tag">
+                        <i data-lucide="grid" style="width: 14px; height: 14px;"></i>
+                        ${cat}
+                        <i data-lucide="x" onclick="uncheckCategory('${cat}')"></i>
+                    </div>
+                `;
+                hasActiveFilters = true;
+            });
+
+            if (filters.rating4Plus) {
+                activeFiltersDiv.innerHTML += `
+                    <div class="filter-tag">
+                        <i data-lucide="star" style="width: 14px; height: 14px;"></i>
+                        4★ et plus
+                        <i data-lucide="x" onclick="document.getElementById('rating-4plus').checked=false; applyFilters();"></i>
+                    </div>
+                `;
+                hasActiveFilters = true;
+            }
+
+            if (filters.rating3Plus) {
+                activeFiltersDiv.innerHTML += `
+                    <div class="filter-tag">
+                        <i data-lucide="star" style="width: 14px; height: 14px;"></i>
+                        3★ et plus
+                        <i data-lucide="x" onclick="document.getElementById('rating-3plus').checked=false; applyFilters();"></i>
+                    </div>
+                `;
+                hasActiveFilters = true;
+            }
+
+            if (filters.selectedLocation) {
+                activeFiltersDiv.innerHTML += `
+                    <div class="filter-tag">
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                        ${filters.selectedLocation}
+                        <i data-lucide="x" onclick="document.getElementById('location-select').value=''; applyFilters();"></i>
+                    </div>
+                `;
+                hasActiveFilters = true;
+            }
+
+            if (hasActiveFilters && typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        // === RENDU DES PRODUITS ===
+        function renderProducts(products) {
+            catalogueGrid.innerHTML = '';
+
+            if (products.length === 0) {
+                catalogueGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                        <i data-lucide="search-x" style="width: 64px; height: 64px; color: #ddd; margin-bottom: 20px;"></i>
+                        <h3 style="color: #999; font-weight: 600; margin-bottom: 10px;">Aucun produit trouvé</h3>
+                        <p style="color: #bbb; margin-bottom: 20px;">Essayez de modifier vos critères de recherche.</p>
+                        <button onclick="document.getElementById('reset-filters').click()" 
+                                style="padding: 10px 20px; background: #D4AF37; color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            Réinitialiser les filtres
+                        </button>
+                    </div>
+                `;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+
+            products.forEach(p => {
+                const price = new Intl.NumberFormat('fr-FR').format(p.price || 0);
+                const hasDiscount = p.originalPrice && p.originalPrice > p.price;
+                const discountPercent = hasDiscount ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+                
+                catalogueGrid.innerHTML += `
+                    <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden; transition: transform 0.2s, box-shadow 0.2s; position: relative;">
+                        ${hasDiscount ? `<div style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; z-index: 10;">-${discountPercent}%</div>` : ''}
+                        
+                        <a href="product.html?id=${p.id}" style="text-decoration: none;">
+                            <div style="height:250px; overflow:hidden; background: #f5f5f5; position: relative;">
+                                <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" 
+                                     style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s;"
+                                     loading="lazy"
+                                     alt="${p.name || 'Produit'}"
+                                     onerror="this.src='assets/img/placeholder-product-1.svg'"
+                                     onmouseover="this.style.transform='scale(1.05)'"
+                                     onmouseout="this.style.transform='scale(1)'">
+                            </div>
+                        </a>
+                        
+                        <div style="padding:15px;">
+                            <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px; display: flex; align-items: center; justify-content: space-between;">
+                                <a href="boutique.html?id=${p.shopId}" style="text-decoration:none; color:#888; display: flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="store" style="width:12px; height:12px;"></i>
+                                    ${p.shopName || 'Boutique'}
+                                </a>
+                                ${(p.shopRating || 0) >= 4 ? '<span style="color:#D4AF37; font-size: 14px;">⭐</span>' : ''}
+                            </div>
+                            
+                            <h3 style="font-size:16px; margin:8px 0; line-height: 1.3; min-height: 42px;">
+                                <a href="product.html?id=${p.id}" style="color:black; text-decoration:none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                    ${p.name || 'Produit sans nom'}
+                                </a>
+                            </h3>
+                            
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top:8px;">
+                                <div style="font-weight:bold; color:#D4AF37; font-size: 18px;">${price} FCFA</div>
+                                ${hasDiscount ? `<div style="font-size: 14px; color: #999; text-decoration: line-through;">${new Intl.NumberFormat('fr-FR').format(p.originalPrice)} FCFA</div>` : ''}
+                            </div>
+                            
+                            ${p.shopCity ? `<div style="font-size:12px; color:#999; margin-top:6px; display: flex; align-items: center; gap: 4px;"><i data-lucide="map-pin" style="width:12px; height:12px;"></i>${p.shopCity}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        // === GESTION DES SLIDERS PRIX ===
+        priceMin.addEventListener('input', () => {
+            priceRangeMin.value = priceMin.value;
+            applyFilters();
+        });
+
+        priceMax.addEventListener('input', () => {
+            priceRangeMax.value = priceMax.value;
+            applyFilters();
+        });
+
+        priceRangeMin.addEventListener('input', () => {
+            priceMin.value = priceRangeMin.value;
+            applyFilters();
+        });
+
+        priceRangeMax.addEventListener('input', () => {
+            priceMax.value = priceRangeMax.value;
+            applyFilters();
+        });
+
+        // === TRI ===
         sortSelect.addEventListener('change', applyFilters);
-        
-        lucide.createIcons();
+
+        // === RÉINITIALISATION ===
+        resetFiltersBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Reset tous les filtres
+            searchInput.value = '';
+            document.querySelectorAll('.category-filter').forEach(cb => cb.checked = false);
+            locationSelect.value = '';
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+            if (document.getElementById('rating-4plus')) document.getElementById('rating-4plus').checked = false;
+            if (document.getElementById('rating-3plus')) document.getElementById('rating-3plus').checked = false;
+            
+            const prices = allProducts.map(p => p.price || 0);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            priceMin.value = minPrice;
+            priceMax.value = maxPrice;
+            priceRangeMin.value = minPrice;
+            priceRangeMax.value = maxPrice;
+
+            applyFilters();
+        });
+
+        // === MOBILE FILTERS TOGGLE ===
+        toggleFiltersBtn?.addEventListener('click', () => {
+            filtersSidebar.classList.add('open');
+            filtersOverlay.classList.add('show');
+        });
+
+        filtersOverlay?.addEventListener('click', () => {
+            filtersSidebar.classList.remove('open');
+            filtersOverlay.classList.remove('show');
+        });
+
+        // === FONCTIONS GLOBALES (pour onclick) ===
+        window.toggleFilterGroup = (element) => {
+            const filterGroup = element.closest('.filter-group');
+            filterGroup.classList.toggle('collapsed');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        };
+
+        window.resetPriceFilter = () => {
+            const prices = allProducts.map(p => p.price || 0).filter(p => p > 0);
+            const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+            const maxPrice = prices.length > 0 ? Math.max(...prices) : 1000000;
+            
+            priceMin.value = minPrice;
+            priceMax.value = maxPrice;
+            priceRangeMin.value = minPrice;
+            priceRangeMax.value = maxPrice;
+            applyFilters();
+        };
+
+        window.uncheckCategory = (catName) => {
+            const checkbox = Array.from(document.querySelectorAll('.category-filter'))
+                .find(cb => cb.value === catName);
+            if (checkbox) {
+                checkbox.checked = false;
+                applyFilters();
+            }
+        };
+
+        // Rendre applyFilters accessible globalement
+        window.applyFilters = applyFilters;
+
+        // Initialiser Lucide Icons
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     });
   </script>
 </body>
