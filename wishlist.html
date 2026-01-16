@@ -9,15 +9,6 @@
   
   <link rel="stylesheet" href="assets/css/styles.css" />
   
-  <style>
-    .remove-wishlist-btn:hover {
-      transform: scale(1.15);
-    }
-    .remove-wishlist-btn:hover i {
-      color: #ff4444 !important;
-    }
-  </style>
-  
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -77,6 +68,7 @@
         <div>
           <div id="wishlist-items"></div>
           <div class="mt-4">
+            <button class="btn" id="clear-wishlist-btn">Tout retirer</button>
             <a href="catalogue.html" class="btn btn-outline">Continuer vos achats</a>
           </div>
         </div>
@@ -155,199 +147,118 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script>
-   document.addEventListener('DOMContentLoaded', () => {
-        
-        // --- 1. SETUP HEADER (Menu & Badge) ---
-        const menuToggle = document.getElementById('menu-toggle');
-        const closeBtn = document.getElementById('close-btn');
-        const drawer = document.getElementById('mobile-drawer');
-        const overlay = document.getElementById('menu-overlay');
-
-        function toggleMenu() {
-            drawer.classList.toggle('active');
-            overlay.classList.toggle('active');
-            document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
-        }
-
-        if(menuToggle) menuToggle.addEventListener('click', toggleMenu);
-        if(closeBtn) closeBtn.addEventListener('click', toggleMenu);
-        if(overlay) overlay.addEventListener('click', toggleMenu);
-
-        // Badge Panier
-        updateCartBadge();
-
-        // Année Footer
-        const yearSpan = document.getElementById('year');
-        if(yearSpan) yearSpan.innerText = new Date().getFullYear();
-
-        // Logout Mobile
-        const logoutBtn = document.getElementById('mobile-logout-btn');
-        if (logoutBtn && typeof firebase !== 'undefined') {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                firebase.auth().signOut().then(() => window.location.href = "login.html");
-            });
-        }
-
-        // --- 2. LOGIQUE WISHLIST ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- LOGIQUE WISHLIST UNIQUEMENT ---
         const db = firebase.firestore();
-        let wishlistData = []; // Stocke les données produits chargés
 
-        // Charge les IDs depuis le LocalStorage
-        function getWishlistIds() {
-            const stored = localStorage.getItem('ac_wishlist');
-            return stored ? JSON.parse(stored) : [];
-        }
+        const db = firebase.firestore();
+        let wishlistData = [];
 
-        // Sauvegarde les IDs dans le LocalStorage
-        function saveWishlist(ids) {
-            localStorage.setItem('ac_wishlist', JSON.stringify(ids));
-        }
-
-        // Charge les produits depuis Firebase
+        // Chargement de la wishlist
         async function loadWishlist() {
-            const ids = getWishlistIds();
-            const container = document.getElementById('wishlist-items');
+            const ids = JSON.parse(localStorage.getItem('ac_wishlist') || '[]');
+            const itemsContainer = document.getElementById('wishlist-items');
             
             if(ids.length === 0) {
-                renderEmpty();
+                itemsContainer.innerHTML = '<p>Votre liste de souhaits est vide. <a href="catalogue.html" style="color:var(--gold);">Découvrir le catalogue</a></p>';
                 return;
             }
 
-            container.innerHTML = '<p style="text-align:center; padding:40px;">Chargement de vos favoris...</p>';
+            itemsContainer.innerHTML = '<p>Chargement...</p>';
             wishlistData = [];
 
             try {
-                // On charge chaque produit un par un (Firebase 'in' query est limité à 10, donc boucle plus sûre ici)
-                const promises = ids.map(id => db.collection('products').doc(id).get());
-                const snapshots = await Promise.all(promises);
-
-                snapshots.forEach(doc => {
+                for(let id of ids) {
+                    const doc = await db.collection('products').doc(id).get();
                     if(doc.exists) {
                         wishlistData.push({ id: doc.id, ...doc.data() });
                     }
-                });
-
-                // Si des produits ont été supprimés de la base entre temps, on nettoie la liste locale
-                if(wishlistData.length < ids.length) {
-                    const validIds = wishlistData.map(p => p.id);
-                    saveWishlist(validIds);
                 }
-
                 renderWishlist();
-
             } catch(error) {
-                console.error("Erreur chargement wishlist:", error);
-                container.innerHTML = '<p style="color:red; text-align:center;">Erreur de connexion. Veuillez réessayer.</p>';
+                itemsContainer.innerHTML = '<p>Erreur lors du chargement de la wishlist.</p>';
+                console.error(error);
             }
         }
 
-        // Affiche la liste vide
-        function renderEmpty() {
-            const container = document.getElementById('wishlist-items');
-            container.innerHTML = `
-                <div style="text-align:center; padding:40px; background:#f9f9f9; border-radius:12px;">
-                    <i data-lucide="heart" style="width:40px; height:40px; color:#ccc; margin-bottom:10px;"></i>
-                    <p style="color:#666;">Votre liste de souhaits est vide.</p>
-                    <a href="catalogue.html" style="color:var(--gold); font-weight:600; text-decoration:none;">Découvrir nos produits</a>
-                </div>
-            `;
-            if(typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        // Affiche les produits
+        // Affichage des produits wishlist
         function renderWishlist() {
             const container = document.getElementById('wishlist-items');
             
             if(wishlistData.length === 0) {
-                renderEmpty();
+                container.innerHTML = '<p>Votre liste de souhaits est vide.</p>';
                 return;
             }
 
             container.innerHTML = '';
-            container.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px;';
+            container.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;';
             
-            wishlistData.forEach((item, index) => {
+            wishlistData.forEach((item) => {
                 const price = new Intl.NumberFormat('fr-FR').format(item.price);
-                const img = item.image || (item.images && item.images[0]) || 'assets/img/placeholder.png';
-
                 const card = document.createElement('div');
-                card.style.cssText = 'background:#fff; border:1px solid #eee; border-radius:12px; overflow:hidden; position:relative; box-shadow:0 2px 10px rgba(0,0,0,0.05);';
+                card.style.cssText = 'background:#fff; border:1px solid #eee; border-radius:12px; overflow:hidden; position:relative;';
                 card.innerHTML = `
-                    <button onclick="removeItem('${item.id}')" class="remove-wishlist-btn" style="position:absolute; top:10px; right:10px; background:transparent; border:none; cursor:pointer; z-index:10; padding:5px; transition:transform 0.2s;">
-                        <i data-lucide="x" style="color:#666; width:20px; height:20px; stroke-width:2.5;"></i>
+                    <button class="remove-btn" data-id="${item.id}" style="position:absolute; top:10px; right:10px; background:#fff; border:none; border-radius:50%; width:35px; height:35px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.1); z-index:10;">
+                        <i data-lucide="x" style="color:#ff4444; width:20px; height:20px;"></i>
                     </button>
-                    <a href="product.html?id=${item.id}" style="text-decoration:none; color:inherit;">
-                        <div style="height:200px; overflow:hidden; background:#f4f4f4;">
-                            <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
-                        </div>
-                        <div style="padding:15px;">
-                            <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px;">${item.shopName || 'Boutique'}</div>
-                            <h3 style="font-size:15px; margin:0 0 5px 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</h3>
-                            <div style="font-weight:bold; color:var(--gold);">${price} FCFA</div>
-                        </div>
+                    <a href="product.html?id=${item.id}">
+                        <img src="${item.image || 'assets/img/placeholder-product-1.svg'}" style="width:100%; height:250px; object-fit:cover;">
                     </a>
-                    <div style="padding:0 15px 15px 15px;">
-                        <button onclick="addItemToCart('${item.id}')" style="width:100%; padding:10px; background:#000; color:#fff; border:none; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-                            <i data-lucide="shopping-bag" style="width:14px;"></i> Ajouter
+                    <div style="padding:15px;">
+                        <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px;">
+                            <a href="boutique.html?id=${item.shopId}" style="text-decoration:none; color:#888;">
+                                <i data-lucide="store" style="width:12px;"></i> ${item.shopName || 'Boutique'}
+                            </a>
+                        </div>
+                        <h3 style="font-size:16px; margin:5px 0;"><a href="product.html?id=${item.id}" style="color:black; text-decoration:none;">${item.name}</a></h3>
+                        <div style="font-weight:bold; color:var(--gold); margin:10px 0;">${price} FCFA</div>
+                        <button class="add-to-cart-btn" data-id="${item.id}" style="width:100%; padding:10px; background:var(--gold); color:black; border:none; border-radius:8px; font-weight:600; cursor:pointer;">
+                            Ajouter au panier
                         </button>
                     </div>
                 `;
                 container.appendChild(card);
             });
-            
-            if(typeof lucide !== 'undefined') lucide.createIcons();
+            lucide.createIcons();
+
+            // Bouton supprimer (utilise toggleWishlist global)
+            document.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const productId = btn.dataset.id;
+                    if(typeof toggleWishlist === 'function') {
+                        toggleWishlist(productId);
+                        loadWishlist(); // Recharger l'affichage
+                    }
+                });
+            });
+
+            // Bouton ajouter au panier (utilise addToCart global)
+            document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const productId = btn.dataset.id;
+                    if(typeof addToCart === 'function') {
+                        addToCart(productId, 1);
+                    }
+                });
+            });
         }
 
-        // --- ACTIONS GLOBALES (Attachées à window pour onclick) ---
-        
-        window.removeItem = function(id) {
-            // Retire de la liste locale
-            wishlistData = wishlistData.filter(item => item.id !== id);
-            
-            // Retire du localStorage
-            const ids = getWishlistIds().filter(itemId => itemId !== id);
-            saveWishlist(ids);
-            
-            // Rafraîchit l'affichage
-            renderWishlist();
-        };
-
-        window.addItemToCart = function(id) {
-            // Logique d'ajout au panier (simplifiée)
-            let cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-            
-            // Vérifie si déjà présent
-            const existing = cart.find(item => item.pid === id);
-            if(existing) {
-                existing.qty += 1;
-            } else {
-                cart.push({ pid: id, qty: 1 });
-            }
-            
-            localStorage.setItem('ac_cart', JSON.stringify(cart));
-            updateCartBadge();
-            alert("Produit ajouté au panier !");
-        };
-
-        // Helper Badge
-        function updateCartBadge() {
-            const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-            const badge = document.getElementById('cart-badge');
-            if (badge) {
-                const count = cart.reduce((acc, item) => acc + item.qty, 0);
-                if (count > 0) {
-                    badge.innerText = count;
-                    badge.style.display = 'flex';
-                } else {
-                    badge.style.display = 'none';
+        // Bouton vider la wishlist
+        const clearBtn = document.getElementById('clear-wishlist-btn');
+        if(clearBtn) {
+            clearBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if(confirm('Voulez-vous vraiment vider votre liste de souhaits ?')) {
+                    localStorage.removeItem('ac_wishlist');
+                    wishlistData = [];
+                    loadWishlist();
                 }
-            }
+            });
         }
 
-        // Init
         loadWishlist();
-        if(typeof lucide !== 'undefined') lucide.createIcons();
+        
+        lucide.createIcons();
     });
   </script>
 </body>
