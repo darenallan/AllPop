@@ -10,6 +10,10 @@
 
     <link rel="stylesheet" href="assets/css/styles.css" />
     
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <style>
         /* --- CORRECTIF LAYOUT (PC vs Mobile) --- */
         @media (min-width: 900px) {
@@ -49,6 +53,14 @@
             .admin-mobile-toggle { display: none !important; }
         }
 
+        /* FIX SCROLLING */
+        body.admin-layout {
+            overflow: auto !important;
+        }
+        .admin-main {
+            overflow: auto !important;
+            max-height: 100vh;
+        }
         /* Styles Mobile */
         @media (max-width: 899px) {
             body.admin-layout { display: block !important; }
@@ -86,10 +98,134 @@
         .product-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; }
         .product-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #eee; margin-right: 15px; }
         
+        /* Commandes */
+        .order-card-seller {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .order-card-seller-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .order-card-seller-id {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+        }
+        .order-card-seller-date {
+            font-size: 13px;
+            color: #999;
+        }
+        .order-status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .order-status-badge.pending { background: #fff3cd; color: #856404; }
+        .order-status-badge.shipped { background: #cfe2ff; color: #084298; }
+        .order-status-badge.delivered { background: #d1e7dd; color: #0f5132; }
+        .order-status-badge.cancelled { background: #f8d7da; color: #842029; }
+        
+        .order-items-seller {
+            margin-bottom: 15px;
+        }
+        .order-item-seller {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        .order-item-seller:last-child {
+            border-bottom: none;
+        }
+        .order-item-name-seller {
+            flex: 1;
+            color: #333;
+        }
+        .order-item-qty-seller {
+            color: #999;
+            margin: 0 10px;
+            font-size: 13px;
+        }
+        .order-item-price-seller {
+            font-weight: 600;
+            color: #D4AF37;
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .order-footer-seller {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .order-total-seller {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+        }
+        .order-total-seller strong {
+            color: #D4AF37;
+        }
+        
+        .order-actions-seller {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .status-select {
+            padding: 8px 12px;
+            border: 1px solid #D4AF37;
+            border-radius: 6px;
+            background: #fff;
+            color: #000;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .status-select:hover {
+            background: #fffbf0;
+        }
+        .btn-update-order {
+            padding: 8px 16px;
+            background: #D4AF37;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+        .btn-update-order:hover {
+            background: #bfa030;
+        }
+        .btn-update-order:disabled {
+            background: #ddd;
+            cursor: not-allowed;
+            color: #999;
+        }
+        
         /* Utilitaires */
         .hidden { display: none !important; }
         .active-section { display: block !important; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        @keyframes slideIn { from{transform: translateX(400px); opacity:0;} to{transform: translateX(0); opacity:1;} }
 
         /* --- NOUVEAU STYLE UPLOAD --- */
         .upload-area {
@@ -165,64 +301,36 @@
 </head>
 <body class="admin-layout">
 
-    <header id="app-header" class="header">
-        <div class="container navbar">
-            <a href="index.html" class="brand">
-                <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
-            </a>
-            
-            <nav class="nav-actions">
-                <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
-                
-                <a href="cart.html" class="icon-btn" style="position:relative;">
-                    <i data-lucide="shopping-bag"></i>
-                    <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
-                </a>
-                
-                <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
-            </nav>
-        </div>
-    </header>
-
-    <div class="mobile-drawer" id="mobile-drawer">
-        <div class="drawer-header">
-            <span class="drawer-title">Menu</span>
-            <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
-        </div>
-        <nav class="drawer-nav">
-            <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
-            <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
-            <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
-            <div class="drawer-divider"></div>
-            <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
-            <a href="profile.html" class="drawer-link"><i data-lucide="user"></i> Mon Profil</a>
-        </nav>
-    </div>
-    <div id="menu-overlay"></div>
-
     <aside class="admin-sidebar" id="seller-sidebar">
         <div class="admin-sidebar-header">
             <h1 class="admin-sidebar-title">Aurum Seller</h1>
         </div>
-        <nav>
-            <div class="admin-nav-item active" onclick="nav('dashboard', this)">
-                <i data-lucide="layout-grid"></i> Vue d'ensemble
+        <nav style="display: flex; flex-direction: column; height: 100%; overflow-y: auto;">
+            <div>
+                <div class="admin-nav-item active" onclick="nav('dashboard', this)">
+                    <i data-lucide="layout-grid"></i> Vue d'ensemble
+                </div>
+                <div class="admin-nav-item" onclick="nav('products', this)">
+                    <i data-lucide="package"></i> Mes Produits
+                </div>
+                <div class="admin-nav-item" onclick="nav('add', this)">
+                    <i data-lucide="plus-circle"></i> Ajouter un produit
+                </div>
+                <div class="admin-nav-item" onclick="nav('orders', this)">
+                    <i data-lucide="shopping-bag"></i> Commandes
+                </div>
+                <div class="admin-nav-item" onclick="nav('settings', this)">
+                    <i data-lucide="settings"></i> Paramètres
+                </div>
             </div>
-            <div class="admin-nav-item" onclick="nav('products', this)">
-                <i data-lucide="package"></i> Mes Produits
+            <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                <a href="index.html" class="admin-nav-item" style="text-decoration: none;">
+                    <i data-lucide="home"></i> Retour à l'accueil
+                </a>
+                <div class="admin-nav-item" onclick="logout()" style="cursor: pointer;">
+                    <i data-lucide="log-out"></i> Déconnexion
+                </div>
             </div>
-            <div class="admin-nav-item" onclick="nav('add', this)">
-                <i data-lucide="plus-circle"></i> Ajouter un produit
-            </div>
-            <div class="admin-nav-item" onclick="nav('orders', this)">
-                <i data-lucide="shopping-bag"></i> Commandes
-            </div>
-            <div class="admin-nav-item" onclick="nav('settings', this)">
-                <i data-lucide="settings"></i> Paramètres
-            </div>
-            <a href="index.html" class="admin-nav-item" style="margin-top: 40px; color: #ff6b6b; border-top: 1px solid rgba(255,255,255,0.1);">
-                <i data-lucide="log-out"></i> Déconnexion
-            </a>
         </nav>
     </aside>
 
@@ -257,7 +365,7 @@
                     </div>
                     <div class="admin-card" style="border-left: 5px solid #D4AF37; padding: 20px;">
                         <div style="text-transform: uppercase; font-size: 12px; color: #666;">Ventes (FCFA)</div>
-                        <div style="font-size: 32px; font-weight: 700;">0</div>
+                        <div style="font-size: 32px; font-weight: 700;" id="stat-sales">0</div>
                     </div>
                     <div class="admin-card" style="border-left: 5px solid #D4AF37; padding: 20px;">
                         <div style="text-transform: uppercase; font-size: 12px; color: #666;">Vues Totales</div>
@@ -267,7 +375,7 @@
 
                 <div class="admin-card">
                     <h3>État de la boutique</h3>
-                    <p>Statut : <span id="shop-status-display" style="font-weight: bold; color: green;">Actif</span></p>
+                    <p>Statut : <span id="shop-status-display" style="font-weight: bold; color: green;">Actif</span> <span id="shop-days-remaining" style="font-size: 13px; color: #666;"></span></p>
                     <p>Catégorie : <span id="shop-category-display">...</span></p>
                 </div>
             </section>
@@ -288,33 +396,69 @@
                 <h1 class="admin-page-title">Nouveau Produit</h1>
                 <div class="admin-card">
                     <form id="form-add-product">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div>
-                                <label>Nom du produit</label>
-                                <input class="input" id="p-name" required placeholder="Ex: Montre Or">
+                        <!-- SECTION 1: Informations de base -->
+                        <div style="border-left: 4px solid #D4AF37; padding-left: 16px; margin-bottom: 24px;">
+                            <h3 style="margin-top: 0; color: #333;">📋 Informations de base</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div>
+                                    <label>Nom du produit <span style="color: red;">*</span></label>
+                                    <input class="input" id="p-name" required placeholder="Ex: iPhone 13 Pro">
+                                </div>
+                                <div>
+                                    <label>Prix unitaire (FCFA) <span style="color: red;">*</span></label>
+                                    <input class="input" id="p-price" type="number" required placeholder="50000" min="0">
+                                </div>
                             </div>
-                            <div>
-                                <label>Prix (FCFA)</label>
-                                <input class="input" id="p-price" type="number" required placeholder="50000">
+                            
+                            <label>Description <span style="color: red;">*</span></label>
+                            <textarea class="input" id="p-desc" rows="4" required placeholder="Décrivez votre produit en détail..."></textarea>
+                            
+                            <label>Catégorie <span style="color: red;">*</span></label>
+                            <select class="input" id="p-cat" required>
+                                <option value="">-- Sélectionner --</option>
+                            </select>
+                        </div>
+
+                        <!-- SECTION 2: Champs dynamiques selon catégorie -->
+                        <div id="dynamic-fields" style="margin-bottom: 24px;"></div>
+
+                        <!-- SECTION 3: Gestion des stocks (TOUJOURS VISIBLE) -->
+                        <div style="border-left: 4px solid #10b981; padding-left: 16px; margin-bottom: 24px;">
+                            <h3 style="margin-top: 0; color: #333;">📦 Gestion des Stocks</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                                <div>
+                                    <label>SKU (Référence) <span style="color: red;">*</span></label>
+                                    <input class="input" id="p-sku" required placeholder="Ex: PRD-001">
+                                </div>
+                                <div>
+                                    <label>Quantité en stock <span style="color: red;">*</span></label>
+                                    <input class="input" id="p-stock" type="number" required placeholder="100" min="0">
+                                </div>
+                                <div>
+                                    <label>Seuil d'alerte stock</label>
+                                    <input class="input" id="p-min-stock" type="number" placeholder="10" min="0" value="5">
+                                </div>
                             </div>
                         </div>
                         
-                        <label>Description</label>
-                        <textarea class="input" id="p-desc" rows="4" placeholder="Détails du produit..."></textarea>
-                        
-                        <label>Photos du produit (Max 5)</label>
-                        <div class="upload-area" id="drop-zone">
-                            <input type="file" id="p-files" accept="image/*" multiple hidden>
-                            <div class="upload-content" id="upload-content">
-                                <i data-lucide="image-plus" style="width: 48px; height: 48px; color: #D4AF37; margin-bottom: 10px;"></i>
-                                <p style="margin: 0; font-weight: 500;">Glissez vos images ici ou <span style="color: #D4AF37; cursor: pointer; text-decoration: underline;">parcourez</span></p>
-                                <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">JPG, PNG (Max 2Mo par image)</p>
+                        <!-- SECTION 4: Photos -->
+                        <div style="border-left: 4px solid #3b82f6; padding-left: 16px; margin-bottom: 24px;">
+                            <h3 style="margin-top: 0; color: #333;">📸 Photos du produit</h3>
+                            <label>Images (Max 5) <span style="color: red;">*</span></label>
+                            <div class="upload-area" id="drop-zone">
+                                <input type="file" id="p-files" accept="image/*" multiple hidden>
+                                <div class="upload-content" id="upload-content">
+                                    <i data-lucide="image-plus" style="width: 48px; height: 48px; color: #D4AF37; margin-bottom: 10px;"></i>
+                                    <p style="margin: 0; font-weight: 500;">Glissez vos images ici ou <span style="color: #D4AF37; cursor: pointer; text-decoration: underline;">parcourez</span></p>
+                                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">JPG, PNG (Max 2Mo par image)</p>
+                                </div>
                             </div>
+                            <div id="preview-gallery" class="preview-gallery"></div>
                         </div>
 
-                        <div id="preview-gallery" class="preview-gallery"></div>
-
-                        <button class="btn-gold" id="btn-submit-product" style="margin-top: 20px;">Mettre en vente</button>
+                        <button class="btn-gold" id="btn-submit-product" type="submit" style="margin-top: 20px;">
+                            <i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i> Mettre en vente
+                        </button>
                     </form>
                 </div>
             </section>
@@ -322,7 +466,37 @@
             <section id="sec-orders" class="admin-section hidden">
                 <h1 class="admin-page-title">Commandes</h1>
                 <div class="admin-card">
-                    <p class="text-muted">Aucune commande pour le moment.</p>
+                    <div id="orders-loader" style="text-align:center; padding:40px;">
+                        <p class="text-muted">Chargement des commandes...</p>
+                    </div>
+                    <div id="orders-container" style="display:none;">
+                        <div id="orders-retention-controls" style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                            <span id="seller-retention-note" style="color:#666; font-size:13px;">Les commandes livrées/annulées sont automatiquement supprimées après 30 jours.</span>
+                            <span class="retention-help" tabindex="0" aria-label="Aide sur la conservation" style="position:relative; display:inline-flex; align-items:center; cursor:help; color:#666;">
+                                <i data-lucide="help-circle"></i>
+                                <span class="tooltip-content" style="position:absolute; left:0; top:130%; background:#111; color:#fff; padding:8px 10px; border-radius:6px; font-size:12px; width:280px; box-shadow:0 6px 16px rgba(0,0,0,0.2); opacity:0; pointer-events:none; transform:translateY(4px); transition:opacity .15s, transform .15s; z-index:10;">
+                                    Les commandes livrées ou annulées sont supprimées automatiquement après la période définie. Cela permet de garder votre historique propre. Cette action est définitive.
+                                </span>
+                            </span>
+                            <script>
+                              (function(){
+                                const el = document.currentScript.previousElementSibling;
+                                if (!el) return;
+                                const show = () => { const t = el.querySelector('.tooltip-content'); if (t){ t.style.opacity='1'; t.style.transform='translateY(0)'; } };
+                                const hide = () => { const t = el.querySelector('.tooltip-content'); if (t){ t.style.opacity='0'; t.style.transform='translateY(4px)'; } };
+                                el.addEventListener('mouseenter', show);
+                                el.addEventListener('mouseleave', hide);
+                                el.addEventListener('focus', show);
+                                el.addEventListener('blur', hide);
+                              })();
+                            </script>
+                            <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+                                <label for="sellerRetentionDaysInput" style="font-size:12px; color:#666;">Conservation (jours):</label>
+                                <input type="number" id="sellerRetentionDaysInput" min="7" max="180" step="1" style="width:80px; padding:6px 8px; border:1px solid #ddd; border-radius:6px;" />
+                            </div>
+                        </div>
+                        <div id="orders-list"></div>
+                    </div>
                 </div>
             </section>
 
@@ -400,8 +574,13 @@
 
     <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 3000;"></div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="assets/js/product-form.js"></script>
+    
     <script>
-        // 1. CONFIGURATION FIREBASE
+        // Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
             authDomain: "aurum-bf.firebaseapp.com",
@@ -414,100 +593,91 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+        // Retention des commandes complétées (jours)
+        const ORDER_RETENTION_DAYS = 30;
 
         // Variables Globales
         let myShop = null;
-        let productImages = []; // Pour l'upload produit
-        let logoBase64 = "";    // Pour le profil
-        let bannerBase64 = "";  // Pour le profil
+        let productImages = [];
+        let logoBase64 = "";
+        let bannerBase64 = "";
 
-        // --- GESTION HEADER & MENU ---
-        function setupHeaderMenu() {
-            const menuToggle = document.getElementById('menu-toggle');
-            const closeBtn = document.getElementById('close-btn');
-            const drawer = document.getElementById('mobile-drawer');
-            const overlay = document.getElementById('menu-overlay');
-
-            const toggleMenu = () => {
-                if (!drawer || !overlay) return;
-                drawer.classList.toggle('active');
-                overlay.classList.toggle('active');
-                document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
-            };
-
-            if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
-            if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
-            if (overlay) overlay.addEventListener('click', toggleMenu);
-
-            const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-            const badge = document.getElementById('cart-badge');
-            if (badge) {
-                const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
-                if (count > 0) {
-                    badge.innerText = count;
-                    badge.style.display = 'flex';
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-        }
-
-        // 2. DÉMARRAGE
+        // DÉMARRAGE
         document.addEventListener('DOMContentLoaded', () => {
             
             auth.onAuthStateChanged((user) => {
                 const loader = document.getElementById('loader');
                 
                 if (user) {
-                    console.log("Connecté en tant que :", user.email);
-                    
-                    // RECHERCHE DE LA BOUTIQUE
+                    // Timeout de sécurité (10 secondes max)
+                    const timeoutId = setTimeout(() => {
+                        console.error('Timeout: Boutique non trouvée après 10s');
+                        loader.style.display = 'none';
+                        document.getElementById('no-shop-warning').classList.remove('hidden');
+                        document.getElementById('user-email-display').innerText = user.email;
+                    }, 10000);
+
+                    // RECHERCHE BOUTIQUE
                     db.collection('shops').where('ownerEmail', '==', user.email).get()
                     .then(snapshot => {
+                        clearTimeout(timeoutId);
                         loader.style.display = 'none';
 
                         if (!snapshot.empty) {
-                            // Boutique trouvée !
                             myShop = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
-                            console.log("Boutique chargée :", myShop.name);
                             
-                            // Affichage
                             document.getElementById('seller-content').classList.remove('hidden');
-                            
-                            // Remplissage Dashboard
                             document.getElementById('shop-title-display').innerText = myShop.name;
                             document.getElementById('shop-status-display').innerText = myShop.status;
                             document.getElementById('shop-category-display').innerText = myShop.category;
                             
-                            // Chargement Paramètres
+                            // Afficher les jours restants
+                            updateShopRemainingDays();
+                            
                             loadShopSettings();
-
-                            // Écoute Produits
                             listenProducts();
-
+                            loadCategories();
+                            setupDynamicAttributes();
+                            // Calculer les ventes initiales
+                            updateSellerSales();
                         } else {
-                            // Pas de boutique
                             document.getElementById('no-shop-warning').classList.remove('hidden');
                             document.getElementById('user-email-display').innerText = user.email;
                         }
                     })
-                    .catch(err => {
-                        console.error(err);
-                        alert("Erreur de connexion à la base de données.");
+                    .catch(error => {
+                        clearTimeout(timeoutId);
+                        console.error('Erreur Firestore:', error);
+                        loader.style.display = 'none';
+                        document.getElementById('no-shop-warning').classList.remove('hidden');
+                        document.getElementById('user-email-display').innerText = user.email + ' (Erreur: ' + error.message + ')';
                     });
-
                 } else {
                     window.location.href = "login.html";
                 }
             });
 
-            setupHeaderMenu();
             lucide.createIcons();
-            setupProductUpload(); // Initialiser le drag & drop produit
-            setupProfileUpload(); // Initialiser le drag & drop profil
+            setupProductUpload();
+            setupProfileUpload();
+            // Lancer une purge en tâche de fond au chargement de la page
+            purgeOldCompletedOrders(getRetentionDays());
         });
 
-        // 3. ÉCOUTE PRODUITS
+        // CHARGER CATÉGORIES
+        function loadCategories() {
+            const catSelect = document.getElementById('p-cat');
+            if (!catSelect) return;
+
+            db.collection('categories').get().then(snap => {
+                snap.forEach(doc => {
+                    const cat = doc.data();
+                    catSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+                });
+            }).catch(err => console.error('Erreur chargement catégories:', err));
+        }
+
+        // ÉCOUTE PRODUITS
         function listenProducts() {
             db.collection('products').where('shopId', '==', myShop.id)
             .onSnapshot(snap => {
@@ -522,7 +692,6 @@
                 snap.forEach(doc => {
                     count++;
                     const p = doc.data();
-                    // On prend la première image ou le placeholder
                     const displayImg = (p.images && p.images.length > 0) ? p.images[0] : (p.image || 'assets/img/placeholder.png');
                     
                     list.innerHTML += `
@@ -545,16 +714,157 @@
             });
         }
 
-        // 4. GESTION UPLOAD PRODUIT (Drag & Drop Multiple)
+        // CALCULER LES VENTES (commandes livrées, uniquement les articles de cette boutique)
+        async function updateSellerSales() {
+            try {
+                if (!myShop) return;
+
+                // Récupérer les produits du vendeur
+                const prodSnap = await db.collection('products').where('shopId', '==', myShop.id).get();
+                const vendorProductIds = prodSnap.docs.map(d => d.id);
+                if (vendorProductIds.length === 0) {
+                    document.getElementById('stat-sales').innerText = '0';
+                    return;
+                }
+
+                // Récupérer toutes les commandes et filtrer côté client
+                const orderSnap = await db.collection('orders').get();
+                let sales = 0;
+
+                orderSnap.forEach(doc => {
+                    const o = doc.data();
+                    if ((o.status || 'pending') !== 'delivered') return;
+                    const items = Array.isArray(o.items) ? o.items : [];
+                    items.forEach(it => {
+                        if (vendorProductIds.includes(it.id)) {
+                            const qty = Number(it.qty || 1);
+                            const price = Number(it.price || 0);
+                            sales += qty * price;
+                        }
+                    });
+                });
+
+                document.getElementById('stat-sales').innerText = new Intl.NumberFormat('fr-FR').format(sales);
+            } catch (err) {
+                console.error('Erreur calcul ventes:', err);
+            }
+        }
+
+        // PURGE DES COMMANDES LIVRÉES/ANNULÉES APRÈS X JOURS
+        async function purgeOldCompletedOrders(retentionDays = ORDER_RETENTION_DAYS) {
+            try {
+                const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+                const snap = await db.collection('orders').get();
+                let deleted = 0;
+
+                for (const doc of snap.docs) {
+                    const o = doc.data();
+                    const status = (o.status || 'pending').toLowerCase();
+                    if (status !== 'delivered' && status !== 'cancelled') continue;
+
+                    const updated = o.updatedAt?.toDate?.() || (o.createdAt?.toDate?.() || new Date(0));
+                    if (updated < cutoff) {
+                        await db.collection('orders').doc(doc.id).delete();
+                        deleted++;
+                    }
+                }
+
+                if (deleted > 0) {
+                    showToast(`🧹 ${deleted} commande(s) anciennes supprimées`, 'info');
+                    // Mettre à jour les ventes après purge
+                    updateSellerSales();
+                    // Recharger la liste si visible
+                    const ordersSectionVisible = !document.getElementById('sec-orders').classList.contains('hidden');
+                    if (ordersSectionVisible) loadSellerOrders();
+                }
+            } catch (err) {
+                console.error('Erreur purge commandes:', err);
+            }
+        }
+
+        // Obtenir la valeur de rétention configurée (partagée seller/client)
+        function getRetentionDays() {
+            const v = Number(localStorage.getItem('ac_order_retention_days'));
+            return Number.isFinite(v) && v >= 1 ? v : ORDER_RETENTION_DAYS;
+        }
+
+        // Mettre à jour l'affichage des jours restants pour la boutique
+        function updateShopRemainingDays() {
+            const displayEl = document.getElementById('shop-days-remaining');
+            if (!displayEl || !myShop) return;
+            
+            if (!myShop.expiresAt) {
+                displayEl.innerText = '(Durée non définie)';
+                displayEl.style.color = '#999';
+                return;
+            }
+            
+            try {
+                const expiryDate = myShop.expiresAt.toDate ? myShop.expiresAt.toDate() : new Date(myShop.expiresAt);
+                const now = new Date();
+                const diffTime = expiryDate - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays < 0) {
+                    displayEl.innerText = '(Expirée)';
+                    displayEl.style.color = '#b91c1c';
+                } else if (diffDays === 0) {
+                    displayEl.innerText = '(Expire aujourd\'hui)';
+                    displayEl.style.color = '#d97706';
+                } else if (diffDays <= 7) {
+                    displayEl.innerText = `(${diffDays} jour${diffDays > 1 ? 's' : ''} restant${diffDays > 1 ? 's' : ''})`;
+                    displayEl.style.color = '#d97706';
+                } else {
+                    displayEl.innerText = `(${diffDays} jours restants)`;
+                    displayEl.style.color = '#666';
+                }
+            } catch (e) {
+                console.error('Erreur calcul jours restants:', e);
+                displayEl.innerText = '';
+            }
+        }
+
+        // Mettre à jour l'UI de rétention côté vendeur
+        function updateSellerRetentionUI() {
+            const input = document.getElementById('sellerRetentionDaysInput');
+            const note = document.getElementById('seller-retention-note');
+            const days = getRetentionDays();
+            if (note) note.innerText = `Les commandes livrées/annulées sont automatiquement supprimées après ${days} jours.`;
+            if (!input) return;
+            input.value = days;
+            input.onchange = async (e) => {
+                const val = Math.max(7, Math.min(180, Number(e.target.value || ORDER_RETENTION_DAYS)));
+                localStorage.setItem('ac_order_retention_days', String(val));
+                if (note) note.innerText = `Les commandes livrées/annulées sont automatiquement supprimées après ${val} jours.`;
+                try {
+                    await purgeOldCompletedOrders(val);
+                    updateSellerSales();
+                    loadSellerOrders();
+                } catch (err) {
+                    console.warn('Erreur purge après changement de rétention (seller):', err);
+                }
+            };
+        }
+
+        // CHARGER CATÉGORIES
+        function loadCategories() {
+            const catSelect = document.getElementById('p-cat');
+            if (!catSelect) return;
+
+            db.collection('categories').get().then(snap => {
+                snap.forEach(doc => {
+                    const cat = doc.data();
+                    catSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+                });
+            }).catch(err => console.error('Erreur chargement catégories:', err));
+        }
+
+        // UPLOAD PRODUIT
         function setupProductUpload() {
             const dropZone = document.getElementById('drop-zone');
             const fileInput = document.getElementById('p-files');
-            const gallery = document.getElementById('preview-gallery');
 
-            // Ouvrir sélecteur
             dropZone.addEventListener('click', () => fileInput.click());
-
-            // Drag Events
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
             dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
             dropZone.addEventListener('drop', (e) => {
@@ -562,8 +872,6 @@
                 dropZone.classList.remove('dragover');
                 handleProductFiles(e.dataTransfer.files);
             });
-
-            // Input Change
             fileInput.addEventListener('change', () => handleProductFiles(fileInput.files));
         }
 
@@ -575,10 +883,9 @@
 
             Array.from(files).forEach(file => {
                 if (!file.type.startsWith('image/')) return;
-                
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    productImages.push(e.target.result); // Base64
+                    productImages.push(e.target.result);
                     renderProductGallery();
                 };
                 reader.readAsDataURL(file);
@@ -593,8 +900,7 @@
                     <div class="preview-item">
                         <img src="${img}">
                         <button type="button" class="preview-remove" onclick="removeProductImage(${index})">&times;</button>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
@@ -603,9 +909,8 @@
             renderProductGallery();
         };
 
-        // 5. GESTION PROFIL (Logo & Banner)
+        // UPLOAD PROFIL
         function setupProfileUpload() {
-            // Logo
             const logoZone = document.getElementById('upload-logo');
             const logoInput = document.getElementById('file-logo');
             logoZone.addEventListener('click', () => logoInput.click());
@@ -620,7 +925,6 @@
                 }
             });
 
-            // Banner
             const bannerZone = document.getElementById('upload-banner');
             const bannerInput = document.getElementById('file-banner');
             bannerZone.addEventListener('click', () => bannerInput.click());
@@ -655,48 +959,215 @@
             }
         }
 
-        // --- SOUMISSION PRODUIT ---
+        // CHARGER LES COMMANDES DU VENDEUR
+        function loadSellerOrders() {
+            if (!myShop) return;
+
+            const loader = document.getElementById('orders-loader');
+            const container = document.getElementById('orders-container');
+            const list = document.getElementById('orders-list');
+
+            loader.style.display = 'block';
+            container.style.display = 'none';
+
+            db.collection('orders').get().then(snapshot => {
+                const allOrders = [];
+                const productMap = {}; // Cache des produits pour la recherche rapide
+
+                // D'abord, récupérer tous les produits du vendeur
+                db.collection('products').where('shopId', '==', myShop.id).get().then(prodSnap => {
+                    const vendorProductIds = prodSnap.docs.map(d => d.id);
+
+                    // Ensuite, filtrer les commandes qui contiennent les produits du vendeur
+                    snapshot.forEach(doc => {
+                        const order = { id: doc.id, ...doc.data() };
+                        const hasVendorProduct = order.items?.some(item => vendorProductIds.includes(item.id));
+                        
+                        if (hasVendorProduct) {
+                            allOrders.push(order);
+                        }
+                    });
+
+                    if (allOrders.length === 0) {
+                        list.innerHTML = '<p class="text-muted" style="text-align:center; padding:40px;">Aucune commande pour le moment.</p>';
+                        loader.style.display = 'none';
+                        container.style.display = 'block';
+                        return;
+                    }
+
+                    // Trier par priorité de statut puis par date (livrées en bas)
+                    const prio = { pending: 0, shipped: 1, delivered: 2, cancelled: 3 };
+                    allOrders.sort((a, b) => {
+                        const pa = prio[(a.status || 'pending')];
+                        const pb = prio[(b.status || 'pending')];
+                        if (pa !== pb) return pa - pb;
+                        const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
+                        const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
+                        return dateB - dateA; // plus récentes en premier dans un même statut
+                    });
+
+                    list.innerHTML = allOrders.map(order => renderSellerOrderCard(order, vendorProductIds)).join('');
+                    
+                    // Ajouter les event listeners pour les changements de statut
+                    list.querySelectorAll('.btn-update-order').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            const orderId = e.target.dataset.orderId;
+                            const row = document.querySelector(`[data-order-id="${orderId}"]`);
+                            const select = row ? row.querySelector('.status-select') : null;
+                            const newStatus = select ? select.value : 'pending';
+
+                            btn.disabled = true;
+                            btn.textContent = '⏳ Mise à jour...';
+
+                            try {
+                                await db.collection('orders').doc(orderId).update({
+                                    status: newStatus,
+                                    updatedAt: new Date()
+                                });
+
+                                showToast(`✅ Commande mise à jour en ${getStatusLabel(newStatus)}`, 'success');
+                                // Recharger la liste pour appliquer l'ordre par statut
+                                loadSellerOrders();
+                                // Recalculer les ventes si livrée/annulée
+                                updateSellerSales();
+                            } catch (error) {
+                                console.error('Erreur mise à jour:', error);
+                                showToast('❌ Erreur lors de la mise à jour', 'error');
+                            } finally {
+                                btn.disabled = false;
+                                btn.textContent = 'Mettre à jour';
+                            }
+                        });
+                    });
+
+                    loader.style.display = 'none';
+                    container.style.display = 'block';
+                });
+            }).catch(err => {
+                console.error('Erreur chargement commandes:', err);
+                list.innerHTML = '<p class="text-muted" style="color:red; text-align:center; padding:40px;">Erreur lors du chargement des commandes.</p>';
+                loader.style.display = 'none';
+                container.style.display = 'block';
+            });
+        }
+
+        // RENDRE UNE CARTE DE COMMANDE
+        function renderSellerOrderCard(order, vendorProductIds) {
+            const date = order.createdAt?.toDate?.() || new Date(order.createdAt || 0);
+            const dateStr = date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const total = order.total || 0;
+            const status = order.status || 'pending';
+
+            // Filtrer les articles qui appartiennent au vendeur
+            const vendorItems = order.items?.filter(item => vendorProductIds.includes(item.id)) || [];
+
+            return `
+                <div class="order-card-seller" data-order-id="${order.id}">
+                    <div class="order-card-seller-header">
+                        <div>
+                            <div class="order-card-seller-id">Commande #${order.id.substring(0, 8).toUpperCase()}</div>
+                            <div class="order-card-seller-date">${dateStr}</div>
+                        </div>
+                        <span class="order-status-badge ${status}">${getStatusLabel(status)}</span>
+                    </div>
+
+                    <div class="order-items-seller">
+                        <strong style="display:block; margin-bottom:10px; font-size:14px;">Articles de cette boutique:</strong>
+                        ${vendorItems.map(item => `
+                            <div class="order-item-seller">
+                                <span class="order-item-name-seller">${item.name}</span>
+                                <span class="order-item-qty-seller">x${item.qty}</span>
+                                <span class="order-item-price-seller">${new Intl.NumberFormat('fr-FR').format(item.price * item.qty)} FCFA</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="order-footer-seller">
+                        <div class="order-total-seller">
+                            Total commande: <strong>${new Intl.NumberFormat('fr-FR').format(total)} FCFA</strong>
+                        </div>
+                        <div class="order-actions-seller">
+                            <select class="status-select" data-order-id="${order.id}">
+                                <option value="pending" ${status === 'pending' ? 'selected' : ''}>⏳ En attente</option>
+                                <option value="shipped" ${status === 'shipped' ? 'selected' : ''}>📦 Expédiée</option>
+                                <option value="delivered" ${status === 'delivered' ? 'selected' : ''}>✅ Livrée</option>
+                                <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Annulée</option>
+                            </select>
+                            <button class="btn-update-order" data-order-id="${order.id}">Mettre à jour</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // LABELS DE STATUT
+        function getStatusLabel(status) {
+            const labels = {
+                'pending': '⏳ En attente',
+                'shipped': '📦 Expédiée',
+                'delivered': '✅ Livrée',
+                'cancelled': '❌ Annulée'
+            };
+            return labels[status] || status;
+        }
+
+        // TOAST NOTIFICATION
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: ${type === 'success' ? '#d1e7dd' : type === 'error' ? '#f8d7da' : '#cfe2ff'};
+                color: ${type === 'success' ? '#0f5132' : type === 'error' ? '#842029' : '#084298'};
+                padding: 16px 20px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                border-left: 4px solid ${type === 'success' ? '#0f5132' : type === 'error' ? '#842029' : '#084298'};
+                animation: slideIn 0.3s ease-out;
+            `;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // SOUMISSION PRODUIT
         document.getElementById('form-add-product').addEventListener('submit', (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit-product');
-            const name = document.getElementById('p-name').value;
-            const price = document.getElementById('p-price').value;
-            const desc = document.getElementById('p-desc').value;
 
-            if(!name || !price) { alert("Nom et prix obligatoires."); return; }
+            const productData = collectProductData(myShop);
+            if (!productData) return;
 
             btn.innerText = "Publication...";
             btn.disabled = true;
 
-            // Image principale = la première, ou placeholder
-            const mainImage = productImages.length > 0 ? productImages[0] : 'assets/img/placeholder.png';
-
-            db.collection('products').add({
-                shopId: myShop.id,
-                shopName: myShop.name,
-                name: name,
-                price: Number(price),
-                description: desc,
-                image: mainImage,       // Pour affichage liste
-                images: productImages,  // Tableau complet
-                category: myShop.category,
-                createdAt: new Date()
-            }).then(() => {
-                alert("✅ Produit mis en vente !");
+            db.collection('products').add(productData).then(() => {
+                showToast('✅ Produit mis en vente avec succès !', 'success');
                 e.target.reset();
                 productImages = [];
+                productVariants = [];
                 renderProductGallery();
-                btn.innerText = "Mettre en vente";
+                document.getElementById('dynamic-fields').innerHTML = '';
+                btn.innerText = '✓ Mettre en vente';
                 btn.disabled = false;
-                nav('products', document.querySelectorAll('.admin-nav-item')[1]);
+                setTimeout(() => {
+                    nav('products', document.querySelectorAll('.admin-nav-item')[1]);
+                }, 1000);
             }).catch(err => {
-                alert("Erreur: " + err.message);
+                console.error('Erreur sauvegarde produit:', err);
+                showToast('❌ Erreur: ' + err.message, 'error');
                 btn.disabled = false;
-                btn.innerText = "Mettre en vente";
+                btn.innerText = 'Mettre en vente';
             });
         });
 
-        // --- SOUMISSION PARAMÈTRES ---
+        // SOUMISSION PARAMÈTRES
         document.getElementById('form-settings').addEventListener('submit', (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
@@ -718,7 +1189,7 @@
                 alert("✅ Boutique mise à jour !");
                 btn.innerText = "Enregistrer les modifications";
                 btn.disabled = false;
-                myShop = { ...myShop, ...updateData }; // Update local
+                myShop = { ...myShop, ...updateData };
                 document.getElementById('shop-title-display').innerText = myShop.name;
             })
             .catch(err => {
@@ -727,14 +1198,14 @@
             });
         });
 
-        // Supprimer Produit
+        // SUPPRESSION PRODUIT
         window.delProduct = (id) => {
             if(confirm("Supprimer ce produit ?")) {
                 db.collection('products').doc(id).delete();
             }
         };
 
-        // Navigation Sidebar
+        // NAVIGATION
         window.nav = (id, btn) => {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active-section'));
@@ -745,9 +1216,30 @@
             document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
 
+            // Charger les commandes si on clique sur l'onglet "Commandes"
+            if (id === 'orders') {
+                loadSellerOrders();
+                updateSellerRetentionUI();
+                purgeOldCompletedOrders(getRetentionDays());
+            }
+            // Recalculer ventes quand on ouvre le dashboard
+            if (id === 'dashboard') {
+                updateSellerSales();
+                purgeOldCompletedOrders(getRetentionDays());
+            }
+
             if(window.innerWidth < 900) document.getElementById('seller-sidebar').classList.remove('mobile-open');
         };
 
+        // DÉCONNEXION
+        window.logout = () => {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch(err => {
+                console.error('Erreur déconnexion:', err);
+                alert('Erreur lors de la déconnexion');
+            });
+        };
     </script>
 </body>
 </html>
