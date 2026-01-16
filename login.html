@@ -16,6 +16,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
   <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
 </head>
 
 <body>
@@ -73,6 +74,10 @@
                         Se connecter
                     </button>
                 </form>
+
+                <p style="margin-top: 15px; text-align: center;">
+                    <a href="#" id="forgot-password-link" style="color: var(--gold); font-weight: bold; font-size: 14px;">Mot de passe oublié ?</a>
+                </p>
 
                 <p style="margin-top: 20px; text-align: center;">
                     Pas encore de compte ? <a href="register.html" style="color: var(--gold); font-weight: bold;">Créer un compte</a>
@@ -142,79 +147,14 @@
 
   <div class="toast-container" id="toast-container"></div>
 
-    <script>
-      function setupHeaderMenu() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const closeBtn = document.getElementById('close-btn');
-        const drawer = document.getElementById('mobile-drawer');
-        const overlay = document.getElementById('menu-overlay');
-
-        const toggleMenu = () => {
-            if (!drawer || !overlay) return;
-            drawer.classList.toggle('active');
-            overlay.classList.toggle('active');
-            document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
-        };
-
-        if(menuToggle) menuToggle.addEventListener('click', toggleMenu);
-        if(closeBtn) closeBtn.addEventListener('click', toggleMenu);
-        if(overlay) overlay.addEventListener('click', toggleMenu);
-
-        const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-        const badge = document.getElementById('cart-badge');
-        if (badge) {
-            const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
-            if (count > 0) {
-                badge.innerText = count;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
+  <script>
+    // === PAGE LOGIN - LOGIQUE SPÉCIFIQUE ===
     document.addEventListener('DOMContentLoaded', () => {
-        setupHeaderMenu();
-
         const yearSpan = document.getElementById('year');
-        if (yearSpan) {
-            yearSpan.innerText = new Date().getFullYear();
-        }
+        if (yearSpan) yearSpan.innerText = new Date().getFullYear();
 
-        // --- AUTHENTIFICATION ---
+        // AUTHENTIFICATION
         const auth = firebase.auth();
-        const authLink = document.getElementById('mobile-auth-link');
-        const logoutLink = document.getElementById('logout-btn-mobile');
-
-        // Gestion de l'état de connexion (Menu mobile)
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                if (authLink) {
-                    authLink.innerHTML = '<i data-lucide="user-check"></i> Mon Compte';
-                    authLink.href = 'profile.html';
-                }
-                if (logoutLink) logoutLink.style.display = 'flex';
-            } else {
-                if (authLink) {
-                    authLink.innerHTML = '<i data-lucide="user"></i> Connexion';
-                    authLink.href = 'login.html';
-                }
-                if (logoutLink) logoutLink.style.display = 'none';
-            }
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        });
-
-        // Gestion de la déconnexion (Menu mobile)
-        if (logoutLink) {
-            logoutLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                auth.signOut().then(() => window.location.href = "login.html");
-            });
-        }
-
-        // --- LOGIQUE CONNEXION (Formulaire) ---
         const form = document.getElementById('form-login');
         const btn = document.getElementById('btn-submit');
 
@@ -229,28 +169,33 @@
                 const email = document.getElementById('login-email').value;
                 const pass = document.getElementById('login-pass').value;
 
+                console.log("📧 Tentative connexion:", email);
+
                 auth.signInWithEmailAndPassword(email, pass)
                     .then((userCredential) => {
-                        // Connexion réussie
-                        console.log("Connecté :", userCredential.user);
+                        console.log("✅ Connexion réussie:", userCredential.user.email);
                         
-                        // Redirection selon le rôle (optionnel, sinon index)
-                        // Ici on redirige simplement vers l'accueil
-                        window.location.href = "index.html";
+                        // Redirection basée sur le rôle
+                        if (email === 'aurumcorporate.d@gmail.com') {
+                            window.location.href = "admin.html";
+                        } else if(sessionStorage.getItem('ac_checkout_pending') === 'true') {
+                            sessionStorage.removeItem('ac_checkout_pending');
+                            window.location.href = "cart.html";
+                        } else {
+                            window.location.href = "index.html";
+                        }
                     })
                     .catch((error) => {
-                        console.error("Erreur connexion:", error);
-                        let msg = "Erreur de connexion (" + error.code + ")";
+                        console.error("❌ Erreur connexion:", error.code, error.message);
                         
-                        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
-                            msg = "Compte introuvable. Vérifiez votre email.";
-                        } else if (error.code === 'auth/wrong-password') {
-                            msg = "Mot de passe incorrect.";
-                        } else if (error.code === 'auth/too-many-requests') {
-                            msg = "Trop de tentatives. Réessayez plus tard.";
-                        }
+                        let msg = "Erreur de connexion.";
+                        if (error.code === 'auth/user-not-found') msg = "Compte introuvable.";
+                        if (error.code === 'auth/wrong-password') msg = "Mot de passe incorrect.";
+                        if (error.code === 'auth/invalid-email') msg = "Email invalide.";
+                        if (error.code === 'auth/user-disabled') msg = "Compte désactivé.";
+                        if (error.code === 'auth/too-many-requests') msg = "Trop de tentatives. Réessayez plus tard.";
                         
-                        alert("⚠️ " + msg);
+                        showToast("⚠️ " + msg, 'info');
                         
                         btn.innerText = originalText;
                         btn.disabled = false;
@@ -258,10 +203,32 @@
             });
         }
         
+        // === MOT DE PASSE OUBLIÉ ===
+        const forgotLink = document.getElementById('forgot-password-link');
+        if(forgotLink) {
+            forgotLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                
+                if (!email) {
+                    showToast("⚠️ Veuillez entrer votre email", 'info');
+                    return;
+                }
+                
+                firebase.auth().sendPasswordResetEmail(email)
+                    .then(() => {
+                        showToast("✅ Email de réinitialisation envoyé à " + email, 'success');
+                    })
+                    .catch((error) => {
+                        let msg = "Erreur: " + error.message;
+                        if (error.code === 'auth/user-not-found') msg = "Compte introuvable.";
+                        showToast("⚠️ " + msg, 'info');
+                    });
+            });
+        }
+        
         if(typeof lucide !== 'undefined') lucide.createIcons();
     });
-
-     </script>
+  </script>
 </body>
 </html>
-  
