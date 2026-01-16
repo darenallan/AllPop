@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mon Tableau de Bord - Aurum</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
+
+  <style>
+    /* --- DASHBOARD CLIENT - LAYOUT LUXE --- */
+    body { background: #f9f7f2; }
+    
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      min-height: 100vh;
+    }
+
+    @media (min-width: 1024px) {
+      .dashboard-container {
+        grid-template-columns: 280px 1fr;
+        gap: 0;
+      }
+    }
+
+    /* --- SIDEBAR --- */
+    .profile-sidebar {
+      background: #fff;
+      padding: 40px 30px;
+      border-right: 1px solid #ede7dc;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (max-width: 1023px) {
+      .profile-sidebar {
+        padding: 30px 20px;
+        border-right: none;
+        border-bottom: 1px solid #ede7dc;
+        height: auto;
+        position: static;
+      }
+    }
+
+    /* Avatar + Nom */
+    .profile-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #ede7dc;
+    }
+
+    .profile-avatar-container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 15px;
+    }
+
+    .profile-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #fff;
+      box-shadow: 0 8px 20px rgba(212, 175, 55, 0.15);
+      display: block;
+    }
+
+    .profile-avatar-placeholder {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d4af37, #b8860b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      font-size: 40px;
+      font-weight: 700;
+      border: 4px solid #fff;
+      box-shadow: 0 8px 20px rgba(212, 175, 55, 0.15);
+    }
+
+    .profile-upload-btn {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #d4af37;
+      color: #000;
+      border: 3px solid #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .profile-upload-btn:hover {
+      background: #b8860b;
+      transform: scale(1.1);
+    }
+
+    .profile-upload-btn i {
+      width: 20px;
+      height: 20px;
+    }
+
+    .profile-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #111;
+      margin: 0;
+    }
+
+    .profile-role {
+      font-size: 12px;
+      color: #d4af37;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 5px;
+    }
+
+    /* Menu Sidebar */
+    .profile-nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .profile-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      color: #666;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.3s;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+
+    .profile-nav-item:hover {
+      background: #f9f7f2;
+      color: #d4af37;
+      border-left-color: #d4af37;
+    }
+
+    .profile-nav-item.active {
+      background: rgba(212, 175, 55, 0.08);
+      color: #d4af37;
+      border-left-color: #d4af37;
+      font-weight: 600;
+    }
+
+    .profile-nav-item i {
+      width: 20px;
+      height: 20px;
+    }
+
+    .profile-nav-item.logout {
+      color: #ef4444;
+      margin-top: auto;
+      border-top: 1px solid #ede7dc;
+      padding-top: 20px;
+    }
+
+    .profile-nav-item.logout:hover {
+      background: rgba(239, 68, 68, 0.05);
+      border-left-color: #ef4444;
+    }
+
+    /* --- CONTENU PRINCIPAL --- */
+    .profile-main {
+      padding: 40px;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 1023px) {
+      .profile-main {
+        padding: 20px;
+      }
+    }
+
+    .profile-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 30px;
+      margin-top: 0;
+    }
+
+    /* --- STATS CARDS --- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #ede7dc;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+      border-color: #d4af37;
+      box-shadow: 0 8px 25px rgba(212, 175, 55, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #d4af37;
+      margin: 0;
+    }
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(212, 175, 55, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #d4af37;
+      margin-top: 15px;
+    }
+
+    /* --- CONTENT CARDS --- */
+    .profile-card {
+      background: #fff;
+      border: 1px solid #ede7dc;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .profile-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #111;
+      margin-top: 0;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: all 0.3s;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #d4af37;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+
+    .form-input:disabled {
+      background: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    /* --- ADDRESS MANAGEMENT --- */
+    .addresses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .address-card {
+      background: #fff;
+      border: 1px solid #ede7dc;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .address-card:hover {
+      border-color: #d4af37;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .address-card h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #111;
+      margin: 0 0 12px 0;
+      word-break: break-word;
+    }
+
+    .address-info {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .address-info p {
+      margin: 6px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .address-info i {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      color: #d4af37;
+      flex-shrink: 0;
+    }
+
+    .address-actions {
+      display: flex;
+      gap: 8px;
+      border-top: 1px solid #ede7dc;
+      padding-top: 12px;
+    }
+
+    .btn-delete-address {
+      flex: 1;
+      padding: 8px 12px;
+      background: rgba(239, 68, 68, 0.1);
+      color: #b91c1c;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-delete-address:hover {
+      background: #ef4444;
+      color: #fff;
+      border-color: #ef4444;
+    }
+
+    .add-address-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: #d4af37;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 25px;
+    }
+
+    .add-address-btn:hover {
+      background: #b8860b;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    /* --- MODAL --- */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #ede7dc;
+    }
+
+    .modal-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #111;
+      margin: 0;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      color: #999;
+      transition: color 0.3s;
+    }
+
+    .modal-close:hover {
+      color: #111;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .modal-footer button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-submit {
+      background: #d4af37;
+      color: #000;
+    }
+
+    .btn-submit:hover {
+      background: #b8860b;
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-cancel {
+      background: #f5f5f5;
+      color: #333;
+      border: 1px solid #e0e0e0;
+    }
+
+    .btn-cancel:hover {
+      background: #efefef;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* --- PRODUCTS GRID --- */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .product-card {
+      background: #fff;
+      border: 1px solid #ede7dc;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-card:hover {
+      border-color: #d4af37;
+      box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
+      transform: translateY(-4px);
+    }
+
+    .product-image-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      background: #f9f7f2;
+      overflow: hidden;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+
+    .product-card:hover .product-image {
+      transform: scale(1.05);
+    }
+
+    .product-remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.9);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      font-size: 18px;
+    }
+
+    .product-remove-btn:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
+    .product-info {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-name {
+      font-weight: 600;
+      color: #111;
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      line-height: 1.4;
+      min-height: 2.8em;
+    }
+
+    .product-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #d4af37;
+      margin: 8px 0;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-add-to-cart {
+      flex: 1;
+      padding: 10px 12px;
+      background: #d4af37;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+
+    .btn-add-to-cart:hover {
+      background: #b8860b;
+    }
+
+    /* --- BUTTONS --- */
+    .btn-container {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .btn-primary, .btn-secondary {
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #d4af37;
+      color: #000;
+      flex: 1;
+    }
+
+    .btn-primary:hover {
+      background: #b8860b;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #333;
+      flex: 1;
+      border: 1px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+      background: #efefef;
+    }
+
+    /* --- ORDER PREVIEW --- */
+    .order-preview {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid #d4af37;
+    }
+
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .order-info h4 {
+      margin: 0 0 5px 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .order-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+      border: 1px solid transparent;
+    }
+
+    .status-success { background: rgba(16, 185, 129, 0.12); color: #0f9f6e; border-color: rgba(16, 185, 129, 0.25); }
+    .status-warning { background: rgba(234, 179, 8, 0.12); color: #b45309; border-color: rgba(234, 179, 8, 0.25); }
+    .status-info    { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; border-color: rgba(59, 130, 246, 0.25); }
+    .status-danger  { background: rgba(239, 68, 68, 0.12); color: #b91c1c; border-color: rgba(239, 68, 68, 0.25); }
+
+    .order-meta {
+      font-size: 13px;
+      color: #999;
+      margin: 0;
+    }
+
+    .order-total {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #d4af37;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-state i {
+      width: 48px;
+      height: 48px;
+      color: #ddd;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    .empty-state p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* --- MOBILE RESPONSIVE --- */
+    @media (max-width: 1023px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-container {
+        flex-direction: column;
+      }
+
+      .profile-nav {
+        flex-direction: row;
+        gap: 10px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 10px;
+      }
+
+      .profile-nav-item {
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .addresses-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .products-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        width: 95%;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header id="app-header" class="header">
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
+              <div style="display:flex; flex-direction:column; margin-left:10px;">
+                  <span class="brand-name" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">AURUM</span>
+                  <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
+              </div>
+          </a>
+          
+          <nav class="nav-actions">
+              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
+              <a href="cart.html" class="icon-btn" style="position:relative;">
+                  <i data-lucide="shopping-bag"></i>
+                  <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
+              </a>
+              <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>
+              <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
+          </nav>
+      </div>
+  </header>
+
+  <div class="mobile-drawer" id="mobile-drawer">
+      <div class="drawer-header">
+          <span class="drawer-title">Menu</span>
+          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
+      </div>
+      <nav class="drawer-nav">
+          <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
+          <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
+          <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
+          <a href="wishlist.html" class="drawer-link"><i data-lucide="heart"></i> Mes Favoris</a>
+          <div class="drawer-divider"></div>
+          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
+          <a href="profile.html" class="drawer-link active"><i data-lucide="user"></i> Mon Profil</a>
+      </nav>
+  </div>
+  <div id="menu-overlay"></div>
+
+  <!-- DASHBOARD LAYOUT -->
+  <div class="dashboard-container">
+    
+    <!-- SIDEBAR -->
+    <aside class="profile-sidebar">
+      <div class="profile-header">
+        <div class="profile-avatar-container">
+          <div class="profile-avatar-placeholder" id="avatar-placeholder">A</div>
+          <img id="profile-image" alt="Avatar" class="profile-avatar-img" style="display: none;">
+          <button type="button" class="profile-upload-btn" id="upload-trigger" title="Modifier la photo">
+            <i data-lucide="camera"></i>
+          </button>
+          <input type="file" id="file-input" accept="image/png, image/jpeg" style="display:none;">
+        </div>
+        <h2 class="profile-name" id="sidebar-name">Chargement...</h2>
+        <div class="profile-role" id="sidebar-role">Client</div>
+      </div>
+
+      <nav class="profile-nav" id="profile-nav-menu">
+        <a class="profile-nav-item active" data-tab="dashboard" href="#">
+          <i data-lucide="layout-grid"></i> Mon Tableau de Bord
+        </a>
+        <a class="profile-nav-item" data-tab="orders" href="#">
+          <i data-lucide="shopping-bag"></i> Mes Commandes
+        </a>
+        <a class="profile-nav-item" data-tab="addresses" href="#">
+          <i data-lucide="map-pin"></i> Mes Adresses
+        </a>
+        <a class="profile-nav-item" data-tab="wishlist" href="#">
+          <i data-lucide="heart"></i> Mes Favoris
+        </a>
+        <a class="profile-nav-item logout" data-action="logout" href="#">
+          <i data-lucide="log-out"></i> Déconnexion
+        </a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="profile-main">
+      
+      <!-- TAB: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-content">
+        <h1 class="profile-section-title">Mon Tableau de Bord</h1>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Commandes en cours</div>
+            <p class="stat-value" id="stat-orders">0</p>
+            <div class="stat-icon"><i data-lucide="shopping-bag"></i></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total dépensé</div>
+            <p class="stat-value" id="stat-spent">0 FCFA</p>
+            <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Articles favoris</div>
+            <p class="stat-value" id="stat-wishlist">0</p>
+            <div class="stat-icon"><i data-lucide="heart"></i></div>
+          </div>
+        </div>
+
+        <!-- PERSONAL INFO -->
+        <div class="profile-card">
+          <h3><i data-lucide="user-circle"></i> Informations Personnelles</h3>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label class="form-label">Nom Complet</label>
+              <input type="text" id="user-name" class="form-input" placeholder="Votre nom">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" id="user-email" class="form-input" disabled>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Rôle</label>
+            <input type="text" id="user-role" class="form-input" disabled>
+          </div>
+
+          <div class="btn-container">
+            <button id="save-profile-btn" class="btn-primary">Enregistrer les modifications</button>
+            <button class="btn-secondary" onclick="switchTab('orders')">Voir mes commandes</button>
+          </div>
+        </div>
+
+        <!-- ORDERS LIST -->
+        <div class="profile-card">
+          <h3><i data-lucide="clock"></i> Mes Commandes</h3>
+          <div id="orders-list-dashboard" class="orders-list"></div>
+        </div>
+      </section>
+
+      <!-- TAB: ORDERS -->
+      <section id="tab-orders" class="tab-content" style="display: none;">
+        <h1 class="profile-section-title">Mes Commandes</h1>
+        <div class="profile-card">
+          <div id="orders-retention-controls" style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <span id="orders-retention-note" style="color:#666; font-size:13px;">Les commandes livrées/annulées sont automatiquement supprimées après 30 jours.</span>
+            <span class="retention-help" tabindex="0" aria-label="Aide sur la conservation" style="position:relative; display:inline-flex; align-items:center; cursor:help; color:#666;">
+              <i data-lucide="help-circle"></i>
+              <span class="tooltip-content" style="position:absolute; left:0; top:130%; background:#111; color:#fff; padding:8px 10px; border-radius:6px; font-size:12px; width:280px; box-shadow:0 6px 16px rgba(0,0,0,0.2); opacity:0; pointer-events:none; transform:translateY(4px); transition:opacity .15s, transform .15s; z-index:10;">
+                Les commandes livrées ou annulées sont supprimées automatiquement après la période définie. Cela permet de garder votre historique propre. Cette action est définitive.
+              </span>
+            </span>
+            <script>
+              (function(){
+                const el = document.currentScript.previousElementSibling;
+                if (!el) return;
+                const show = () => { const t = el.querySelector('.tooltip-content'); if (t){ t.style.opacity='1'; t.style.transform='translateY(0)'; } };
+                const hide = () => { const t = el.querySelector('.tooltip-content'); if (t){ t.style.opacity='0'; t.style.transform='translateY(4px)'; } };
+                el.addEventListener('mouseenter', show);
+                el.addEventListener('mouseleave', hide);
+                el.addEventListener('focus', show);
+                el.addEventListener('blur', hide);
+              })();
+            </script>
+            <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+              <label for="orderRetentionDaysInput" style="font-size:12px; color:#666;">Conservation (jours):</label>
+              <input type="number" id="orderRetentionDaysInput" min="7" max="180" step="1" style="width:80px; padding:6px 8px; border:1px solid #ddd; border-radius:6px;" />
+            </div>
+          </div>
+          <div id="orders-list-full" class="orders-list"></div>
+        </div>
+      </section>
+
+      <!-- TAB: ADDRESSES -->
+      <section id="tab-addresses" class="tab-content" style="display: none;">
+        <h1 class="profile-section-title">Mes Adresses</h1>
+        
+        <button class="add-address-btn" id="btn-add-address">
+          <i data-lucide="plus"></i> Nouvelle Adresse
+        </button>
+
+        <div class="addresses-grid" id="addresses-list">
+          <div class="empty-state">
+            <i data-lucide="map-pin"></i>
+            <p>Aucune adresse enregistrée</p>
+            <p style="font-size: 12px; margin-top: 10px; color: #d4af37; cursor: pointer;" onclick="document.getElementById('btn-add-address').click();">Ajouter une adresse →</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: WISHLIST -->
+      <section id="tab-wishlist" class="tab-content" style="display: none;">
+        <h1 class="profile-section-title">Mes Favoris</h1>
+        <div class="products-grid" id="wishlist-grid">
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <i data-lucide="heart"></i>
+            <p>Aucun favori pour le moment</p>
+            <p style="font-size: 12px; margin-top: 10px;"><a href="catalogue.html" style="color: #d4af37; text-decoration: none;">Découvrir le catalogue →</a></p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- MODAL AJOUTER ADRESSE -->
+  <div class="modal" id="address-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Ajouter une Adresse</h2>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+
+      <form id="address-form" style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="form-group">
+          <label class="form-label">Nom Complet</label>
+          <input type="text" id="addr-name" class="form-input" placeholder="ex: Jean Dupont" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Téléphone</label>
+          <input type="tel" id="addr-phone" class="form-input" placeholder="ex: +226 12 34 56 78" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ville</label>
+          <select id="addr-city" class="form-input" required>
+            <option value="">-- Sélectionner une ville --</option>
+            <option value="Ouagadougou">Ouagadougou</option>
+            <option value="Bobo-Dioulasso">Bobo-Dioulasso</option>
+            <option value="Koudougou">Koudougou</option>
+            <option value="Banfora">Banfora</option>
+            <option value="Dédougou">Dédougou</option>
+            <option value="Ouahigouya">Ouahigouya</option>
+            <option value="Pouytenga">Pouytenga</option>
+            <option value="Fada N'Gourma">Fada N'Gourma</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quartier / Description</label>
+          <textarea id="addr-description" class="form-input" placeholder="ex: Quartier Riyadh, à côté du marché..." rows="3" required></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" id="btn-cancel-address">Annuler</button>
+          <button type="submit" class="btn-submit" id="btn-save-address">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+ <footer class="footer">
+      <div class="container">
+          <div class="cols" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
+              <div>
+                  <h3>AURUM</h3>
+                  <p>La première marketplace premium du Burkina Faso. Qualité, confiance et élégance.</p>
+              </div>
+              <div>
+                  <h4>Navigation</h4>
+                  <ul style="list-style:none; padding:0; line-height:2;">
+                      <li><a href="index.html">Accueil</a></li>
+                      <li><a href="catalogue.html">Catalogue</a></li>
+                      <li><a href="seller.html">Devenir Vendeur</a></li>
+                      <li><a href="profile.html">Mon Compte</a></li>
+                  </ul>
+              </div>
+              <div>
+                  <h4>Légal</h4>
+                  <ul style="list-style:none; padding:0; line-height:2;">
+                      <li><a href="cgu.html">CGU</a></li>
+                      <li><a href="faq.html">FAQ</a></li>
+                      <li><a href="contact.html">Contact</a></li>
+                  </ul>
+              </div>
+              <div>
+                  <h4>Suivez-nous</h4>
+                  <div class="footer-socials" style="display:flex; gap:15px;">
+                      <a href="#" class="social-link"><i data-lucide="facebook"></i></a>
+                      <a href="#" class="social-link"><i data-lucide="instagram"></i></a>
+                      <a href="#" class="social-link"><i data-lucide="twitter"></i></a>
+                  </div>
+              </div>
+          </div>
+          <div class="footer-bottom" style="margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
+              &copy; 2026 Aurum Marketplace. Tous droits réservés.
+          </div>
+      </div>
+  </footer>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+      const ORDER_RETENTION_DAYS = 30; // suppression auto des commandes livrées/annulées après X jours
+
+        // Récupérer la valeur de rétention choisie (client)
+        function getRetentionDays() {
+            const v = Number(localStorage.getItem('ac_order_retention_days'));
+            return Number.isFinite(v) && v >= 1 ? v : ORDER_RETENTION_DAYS;
+        }
+
+        // GESTION MENU MOBILE
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeBtn = document.getElementById('close-btn');
+        const drawer = document.getElementById('mobile-drawer');
+        const overlay = document.getElementById('menu-overlay');
+
+        function openMenu() {
+            drawer.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            drawer.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        if(menuToggle) menuToggle.addEventListener('click', openMenu);
+        if(closeBtn) closeBtn.addEventListener('click', closeMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                loadUserProfile(user);
+                setupProfileImageUpload(user);
+            // Mettre à jour l'UI de rétention
+            updateClientRetentionUI();
+            } else {
+                window.location.href = 'login.html';
+            }
+            if(typeof lucide !== 'undefined') lucide.createIcons();
+        });
+
+        async function loadUserProfile(user) {
+            try {
+                // Vérifier vendeur
+                const shopSnapshot = await db.collection('shops').where('ownerEmail', '==', user.email).get();
+                const isVendor = !shopSnapshot.empty;
+                const userRole = isVendor ? 'Vendeur' : 'Client';
+
+                // Récupérer données utilisateur
+                const docRef = db.collection('users').doc(user.uid);
+                const doc = await docRef.get();
+                
+                let userData = { name: user.displayName || '', email: user.email };
+                
+                if (doc.exists) {
+                    userData = doc.data();
+                    if (userData.role !== userRole.toLowerCase()) {
+                        await docRef.update({ role: userRole.toLowerCase() });
+                    }
+                } else {
+                    await docRef.set({
+                        name: user.displayName || '',
+                        email: user.email,
+                        role: userRole.toLowerCase(),
+                        createdAt: new Date()
+                    }, { merge: true });
+                }
+
+                // Remplir la sidebar
+                const initials = (userData.name || user.email).split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'A';
+                document.getElementById('avatar-placeholder').innerText = initials;
+                document.getElementById('sidebar-name').innerText = userData.name || 'Utilisateur';
+                document.getElementById('sidebar-role').innerText = userRole;
+
+                // Charger photo de profil
+                displayProfileImage(user);
+
+                // Remplir le formulaire
+                document.getElementById('user-name').value = userData.name || '';
+                document.getElementById('user-email').value = user.email;
+                document.getElementById('user-role').value = userRole;
+
+                // Charger commandes + stats
+                loadOrdersAndStats(user.uid);
+
+                // Charger adresses
+                loadUserAddresses(user.uid);
+
+            } catch (error) {
+                console.error('Erreur chargement profil:', error);
+            }
+        }
+
+        function displayProfileImage(user) {
+            const profileImg = document.getElementById('profile-image');
+            const placeholder = document.getElementById('avatar-placeholder');
+            
+            if (user.photoURL) {
+                profileImg.src = user.photoURL;
+                profileImg.style.display = 'block';
+                placeholder.style.display = 'none';
+            } else {
+                profileImg.style.display = 'none';
+                placeholder.style.display = 'flex';
+            }
+        }
+
+        function setupProfileImageUpload(user) {
+            const uploadTrigger = document.getElementById('upload-trigger');
+            const fileInput = document.getElementById('file-input');
+
+            // Simuler clic sur input file quand on clique sur le bouton
+            uploadTrigger.addEventListener('click', (e) => {
+                e.preventDefault();
+                fileInput.click();
+            });
+
+            // Gérer la sélection d'un fichier
+            fileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Validation
+                if (!file.type.startsWith('image/')) {
+                    alert('❌ Veuillez sélectionner une image.');
+                    return;
+                }
+
+                if (file.size > 2 * 1024 * 1024) { // 2 Mo
+                    alert('❌ L\'image doit peser moins de 2 Mo.');
+                    return;
+                }
+
+                // Afficher indicateur de chargement
+                const profileImg = document.getElementById('profile-image');
+                const placeholder = document.getElementById('avatar-placeholder');
+                uploadTrigger.style.opacity = '0.5';
+                uploadTrigger.style.pointerEvents = 'none';
+
+                try {
+                    // Vérifier que storage est disponible
+                    if (!storage) {
+                        throw new Error('Firebase Storage non initialisé');
+                    }
+
+                    console.log('📤 Début upload pour userId:', user.uid);
+                    
+                    // Créer référence Firebase Storage
+                    const storageRef = storage.ref(`users/${user.uid}/profile.jpg`);
+                    
+                    // Upload le fichier
+                    console.log('⏳ Upload en cours...');
+                    const snapshot = await storageRef.put(file);
+                    console.log('✅ Upload terminé');
+                    
+                    // Récupérer l'URL de téléchargement
+                    const downloadURL = await snapshot.ref.getDownloadURL();
+                    console.log('🔗 URL obtenue:', downloadURL);
+
+                    // Mettre à jour Firebase Auth
+                    await user.updateProfile({ photoURL: downloadURL });
+                    console.log('✅ Auth mis à jour');
+
+                    // Mettre à jour Firestore
+                    await db.collection('users').doc(user.uid).update({ 
+                        photoURL: downloadURL,
+                        updatedAt: new Date()
+                    });
+                    console.log('✅ Firestore mis à jour');
+
+                    // Mettre à jour l'affichage immédiatement
+                    profileImg.src = downloadURL;
+                    profileImg.style.display = 'block';
+                    placeholder.style.display = 'none';
+
+                    // Afficher succès
+                    showToast('✅ Photo de profil mise à jour avec succès !', 'success');
+
+                } catch (error) {
+                    console.error('❌ Erreur upload détaillée:', error);
+                    console.error('Code erreur:', error.code);
+                    console.error('Message:', error.message);
+                    
+                    let errorMsg = '❌ Erreur lors de l\'upload.';
+                    
+                    if (error.code === 'storage/unauthorized') {
+                        errorMsg += ' Permissions insuffisantes.';
+                    } else if (error.message && error.message.includes('network')) {
+                        errorMsg += ' Problème de connexion. Désactivez votre bloqueur de pub.';
+                    } else if (error.code) {
+                        errorMsg += ` (${error.code})`;
+                    }
+                    
+                    alert(errorMsg);
+                    showToast(errorMsg, 'error');
+                } finally {
+                    uploadTrigger.style.opacity = '1';
+                    uploadTrigger.style.pointerEvents = 'auto';
+                    fileInput.value = ''; // Réinitialiser input
+                    lucide.createIcons();
+                }
+            });
+        }
+
+        // PURGE DES COMMANDES (client) : supprime les commandes livrées/annulées après X jours
+        async function purgeOldCompletedOrders(userId, retentionDays = ORDER_RETENTION_DAYS) {
+          try {
+            const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+            const snap = await db.collection('orders').where('userId', '==', userId).get();
+            let deleted = 0;
+
+            for (const doc of snap.docs) {
+              const o = doc.data();
+              const status = (o.status || 'pending').toLowerCase();
+              if (status !== 'delivered' && status !== 'cancelled') continue;
+
+              const updated = o.updatedAt?.toDate?.() || (o.createdAt?.toDate?.() || new Date(0));
+              if (updated < cutoff) {
+                await db.collection('orders').doc(doc.id).delete();
+                deleted++;
+              }
+            }
+
+            if (deleted > 0) {
+              showToast(`🧹 ${deleted} commande(s) anciennes supprimées`, 'info');
+            }
+          } catch (err) {
+            console.warn('Purge client des commandes échouée:', err);
+          }
+        }
+
+        async function loadOrdersAndStats(userId) {
+            const containers = ['orders-list-dashboard', 'orders-list-full'];
+            containers.forEach(id => {
+                const c = document.getElementById(id);
+                if (c) c.innerHTML = '<div class="empty-state" style="padding:24px; color:#999;">Chargement des commandes...</div>';
+            });
+
+            try {
+            // Exécuter la purge avant de charger les commandes
+            try {
+              await purgeOldCompletedOrders(userId, getRetentionDays());
+            } catch (e) {
+              console.warn('Purge ignorée avant chargement des commandes:', e);
+            }
+
+                let orders = [];
+                try {
+                    orders = await fetchOrders(userId, true); // avec orderBy
+                } catch (err) {
+                    console.warn('Retry sans orderBy (index manquant ?)', err);
+                    orders = await fetchOrders(userId, false);
+                }
+
+                const wishlistItems = JSON.parse(localStorage.getItem('ac_wishlist') || '[]').length;
+
+                // Stats
+                const totalOrders = orders.length;
+                const totalSpent = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+                document.getElementById('stat-orders').innerText = totalOrders;
+                document.getElementById('stat-spent').innerText = new Intl.NumberFormat('fr-FR').format(totalSpent) + ' FCFA';
+                document.getElementById('stat-wishlist').innerText = wishlistItems;
+
+                // Rendering lists
+                renderOrdersList(orders, 'orders-list-dashboard');
+                renderOrdersList(orders, 'orders-list-full');
+
+            } catch (error) {
+                console.error('Erreur chargement commandes/stats:', error);
+                renderOrdersError('orders-list-dashboard');
+                renderOrdersError('orders-list-full');
+            }
+        }
+
+        async function fetchOrders(userId, withOrderBy = true) {
+            let query = db.collection('orders').where('userId', '==', userId);
+            if (withOrderBy) query = query.orderBy('createdAt', 'desc');
+            const snap = await query.get();
+            return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+
+        function renderOrdersList(orders, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (!orders.length) {
+                return renderOrdersEmpty(containerId);
+            }
+
+          // Trier: commandes livrées en bas, puis par date (récent en premier)
+          const priority = (status) => {
+            const s = (status || '').toLowerCase();
+            if (s === 'delivered' || s.includes('livr')) return 2; // fin de file
+            if (s === 'cancelled' || s.includes('annul')) return 1;
+            return 0; // en cours / en attente / expédiée
+          };
+
+          const sorted = [...orders].sort((a, b) => {
+            const pa = priority(a.status);
+            const pb = priority(b.status);
+            if (pa !== pb) return pa - pb;
+            const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+            const db = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+            return db - da;
+          });
+
+          container.innerHTML = sorted.map((order) => {
+                const date = formatDate(order.createdAt);
+                const total = new Intl.NumberFormat('fr-FR').format(order.total || 0);
+                const itemsCount = order.items?.length || 0;
+                const status = formatStatus(order.status);
+
+                return `
+                    <div class="order-preview">
+                        <div class="order-info">
+                            <h4>Commande #${order.id.substring(0, 8).toUpperCase()} <span class="order-status ${status.className}">${status.label}</span></h4>
+                            <p class="order-meta">Date: ${date} • ${itemsCount} article(s)</p>
+                        </div>
+                        <div class="order-total">${total} FCFA</div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function renderOrdersEmpty(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i data-lucide="inbox"></i>
+                    <p>Aucune commande pour le moment</p>
+                    <p style="font-size: 12px; margin-top: 10px;"><a href="catalogue.html" style="color: #d4af37; text-decoration: none;">Découvrir le catalogue →</a></p>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function renderOrdersError(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i data-lucide="alert-circle"></i>
+                    <p>Impossible de charger vos commandes</p>
+                    <p style="font-size: 12px; margin-top: 10px; color:#b91c1c;">Vérifiez la connexion ou créez l'index Firestore pour userId + createdAt.</p>
+                </div>
+            `;
+        }
+
+        // Mettre à jour l'UI de rétention côté client
+        function updateClientRetentionUI() {
+          const input = document.getElementById('orderRetentionDaysInput');
+          const note = document.getElementById('orders-retention-note');
+          const days = getRetentionDays();
+          if (note) note.innerText = `Les commandes livrées/annulées sont automatiquement supprimées après ${days} jours.`;
+          if (!input) return;
+          input.value = days;
+          input.onchange = async (e) => {
+            const val = Math.max(7, Math.min(180, Number(e.target.value || ORDER_RETENTION_DAYS)));
+            localStorage.setItem('ac_order_retention_days', String(val));
+            if (note) note.innerText = `Les commandes livrées/annulées sont automatiquement supprimées après ${val} jours.`;
+            const currentUser = firebase.auth().currentUser;
+            if (currentUser) {
+              try {
+                await purgeOldCompletedOrders(currentUser.uid, val);
+                await loadOrdersAndStats(currentUser.uid);
+              } catch (err) {
+                console.warn('Erreur lors de la purge après changement de rétention:', err);
+              }
+            }
+          };
+        }
+
+        function formatStatus(status) {
+          const normalized = (status || 'pending').toLowerCase();
+          
+          if (normalized === 'delivered' || normalized.includes('livr')) {
+            return { label: '✅ Livrée', className: 'status-success' };
+          }
+          if (normalized === 'cancelled' || normalized.includes('annul')) {
+            return { label: '❌ Annulée', className: 'status-danger' };
+          }
+          if (normalized === 'shipped' || normalized.includes('expéd')) {
+            return { label: '📦 Expédiée', className: 'status-info' };
+          }
+          if (normalized === 'pending' || normalized.includes('attente')) {
+            return { label: '⏳ En attente', className: 'status-warning' };
+          }
+          return { label: 'En cours', className: 'status-info' };
+        }
+
+        function formatDate(timestamp) {
+          try {
+            const date = timestamp?.toDate ? timestamp.toDate() : (timestamp ? new Date(timestamp) : new Date());
+            return date.toLocaleDateString('fr-FR');
+          } catch (e) {
+            return '';
+          }
+        }
+
+        // Sauvegarde profil
+        document.getElementById('save-profile-btn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const newName = document.getElementById('user-name').value.trim();
+            if (!newName) {
+                alert('Le nom ne peut pas être vide.');
+                return;
+            }
+
+            const btn = document.getElementById('save-profile-btn');
+            btn.innerText = 'Enregistrement...';
+            btn.disabled = true;
+
+            try {
+                await user.updateProfile({ displayName: newName });
+                await db.collection('users').doc(user.uid).update({ name: newName });
+                
+                document.getElementById('sidebar-name').innerText = newName;
+                showToast('✅ Profil mis à jour !', 'success');
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('❌ Erreur lors de la mise à jour.');
+            } finally {
+                btn.innerText = 'Enregistrer les modifications';
+                btn.disabled = false;
+            }
+        });
+
+        // Toast notifications
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.style.cssText = `
+                background: ${type === 'success' ? '#10b981' : '#3b82f6'};
+                color: white;
+                padding: 16px 20px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                animation: slideIn 0.3s ease-out;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            toast.innerText = message;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Déconnexion
+        window.logoutUser = () => {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                auth.signOut().then(() => window.location.href = 'login.html');
+            }
+        };
+
+        // Navigation entre tabs - Gestion des onglets
+        window.switchTab = (tabName) => {
+            // Masquer tous les onglets
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+                tab.setAttribute('aria-hidden', 'true');
+            });
+            
+            // Afficher l'onglet sélectionné
+            const selectedTab = document.getElementById('tab-' + tabName);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+                selectedTab.setAttribute('aria-hidden', 'false');
+                selectedTab.focus();
+            }
+            
+            // Mettre à jour les états actifs des liens de navigation
+            document.querySelectorAll('.profile-nav-item[data-tab]').forEach(item => {
+                item.classList.remove('active');
+                item.setAttribute('aria-selected', 'false');
+            });
+            
+            const activeLink = document.querySelector('.profile-nav-item[data-tab="' + tabName + '"]');
+            if (activeLink) {
+                activeLink.classList.add('active');
+                activeLink.setAttribute('aria-selected', 'true');
+            }
+
+            // Recharger les données selon l'onglet
+            if (tabName === 'wishlist') {
+                loadUserWishlist();
+            }
+            
+            // Recharger les commandes pour avoir les mises à jour en temps réel
+            if (tabName === 'orders') {
+              // Mettre à jour l'UI de rétention
+              updateClientRetentionUI();
+                const currentUser = firebase.auth().currentUser;
+                if (currentUser) {
+                    loadOrdersAndStats(currentUser.uid);
+                }
+            }
+        };
+
+        // Gestion des clics sur les liens de navigation
+        document.querySelectorAll('.profile-nav-item[data-tab]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tabName = e.currentTarget.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+
+        // Gestion du lien déconnexion
+        document.querySelector('.profile-nav-item[data-action="logout"]')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            logoutUser();
+        });
+
+        // --- GESTION DES ADRESSES ---
+        const addressModal = document.getElementById('address-modal');
+        const addressForm = document.getElementById('address-form');
+        const btnAddAddress = document.getElementById('btn-add-address');
+        const btnCancelAddress = document.getElementById('btn-cancel-address');
+        const modalClose = document.getElementById('modal-close');
+
+        // Ouvrir modal
+        btnAddAddress.addEventListener('click', () => {
+            addressForm.reset();
+            addressModal.classList.add('active');
+        });
+
+        // Fermer modal
+        [btnCancelAddress, modalClose].forEach(btn => {
+            btn.addEventListener('click', () => addressModal.classList.remove('active'));
+        });
+
+        addressModal.addEventListener('click', (e) => {
+            if (e.target === addressModal) addressModal.classList.remove('active');
+        });
+
+        // Soumettre formulaire adresse
+        addressForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) return alert('❌ Vous devez être connecté.');
+
+            const newAddress = {
+                name: document.getElementById('addr-name').value.trim(),
+                phone: document.getElementById('addr-phone').value.trim(),
+                city: document.getElementById('addr-city').value,
+                description: document.getElementById('addr-description').value.trim(),
+                createdAt: new Date()
+            };
+
+            if (!newAddress.name || !newAddress.phone || !newAddress.city || !newAddress.description) {
+                return alert('❌ Veuillez remplir tous les champs.');
+            }
+
+            const submitBtn = document.getElementById('btn-save-address');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Ajout en cours...';
+
+            try {
+                await db.collection('users').doc(user.uid).collection('addresses').add(newAddress);
+                showToast('✅ Adresse ajoutée avec succès !', 'success');
+                addressModal.classList.remove('active');
+                loadUserAddresses(user.uid);
+            } catch (error) {
+                console.error('Erreur ajout adresse:', error);
+                showToast('❌ Erreur lors de l\'ajout.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Ajouter';
+            }
+        });
+
+        // Charger les adresses au chargement du profil
+        async function loadUserAddresses(userId) {
+            try {
+                const snap = await db.collection('users').doc(userId).collection('addresses').get();
+                const addresses = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAddressesList(addresses);
+            } catch (error) {
+                console.error('Erreur chargement adresses:', error);
+            }
+        }
+
+        // Afficher les adresses
+        function renderAddressesList(addresses) {
+            const container = document.getElementById('addresses-list');
+            if (!container) return;
+
+            if (!addresses.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="map-pin"></i>
+                        <p>Aucune adresse enregistrée</p>
+                        <p style="font-size: 12px; margin-top: 10px; color: #d4af37; cursor: pointer;" onclick="document.getElementById('btn-add-address').click();">Ajouter une adresse →</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = addresses.map(addr => `
+                <div class="address-card">
+                    <h4>${escapeHtml(addr.name)}</h4>
+                    <div class="address-info">
+                        <p><i data-lucide="phone"></i> ${escapeHtml(addr.phone)}</p>
+                        <p><i data-lucide="map-pin"></i> ${escapeHtml(addr.city)}</p>
+                        <p><i data-lucide="navigation"></i> ${escapeHtml(addr.description)}</p>
+                    </div>
+                    <div class="address-actions">
+                        <button class="btn-delete-address" onclick="deleteAddress('${escapeHtml(addr.id)}')">
+                            <i data-lucide="trash-2"></i> Supprimer
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // Supprimer une adresse
+        window.deleteAddress = async (addressId) => {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette adresse ?')) return;
+
+            try {
+                await db.collection('users').doc(user.uid).collection('addresses').doc(addressId).delete();
+                showToast('✅ Adresse supprimée.', 'success');
+                loadUserAddresses(user.uid);
+            } catch (error) {
+                console.error('Erreur suppression adresse:', error);
+                showToast('❌ Erreur lors de la suppression.', 'error');
+            }
+        };
+
+        // Fonction utilitaire pour éviter les XSS
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // --- GESTION DES FAVORIS ---
+        async function loadUserWishlist() {
+            try {
+                const wishlistIds = JSON.parse(localStorage.getItem('ac_wishlist') || '[]');
+                
+                if (!wishlistIds.length) {
+                    renderEmptyWishlist();
+                    return;
+                }
+
+                const products = [];
+                for (const productId of wishlistIds) {
+                    try {
+                        const doc = await db.collection('products').doc(productId).get();
+                        if (doc.exists) {
+                            products.push({ id: doc.id, ...doc.data() });
+                        }
+                    } catch (err) {
+                        console.warn(`Produit ${productId} non trouvé`, err);
+                    }
+                }
+
+                if (products.length === 0) {
+                    renderEmptyWishlist();
+                } else {
+                    renderWishlistProducts(products);
+                }
+            } catch (error) {
+                console.error('Erreur chargement favoris:', error);
+                renderEmptyWishlist();
+            }
+        }
+
+        function renderWishlistProducts(products) {
+            const container = document.getElementById('wishlist-grid');
+            if (!container) return;
+
+            container.innerHTML = products.map(product => {
+                const price = new Intl.NumberFormat('fr-FR').format(product.price || 0);
+                const image = product.image || 'assets/img/placeholder.jpg';
+                
+                return `
+                    <div class="product-card">
+                        <div class="product-image-container">
+                            <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)}" class="product-image" onerror="this.src='assets/img/placeholder.jpg'">
+                            <button class="product-remove-btn" title="Retirer des favoris" onclick="removeFromWishlist('${escapeHtml(product.id)}')">
+                                ×
+                            </button>
+                        </div>
+                        <div class="product-info">
+                            <h4 class="product-name">${escapeHtml(product.name)}</h4>
+                            <div class="product-price">${price} FCFA</div>
+                            <div class="product-actions">
+                                <button class="btn-add-to-cart" onclick="addToCart('${escapeHtml(product.id)}')">
+                                    <i data-lucide="shopping-bag" style="width:14px; height:14px; display:inline; margin-right:4px;"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function renderEmptyWishlist() {
+            const container = document.getElementById('wishlist-grid');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i data-lucide="heart"></i>
+                    <p>Aucun favori pour le moment</p>
+                    <p style="font-size: 12px; margin-top: 10px;"><a href="catalogue.html" style="color: #d4af37; text-decoration: none;">Découvrir le catalogue →</a></p>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Retirer un produit des favoris
+        window.removeFromWishlist = (productId) => {
+            let wishlistIds = JSON.parse(localStorage.getItem('ac_wishlist') || '[]');
+            wishlistIds = wishlistIds.filter(id => id !== productId);
+            localStorage.setItem('ac_wishlist', JSON.stringify(wishlistIds));
+            showToast('❤️ Produit retiré des favoris', 'success');
+            loadUserWishlist();
+        };
+
+        // Ajouter au panier
+        window.addToCart = (productId) => {
+            let cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity = (existingItem.quantity || 1) + 1;
+            } else {
+                cart.push({ id: productId, quantity: 1 });
+            }
+            
+            localStorage.setItem('ac_cart', JSON.stringify(cart));
+            showToast('✅ Produit ajouté au panier', 'success');
+            updateCartBadge();
+        };
+
+        // Mettre à jour le badge du panier
+        function updateCartBadge() {
+            const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+            const badge = document.getElementById('cart-badge');
+            const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            
+            if (badge) {
+                if (totalItems > 0) {
+                    badge.innerText = totalItems;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        // Charger les favoris lors du chargement initial
+        loadUserWishlist();
+
+        document.getElementById('year').innerText = new Date().getFullYear();
+        lucide.createIcons();
+    });
+
+    // Animation CSS pour les toasts
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
