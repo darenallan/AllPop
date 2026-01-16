@@ -14,6 +14,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
   <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
   <style>
       /* --- Styles spécifiques Panier --- */
       .cart-container { padding-top: 40px; padding-bottom: 80px; min-height: 60vh; }
@@ -262,11 +263,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const yearSpan = document.getElementById('year');
-        if (yearSpan) {
-            yearSpan.innerText = new Date().getFullYear();
-        }
-
+        // --- LOGIQUE PANIER UNIQUEMENT ---
         const db = firebase.firestore();
         const auth = firebase.auth();
 
@@ -280,26 +277,21 @@
         const totalEl = document.getElementById('total-display');
         const checkoutBtn = document.getElementById('btn-checkout');
 
-        // 1. Lire le LocalStorage
         let cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-        let cartProductsData = []; // Stockera les infos complètes des produits
-
-        console.log("Panier initial (LocalStorage) :", cart);
+        let cartProductsData = [];
 
         if (cart.length === 0) {
             showEmptyState();
             return;
         }
 
-        // 2. Récupérer les infos fraîches depuis Firestore
-        // On crée un tableau de promesses pour récupérer chaque produit
+        // Chargement des produits depuis Firestore
         const promises = cart.map(item => db.collection('products').doc(item.pid).get());
 
         Promise.all(promises)
             .then(snapshots => {
                 snapshots.forEach(doc => {
                     if (doc.exists) {
-                        // On combine les données Firestore avec la quantité du panier local
                         const productData = doc.data();
                         const cartItem = cart.find(i => i.pid === doc.id);
                         cartProductsData.push({
@@ -310,15 +302,6 @@
                     }
                 });
 
-                // Nettoyage : Si des produits du localStorage n'existent plus dans Firebase
-                if (cartProductsData.length < cart.length) {
-                    console.warn("Certains produits du panier n'existent plus. Mise à jour du panier local.");
-                    // On ne garde que ce qui a été trouvé en base
-                    const validIds = cartProductsData.map(p => p.id);
-                    cart = cart.filter(item => validIds.includes(item.pid));
-                    localStorage.setItem('ac_cart', JSON.stringify(cart));
-                }
-
                 if (cartProductsData.length === 0) {
                     showEmptyState();
                 } else {
@@ -327,11 +310,8 @@
             })
             .catch(err => {
                 console.error("Erreur chargement panier :", err);
-                loadingEl.innerHTML = "<p style='color:red;'>Erreur lors du chargement. Veuillez rafraîchir.</p>";
+                loadingEl.innerHTML = "<p style='color:red;'>Erreur lors du chargement.</p>";
             });
-
-
-        // --- FONCTIONS ---
 
         function showEmptyState() {
             loadingEl.style.display = 'none';
@@ -340,6 +320,7 @@
             lucide.createIcons();
         }
 
+        // Calcul du total et affichage
         function renderCart() {
             loadingEl.style.display = 'none';
             emptyEl.style.display = 'none';
@@ -381,7 +362,6 @@
                 `;
             });
 
-            // Mise à jour des totaux
             const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
             subtotalEl.innerText = formattedTotal;
             totalEl.innerText = formattedTotal;
@@ -390,17 +370,14 @@
             lucide.createIcons();
         }
 
-        // --- ACTIONS GLOBALES (accessibles via onclick) ---
-
+        // Gestion des quantités
         window.changeQty = function(pid, delta) {
-            // 1. Mise à jour données locales
             const product = cartProductsData.find(p => p.id === pid);
             if(product) {
                 product.qty += delta;
                 if(product.qty < 1) product.qty = 1;
             }
             
-            // 2. Mise à jour LocalStorage
             const lsItem = cart.find(i => i.pid === pid);
             if(lsItem) {
                 lsItem.qty += delta;
@@ -408,75 +385,204 @@
                 localStorage.setItem('ac_cart', JSON.stringify(cart));
             }
 
-            // 3. Rerender
             renderCart();
         };
 
+        // Suppression d'un article (utilise removeFromCart global)
         window.removeItem = function(pid) {
             if(!confirm("Retirer cet article du panier ?")) return;
 
-            // 1. Filtre les données
-            cartProductsData = cartProductsData.filter(p => p.id !== pid);
-            cart = cart.filter(i => i.pid !== pid);
-            
-            // 2. Sauvegarde LS
-            localStorage.setItem('ac_cart', JSON.stringify(cart));
-
-            // 3. Rerender ou état vide
-            if(cart.length === 0) {
-                showEmptyState();
-            } else {
-                renderCart();
+            if(typeof removeFromCart === 'function') {
+                removeFromCart(pid);
+                // Recharger la page pour mettre à jour l'affichage
+                window.location.reload();
             }
         };
 
-        // --- CHECKOUT ---
-        checkoutBtn.addEventListener('click', () => {
-            if(!auth.currentUser) {
-                // Sauvegarde l'intention de checkout pour rediriger après login
-                sessionStorage.setItem('ac_checkout_pending', 'true');
-                window.location.href = "login.html?redirect=cart.html";
-            } else {
-                // Rediriger vers la page de commande (à créer plus tard)
-                // Pour l'instant, simple alerte
-                alert("Redirection vers la page de paiement sécurisé... (Prochaine étape)");
-                // window.location.href = "checkout.html"; 
+        /**
+         * FONCTION CHECKOUT MULTI-VENDEURS
+         * Regroupe les articles par vendeur et crée une commande distincte pour chaque vendeur.
+         * Utilise batch write pour garantir l'atomicité (tout ou rien).
+         */
+        async function createOrder() {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('Utilisateur non connecté');
             }
-        });
 
-        // --- MENU HEADER ---
-        function setupHeaderMenu() {
-            const menuToggle = document.getElementById('menu-toggle');
-            const closeBtn = document.getElementById('close-btn');
-            const drawer = document.getElementById('mobile-drawer');
-            const overlay = document.getElementById('menu-overlay');
+            console.log('🛒 Début création commande multi-vendeurs...');
 
-            const toggleMenu = () => {
-                if (!drawer || !overlay) return;
-                drawer.classList.toggle('active');
-                overlay.classList.toggle('active');
-                document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
-            };
-
-            if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
-            if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
-            if (overlay) overlay.addEventListener('click', toggleMenu);
-
-            const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-            const badge = document.getElementById('cart-badge');
-            if (badge) {
-                const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
-                if (count > 0) {
-                    badge.innerText = count;
-                    badge.style.display = 'flex';
-                } else {
-                    badge.style.display = 'none';
+            // 1. REGROUPEMENT PAR VENDEUR (shopId)
+            const ordersByShop = {};
+            
+            cartProductsData.forEach(product => {
+                const shopId = product.shopId || product.sellerId || 'unknown';
+                
+                if (!ordersByShop[shopId]) {
+                    ordersByShop[shopId] = {
+                        shopId: shopId,
+                        shopName: product.shopName || 'Boutique',
+                        items: [],
+                        total: 0
+                    };
                 }
+
+                const itemTotal = (product.price || 0) * (product.qty || 1);
+                
+                ordersByShop[shopId].items.push({
+                    productId: product.id,
+                    name: product.name || 'Produit',
+                    price: product.price || 0,
+                    quantity: product.qty || 1,
+                    image: product.image || '',
+                    variants: product.variants || {}
+                });
+
+                ordersByShop[shopId].total += itemTotal;
+            });
+
+            const shopIds = Object.keys(ordersByShop);
+            console.log(`📦 ${shopIds.length} vendeur(s) détecté(s):`, shopIds);
+
+            if (shopIds.length === 0) {
+                throw new Error('Aucun article dans le panier');
             }
+
+            // 2. GÉNÉRATION SESSION GROUP ID (pour lier les commandes)
+            const sessionGroupId = `ORDER_${Date.now()}_${user.uid.substring(0, 8)}`;
+            console.log('🔗 Session Group ID:', sessionGroupId);
+
+            // 3. BATCH WRITE (Atomique)
+            const batch = db.batch();
+            const orderRefs = [];
+
+            shopIds.forEach(shopId => {
+                const orderData = ordersByShop[shopId];
+                const orderRef = db.collection('orders').doc(); // Génère un ID unique
+
+                batch.set(orderRef, {
+                    // Identifiants
+                    orderId: orderRef.id,
+                    sessionGroupId: sessionGroupId,
+                    
+                    // Acheteur
+                    buyerId: user.uid,
+                    buyerEmail: user.email || null,
+                    buyerName: user.displayName || 'Client',
+                    
+                    // Vendeur
+                    sellerId: shopId,
+                    shopId: shopId,
+                    shopName: orderData.shopName,
+                    
+                    // Articles
+                    items: orderData.items,
+                    itemsCount: orderData.items.length,
+                    
+                    // Montants
+                    subtotal: orderData.total,
+                    shippingCost: 0,
+                    total: orderData.total,
+                    currency: 'XOF',
+                    
+                    // Statuts
+                    status: 'pending', // pending, confirmed, shipped, delivered, cancelled
+                    paymentStatus: 'unpaid', // unpaid, paid, refunded
+                    paymentMethod: null,
+                    
+                    // Métadonnées
+                    source: 'cart',
+                    platform: 'web',
+                    
+                    // Dates
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    
+                    // Adresse de livraison (à compléter plus tard)
+                    shippingAddress: null,
+                    
+                    // Notes
+                    customerNotes: null,
+                    adminNotes: null
+                });
+
+                orderRefs.push({ shopId, orderRef });
+            });
+
+            // 4. EXÉCUTION DU BATCH
+            console.log('⚡ Création de', orderRefs.length, 'commande(s) en batch...');
+            await batch.commit();
+            console.log('✅ Toutes les commandes ont été créées avec succès !');
+
+            // 5. LOG DES IDs CRÉÉS
+            orderRefs.forEach(({ shopId, orderRef }) => {
+                console.log(`   ✓ Commande pour "${shopId}": ${orderRef.id}`);
+            });
+
+            // 6. STOCKAGE SESSION POUR CONFIRMATION
+            sessionStorage.setItem('lastOrderSession', sessionGroupId);
+            sessionStorage.setItem('lastOrderCount', orderRefs.length.toString());
+
+            return {
+                success: true,
+                sessionGroupId,
+                orderCount: orderRefs.length,
+                orderIds: orderRefs.map(o => o.orderRef.id)
+            };
         }
 
-        setupHeaderMenu();
+        // Validation commande (MULTI-VENDEURS)
+        checkoutBtn.addEventListener('click', async () => {
+            // Vérification authentification
+            if(!auth.currentUser) {
+                sessionStorage.setItem('ac_checkout_pending', 'true');
+                window.location.href = "login.html?redirect=cart.html";
+                return;
+            }
 
+            // Vérification panier non vide
+            if (!cart || cart.length === 0) {
+                alert("⚠️ Votre panier est vide !");
+                return;
+            }
+
+            // Désactivation du bouton
+            checkoutBtn.disabled = true;
+            checkoutBtn.innerHTML = '<i data-lucide="loader" style="animation: spin 1s linear infinite;"></i> Validation en cours...';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            try {
+                // Création des commandes (une par vendeur)
+                const result = await createOrder();
+                
+                // Vider le panier
+                localStorage.removeItem('ac_cart');
+                
+                // Notification de succès
+                console.log('✅ Commande(s) créée(s):', result);
+                
+                // Message utilisateur
+                if (result.orderCount === 1) {
+                    alert(`✅ Votre commande a été enregistrée avec succès !\n\nNuméro de commande: ${result.sessionGroupId}`);
+                } else {
+                    alert(`✅ Vos ${result.orderCount} commandes ont été enregistrées avec succès !\n\n(Plusieurs vendeurs détectés)\n\nNuméro de session: ${result.sessionGroupId}`);
+                }
+                
+                // Redirection vers la page de confirmation
+                window.location.href = "orders.html";
+                
+            } catch (err) {
+                console.error("❌ Erreur lors de la création de la commande:", err);
+                
+                // Message d'erreur utilisateur
+                alert(`❌ Erreur lors de la validation:\n\n${err.message}\n\nVeuillez réessayer ou contacter le support.`);
+                
+                // Réactivation du bouton
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = '<i data-lucide="shopping-cart"></i> Procéder au paiement';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
     });
   </script>
 </body>
