@@ -2,15 +2,17 @@
    AUTHENTIFICATION & CONNEXION FIREBASE (CORRIGÉ)
    ========================================================= */
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
-    authDomain: "aurum-bf.firebaseapp.com",
-    projectId: "aurum-bf",
-    storageBucket: "aurum-bf.firebasestorage.app",
-    messagingSenderId: "858318726586",
-    appId: "1:858318726586:web:14687fff6d4d08527a6983",
-    measurementId: "G-SY7DY6WV97"
-};
+if (typeof firebaseConfig === 'undefined') {
+    var firebaseConfig = {
+        apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
+        authDomain: "aurum-bf.firebaseapp.com",
+        projectId: "aurum-bf",
+        storageBucket: "aurum-bf.firebasestorage.app",
+        messagingSenderId: "858318726586",
+        appId: "1:858318726586:web:14687fff6d4d08527a6983",
+        measurementId: "G-SY7DY6WV97"
+    };
+}
 
 // 1. Initialisation (Une seule fois, sécurité anti-doublon)
 if (typeof firebase !== 'undefined' && !firebase.apps.length) {
