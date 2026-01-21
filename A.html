@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aide & Informations Légales — Aurum</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/auth.js"></script>
+
+  <style>
+    /* === LAYOUT PAGE LÉGALE === */
+    .legal-container {
+        display: flex;
+        gap: 40px;
+        margin-top: 40px;
+        margin-bottom: 80px;
+        min-height: 60vh;
+    }
+
+    /* Sidebar Navigation */
+    .legal-sidebar {
+        width: 280px;
+        flex-shrink: 0;
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        height: fit-content;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
+    }
+
+    .legal-nav-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 15px 20px;
+        border: none;
+        background: transparent;
+        text-align: left;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        color: #555;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        margin-bottom: 5px;
+    }
+
+    .legal-nav-btn:hover {
+        background: #f9f7f2;
+        color: #000;
+    }
+
+    .legal-nav-btn.active {
+        background: var(--gold);
+        color: #000;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+    }
+
+    /* Content Area */
+    .legal-content {
+        flex: 1;
+        background: #fff;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
+    }
+
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.4s ease;
+    }
+    .tab-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 32px;
+        margin-bottom: 10px;
+        color: #111;
+    }
+
+    .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 16px;
+    }
+
+    /* === STYLE FAQ (ACCORDÉON) === */
+    .faq-item {
+        border-bottom: 1px solid #eee;
+        margin-bottom: 10px;
+    }
+    .faq-question {
+        width: 100%;
+        text-align: left;
+        padding: 20px 0;
+        background: none;
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: color 0.3s;
+    }
+    .faq-question:hover {
+        color: var(--gold);
+    }
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        color: #555;
+        line-height: 1.6;
+    }
+    .faq-answer p {
+        padding-bottom: 20px;
+    }
+    .faq-item.open .faq-question .icon {
+        transform: rotate(180deg);
+    }
+    .faq-item.open .faq-answer {
+        max-height: 300px; /* Ajuster si textes très longs */
+    }
+
+    /* === STYLE CGU (TEXTE) === */
+    .cgu-text h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        color: #000;
+        border-left: 3px solid var(--gold);
+        padding-left: 15px;
+    }
+    .cgu-text p {
+        margin-bottom: 15px;
+        line-height: 1.7;
+        color: #444;
+    }
+    .cgu-text ul {
+        margin-bottom: 20px;
+        padding-left: 20px;
+        line-height: 1.7;
+        color: #444;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .legal-container { flex-direction: column; gap: 20px; }
+        .legal-sidebar { width: 100%; }
+        .legal-content { padding: 20px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header id="app-header" class="header">
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+          </a>
+          <nav class="nav-actions">
+              <a href="index.html" class="icon-btn"><i data-lucide="x"></i></a>
+          </nav>
+      </div>
+  </header>
+
+  <main class="container">
+      
+      <div class="legal-container">
+          <aside class="legal-sidebar">
+              <button class="legal-nav-btn active" onclick="switchTab('faq')">
+                  <i data-lucide="help-circle"></i> FAQ
+              </button>
+              <button class="legal-nav-btn" onclick="switchTab('cgu')">
+                  <i data-lucide="file-text"></i> CGU & CGV
+              </button>
+              <button class="legal-nav-btn" onclick="switchTab('mentions')">
+                  <i data-lucide="scale"></i> Mentions Légales
+              </button>
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                  <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Besoin de plus d'aide ?</p>
+                  <a href="contact.html" class="btn btn-gold" style="width: 100%; text-align: center;">Nous contacter</a>
+              </div>
+          </aside>
+
+          <div class="legal-content">
+              
+              <div id="tab-faq" class="tab-content active">
+                  <h1>Foire Aux Questions</h1>
+                  <p class="subtitle">Les réponses à vos questions les plus fréquentes.</p>
+
+                  <div class="faq-item">
+                      <button class="faq-question">Quels sont les moyens de paiement acceptés ? <i data-lucide="chevron-down" class="icon"></i></button>
+                      <div class="faq-answer"><p>Nous acceptons les paiements par Orange Money, Moov Money et le paiement à la livraison pour certaines zones à Ouagadougou. Les cartes bancaires Visa et Mastercard sont également acceptées.</p></div>
+                  </div>
+
+                  <div class="faq-item">
+                      <button class="faq-question">Quels sont les délais de livraison ? <i data-lucide="chevron-down" class="icon"></i></button>
+                      <div class="faq-answer"><p>Pour Ouagadougou, la livraison s'effectue généralement sous 24h à 48h. Pour les autres villes (Bobo-Dioulasso, Koudougou, etc.), comptez entre 3 et 5 jours ouvrables selon le vendeur.</p></div>
+                  </div>
+
+                  <div class="faq-item">
+                      <button class="faq-question">Puis-je retourner un produit ? <i data-lucide="chevron-down" class="icon"></i></button>
+                      <div class="faq-answer"><p>Oui, vous disposez de 7 jours après réception pour retourner un produit s'il est défectueux ou ne correspond pas à la description. Le produit doit être dans son emballage d'origine.</p></div>
+                  </div>
+
+                  <div class="faq-item">
+                      <button class="faq-question">Comment devenir vendeur sur Aurum ? <i data-lucide="chevron-down" class="icon"></i></button>
+                      <div class="faq-answer"><p>C'est simple ! Cliquez sur "Devenir Vendeur" dans le menu, remplissez le formulaire et soumettez vos documents. Notre équipe validera votre boutique sous 48h.</p></div>
+                  </div>
+
+                  <div class="faq-item">
+                      <button class="faq-question">Les produits sont-ils authentiques ? <i data-lucide="chevron-down" class="icon"></i></button>
+                      <div class="faq-answer"><p>Absolument. Aurum est une marketplace Premium. Nous vérifions l'identité de nos vendeurs et appliquons une politique de tolérance zéro envers la contrefaçon.</p></div>
+                  </div>
+              </div>
+
+              <div id="tab-cgu" class="tab-content">
+                  <h1>Conditions Générales d'Utilisation</h1>
+                  <p class="subtitle">Dernière mise à jour : 18 Janvier 2026</p>
+                  
+                  <div class="cgu-text">
+                      <p>Les présentes Conditions Générales d'Utilisation et de Vente (ci-après "CGU/CGV") régissent l'utilisation de la plateforme Aurum et les transactions effectuées entre les Acheteurs et les Vendeurs.</p>
+
+                      <h2>1. Objet</h2>
+                      <p>Aurum est une plateforme de mise en relation (Marketplace) permettant à des vendeurs professionnels (ci-après "Vendeurs") de proposer des produits à la vente à des particuliers (ci-après "Acheteurs"). Aurum agit en tant qu'intermédiaire technique et tiers de confiance.</p>
+
+                      <h2>2. Acceptation des conditions</h2>
+                      <p>L'accès au site, sa consultation et son utilisation sont subordonnés à l'acceptation sans réserve des présentes CGU. En créant un compte, vous reconnaissez avoir lu et compris ces conditions.</p>
+
+                      <h2>3. Compte Utilisateur</h2>
+                      <p>Pour passer commande, l'Acheteur doit créer un compte. Il s'engage à fournir des informations exactes (Nom, Téléphone, Adresse). L'Acheteur est responsable de la confidentialité de son mot de passe. Aurum ne pourra être tenu responsable en cas d'accès frauduleux dû à une négligence de l'utilisateur.</p>
+
+                      <h2>4. Commandes et Prix</h2>
+                      <p>Les prix sont indiqués en Francs CFA (XOF) toutes taxes comprises (TTC). Les frais de livraison sont calculés au moment de la validation du panier. Le Vendeur s'engage à honorer les commandes dans la limite des stocks disponibles.</p>
+
+                      <h2>5. Paiement</h2>
+                      <p>Le paiement est sécurisé. Aurum encaisse les fonds pour le compte du Vendeur. Les fonds sont reversés au Vendeur une fois la livraison confirmée, garantissant ainsi la sécurité de l'Acheteur.</p>
+
+                      <h2>6. Livraison</h2>
+                      <p>Les produits sont livrés à l'adresse indiquée lors de la commande. Les délais indiqués sont des délais moyens. Aurum travaille avec des partenaires logistiques, mais ne peut être tenu responsable des retards dus à des cas de force majeure.</p>
+
+                      <h2>7. Droit de rétractation et Litiges</h2>
+                      <p>Conformément à la législation du Burkina Faso sur le commerce électronique, l'Acheteur dispose d'un délai de rétractation. En cas de litige, l'Acheteur doit contacter le support Aurum. Nous nous engageons à faciliter une résolution amiable.</p>
+
+                      <h2>8. Responsabilité</h2>
+                      <p>Les produits sont vendus sous la responsabilité exclusive des Vendeurs. Aurum ne saurait être tenu responsable de la non-conformité des produits, bien que nous fassions tout notre possible pour modérer et sélectionner nos partenaires.</p>
+                  </div>
+              </div>
+
+              <div id="tab-mentions" class="tab-content">
+                  <h1>Mentions Légales</h1>
+                  <div class="cgu-text">
+                      <h2>Éditeur du site</h2>
+                      <p>Le site <strong>Aurum Marketplace</strong> est édité par la société AURUM S.A.R.L.</p>
+                      <p>
+                          <strong>Siège social :</strong> Ouagadougou, Burkina Faso.<br>
+                         <!-- <strong>RCCM :</strong> BF-OUA-2024-B-12345<br>
+                          <strong>IFU :</strong> 00123456X<br>-->
+                          <strong>Email :</strong> aurumcorporate.d@gmail.com
+                      </p>
+
+                      <h2>Hébergement</h2>
+                      <p>Le site est hébergé par <strong>Google Firebase</strong> (Google LLC), 1600 Amphitheatre Parkway, Mountain View, California 94043, USA.</p>
+
+                      <h2>Propriété intellectuelle</h2>
+                      <p>L'ensemble du contenu du site (logos, textes, images, charte graphique) est la propriété exclusive d'Aurum ou de ses partenaires. Toute reproduction sans autorisation est interdite.</p>
+                  </div>
+              </div>
+
+          </div>
+      </div>
+
+  </main>
+
+  <script>
+    // === GESTION DES ONGLETS ===
+    function switchTab(tabId) {
+        // 1. Gérer les boutons
+        document.querySelectorAll('.legal-nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        // Ajouter active au bouton cliqué (on utilise event.currentTarget pour être sûr)
+        event.currentTarget.classList.add('active');
+
+        // 2. Gérer le contenu
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById('tab-' + tabId).classList.add('active');
+        
+        // Scroll top mobile
+        if(window.innerWidth < 768) {
+            document.querySelector('.legal-content').scrollIntoView({behavior: 'smooth'});
+        }
+    }
+
+    // === GESTION ACCORDÉON FAQ ===
+    document.addEventListener('DOMContentLoaded', () => {
+        const yearSpan = document.getElementById('year');
+        if (yearSpan) yearSpan.innerText = new Date().getFullYear();
+
+        const faqItems = document.querySelectorAll('.faq-item');
+        
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                // Fermer les autres (optionnel, pour faire un accordéon strict)
+                // faqItems.forEach(i => { if(i !== item) i.classList.remove('open'); });
+                
+                // Basculer l'actuel
+                item.classList.toggle('open');
+            });
+        });
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+  </script>
+  <script src="assets/js/footer.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Politique de Confidentialité — Aurum</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/auth.js"></script>
+
+  <style>
+    /* Styles spécifiques pour rendre le texte légal lisible et élégant */
+    .legal-content {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        line-height: 1.8;
+        color: #333;
+    }
+    .legal-content h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 36px;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    .legal-content .last-updated {
+        text-align: center;
+        color: #888;
+        font-size: 14px;
+        margin-bottom: 40px;
+        display: block;
+    }
+    .legal-content h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        color: #000;
+        border-bottom: 2px solid var(--gold);
+        display: inline-block;
+        padding-bottom: 5px;
+    }
+    .legal-content h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 10px;
+    }
+    .legal-content ul {
+        padding-left: 20px;
+        margin-bottom: 20px;
+    }
+    .legal-content li {
+        margin-bottom: 10px;
+    }
+    .legal-content p {
+        margin-bottom: 15px;
+    }
+    .highlight-box {
+        background: #f9f7f2;
+        border-left: 4px solid var(--gold);
+        padding: 20px;
+        margin: 30px 0;
+        border-radius: 0 8px 8px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header id="app-header" class="header">
+      <div class="container navbar">
+          <a href="index.html" class="brand">
+              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
+          </a>
+          <nav class="nav-actions">
+              <a href="index.html" class="icon-btn"><i data-lucide="x"></i></a>
+          </nav>
+      </div>
+  </header>
+
+  <main class="container" style="padding-top: 40px; padding-bottom: 80px;">
+      
+      <div class="legal-content">
+          <h1>Politique de Confidentialité</h1>
+          <span class="last-updated">Dernière mise à jour : <span id="date-maj">24 Mai 2024</span></span>
+
+          <p>Bienvenue sur Aurum. La protection de vos données personnelles est au cœur de nos préoccupations. En tant que marketplace premium burkinabè, nous nous engageons à traiter vos informations avec la plus grande transparence, conformément aux lois en vigueur au Burkina Faso (Loi n°001-2021/AN).</p>
+
+          <div class="highlight-box">
+              <strong>En bref :</strong> Nous ne vendons jamais vos données. Nous les utilisons uniquement pour traiter vos commandes, améliorer votre expérience et sécuriser nos services.
+          </div>
+
+          <h2>1. Les données que nous collectons</h2>
+          <p>Pour fournir nos services, nous sommes amenés à collecter les informations suivantes :</p>
+          <ul>
+              <li><strong>Informations d'identité :</strong> Nom, prénom, adresse email (via l'inscription ou la connexion Google).</li>
+              <li><strong>Informations de livraison :</strong> Adresse postale, ville, quartier, numéro de téléphone (indispensable pour la livraison au Burkina Faso).</li>
+              <li><strong>Données de transaction :</strong> Détails des commandes, historique d'achats, factures.</li>
+              <li><strong>Données techniques :</strong> Adresse IP, type d'appareil, données de navigation (pour la sécurité et l'optimisation).</li>
+          </ul>
+
+          <h2>2. Comment nous utilisons vos données</h2>
+          <p>Vos données sont utilisées pour :</p>
+          <ul>
+              <li><strong>Traiter vos commandes :</strong> Validation, expédition et suivi.</li>
+              <li><strong>Service Client :</strong> Répondre à vos questions et gérer les retours.</li>
+              <li><strong>Personnalisation :</strong> Vous proposer des produits adaptés à vos goûts (via la liste de favoris).</li>
+              <li><strong>Sécurité :</strong> Détecter et prévenir les fraudes ou accès non autorisés.</li>
+          </ul>
+
+          <h2>3. Partage des données (Modèle Marketplace)</h2>
+          <p>Aurum est une place de marché mettant en relation des acheteurs et des vendeurs indépendants. Pour exécuter votre commande, nous devons partager certaines informations :</p>
+          <ul>
+              <li><strong>Aux Vendeurs :</strong> Lorsque vous achetez un produit, nous transmettons votre nom, adresse de livraison et téléphone au vendeur concerné afin qu'il puisse préparer et expédier votre colis.</li>
+              <li><strong>Aux Livreurs :</strong> Vos coordonnées sont transmises à nos partenaires logistiques pour assurer la livraison.</li>
+              <li><strong>Autorités :</strong> Si la loi l'exige, nous pouvons être amenés à partager des données avec les autorités compétentes.</li>
+          </ul>
+
+          <h2>4. Sécurité des données</h2>
+          <p>Nous utilisons les technologies les plus avancées pour protéger vos informations :</p>
+          <ul>
+              <li><strong>Infrastructure :</strong> Nos données sont hébergées sur <strong>Google Firebase</strong>, leader mondial reconnu pour sa sécurité (certification ISO 27001).</li>
+              <li><strong>Chiffrement :</strong> Toutes les communications sur le site sont chiffrées via le protocole SSL (HTTPS).</li>
+              <li><strong>Mots de passe :</strong> Nous ne stockons jamais vos mots de passe en clair. Ils sont hachés et sécurisés.</li>
+          </ul>
+
+          <h2>5. Vos droits</h2>
+          <p>Conformément à la réglementation, vous disposez des droits suivants :</p>
+          <ul>
+              <li><strong>Droit d'accès :</strong> Vous pouvez consulter vos données personnelles dans la section "Mon Profil".</li>
+              <li><strong>Droit de rectification :</strong> Vous pouvez modifier vos adresses et informations à tout moment.</li>
+              <li><strong>Droit à l'oubli :</strong> Vous pouvez demander la suppression définitive de votre compte et de vos données en nous contactant.</li>
+          </ul>
+
+          <h2>6. Cookies</h2>
+          <p>Nous utilisons des cookies techniques nécessaires au fonctionnement du site (panier, session utilisateur). Nous n'utilisons pas de cookies publicitaires intrusifs sans votre consentement.</p>
+
+          <h2>7. Contact</h2>
+          <p>Pour toute question relative à vos données personnelles, vous pouvez contacter notre Délégué à la Protection des Données :</p>
+          <p style="text-align: center; font-weight: bold; margin-top: 20px;">
+              <a href="mailto:privacy@aurum.bf" style="color: var(--gold); text-decoration: none;">privacy@aurum.bf</a>
+          </p>
+      </div>
+
+  </main>
+
+  <script>
+    // Initialisation simple
+    document.addEventListener('DOMContentLoaded', () => {
+        const yearSpan = document.getElementById('year');
+        if (yearSpan) yearSpan.innerText = new Date().getFullYear();
+        
+        // Date MAJ automatique (facultatif, pour faire "vivant")
+        const dateMaj = document.getElementById('date-maj');
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        dateMaj.innerText = new Date().toLocaleDateString('fr-FR', options);
+        
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+  </script>
+  <script src="assets/js/footer.js" defer></script>
+</body>
+</html>
