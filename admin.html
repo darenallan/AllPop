@@ -41,7 +41,7 @@
             .admin-mobile-toggle { display: none !important; }
         }
 
-        /* STYLES GÉNÉRAUX */
+        /* STYLES GÃ‰NÃ‰RAUX */
         .admin-sidebar-header { padding: 40px 30px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
         .admin-sidebar-title { font-family: 'Playfair Display', serif; color: #D4AF37; font-size: 28px; margin: 0; }
         
@@ -113,12 +113,12 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // --- 1. LES DONNÉES DE BASE ---
+    // --- 1. LES DONNÃ‰ES DE BASE ---
     const INITIAL_DATA = {
         shops: [
             { name: 'Luxe Motors', category: 'Auto & Moto', ownerEmail: 'vente.lll@gmail.com', status: 'active', itemLimit: 50, createdAt: new Date() },
-            { name: 'Boutique Faso', category: 'Mode & Vêtements', ownerEmail: 'client.add@gmail.com', status: 'active', itemLimit: 100, createdAt: new Date() },
-            { name: 'Electro World', category: 'Électronique', ownerEmail: 'tech@store.bf', status: 'active', itemLimit: 200, createdAt: new Date() }
+            { name: 'Boutique Faso', category: 'Mode & VÃªtements', ownerEmail: 'client.add@gmail.com', status: 'active', itemLimit: 100, createdAt: new Date() },
+            { name: 'Electro World', category: 'Ã‰lectronique', ownerEmail: 'tech@store.bf', status: 'active', itemLimit: 200, createdAt: new Date() }
         ],
         users: [
             { name: "Super Admin", email: "aurumcorporate.d@gmail.com", role: "superadmin", phone: "+226 00 00 00 00" },
@@ -141,31 +141,62 @@
         orders: []
     };
 
-    // --- 2. DÉMARRAGE ---
+    // Utilitaire: corriger les textes mal encodés (UTF-8 affiché en ISO)
+    function fixGarbledText(root = document.body) {
+        const map = new Map([
+            ['Ã©','é'], ['Ã¨','è'], ['Ãª','ê'], ['Ã«','ë'], ['Ã¢','â'], ['Ã¤','ä'],
+            ['Ã ','à'], ['Ã¡','á'], ['Ã€','À'], ['Ã´','ô'], ['Ã¶','ö'], ['Ã§','ç'], ['Ã‰','É'],
+            ['CatÃ©gories','Catégories'], ['CrÃ©er','Créer'], ['DÃ©connexion','Déconnexion'],
+            ['ActivitÃ©','Activité'], ['RÃ©cente','Récente'], ['SystÃ¨me','Système'],
+            ['TÃ©lÃ©phone','Téléphone'], ['PropriÃ©taire','Propriétaire'], ['DurÃ©e','Durée'],
+            ['donnÃ©es','données'], ['AccÃ¨s','Accès'], ['connectÃ©','connecté']
+        ]);
+
+        const fix = (s) => {
+            if (!s) return s;
+            let out = s;
+            map.forEach((v,k)=>{ out = out.split(k).join(v); });
+            // Emojis fréquemment mal encodés
+            out = out.replaceAll('âœ…','✅').replaceAll('âŒ','❌').replaceAll('âš¡','⚡')
+                     .replaceAll('âš ï¸','⚠️').replaceAll('ðŸ“¡','📡').replaceAll('ðŸ”','🔐')
+                     .replaceAll('ðŸ“¦','📦').replaceAll('ðŸ‘¥','👥').replaceAll('ðŸŽ','🎁')
+                     .replaceAll('ðŸ—‘ï¸','🗑️').replaceAll('ðŸ›ï¸','🛍️').replaceAll('ðŸ’°','💰')
+                     .replaceAll('ðŸ“','📍');
+            return out;
+        };
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(n => { n.nodeValue = fix(n.nodeValue); });
+        document.title = fix(document.title);
+    }
+
+    // --- 2. DÃ‰MARRAGE ---
     const ADMIN_EMAIL = 'aurumcorporate.d@gmail.com';
 
     document.addEventListener('DOMContentLoaded', () => {
+        try { fixGarbledText(); } catch (_) {}
         console.log('✅ DOM Chargé, initialisation admin...');
         
         auth.onAuthStateChanged((user) => {
-            console.log('🔐 Auth state changed:', user?.email || 'Non connecté');
+            console.log('ðŸ” Auth state changed:', user?.email || 'Non connectÃ©');
             
             if (!user) {
-                // Non connecté
-                console.log("⚠️ Utilisateur non connecté -> Redirection");
+                // Non connectÃ©
+                console.log("âš ï¸ Utilisateur non connectÃ© -> Redirection");
                 window.location.href = 'login.html';
                 return;
             }
             
             if (user.email !== ADMIN_EMAIL) {
-                // Connecté mais pas admin
-                console.log("❌ Accès refusé - Email non autorisé:", user.email);
+                // ConnectÃ© mais pas admin
+                console.log("âŒ AccÃ¨s refusÃ© - Email non autorisÃ©:", user.email);
                 document.body.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100vh; font-family:Arial; text-align:center;"><div><h1 style="color:#ff6b6b;">Accès Refusé</h1><p style="font-size:18px;">Vous n\'êtes pas autorisé à accéder à cette page.</p><p style="color:#666;">Email: ' + user.email + '</p><a href="index.html" style="margin-top:20px; display:inline-block; padding:10px 20px; background:#007bff; color:white; text-decoration:none; border-radius:5px;">Retourner à l\'accueil</a></div></div>';
                 return;
             }
             
-            // Accès autorisé
-            console.log("✅ Accès administrateur autorisé");
+            // AccÃ¨s autorisÃ©
+            console.log("âœ… AccÃ¨s administrateur autorisÃ©");
             startRealTimeSync();
             setupNavigation();
         });
@@ -176,100 +207,100 @@
         const snapshot = await db.collection('shops').limit(1).get();
         
         if (snapshot.empty) {
-            console.log("⚡ Base de données vide -> Injection des données de démo...");
+            console.log("âš¡ Base de donnÃ©es vide -> Injection des donnÃ©es de dÃ©mo...");
             INITIAL_DATA.shops.forEach(shop => db.collection('shops').add(shop));
             INITIAL_DATA.users.forEach(user => db.collection('users').add(user));
             INITIAL_DATA.promos.forEach(promo => db.collection('promos').add(promo));
-            alert("🎉 Base de données initialisée !");
+            alert("ðŸŽ‰ Base de donnÃ©es initialisÃ©e !");
         } else {
-            console.log("👍 Base de données déjà remplie.");
+            console.log("ðŸ‘ Base de donnÃ©es dÃ©jÃ  remplie.");
         }
     }
 
     // --- 4. SYNCHRONISATION (Lecture Firebase) ---
     function startRealTimeSync() {
-        console.log('📡 Démarrage sync temps réel...');
+        console.log('ðŸ“¡ DÃ©marrage sync temps rÃ©el...');
         
-        // Masquer le loader et afficher le contenu immédiatement
+        // Masquer le loader et afficher le contenu immÃ©diatement
         setTimeout(() => {
             const loader = document.getElementById('loader');
             const content = document.getElementById('dashboard-content');
             if(loader) loader.style.display = 'none';
             if(content) content.classList.remove('hidden');
-            console.log('✅ Interface affichée');
+            console.log('âœ… Interface affichÃ©e');
         }, 500);
         
-        // Écoute Boutiques
+        // Ã‰coute Boutiques
         db.collection('shops').onSnapshot(snap => {
-            console.log('📦 Boutiques:', snap.size);
+            console.log('ðŸ“¦ Boutiques:', snap.size);
             Store.shops = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderShops();
             renderStats();
-        }, err => console.error('❌ Erreur shops:', err));
+        }, err => console.error('âŒ Erreur shops:', err));
 
-        // Écoute Users
+        // Ã‰coute Users
         db.collection('users').onSnapshot(snap => {
-            console.log('👥 Utilisateurs:', snap.size);
+            console.log('ðŸ‘¥ Utilisateurs:', snap.size);
             Store.users = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderUsers();
             renderStats();
-        }, err => console.error('❌ Erreur users:', err));
+        }, err => console.error('âŒ Erreur users:', err));
 
-        // Écoute Promos
+        // Ã‰coute Promos
         db.collection('promos').onSnapshot(snap => {
-            console.log('🎁 Promos:', snap.size);
+            console.log('ðŸŽ Promos:', snap.size);
             Store.promos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderPromos();
             renderStats();
-        }, err => console.error('❌ Erreur promos:', err));
+        }, err => console.error('âŒ Erreur promos:', err));
 
-        // Écoute Catégories
+        // Ã‰coute CatÃ©gories
         db.collection('categories').onSnapshot(snap => {
-            console.log('🏷️ Catégories:', snap.size);
+            console.log('ðŸ·ï¸ CatÃ©gories:', snap.size);
             Store.categories = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderCategories();
-        }, err => console.error('❌ Erreur categories:', err));
+        }, err => console.error('âŒ Erreur categories:', err));
 
-        // Nettoyage automatique des codes promo expirés (une fois par heure)
+        // Nettoyage automatique des codes promo expirÃ©s (une fois par heure)
         setInterval(() => {
             const today = new Date().toISOString().split('T')[0];
             Store.promos.forEach(promo => {
                 if(promo.expires && promo.expires < today) {
-                    console.log('🗑️ Suppression promo expiré:', promo.code);
+                    console.log('ðŸ—‘ï¸ Suppression promo expirÃ©:', promo.code);
                     db.collection('promos').doc(promo.id).delete();
                 }
             });
         }, 3600000); // 1 heure
 
-        // Écoute Produits (optionnel)
+        // Ã‰coute Produits (optionnel)
         try {
             db.collectionGroup('products').onSnapshot(snap => {
-                console.log('🛍️ Produits:', snap.size);
+                console.log('ðŸ›ï¸ Produits:', snap.size);
                 Store.products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderStats();
             }, err => {
-                console.warn('⚠️ Produits indisponible:', err.message);
+                console.warn('âš ï¸ Produits indisponible:', err.message);
                 Store.products = [];
             });
         } catch (e) {
-            console.warn('⚠️ CollectionGroup non supporté');
+            console.warn('âš ï¸ CollectionGroup non supportÃ©');
         }
 
-        // Écoute Commandes (optionnel)
+        // Ã‰coute Commandes (optionnel)
         try {
             db.collection('orders').onSnapshot(snap => {
-                console.log('💰 Commandes:', snap.size);
+                console.log('ðŸ’° Commandes:', snap.size);
                 Store.orders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderStats();
             }, err => {
-                console.warn('⚠️ Orders indisponible:', err.message);
+                console.warn('âš ï¸ Orders indisponible:', err.message);
                 Store.orders = [];
             });
         } catch (e) {
-            console.warn('⚠️ Collection orders non trouvée');
+            console.warn('âš ï¸ Collection orders non trouvÃ©e');
         }
 
-        // Icônes
+        // IcÃ´nes
         if(typeof lucide !== 'undefined') lucide.createIcons();
     }
 
@@ -330,7 +361,7 @@
             : Store.shops.map(s => `
                 <div class="admin-card" style="padding:15px; margin-bottom:10px;">
                     <h4>${s.name}</h4>
-                    <div style="font-size:13px; color:#666;">${s.category} — ${s.ownerEmail}</div>
+                    <div style="font-size:13px; color:#666;">${s.category} â€” ${s.ownerEmail}</div>
                 </div>
             `).join('');
     }
@@ -365,11 +396,11 @@
                             <strong style="font-size:16px; ${isExpired ? 'text-decoration:line-through;' : ''}">${p.code}</strong>
                             <div style="font-size:13px; color:#666;">
                                 -${p.percent}% 
-                                ${p.expires ? `• Expire: ${p.expires}` : '• Sans date'}
+                                ${p.expires ? `â€¢ Expire: ${p.expires}` : 'â€¢ Sans date'}
                                 <span style="color:${statusColor}; font-weight:bold; margin-left:10px;">${statusText}</span>
                             </div>
                         </div>
-                        <button onclick="deleteItem('promos', '${p.id}')" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">✕ Supprimer</button>
+                        <button onclick="deleteItem('promos', '${p.id}')" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">âœ• Supprimer</button>
                     </div>
                 `;
             }).join('');
@@ -382,13 +413,13 @@
         // Remplir aussi le select pour le formulaire de boutique
         const select = document.getElementById('shop-cat-select');
         if(select) {
-            select.innerHTML = '<option value="">Choisir une catégorie...</option>' + 
+            select.innerHTML = '<option value="">Choisir une catÃ©gorie...</option>' + 
                 Store.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
         }
         
-        // Afficher la liste des catégories
+        // Afficher la liste des catÃ©gories
         div.innerHTML = Store.categories.length === 0 
-            ? '<p>Aucune catégorie</p>'
+            ? '<p>Aucune catÃ©gorie</p>'
             : Store.categories.map(c => `
                 <div class="admin-card" style="padding:15px; margin-bottom:10px; display:flex; justify-content:space-between;">
                     <strong>${c.name}</strong>
@@ -399,12 +430,12 @@
 
     // --- 6. NAVIGATION ---
     function setupNavigation() {
-        console.log('🔗 Configuration navigation...');
+        console.log('ðŸ”— Configuration navigation...');
     }
 
-    // Fonction globale de navigation (appelée par onclick)
+    // Fonction globale de navigation (appelÃ©e par onclick)
     window.nav = function(sectionId, clickedBtn) {
-        console.log('📍 Navigation vers:', sectionId);
+        console.log('ðŸ“ Navigation vers:', sectionId);
         
         // Masquer toutes les sections
         document.querySelectorAll('.admin-section').forEach(section => {
@@ -412,14 +443,14 @@
             section.classList.remove('active-section');
         });
         
-        // Afficher la section demandée
+        // Afficher la section demandÃ©e
         const targetSection = document.getElementById('sec-' + sectionId);
         if(targetSection) {
             targetSection.classList.remove('hidden');
             targetSection.classList.add('active-section');
         }
         
-        // Mettre à jour les boutons actifs
+        // Mettre Ã  jour les boutons actifs
         document.querySelectorAll('.admin-nav-item').forEach(btn => {
             btn.classList.remove('active');
         });
@@ -453,7 +484,7 @@
         }
     };
 
-    console.log('✅ Script admin.html chargé');
+    console.log('âœ… Script admin.html chargÃ©');
     </script>
 </head>
 <body class="admin-layout">
@@ -467,13 +498,13 @@
                 <i data-lucide="layout-dashboard"></i> Tableau de bord
             </div>
             <div class="admin-nav-item" onclick="nav('sellers', this)">
-                <i data-lucide="user-plus"></i> Créer Vendeur
+                <i data-lucide="user-plus"></i> CrÃ©er Vendeur
             </div>
             <div class="admin-nav-item" onclick="nav('shops', this)">
                 <i data-lucide="store"></i> Boutiques
             </div>
             <div class="admin-nav-item" onclick="nav('categories', this)">
-                <i data-lucide="tag"></i> Catégories
+                <i data-lucide="tag"></i> CatÃ©gories
             </div>
             <div class="admin-nav-item" onclick="nav('users', this)">
                 <i data-lucide="users"></i> Comptes
@@ -484,7 +515,7 @@
         </nav>
         <div style="margin-top:30px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
             <div class="admin-nav-item" style="color:#ff6b6b; cursor:pointer;" onclick="logout()">
-                <i data-lucide="log-out"></i> Déconnexion
+                <i data-lucide="log-out"></i> DÃ©connexion
             </div>
         </div>
     </aside>
@@ -496,7 +527,7 @@
     <main class="admin-main">
         
         <div id="loader" style="text-align:center; margin-top:20%;">
-            <p>Chargement des données...</p>
+            <p>Chargement des donnÃ©es...</p>
         </div>
 
         <div id="dashboard-content" class="hidden">
@@ -506,24 +537,24 @@
                 <div class="stats-grid" id="admin-stats">
                     </div>
                 <div class="admin-card">
-                    <h3>Activité Récente</h3>
-                    <p style="color:#666;">Système synchronisé avec la base de données.</p>
+                    <h3>ActivitÃ© RÃ©cente</h3>
+                    <p style="color:#666;">SystÃ¨me synchronisÃ© avec la base de donnÃ©es.</p>
                 </div>
             </section>
 
             <section id="sec-sellers" class="admin-section hidden">
-                <h1 class="admin-page-title">Créer Vendeur</h1>
+                <h1 class="admin-page-title">CrÃ©er Vendeur</h1>
                 <div class="admin-card">
                     <form id="form-seller">
                         <label>Nom Complet</label>
                         <input class="input" id="sel-name" required placeholder="Ex: Jean Dupont">
                         <label>Email</label>
                         <input class="input" id="sel-email" type="email" required placeholder="email@vendeur.com">
-                        <label>Téléphone</label>
+                        <label>TÃ©lÃ©phone</label>
                         <input class="input" id="sel-phone" required placeholder="+226 XX XX XX XX">
                         <label>Mot de passe</label>
                         <input class="input" id="sel-pass" required placeholder="******">
-                        <button class="btn-gold">Créer le compte</button>
+                        <button class="btn-gold">CrÃ©er le compte</button>
                     </form>
                 </div>
             </section>
@@ -534,11 +565,11 @@
                     <h3>Nouvelle Boutique</h3>
                     <form id="form-shop">
                         <input class="input" id="shop-name" placeholder="Nom de la boutique" required>
-                        <input class="input" id="shop-owner" placeholder="Email du Propriétaire" required>
+                        <input class="input" id="shop-owner" placeholder="Email du PropriÃ©taire" required>
                         <select class="input" id="shop-cat-select" required></select>
                         <input class="input" id="shop-desc" placeholder="Description courte">
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                            <input class="input" type="number" id="shop-duration" value="30" placeholder="Durée (jours)">
+                            <input class="input" type="number" id="shop-duration" value="30" placeholder="DurÃ©e (jours)">
                             <input class="input" type="number" id="shop-limit" value="50" placeholder="Limite articles">
                         </div>
                         <button class="btn-gold">Ajouter la boutique</button>
@@ -551,10 +582,10 @@
             </section>
 
             <section id="sec-categories" class="admin-section hidden">
-                <h1 class="admin-page-title">Catégories</h1>
+                <h1 class="admin-page-title">CatÃ©gories</h1>
                 <div class="admin-card">
                     <form id="form-cat" style="display:flex; gap:10px; margin-bottom:20px;">
-                        <input class="input" id="cat-name" placeholder="Nouvelle catégorie" style="margin:0;">
+                        <input class="input" id="cat-name" placeholder="Nouvelle catÃ©gorie" style="margin:0;">
                         <button class="btn-gold" style="width:auto; margin:0;">Ajouter</button>
                     </form>
                     <div id="categories-list"></div>
@@ -573,7 +604,7 @@
                         <input class="input" id="promo-code" placeholder="CODE" style="margin:0;">
                         <input class="input" id="promo-val" type="number" placeholder="%" style="width:80px; margin:0;">
                         <input class="input" id="promo-expires" type="date" placeholder="Expiration" style="margin:0;">
-                        <button class="btn-gold" style="width:auto; margin:0;">Créer</button>
+                        <button class="btn-gold" style="width:auto; margin:0;">CrÃ©er</button>
                     </form>
                     <div id="admin-promos"></div>
                 </div>
@@ -584,10 +615,10 @@
 
     <script>
         // 1. CONFIGURATION
-        // Firebase est désormais initialisé depuis assets/js/admin.js
+        // Firebase est dÃ©sormais initialisÃ© depuis assets/js/admin.js
         // Les objets globaux db et auth sont fournis par ce script.
 
-        // Tout est géré par assets/js/admin.js
+        // Tout est gÃ©rÃ© par assets/js/admin.js
         // Ne pas dupliquer le code Firebase ici
 
         // 6. GESTION NAVIGATION
