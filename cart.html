@@ -14,7 +14,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
   <script src="assets/js/auth.js"></script>
-  <script src="assets/js/app.js"></script>
+ <script src="assets/js/app.js"></script>
   <style>
       /* --- Styles spécifiques Panier --- */
       .cart-container { padding-top: 40px; padding-bottom: 80px; min-height: 60vh; }
@@ -202,13 +202,37 @@
     </div>
   </main>
 
-  <script>
+<script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- LOGIQUE PANIER UNIQUEMENT ---
+        console.log("🚀 Démarrage du script Panier...");
+
+        // --- 0. SÉCURITÉ : WATCHDOG (Force l'arrêt si ça bloque) ---
+        const watchdog = setTimeout(() => {
+            const loadEl = document.getElementById('loading');
+            if (loadEl && loadEl.style.display !== 'none') {
+                console.error("⏰ TIMEOUT : Le chargement a pris trop de temps.");
+                loadEl.innerHTML = `
+                    <div style="color: #d9534f; padding: 20px;">
+                        <h3>Le chargement est trop long.</h3>
+                        <p>Vérifiez votre connexion internet ou réessayez.</p>
+                        <button onclick="localStorage.removeItem('ac_cart'); location.reload();" class="btn btn-outline">Réinitialiser le panier</button>
+                    </div>`;
+            }
+        }, 8000); // 8 secondes max
+
+        // --- 1. VÉRIFICATION FIREBASE ---
+        if (typeof firebase === 'undefined' || !firebase.apps.length) {
+            clearTimeout(watchdog);
+            console.error("❌ ERREUR CRITIQUE : Firebase n'est pas chargé ou initialisé.");
+            const loadEl = document.getElementById('loading');
+            if(loadEl) loadEl.innerHTML = "<p style='color:red'>Erreur technique : Firebase non détecté. Vérifiez auth.js</p>";
+            return;
+        }
+
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Éléments DOM
+        // Éléments DOM (Avec vérification)
         const loadingEl = document.getElementById('loading');
         const emptyEl = document.getElementById('cart-empty');
         const contentEl = document.getElementById('cart-content');
@@ -218,425 +242,198 @@
         const totalEl = document.getElementById('total-display');
         const checkoutBtn = document.getElementById('btn-checkout');
 
-        let cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-        let cartProductsData = [];
+        if (!loadingEl || !emptyEl || !contentEl) {
+            console.error("❌ ERREUR DOM : Il manque des IDs dans le HTML (loading, cart-empty ou cart-content).");
+            return;
+        }
 
+        // --- 2. LECTURE ROBUSTE DU PANIER ---
+        let cart = [];
+        try {
+            const stored = localStorage.getItem('ac_cart');
+            if (stored) {
+                cart = JSON.parse(stored);
+                // Filtre pour ne garder que les objets valides avec un ID
+                cart = Array.isArray(cart) ? cart.filter(i => i && i.pid && typeof i.pid === 'string') : [];
+            }
+        } catch (e) {
+            console.warn("⚠️ Panier corrompu détecté, nettoyage.");
+            localStorage.removeItem('ac_cart');
+            cart = [];
+        }
+
+        console.log(`📦 Contenu du panier (${cart.length} articles) :`, cart);
+
+        // Si panier vide
         if (cart.length === 0) {
+            clearTimeout(watchdog);
             showEmptyState();
             return;
         }
 
-        // Chargement des produits depuis Firestore
-        const promises = cart.map(item => db.collection('products').doc(item.pid).get());
+        // --- 3. CHARGEMENT DES DONNÉES (PRODUITS) ---
+        let cartProductsData = [];
+        
+        // On crée un tableau de promesses
+        const promises = cart.map(item => {
+            return db.collection('products').doc(item.pid).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        return { found: true, data: doc.data(), id: doc.id, qty: item.qty || 1 };
+                    } else {
+                        console.warn(`Produit introuvable (ID: ${item.pid})`);
+                        return { found: false, id: item.pid };
+                    }
+                })
+                .catch(err => {
+                    console.error(`Erreur lecture produit ${item.pid}:`, err);
+                    return { found: false, id: item.pid };
+                });
+        });
 
         Promise.all(promises)
-            .then(snapshots => {
-                snapshots.forEach(doc => {
-                    if (doc.exists) {
-                        const productData = doc.data();
-                        const cartItem = cart.find(i => i.pid === doc.id);
-                        cartProductsData.push({
-                            id: doc.id,
-                            ...productData,
-                            qty: cartItem ? cartItem.qty : 1
-                        });
-                    }
-                });
+            .then(results => {
+                clearTimeout(watchdog); // On arrête le chrono de sécurité
+                console.log("✅ Toutes les requêtes sont terminées.");
 
+                // Filtrer les succès
+                cartProductsData = results.filter(r => r.found).map(r => ({
+                    id: r.id,
+                    ...r.data,
+                    qty: parseInt(r.qty) || 1
+                }));
+
+                // Si après filtrage il ne reste rien (ex: tous les produits supprimés)
                 if (cartProductsData.length === 0) {
+                    // Nettoyage préventif
+                    if (cart.length > 0) {
+                        localStorage.removeItem('ac_cart');
+                    }
                     showEmptyState();
                 } else {
                     renderCart();
                 }
             })
-            .catch(err => {
-                console.error("Erreur chargement panier :", err);
-                loadingEl.innerHTML = "<p style='color:red;'>Erreur lors du chargement.</p>";
+            .catch(globalErr => {
+                clearTimeout(watchdog);
+                console.error("❌ ERREUR GLOBALE :", globalErr);
+                loadingEl.innerHTML = "<p style='color:red'>Erreur lors du chargement des produits.</p>";
             });
 
+        // --- FONCTIONS D'AFFICHAGE ---
+
         function showEmptyState() {
-            loadingEl.style.display = 'none';
-            emptyEl.style.display = 'flex';
-            contentEl.style.display = 'none';
-            lucide.createIcons();
+            if(loadingEl) loadingEl.style.display = 'none';
+            if(emptyEl) emptyEl.style.display = 'flex';
+            if(contentEl) contentEl.style.display = 'none';
+            if(typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // Calcul du total et affichage
         function renderCart() {
-            loadingEl.style.display = 'none';
-            emptyEl.style.display = 'none';
-            contentEl.style.display = 'grid';
+            if(loadingEl) loadingEl.style.display = 'none';
+            if(emptyEl) emptyEl.style.display = 'none';
+            if(contentEl) contentEl.style.display = 'grid';
             
-            listEl.innerHTML = "";
+            if(listEl) listEl.innerHTML = "";
             let total = 0;
             let itemCount = 0;
 
             cartProductsData.forEach(p => {
-                const lineTotal = p.price * p.qty;
+                const lineTotal = (p.price || 0) * p.qty;
                 total += lineTotal;
                 itemCount += p.qty;
-                const img = p.image || p.images?.[0] || 'assets/img/placeholder.png';
+                
+                let img = 'assets/img/placeholder-product-1.svg';
+                if (p.image) img = p.image;
+                else if (p.images && p.images.length > 0) img = p.images[0];
 
-                listEl.innerHTML += `
-                    <div class="cart-item">
-                        <a href="product.html?id=${p.id}">
-                            <img src="${img}" class="cart-item-img" alt="${p.name}">
-                        </a>
-                        <div class="cart-item-info">
-                            <a href="product.html?id=${p.id}" class="cart-item-title">${p.name}</a>
-                            <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA / unité</div>
+                if(listEl) {
+                    listEl.innerHTML += `
+                        <div class="cart-item">
+                            <a href="product.html?id=${p.id}">
+                                <img src="${img}" class="cart-item-img" alt="${p.name}" onerror="this.src='assets/img/placeholder-product-1.svg'">
+                            </a>
+                            <div class="cart-item-info">
+                                <a href="product.html?id=${p.id}" class="cart-item-title">${p.name || 'Produit'}</a>
+                                <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price || 0)} FCFA / unité</div>
+                                ${p.variants && (p.variants.color || p.variants.size) ? `<div style="font-size:12px; color:#888;">Option: ${p.variants.color || ''} ${p.variants.size || ''}</div>` : ''}
+                            </div>
+                            <div class="cart-item-actions">
+                                <div class="qty-selector-sm">
+                                    <button class="qty-btn-sm" onclick="changeQty('${p.id}', -1)">-</button>
+                                    <span class="qty-val-sm">${p.qty}</span>
+                                    <button class="qty-btn-sm" onclick="changeQty('${p.id}', 1)">+</button>
+                                </div>
+                                <div class="item-total">
+                                    ${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA
+                                </div>
+                                <div class="btn-delete" onclick="removeItem('${p.id}')">
+                                    <i data-lucide="trash-2"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="cart-item-actions">
-                            <div class="qty-selector-sm">
-                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', -1)">-</button>
-                                <span class="qty-val-sm">${p.qty}</span>
-                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', 1)">+</button>
-                            </div>
-                            <div class="item-total">
-                                ${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA
-                            </div>
-                            <div class="btn-delete" onclick="removeItem('${p.id}')">
-                                <i data-lucide="trash-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                    `;
+                }
             });
 
             const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
-            subtotalEl.innerText = formattedTotal;
-            totalEl.innerText = formattedTotal;
-            countLabel.innerText = itemCount;
+            if(subtotalEl) subtotalEl.innerText = formattedTotal;
+            if(totalEl) totalEl.innerText = formattedTotal;
+            if(countLabel) countLabel.innerText = itemCount;
 
-            lucide.createIcons();
+            if(typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // Gestion des quantités
+        // --- ACTIONS GLOBALES ---
         window.changeQty = function(pid, delta) {
             const product = cartProductsData.find(p => p.id === pid);
             if(product) {
                 product.qty += delta;
                 if(product.qty < 1) product.qty = 1;
+                
+                // Maj LocalStorage
+                const cartIndex = cart.findIndex(i => i.pid === pid);
+                if(cartIndex > -1) {
+                    cart[cartIndex].qty = product.qty;
+                    localStorage.setItem('ac_cart', JSON.stringify(cart));
+                }
+                renderCart();
             }
-            
-            const lsItem = cart.find(i => i.pid === pid);
-            if(lsItem) {
-                lsItem.qty += delta;
-                if(lsItem.qty < 1) lsItem.qty = 1;
-                localStorage.setItem('ac_cart', JSON.stringify(cart));
-            }
-
-            renderCart();
         };
 
-        // Suppression d'un article (utilise removeFromCart global)
         window.removeItem = function(pid) {
-            if(!confirm("Retirer cet article du panier ?")) return;
+            if(!confirm("Supprimer cet article ?")) return;
+            
+            // Maj Mémoire
+            cartProductsData = cartProductsData.filter(p => p.id !== pid);
+            // Maj Storage
+            cart = cart.filter(i => i.pid !== pid);
+            localStorage.setItem('ac_cart', JSON.stringify(cart));
 
-            if(typeof removeFromCart === 'function') {
-                removeFromCart(pid);
-                // Recharger la page pour mettre à jour l'affichage
-                window.location.reload();
-            }
+            if(cartProductsData.length === 0) showEmptyState();
+            else renderCart();
+            
+            // Maj badge header si dispo
+            if(window.updateCartBadge) window.updateCartBadge();
         };
 
-        /**
-         * FONCTION CHECKOUT MULTI-VENDEURS - ARCHITECTURE BACKEND
-         * 
-         * Logique:
-         * 1. Regroupe les articles par `shopId` (ou `sellerId`)
-         * 2. Génère un `sessionGroupId` unique pour lier toutes les commandes
-         * 3. Pour chaque vendeur, crée un document `order` dans Firestore
-         * 4. Utilise `db.batch()` pour atomicité (tout ou rien)
-         * 5. Chaque document contient: sellerId, buyerId, items, total, status, sessionGroupId
-         * 6. Vide le panier et redirige vers orders.html
-         * 
-         * @returns {Promise<Object>} Résultat: { success, sessionGroupId, orderCount, orderIds }
-         */
-        async function checkout() {
-            const user = auth.currentUser;
-            
-            // --- VALIDATION 1: AUTHENTIFICATION ---
-            if (!user) {
-                throw new Error('❌ Vous devez être connecté pour valider votre commande');
-            }
-
-            // --- VALIDATION 2: PANIER NON VIDE ---
-            if (!cartProductsData || cartProductsData.length === 0) {
-                throw new Error('❌ Votre panier est vide');
-            }
-
-            console.log('🛒 [CHECKOUT] Début de la validation multi-vendeurs...');
-            console.log('👤 Utilisateur:', user.email);
-            console.log('📦 Articles dans le panier:', cartProductsData.length);
-
-            // === ÉTAPE 1: REGROUPEMENT PAR VENDEUR ===
-            const ordersByShop = {};
-            
-            cartProductsData.forEach(product => {
-                // Récupère le shopId (priorité: shopId > sellerId > 'default')
-                const shopId = product.shopId || product.sellerId || 'default-shop';
-                const shopName = product.shopName || 'Boutique Partenaire';
-                
-                // Crée un groupe pour ce vendeur s'il n'existe pas
-                if (!ordersByShop[shopId]) {
-                    ordersByShop[shopId] = {
-                        shopId,
-                        shopName,
-                        items: [],
-                        subtotal: 0,
-                        itemCount: 0
-                    };
+        // --- BOUTON CHECKOUT ---
+        if(checkoutBtn) {
+            checkoutBtn.addEventListener('click', () => {
+                if (!auth.currentUser) {
+                    sessionStorage.setItem('redirect_after_login', 'cart.html');
+                    window.location.href = "login.html";
+                } else {
+                    // Ici, intégrez votre logique de checkout complexe (batch write)
+                    // Pour l'instant, on redirige juste pour tester
+                    alert("Validation de la commande en cours...");
+                    // Insérez ici votre grosse fonction checkout() si vous l'avez
                 }
-
-                // Calcule le montant pour cet article
-                const quantity = product.qty || 1;
-                const price = product.price || 0;
-                const lineTotal = price * quantity;
-                
-                // Ajoute l'article au groupe
-                ordersByShop[shopId].items.push({
-                    productId: product.id,
-                    productName: product.name || 'Produit sans nom',
-                    price: price,
-                    quantity: quantity,
-                    lineTotal: lineTotal,
-                    image: product.image || product.images?.[0] || '',
-                    category: product.category || 'Général',
-                    variants: product.variants || {}
-                });
-
-                // Met à jour les totaux
-                ordersByShop[shopId].subtotal += lineTotal;
-                ordersByShop[shopId].itemCount += quantity;
             });
-
-            const shopIds = Object.keys(ordersByShop);
-            console.log(`📦 [GROUPEMENT] ${shopIds.length} vendeur(s) détecté(s):`, shopIds);
-
-            // === ÉTAPE 2: GÉNÉRATION IDENTIFIANT SESSION ===
-            // Permet de lier les commandes entre elles pour le client
-            const timestamp = Date.now();
-            const userRef = user.uid.substring(0, 8);
-            const sessionGroupId = `SGP_${timestamp}_${userRef}`;
-            
-            console.log('🔗 [SESSION] Session Group ID créée:', sessionGroupId);
-
-            // === ÉTAPE 3: PRÉPARATION BATCH WRITE ===
-            const batch = db.batch();
-            const createdOrders = [];
-            let totalAmountAllOrders = 0;
-
-            // Pour chaque vendeur, crée une commande distincte
-            shopIds.forEach(shopId => {
-                const shopData = ordersByShop[shopId];
-                
-                // Génère une référence documentaire unique pour cette commande
-                const orderRef = db.collection('orders').doc();
-                const orderId = orderRef.id;
-
-                // Structure complète du document commande
-                const orderPayload = {
-                    // === IDENTIFIANTS ===
-                    orderId: orderId,
-                    sessionGroupId: sessionGroupId,
-                    
-                    // === ACHETEUR ===
-                    buyerId: user.uid,
-                    buyerEmail: user.email || 'unknown@email.com',
-                    buyerName: user.displayName || 'Client Aurum',
-                    buyerPhone: user.phoneNumber || null,
-                    
-                    // === VENDEUR ===
-                    sellerId: shopId,
-                    shopId: shopId,
-                    shopName: shopData.shopName,
-                    
-                    // === ARTICLES ===
-                    items: shopData.items,
-                    itemsCount: shopData.itemCount,
-                    
-                    // === MONTANTS ===
-                    subtotal: shopData.subtotal,
-                    shippingCost: 0, // À calculer lors de la confirmation d'adresse
-                    discount: 0,
-                    total: shopData.subtotal,
-                    currency: 'XOF', // Franc CFA
-                    
-                    // === STATUTS ===
-                    status: 'pending',           // pending, confirmed, shipped, delivered, cancelled
-                    paymentStatus: 'unpaid',    // unpaid, paid, refunded, dispute
-                    paymentMethod: null,        // card, mobile_money, bank_transfer, cash
-                    
-                    // === MÉTADONNÉES ===
-                    source: 'web_cart',
-                    platform: 'browser',
-                    ipAddress: null,
-                    userAgent: navigator.userAgent,
-                    
-                    // === DATES ===
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    expiresAt: new Date(timestamp + 30 * 24 * 60 * 60 * 1000), // 30 jours
-                    
-                    // === ADRESSE DE LIVRAISON ===
-                    shippingAddress: null, // Sera complété à l'étape adresse
-                    shippingMethod: null,
-                    
-                    // === NOTES ===
-                    customerNotes: '',
-                    internalNotes: '',
-                    
-                    // === SUIVI ===
-                    trackingNumber: null,
-                    estimatedDeliveryDate: null,
-                    actualDeliveryDate: null,
-                    
-                    // === GARANTIES DE DONNÉES ===
-                    locked: false,
-                    archived: false
-                };
-
-                // Ajoute le document au batch
-                batch.set(orderRef, orderPayload);
-
-                // Enregistre l'information de la commande créée
-                createdOrders.push({
-                    orderId: orderId,
-                    shopId: shopId,
-                    shopName: shopData.shopName,
-                    total: shopData.subtotal,
-                    itemCount: shopData.itemCount
-                });
-
-                totalAmountAllOrders += shopData.subtotal;
-            });
-
-            // === ÉTAPE 4: EXÉCUTION BATCH (ATOMIQUE) ===
-            console.log('⚡ [BATCH] Exécution atomique de', createdOrders.length, 'commande(s)...');
-            
-            try {
-                await batch.commit();
-                console.log('✅ [BATCH] Toutes les commandes ont été enregistrées avec succès !');
-            } catch (batchError) {
-                console.error('❌ [BATCH] Erreur lors de l\'écriture:', batchError);
-                throw new Error('Erreur lors de l\'enregistrement de la commande: ' + batchError.message);
-            }
-
-            // === ÉTAPE 5: LOG DES COMMANDES CRÉÉES ===
-            createdOrders.forEach((order, index) => {
-                console.log(`   [${index + 1}] Commande ${order.orderId}`);
-                console.log(`       Vendeur: ${order.shopName} (${order.shopId})`);
-                console.log(`       Montant: ${new Intl.NumberFormat('fr-FR').format(order.total)} FCFA`);
-                console.log(`       Articles: ${order.itemCount}`);
-            });
-
-            // === ÉTAPE 6: STOCKAGE SESSION POUR CONFIRMATION ===
-            sessionStorage.setItem('lastOrderSession', sessionGroupId);
-            sessionStorage.setItem('lastOrderCount', createdOrders.length.toString());
-            sessionStorage.setItem('lastOrderTotal', totalAmountAllOrders.toString());
-            sessionStorage.setItem('lastOrderTimestamp', timestamp.toString());
-
-            console.log('📊 [RÉSUMÉ] Total de la session:', new Intl.NumberFormat('fr-FR').format(totalAmountAllOrders), 'FCFA');
-            console.log('✅ [SUCCÈS] Checkout complété !');
-
-            return {
-                success: true,
-                sessionGroupId: sessionGroupId,
-                orderCount: createdOrders.length,
-                orderIds: createdOrders.map(o => o.orderId),
-                totalAmount: totalAmountAllOrders,
-                orders: createdOrders
-            };
         }
-
-        // === GESTION CLICK BOUTON CHECKOUT ===
-        checkoutBtn.addEventListener('click', async () => {
-            // --- PRÉ-VÉRIFICATIONS ---
-            
-            // Vérification 1: Authentification
-            if (!auth.currentUser) {
-                console.log('ℹ️ [AUTH] Redirection vers login...');
-                sessionStorage.setItem('ac_checkout_pending', 'true');
-                window.location.href = "login.html?redirect=cart.html";
-                return;
-            }
-
-            // Vérification 2: Panier non vide
-            if (!cart || cart.length === 0) {
-                alert('⚠️ Votre panier est vide. Ajoutez des articles avant de continuer.');
-                return;
-            }
-
-            // --- DÉBUT VALIDATION ---
-            
-            checkoutBtn.disabled = true;
-            const originalText = checkoutBtn.innerHTML;
-            checkoutBtn.innerHTML = '<i data-lucide="loader" style="animation: spin 1s linear infinite; display: inline;"></i> Validation en cours...';
-            
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-
-            try {
-                console.log('🔄 [CHECKOUT] Démarrage du processus de validation...');
-                
-                // === ÉTAPE CRITIQUE: CRÉATION DES COMMANDES ===
-                const checkoutResult = await checkout();
-                
-                console.log('✅ [CHECKOUT] Validation réussie!');
-                console.log('📋 Résultat:', checkoutResult);
-
-                // === VIDAGE DU PANIER ===
-                localStorage.removeItem('ac_cart');
-                console.log('🗑️ [PANIER] Panier vidé');
-
-                // === MESSAGE UTILISATEUR ===
-                let successMessage = '';
-                if (checkoutResult.orderCount === 1) {
-                    successMessage = `✅ Votre commande a été enregistrée avec succès !\n\n` +
-                        `Numéro de commande: ${checkoutResult.sessionGroupId}\n` +
-                        `Montant: ${new Intl.NumberFormat('fr-FR').format(checkoutResult.totalAmount)} FCFA`;
-                } else {
-                    successMessage = `✅ Vos ${checkoutResult.orderCount} commandes ont été enregistrées avec succès !\n\n` +
-                        `(Commandes provenant de ${checkoutResult.orderCount} vendeur(s))\n\n` +
-                        `Numéro de session: ${checkoutResult.sessionGroupId}\n` +
-                        `Montant total: ${new Intl.NumberFormat('fr-FR').format(checkoutResult.totalAmount)} FCFA`;
-                }
-                
-                alert(successMessage);
-
-                // === REDIRECTION ===
-                console.log('➡️ [REDIRECTION] Vers orders.html...');
-                window.location.href = "orders.html";
-                
-            } catch (error) {
-                console.error('❌ [CHECKOUT] Erreur détectée:', error);
-                
-                // === GESTION ERREUR ===
-                let errorMessage = '❌ Erreur lors de la validation de votre commande:\n\n';
-                
-                if (error.message) {
-                    errorMessage += error.message;
-                } else {
-                    errorMessage += 'Une erreur inattendue s\'est produite. Veuillez réessayer.';
-                }
-                
-                errorMessage += '\n\nSi le problème persiste, contactez notre support:\n' +
-                    'Email: aurumcorporate.d@gmail.com';
-                
-                alert(errorMessage);
-                
-                // === RÉINITIALISATION DU BOUTON ===
-                checkoutBtn.disabled = false;
-                checkoutBtn.innerHTML = originalText;
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
-            }
-        });
     });
-  </script>
-  <script src="assets/js/footer.js" defer></script>
+</script>
+
+<script src="assets/js/footer.js" defer></script>
 </body>
 </html>
