@@ -796,43 +796,6 @@
     </div>
   </main>
 
-  <footer class="footer">
-      <div class="container">
-          <div class="footer-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px;">
-              
-              <div class="footer-col">
-                  <h3 style="font-family:'Playfair Display'; margin-bottom:15px;">AURUM</h3>
-                  <p style="color:#aaa; font-size:14px; line-height:1.6;">
-                      La première marketplace premium du Burkina Faso. Qualité, confiance et élégance à votre portée.
-                  </p>
-              </div>
-
-              <div class="footer-col">
-                  <h4 style="margin-bottom:15px; color:#fff;">Navigation</h4>
-                  <ul style="list-style:none; padding:0; margin:0; line-height:2;">
-                      <li><a href="index.html" style="color:#aaa; text-decoration:none;">Accueil</a></li>
-                      <li><a href="catalogue.html" style="color:#aaa; text-decoration:none;">Catalogue</a></li>
-                      <li><a href="seller.html" style="color:#aaa; text-decoration:none;">Devenir Vendeur</a></li>
-                  </ul>
-              </div>
-
-              <div class="footer-col">
-                  <h4 style="margin-bottom:15px; color:#fff;">Informations</h4>
-                  <ul style="list-style:none; padding:0; margin:0; line-height:2;">
-                      <li><a href="cgu.html" style="color:#aaa; text-decoration:none;">CGU & CGV</a></li>
-                      <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Politique de confidentialité</a></li>
-                      <li><a href="faq.html" style="color:#aaa; text-decoration:none;">FAQ</a></li>
-                      <li><a href="contact.html" style="color:#aaa; text-decoration:none;">Nous contacter</a></li>
-                  </ul>
-              </div>
-          </div>
-
-          <div class="footer-bottom" style="border-top:1px solid rgba(255,255,255,0.1); margin-top:40px; padding-top:20px; text-align:center; color:#666; font-size:13px;">
-              &copy; <span id="year">2026</span> Aurum Marketplace. Tous droits réservés.
-          </div>
-      </div>
-  </footer>
-
   <div class="toast-container" id="toast-container"></div>
 
   <script src="assets/js/app.js"></script>
@@ -952,6 +915,67 @@
                 console.warn('⚠️ Impossible de charger les avis:', err);
             }
 
+// Extraire les vraies couleurs et tailles depuis les variantes Firestore
+            // Structure: product.variants = [{color: "Blanche", size: "42", qty: 2}, ...]
+            let colors = [];
+            let sizes = [];
+            let totalStock = 0;
+
+            if (product.variants && Array.isArray(product.variants)) {
+                const colorSet = new Set();
+                const sizeSet = new Set();
+                
+                product.variants.forEach(variant => {
+                    if (variant.color) colorSet.add(variant.color);
+                    if (variant.size) sizeSet.add(variant.size);
+                    if (variant.qty) totalStock += variant.qty;
+                });
+                
+                colors = Array.from(colorSet).sort();
+                sizes = Array.from(sizeSet).sort();
+                console.log('✅ Variantes extraites de Firestore:', {colors, sizes, totalStock});
+            }
+
+            // Normaliser les couleurs si pas trouvées dans variants
+            if (colors.length === 0) {
+                if (product.colors && Array.isArray(product.colors)) {
+                    colors = product.colors;
+                } else if (typeof product.color === 'string' && product.color.trim() !== '') {
+                    colors = product.color.split(/[;,|]/).map(c => c.trim()).filter(Boolean);
+                }
+            }
+
+            // Normaliser les tailles si pas trouvées dans variants
+            if (sizes.length === 0) {
+                if (product.sizes && Array.isArray(product.sizes)) {
+                    sizes = product.sizes;
+                } else if (typeof product.size === 'string' && product.size.trim() !== '') {
+                    sizes = product.size.split(/[;,|]/).map(s => s.trim()).filter(Boolean);
+                }
+            }
+
+            // Appliquer au produit
+            product.colors = colors;
+            product.sizes = sizes;
+
+            // Stock : utiliser totalStock des variantes, sinon le champ stockLevel, sinon fallback
+            if (!product.stock || product.stock === undefined) {
+                if (totalStock > 0) {
+                    product.stock = totalStock;
+                } else if (product.specs && product.specs.stockLevel) {
+                    product.stock = product.specs.stockLevel;
+                } else {
+                    product.stock = 15;
+                }
+            }
+
+            console.log('📦 Produit enrichi:', {
+              name: product.name,
+              colors: product.colors,
+              sizes: product.sizes,
+              stock: product.stock
+            });
+
             // Rendre la page
             renderProductPage(product, shopId, shopData, reviews);
 
@@ -1036,6 +1060,9 @@
                     <!-- Variants -->
                     ${renderVariants(product)}
 
+                    <!-- Specifications -->
+                    ${renderSpecifications(product)}
+
                     <!-- Quantity -->
                     <div class="quantity-selector">
                         <label>Quantité :</label>
@@ -1044,7 +1071,13 @@
                             <input type="number" class="quantity-input" id="quantity-input" value="1" min="1" max="${product.stock || 999}">
                             <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
                         </div>
-                        ${product.stock ? `<span style="color: #666; font-size: 14px;">(${product.stock} en stock)</span>` : ''}
+                        ${product.stock !== undefined ? `
+                            <span style="color: ${product.stock > 10 ? '#16a34a' : product.stock > 0 ? '#ea580c' : '#dc2626'}; font-size: 14px; font-weight: 600;">
+                                ${product.stock > 10 ? `✓ En stock (${product.stock} disponible${product.stock > 1 ? 's' : ''})` : 
+                                  product.stock > 0 ? `⚠️ Stock limité (${product.stock} restant${product.stock > 1 ? 's' : ''})` : 
+                                  '❌ Rupture de stock'}
+                            </span>
+                        ` : ''}
                     </div>
 
                     <!-- Actions -->
@@ -1135,6 +1168,49 @@
 
                 <!-- Tab: Reviews -->
                 <div class="tab-content" id="tab-reviews">
+                    <!-- Formulaire de soumission d'avis -->
+                    <div class="review-form-section" style="background: #f9f9f9; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #eee;">
+                        <h3 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 700; color: #1a1a1a;">Donner votre avis</h3>
+                        
+                        <form id="review-form" style="display: grid; gap: 15px;">
+                            <!-- Nom -->
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Votre nom</label>
+                                <input type="text" id="review-name" placeholder="Votre nom" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                            </div>
+
+                            <!-- Email (optionnel) -->
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Email (optionnel)</label>
+                                <input type="email" id="review-email" placeholder="votre@email.com" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                            </div>
+
+                            <!-- Note -->
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Note</label>
+                                <div id="rating-stars" style="display: flex; gap: 8px; font-size: 32px; cursor: pointer;">
+                                    <span data-rating="1" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(1)" onclick="setRating(1)">★</span>
+                                    <span data-rating="2" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(2)" onclick="setRating(2)">★</span>
+                                    <span data-rating="3" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(3)" onclick="setRating(3)">★</span>
+                                    <span data-rating="4" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(4)" onclick="setRating(4)">★</span>
+                                    <span data-rating="5" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(5)" onclick="setRating(5)">★</span>
+                                </div>
+                                <input type="hidden" id="review-rating" value="5">
+                            </div>
+
+                            <!-- Commentaire -->
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Votre avis</label>
+                                <textarea id="review-comment" placeholder="Partagez votre expérience avec ce produit..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; min-height: 120px; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
+                            </div>
+
+                            <!-- Bouton Soumettre -->
+                            <button type="button" onclick="submitReview()" style="padding: 12px 24px; background: #D4AF37; color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s;">
+                                Soumettre mon avis
+                            </button>
+                        </form>
+                    </div>
+
                     ${reviews.length > 0 ? `
                         <div class="reviews-header">
                             <div class="reviews-summary">
@@ -1187,19 +1263,31 @@
     }
 
     function renderVariants(product) {
+        console.log('🎨 renderVariants appelée avec:', {
+            hasColors: !!product.colors,
+            colors: product.colors,
+            hasSizes: !!product.sizes,
+            sizes: product.sizes
+        });
+
         let html = '';
+        let hasVariants = false;
 
         // Couleurs
         if (product.colors && product.colors.length > 0) {
+            hasVariants = true;
             html += `
                 <div class="variant-section">
-                    <div class="variant-label">Couleur</div>
+                    <div class="variant-label" style="font-weight: 700; font-size: 15px; margin-bottom: 12px; color: #1a1a1a;">
+                        Couleur disponible${product.colors.length > 1 ? 's' : ''} :
+                    </div>
                     <div class="variant-options">
                         ${product.colors.map((color, idx) => `
                             <div class="color-swatch ${idx === 0 ? 'selected' : ''}" 
-                                 style="background: ${color};" 
+                                 style="background: ${color}; width: 44px; height: 44px; border-radius: 50%; border: 3px solid ${idx === 0 ? '#D4AF37' : '#ddd'}; cursor: pointer; transition: all 0.2s;" 
                                  data-variant="color"
                                  data-value="${color}"
+                                 title="${color}"
                                  onclick="selectVariant('color', '${color}', this)"></div>
                         `).join('')}
                     </div>
@@ -1209,12 +1297,16 @@
 
         // Tailles
         if (product.sizes && product.sizes.length > 0) {
+            hasVariants = true;
             html += `
-                <div class="variant-section">
-                    <div class="variant-label">Taille</div>
-                    <div class="variant-options">
+                <div class="variant-section" style="margin-top: ${html ? '20px' : '0'};">
+                    <div class="variant-label" style="font-weight: 700; font-size: 15px; margin-bottom: 12px; color: #1a1a1a;">
+                        Taille disponible${product.sizes.length > 1 ? 's' : ''} :
+                    </div>
+                    <div class="variant-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
                         ${product.sizes.map((size, idx) => `
                             <div class="variant-option ${idx === 0 ? 'selected' : ''}" 
+                                 style="padding: 10px 20px; border: 2px solid ${idx === 0 ? '#D4AF37' : '#ddd'}; border-radius: 8px; cursor: pointer; font-weight: 600; background: ${idx === 0 ? '#fffbf0' : 'white'}; color: #1a1a1a; transition: all 0.2s;"
                                  data-variant="size"
                                  data-value="${size}"
                                  onclick="selectVariant('size', '${size}', this)">${size}</div>
@@ -1224,7 +1316,176 @@
             `;
         }
 
+        console.log('🎨 renderVariants retourne:', html.length > 0 ? `${html.length} caractères` : 'HTML vide');
         return html;
+    }
+
+    function renderSpecifications(product) {
+        console.log('📋 renderSpecifications appelée avec:', {
+            hasStock: product.stock !== undefined,
+            stock: product.stock,
+            category: product.category
+        });
+
+        const specs = [];
+
+        // === STOCK - TOUJOURS EN PREMIER ===
+        if (product.stock !== undefined && product.stock !== null) {
+            const stockStatus = product.stock > 10 ? '✅ En stock' : 
+                               product.stock > 0 ? '⚠️ Stock limité' : 
+                               '❌ Rupture de stock';
+            const stockColor = product.stock > 10 ? '#16a34a' : 
+                              product.stock > 0 ? '#ea580c' : 
+                              '#dc2626';
+            specs.push({ 
+                label: 'Stock', 
+                value: `<span style="color: ${stockColor}; font-weight: 700;">${stockStatus}</span> (${product.stock} unité${product.stock > 1 ? 's' : ''})` 
+            });
+        } else {
+            specs.push({ label: 'Stock', value: '<span style="color: #666;">Non spécifié</span>' });
+        }
+
+        // Catégorie
+        if (product.category) {
+            specs.push({ label: 'Catégorie', value: product.category });
+        }
+
+        // Couleurs disponibles
+        if (product.colors && product.colors.length > 0) {
+            specs.push({ label: 'Couleurs disponibles', value: `${product.colors.length} couleur${product.colors.length > 1 ? 's' : ''}` });
+        }
+
+        // Tailles disponibles
+        if (product.sizes && product.sizes.length > 0) {
+            specs.push({ label: 'Tailles disponibles', value: product.sizes.join(', ') });
+        }
+
+        // Type de produit (pour beauté)
+        if (product.beautyType) {
+            specs.push({ label: 'Type', value: product.beautyType });
+        }
+
+        // Type de peau (pour beauté)
+        if (product.skinType) {
+            specs.push({ label: 'Type de peau', value: product.skinType });
+        }
+
+        // Marque (pour beauté/tech)
+        if (product.beautyBrand) {
+            specs.push({ label: 'Marque', value: product.beautyBrand });
+        }
+
+        if (product.techBrand) {
+            specs.push({ label: 'Marque', value: product.techBrand });
+        }
+
+        // Capacité (pour tech)
+        if (product.techCapacity) {
+            specs.push({ label: 'Capacité', value: product.techCapacity });
+        }
+
+        // État (pour tech)
+        if (product.techCondition) {
+            specs.push({ label: 'État', value: product.techCondition });
+        }
+
+        // Type de tech
+        if (product.techType) {
+            specs.push({ label: 'Type', value: product.techType });
+        }
+
+        // Matériau (pour maison)
+        if (product.homeMaterial) {
+            specs.push({ label: 'Matériau', value: product.homeMaterial });
+        }
+
+        // Dimensions (pour maison)
+        if (product.homeDimensions) {
+            specs.push({ label: 'Dimensions', value: product.homeDimensions });
+        }
+
+        // Style (pour maison)
+        if (product.homeStyle) {
+            specs.push({ label: 'Style', value: product.homeStyle });
+        }
+
+        // Unité (pour BTP)
+        if (product.unit) {
+            specs.push({ label: 'Unité de vente', value: product.unit });
+        }
+
+        // Type de client (pour BTP)
+        if (product.clientType) {
+            specs.push({ label: 'Destiné à', value: product.clientType });
+        }
+
+        // Prix pro (pour BTP)
+        if (product.pricePro) {
+            specs.push({ label: 'Prix professionnel', value: `${new Intl.NumberFormat('fr-FR').format(product.pricePro)} FCFA` });
+        }
+
+        // Marque BTP
+        if (product.btpBrand) {
+            specs.push({ label: 'Marque', value: product.btpBrand });
+        }
+
+        // Véhicules
+        if (product.vehicleYear) {
+            specs.push({ label: 'Année', value: product.vehicleYear });
+        }
+
+        if (product.vehicleMileage !== undefined) {
+            specs.push({ label: 'Kilométrage', value: `${new Intl.NumberFormat('fr-FR').format(product.vehicleMileage)} km` });
+        }
+
+        if (product.vehicleFuel) {
+            specs.push({ label: 'Carburant', value: product.vehicleFuel });
+        }
+
+        if (product.vehicleTransmission) {
+            specs.push({ label: 'Transmission', value: product.vehicleTransmission });
+        }
+
+        if (product.vehicleBrand) {
+            specs.push({ label: 'Marque', value: product.vehicleBrand });
+        }
+
+        if (product.vehicleCondition) {
+            specs.push({ label: 'État', value: product.vehicleCondition });
+        }
+
+        // Rating produit
+        if (product.rating) {
+            specs.push({ label: 'Note moyenne', value: `${product.rating} / 5 ⭐` });
+        }
+
+        // SKU / Référence
+        if (product.sku || product.id) {
+            specs.push({ label: 'Référence', value: product.sku || product.id });
+        }
+
+        // Si pas de specs, ne rien afficher
+        if (specs.length === 0) {
+            return '';
+        }
+
+        // Rendu HTML
+        return `
+            <div class="specifications-section" style="margin: 25px 0; padding: 20px; background: #f9f9f9; border-radius: 12px; border: 1px solid #eee;">
+                <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 700; color: #1a1a1a; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="info" style="width: 18px; height: 18px; color: #D4AF37;"></i>
+                    Spécifications
+                </h3>
+                <div style="display: grid; gap: 10px;">
+                    ${specs.map(spec => `
+                        <div style="display: grid; grid-template-columns: 140px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eee;">
+                            <span style="font-weight: 600; color: #666; font-size: 14px;">${spec.label}</span>
+                            <span style="color: #1a1a1a; font-size: 14px;">${spec.value}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
     }
 
     // === FONCTIONS GLOBALES ===
@@ -1243,10 +1504,34 @@
     window.selectVariant = (type, value, element) => {
         // Désélectionner les autres variantes du même type
         const siblings = element.parentElement.querySelectorAll(`[data-variant="${type}"]`);
-        siblings.forEach(s => s.classList.remove('selected'));
-        element.classList.add('selected');
+        siblings.forEach(s => {
+            s.classList.remove('selected');
+            // Couleurs
+            if (type === 'color') {
+                s.style.borderColor = '#ddd';
+                s.style.borderWidth = '3px';
+            }
+            // Tailles
+            if (type === 'size') {
+                s.style.borderColor = '#ddd';
+                s.style.backgroundColor = 'white';
+                s.style.color = '#1a1a1a';
+            }
+        });
         
-        console.log(`Variante sélectionnée: ${type} = ${value}`);
+        // Sélectionner la variante cliquée
+        element.classList.add('selected');
+        if (type === 'color') {
+            element.style.borderColor = '#D4AF37';
+            element.style.borderWidth = '4px';
+        }
+        if (type === 'size') {
+            element.style.borderColor = '#D4AF37';
+            element.style.backgroundColor = '#fffbf0';
+            element.style.color = '#1a1a1a';
+        }
+        
+        console.log(`✓ Variante sélectionnée: ${type} = ${value}`);
     };
 
     window.changeQuantity = (delta) => {
@@ -1335,6 +1620,131 @@
         event.target.classList.add('active');
         document.getElementById(`tab-${tabName}`).classList.add('active');
     };
+
+    // === GESTION DES AVIS ===
+    
+    // Fonction pour mettre en avant les étoiles au survol
+    window.highlightStars = (rating) => {
+        const ratingStars = document.getElementById('rating-stars');
+        if (ratingStars) {
+            ratingStars.querySelectorAll('span').forEach((star, idx) => {
+                star.style.color = (idx + 1) <= rating ? '#D4AF37' : '#ddd';
+            });
+        }
+    };
+
+    // Fonction pour définir la note
+    window.setRating = (rating) => {
+        document.getElementById('review-rating').value = rating;
+        const ratingStars = document.getElementById('rating-stars');
+        if (ratingStars) {
+            ratingStars.querySelectorAll('span').forEach((star, idx) => {
+                star.style.color = (idx + 1) <= rating ? '#D4AF37' : '#ddd';
+            });
+        }
+        console.log(`⭐ Note sélectionnée: ${rating}/5`);
+    };
+
+    // Réinitialiser les étoiles au départ du curseur
+    document.addEventListener('mouseleave', () => {
+        const ratingStars = document.getElementById('rating-stars');
+        if (ratingStars && ratingStars.contains(event.target)) {
+            const currentRating = parseInt(document.getElementById('review-rating').value) || 5;
+            ratingStars.querySelectorAll('span').forEach((star, idx) => {
+                star.style.color = (idx + 1) <= currentRating ? '#D4AF37' : '#ddd';
+            });
+        }
+    }, true);
+
+
+    window.submitReview = async () => {
+        const name = document.getElementById('review-name').value.trim();
+        const email = document.getElementById('review-email').value.trim();
+        const rating = parseInt(document.getElementById('review-rating').value) || 5;
+        const comment = document.getElementById('review-comment').value.trim();
+
+        // Validation
+        if (!name) {
+            alert('⚠️ Veuillez entrer votre nom');
+            return;
+        }
+        if (!comment) {
+            alert('⚠️ Veuillez entrer votre avis');
+            return;
+        }
+
+        try {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Envoi...';
+
+            const productId = window.currentProduct?.id;
+            if (!productId) {
+                throw new Error('ID du produit non trouvé');
+            }
+
+            // Déterminer la collection racine du produit
+            let productDocRef = null;
+            const db = firebase.firestore();
+
+            // Chercher dans shops/{shopId}/products/{productId}
+            const shopsSnap = await db.collection('shops').get();
+            for (const shopDoc of shopsSnap.docs) {
+                const productSnap = await shopDoc.ref.collection('products').doc(productId).get();
+                if (productSnap.exists) {
+                    productDocRef = productSnap.ref;
+                    break;
+                }
+            }
+
+            // Fallback: chercher dans collection('products') directement
+            if (!productDocRef) {
+                const directSnap = await db.collection('products').doc(productId).get();
+                if (directSnap.exists) {
+                    productDocRef = directSnap.ref;
+                }
+            }
+
+            if (!productDocRef) {
+                throw new Error('Produit non trouvé');
+            }
+
+            // Sauvegarder l'avis
+            const reviewData = {
+                userName: name,
+                userEmail: email || '',
+                rating: rating,
+                comment: comment,
+                createdAt: firebase.firestore.Timestamp.now(),
+                helpful: 0
+            };
+
+            await productDocRef.collection('reviews').add(reviewData);
+
+            // Succès
+            if (typeof showToast === 'function') {
+                showToast('✅ Avis publié avec succès !', 'success');
+            }
+            // Réinitialiser le formulaire
+            document.getElementById('review-form').reset();
+            document.getElementById('review-rating').value = 5;
+            window.setRating(5);
+
+            // Recharger les avis après 2 secondes
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+
+        } catch (err) {
+            console.error('❌ Erreur lors de la soumission:', err);
+            alert(`❌ Erreur: ${err.message}`);
+        } finally {
+            const btn = event.target;
+            btn.disabled = false;
+            btn.textContent = 'Soumettre mon avis';
+        }
+    };
   </script>
+  <script src="assets/js/footer.js" defer></script>
 </body>
 </html>
