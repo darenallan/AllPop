@@ -4,9 +4,20 @@ window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
 
+  // Fonction d'échappement HTML pour prévenir les attaques XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   const container = document.getElementById('product-detail');
   if(!id || !container){
-    if(container) container.innerHTML = '<p>Produit introuvable.</p>';
+    if(container) {
+      const notFoundMsg = document.createElement('p');
+      notFoundMsg.textContent = 'Produit introuvable.';
+      container.appendChild(notFoundMsg);
+    }
     return;
   }
 
@@ -535,16 +546,16 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     return reviews.map((r, idx) => {
       const initial = (r.user || 'A')[0].toUpperCase();
-      const userName = r.user || 'Anonyme';
+      const userName = escapeHtml(r.user || 'Anonyme');
       const verifiedBadge = r.verified ? '<span class="verified-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Achat vérifié</span>' : '';
-      const dateStr = r.date || 'Récemment';
+      const dateStr = escapeHtml(r.date || 'Récemment');
       const starsStr = '★'.repeat(r.stars || 5) + '☆'.repeat(5 - (r.stars || 5));
-      const comment = r.comment || '';
+      const comment = escapeHtml(r.comment || '');
       
       let photosHTML = '';
       if (r.photos && r.photos.length > 0) {
         const photoDivs = r.photos.map((photo, pidx) => 
-          `<div class="review-photo" data-photo="${photo}"><img src="${photo}" alt="Photo avis ${pidx+1}" loading="lazy" /></div>`
+          `<div class="review-photo" data-photo="${escapeHtml(photo)}"><img src="${escapeHtml(photo)}" alt="Photo avis ${pidx+1}" loading="lazy" /></div>`
         ).join('');
         photosHTML = `<div class="review-photos">${photoDivs}</div>`;
       }
