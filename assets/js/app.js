@@ -166,5 +166,49 @@ document.addEventListener('DOMContentLoaded', () => {
     setupMobileMenu();
     setupAuthUI();
     updateCartBadge();
+    initScrollReveal();
     if (typeof lucide !== 'undefined') lucide.createIcons();
 });
+
+// --- SCROLL REVEAL ANIMATION ---
+function initScrollReveal() {
+    // Sélectionner automatiquement les éléments à animer
+    const selectors = [
+        'section',
+        '.card',
+        '.cart-item',
+        '.footer-col',
+        'h1',
+        'h2',
+        '.hero-banner'
+    ];
+    
+    // Récupérer tous les éléments correspondants
+    const elements = document.querySelectorAll(selectors.join(', '));
+    
+    // Configuration de l'IntersectionObserver
+    const observerOptions = {
+        threshold: 0.15,
+        rootMargin: '0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Ajouter la classe visible quand élément entre dans le viewport
+                entry.target.classList.add('reveal-visible');
+            } else {
+                // Retirer la classe quand élément sort du viewport
+                entry.target.classList.remove('reveal-visible');
+            }
+        });
+    }, observerOptions);
+    
+    // Ajouter la classe reveal-element et observer chaque élément
+    elements.forEach(element => {
+        element.classList.add('reveal-element');
+        observer.observe(element);
+    });
+    
+    console.log(`🎬 Scroll Reveal initialisé sur ${elements.length} éléments (bidirectionnel)`);
+}
