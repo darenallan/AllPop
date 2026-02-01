@@ -1588,9 +1588,9 @@
         if (selectedColor) cartItem.variants.color = selectedColor;
         if (selectedSize) cartItem.variants.size = selectedSize;
 
-        // Ajouter au panier (utilise la fonction de cart.js ou fallback)
+        // Ajouter au panier - CORRECTION: passer l'ID et la quantité séparément, pas l'objet entier
         if (typeof addToCart === 'function') {
-            addToCart(cartItem);
+            addToCart(window.currentProduct.id, quantity);
         } else {
             // Fallback: stocker dans localStorage
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
