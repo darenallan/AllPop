@@ -83,35 +83,59 @@ function listenToProducts() {
     .onSnapshot((snapshot) => {
         currentProducts = [];
         const list = document.getElementById('products-list');
-        list.innerHTML = "";
+        list.textContent = ""; // Clear safely
         
         snapshot.forEach((doc) => {
             currentProducts.push({ id: doc.id, ...doc.data() });
         });
 
         // Mise à jour stats
-        document.getElementById('stat-products').innerText = currentProducts.length;
+        document.getElementById('stat-products').textContent = currentProducts.length;
 
         // Affichage liste
         if (currentProducts.length === 0) {
-            list.innerHTML = '<p class="text-muted">Aucun produit en ligne. Ajoutez-en un !</p>';
+            const emptyMsg = document.createElement('p');
+            emptyMsg.className = 'text-muted';
+            emptyMsg.textContent = 'Aucun produit en ligne. Ajoutez-en un !';
+            list.appendChild(emptyMsg);
         } else {
             currentProducts.forEach(prod => {
-                list.innerHTML += `
-                <div class="list-item" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #eee;">
-                    <div style="display:flex; gap:15px; align-items:center;">
-                        <div style="width:50px; height:50px; background:#eee; border-radius:8px; overflow:hidden;">
-                            <img src="${prod.image || 'assets/img/placeholder.png'}" style="width:100%; height:100%; object-fit:cover;">
-                        </div>
-                        <div>
-                            <strong>${prod.name}</strong><br>
-                            <span style="color:#D4AF37; font-weight:bold;">${prod.price} FCFA</span>
-                        </div>
-                    </div>
-                    <button class="btn btn-sm" onclick="deleteProduct('${prod.id}')" style="color:red; background:none; border:none; cursor:pointer;">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                </div>`;
+                const listItem = document.createElement('div');
+                listItem.className = 'list-item';
+                listItem.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #eee;';
+                
+                const leftDiv = document.createElement('div');
+                leftDiv.style.cssText = 'display:flex; gap:15px; align-items:center;';
+                
+                const imgContainer = document.createElement('div');
+                imgContainer.style.cssText = 'width:50px; height:50px; background:#eee; border-radius:8px; overflow:hidden;';
+                const img = document.createElement('img');
+                img.src = prod.image || 'assets/img/placeholder.png';
+                img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+                imgContainer.appendChild(img);
+                
+                const infoDiv = document.createElement('div');
+                const nameStrong = document.createElement('strong');
+                nameStrong.textContent = prod.name;
+                infoDiv.appendChild(nameStrong);
+                infoDiv.appendChild(document.createElement('br'));
+                const priceSpan = document.createElement('span');
+                priceSpan.style.cssText = 'color:#D4AF37; font-weight:bold;';
+                priceSpan.textContent = `${prod.price} FCFA`;
+                infoDiv.appendChild(priceSpan);
+                
+                leftDiv.appendChild(imgContainer);
+                leftDiv.appendChild(infoDiv);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn btn-sm';
+                deleteBtn.style.cssText = 'color:red; background:none; border:none; cursor:pointer;';
+                deleteBtn.onclick = () => deleteProduct(prod.id);
+                deleteBtn.innerHTML = '<i data-lucide="trash-2"></i>';
+                
+                listItem.appendChild(leftDiv);
+                listItem.appendChild(deleteBtn);
+                list.appendChild(listItem);
             });
             lucide.createIcons();
         }
