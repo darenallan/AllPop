@@ -26,75 +26,121 @@
     try{ return new Intl.NumberFormat('fr-FR').format(Number(v)) + ' FCFA'; }catch(e){ return v + ' FCFA'; }
   }
 
-  function buildInvoiceHTML(invoice){
+  function buildInvoiceElement(invoice){
     const logoPath = 'assets/img/logo.jpg';
-    const companyInfo = `
-      <div class="company-info">
-        <img src="${logoPath}" alt="Aurum" class="invoice-logo" onerror="this.style.display='none'"/>
-        <div>
-          <h2>Aurum</h2>
-          <div class="text-muted">Ouagadougou, Burkina Faso</div>
-          <div class="text-muted">Email: aurumcorporate.d@gmail.com</div>
-          <div class="text-muted">WhatsApp / MLE: +226 64 50 26 26</div>
-        </div>
-      </div>`;
 
-    const customerInfo = `
-      <div class="customer-info">
-        <div><strong>Client:</strong> ${invoice.clientName}</div>
-        <div><strong>Email:</strong> ${invoice.clientEmail}</div>
-        <div><strong>Téléphone:</strong> ${invoice.clientPhone}</div>
-      </div>`;
+    const doc = document.createElement('div');
+    doc.className = 'invoice-document';
 
-    const details = `
-      <div class="invoice-details">
-        <div><strong>Référence:</strong> AUR-${invoice.reference}</div>
-        <div><strong>Date:</strong> ${new Date(invoice.date).toLocaleDateString('fr-FR')}</div>
-        <div><strong>Mode de paiement:</strong> ${invoice.paymentMethod}</div>
-      </div>`;
+    const companyInfo = document.createElement('div');
+    companyInfo.className = 'company-info';
 
-    const line = `
-      <div class="invoice-line">
-        <div class="desc">
-          <div class="label">Description</div>
-          <div>${invoice.serviceDescription}</div>
-        </div>
-        <div class="amount">
-          <div class="label">Montant</div>
-          <div>${formatFCFA(invoice.amount)}</div>
-        </div>
-      </div>`;
+    const logo = document.createElement('img');
+    logo.src = logoPath;
+    logo.alt = 'Aurum';
+    logo.className = 'invoice-logo';
+    logo.addEventListener('error', () => { logo.style.display = 'none'; });
 
-    const total = `
-      <div class="invoice-total">
-        <div>Total</div>
-        <div>${formatFCFA(invoice.amount)}</div>
-      </div>`;
+    const companyText = document.createElement('div');
+    const companyTitle = document.createElement('h2');
+    companyTitle.textContent = 'Aurum';
+    const companyLocation = document.createElement('div');
+    companyLocation.className = 'text-muted';
+    companyLocation.textContent = 'Ouagadougou, Burkina Faso';
+    const companyEmail = document.createElement('div');
+    companyEmail.className = 'text-muted';
+    companyEmail.textContent = 'Email: aurumcorporate.d@gmail.com';
+    const companyPhone = document.createElement('div');
+    companyPhone.className = 'text-muted';
+    companyPhone.textContent = 'WhatsApp / MLE: +226 64 50 26 26';
 
-    return `
-      <div class="invoice-document">
-        ${companyInfo}
-        <hr/>
-        ${customerInfo}
-        ${details}
-        <hr/>
-        ${line}
-        ${total}
-      </div>
-    `;
+    companyText.appendChild(companyTitle);
+    companyText.appendChild(companyLocation);
+    companyText.appendChild(companyEmail);
+    companyText.appendChild(companyPhone);
+
+    companyInfo.appendChild(logo);
+    companyInfo.appendChild(companyText);
+
+    const customerInfo = document.createElement('div');
+    customerInfo.className = 'customer-info';
+    const customerRow = (label, value) => {
+      const row = document.createElement('div');
+      const strong = document.createElement('strong');
+      strong.textContent = `${label}:`;
+      const span = document.createElement('span');
+      span.textContent = ` ${value}`;
+      row.appendChild(strong);
+      row.appendChild(span);
+      return row;
+    };
+    customerInfo.appendChild(customerRow('Client', invoice.clientName));
+    customerInfo.appendChild(customerRow('Email', invoice.clientEmail));
+    customerInfo.appendChild(customerRow('Téléphone', invoice.clientPhone));
+
+    const details = document.createElement('div');
+    details.className = 'invoice-details';
+    details.appendChild(customerRow('Référence', `AUR-${invoice.reference}`));
+    details.appendChild(customerRow('Date', new Date(invoice.date).toLocaleDateString('fr-FR')));
+    details.appendChild(customerRow('Mode de paiement', invoice.paymentMethod));
+
+    const line = document.createElement('div');
+    line.className = 'invoice-line';
+    const desc = document.createElement('div');
+    desc.className = 'desc';
+    const descLabel = document.createElement('div');
+    descLabel.className = 'label';
+    descLabel.textContent = 'Description';
+    const descValue = document.createElement('div');
+    descValue.textContent = invoice.serviceDescription;
+    desc.appendChild(descLabel);
+    desc.appendChild(descValue);
+
+    const amount = document.createElement('div');
+    amount.className = 'amount';
+    const amountLabel = document.createElement('div');
+    amountLabel.className = 'label';
+    amountLabel.textContent = 'Montant';
+    const amountValue = document.createElement('div');
+    amountValue.textContent = formatFCFA(invoice.amount);
+    amount.appendChild(amountLabel);
+    amount.appendChild(amountValue);
+
+    line.appendChild(desc);
+    line.appendChild(amount);
+
+    const total = document.createElement('div');
+    total.className = 'invoice-total';
+    const totalLabel = document.createElement('div');
+    totalLabel.textContent = 'Total';
+    const totalValue = document.createElement('div');
+    totalValue.textContent = formatFCFA(invoice.amount);
+    total.appendChild(totalLabel);
+    total.appendChild(totalValue);
+
+    const hr1 = document.createElement('hr');
+    const hr2 = document.createElement('hr');
+
+    doc.appendChild(companyInfo);
+    doc.appendChild(hr1);
+    doc.appendChild(customerInfo);
+    doc.appendChild(details);
+    doc.appendChild(hr2);
+    doc.appendChild(line);
+    doc.appendChild(total);
+
+    return doc;
   }
 
   async function htmlToPdf(invoice){
     if(!jsPDF){ throw new Error('jsPDF non chargé'); }
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    const html = buildInvoiceHTML(invoice);
-
     // Essaye doc.html seulement si html2canvas est présent (sinon erreur)
     if(doc.html && window.html2canvas){
       try{
         const container = document.createElement('div');
         container.style.width = '595pt';
-        container.innerHTML = html;
+        container.appendChild(buildInvoiceElement(invoice));
         document.body.appendChild(container);
         await doc.html(container, { x: 20, y: 20 });
         document.body.removeChild(container);
@@ -229,7 +275,7 @@
         const { invoice, pdf } = result;
         // Afficher la facture
         if(refDiv) refDiv.textContent = `Référence: AUR-${invoice.reference}`;
-        if(previewContent) previewContent.innerHTML = buildInvoiceHTML(invoice);
+        if(previewContent) previewContent.replaceChildren(buildInvoiceElement(invoice));
         if(preview) preview.classList.remove('hidden');
         showToast('Facture générée avec succès', 'success');
 
@@ -245,7 +291,7 @@
           btnEmail.onclick = ()=>{
             const subject = `Facture AURUM CORP - AUR-${invoice.reference}`;
             const body = `Bonjour,%0D%0A%0D%0AVeuillez trouver ci-joint ma facture AURUM CORP.%0D%0A%0D%0ARéférence: AUR-${invoice.reference}%0D%0AClient: ${invoice.clientName}%0D%0AMontant: ${formatFCFA(invoice.amount)}%0D%0ADate: ${new Date(invoice.date).toLocaleDateString('fr-FR')}%0D%0A%0D%0AMerci de votre confiance !%0D%0A%0D%0ACordialement,%0D%0A${invoice.clientName}`;
-            const emailUrl = `mailto:contact@aurumcorp.com?subject=${subject}&body=${body}`;
+            const emailUrl = `mailto:aurumcorporate.d@gmail.com?subject=${subject}&body=${body}`;
             window.location.href = emailUrl;
             showToast('Application email ouverte. Téléchargez et joignez le PDF.', 'info');
           };
@@ -326,7 +372,7 @@
 
         // Afficher prévisualisation
         refDiv.textContent = `Référence: AUR-${invoice.reference}`;
-        previewContent.innerHTML = buildInvoiceHTML(invoice);
+        previewContent.replaceChildren(buildInvoiceElement(invoice));
         preview.classList.remove('hidden');
         showToast('Facture générée, enregistrée et envoyée pour validation', 'success');
 
