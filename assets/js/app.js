@@ -3,18 +3,90 @@
    Code GLOBAL uniquement : Menu, Panier, Wishlist, Auth UI
    ========================================================= */
 
+// --- NETTOYAGE PRÉVENTIF LOCALSTORAGE ---
+function cleanupStorage() {
+    try {
+        // Ne garder QUE ac_cart et ac_wishlist
+        const cart = localStorage.getItem('ac_cart');
+        const wishlist = localStorage.getItem('ac_wishlist');
+        
+        // Si la taille commence à approcher la limite, nettoyer les vieilles données
+        let storageSize = 0;
+        for (let key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+                storageSize += localStorage[key].length + key.length;
+            }
+        }
+        
+        // Si > 4 MB, supprimer tout sauf panier et wishlist
+        if (storageSize > 4194304) {
+            console.warn('⚠️ Stockage > 4 MB, nettoyage...');
+            localStorage.clear();
+            if (cart) localStorage.setItem('ac_cart', cart);
+            if (wishlist) localStorage.setItem('ac_wishlist', wishlist);
+        }
+    } catch(e) {
+        console.warn('Erreur cleanup storage:', e.message);
+    }
+}
+
+// Nettoyer au démarrage
+cleanupStorage();
+
 // --- VARIABLES GLOBALES ---
 let currentUser = null;
-const Cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
-const Wishlist = JSON.parse(localStorage.getItem('ac_wishlist') || '[]');
+window.Cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+window.Wishlist = JSON.parse(localStorage.getItem('ac_wishlist') || '[]');
 
 function persistCart() { 
-    localStorage.setItem('ac_cart', JSON.stringify(Cart)); 
-    updateCartBadge(); 
+    // Optimisation : ne stocker que pid et qty (pas l'objet entier)
+    const minimalCart = window.Cart.map(item => ({ pid: item.pid, qty: item.qty }));
+    const cartJson = JSON.stringify(minimalCart);
+    
+    console.log('💾 persistCart() appelée, contenu:', minimalCart);
+    console.log('📊 Taille JSON:', cartJson.length, 'bytes');
+    
+    try {
+        localStorage.setItem('ac_cart', cartJson);
+        console.log('✅ Panier sauvegardé dans localStorage');
+        updateCartBadge();
+    } catch(e) {
+        console.error('❌ Erreur persistCart:', e.name, e.message);
+        
+        if (e.name === 'QuotaExceededError') {
+            console.error('❌ localStorage quota dépassé!');
+            
+            // Stratégie 1 : Nettoyer tout SAUF le panier
+            try {
+                localStorage.clear();
+                localStorage.setItem('ac_cart', cartJson);
+                console.log('✅ localStorage nettoyé, panier sauvegardé');
+                updateCartBadge();
+                return;
+            } catch(e2) {
+                console.error('❌ Impossible même après nettoyage:', e2.message);
+                
+                // Stratégie 2 : Réduire le panier au strict minimum
+                const tinyCart = minimalCart.slice(0, 5); // Garder que les 5 premiers
+                try {
+                    localStorage.clear();
+                    localStorage.setItem('ac_cart', JSON.stringify(tinyCart));
+                    window.Cart = tinyCart;
+                    console.log('⚠️ Panier réduit à 5 articles maximum');
+                    updateCartBadge();
+                } catch(e3) {
+                    console.error('❌ localStorage complètement indisponible');
+                    showToast('⚠️ Stockage local saturé, utilisez sessionStorage', 'warning');
+                }
+            }
+        } else {
+            console.error('Erreur inconnue dans persistCart');
+        }
+    }
 }
 
 function persistWishlist() { 
-    localStorage.setItem('ac_wishlist', JSON.stringify(Wishlist)); 
+    localStorage.setItem('ac_wishlist', JSON.stringify(window.Wishlist)); 
 }
 
 function showToast(msg, type = 'info') {
@@ -102,63 +174,95 @@ function setupAuthUI() {
 function updateCartBadge() {
     const badge = document.getElementById('cart-badge');
     if (!badge) return;
-    const count = Cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+    const count = window.Cart.reduce((sum, item) => sum + (item.qty || 1), 0);
     badge.innerText = count;
     badge.style.display = count > 0 ? 'flex' : 'none';
 }
 
 function addToCart(pid, qty = 1) {
-    const existing = Cart.find(it => it.pid === pid);
+    // ===== VALIDATION CRITIQUE =====
+    // Vérifier que le PID existe et est valide
+    if (!pid || typeof pid !== 'string' || pid.trim() === '') {
+        console.error('❌ ERREUR addToCart: PID manquant ou invalide!', { pid, qty });
+        showToast('❌ Erreur: ID produit manquant. Impossible d\'ajouter au panier.', 'error');
+        return false;
+    }
+    
+    // Vérifier que qty est un nombre positif
+    if (typeof qty !== 'number' || qty < 1) {
+        console.warn('⚠️ Quantité invalide, utilisation de 1 par défaut');
+        qty = 1;
+    }
+    
+    console.log(`✅ addToCart appelée avec pid="${pid}", qty=${qty}`);
+    
+    // Vérifier que window.Cart existe
+    if (!Array.isArray(window.Cart)) {
+        console.warn('⚠️ window.Cart n\'existe pas, initialisation');
+        window.Cart = [];
+    }
+    
+    // Chercher si le produit existe déjà
+    const existing = window.Cart.find(it => it && it.pid === pid);
+    
     if (existing) {
         existing.qty = (existing.qty || 1) + qty;
+        console.log(`📦 Produit ${pid} mis à jour: qty = ${existing.qty}`);
     } else {
-        Cart.push({ pid, qty });
+        // Créer un nouvel objet article avec validation
+        const newItem = { pid: pid.trim(), qty: qty };
+        window.Cart.push(newItem);
+        console.log(`🆕 Nouveau produit ajouté:`, newItem);
     }
+    
+    // Sauvegarder et mettre à jour l'interface
     persistCart();
-    showToast('Produit ajouté au panier !', 'success');
+    showToast(`Produit ajouté au panier ! (${qty} unité(s))`, 'success');
+    
+    return true;
 }
 
 function removeFromCart(pid) {
-    const idx = Cart.findIndex(it => it.pid === pid);
+    const idx = window.Cart.findIndex(it => it.pid === pid);
     if (idx !== -1) {
-        Cart.splice(idx, 1);
+        window.Cart.splice(idx, 1);
         persistCart();
         showToast('Produit retiré.', 'info');
     }
 }
 
 function toggleWishlist(pid) {
-    const idx = Wishlist.indexOf(pid);
+    const idx = window.Wishlist.indexOf(pid);
     if (idx === -1) {
-        Wishlist.push(pid);
+        window.Wishlist.push(pid);
         showToast('Ajouté aux favoris ❤️', 'success');
     } else {
-        Wishlist.splice(idx, 1);
+        window.Wishlist.splice(idx, 1);
         showToast('Retiré des favoris', 'info');
     }
     persistWishlist();
 }
 
 function isInWishlist(pid) {
-    return Wishlist.includes(pid);
+    return window.Wishlist.includes(pid);
 }
 
 function clearCart() {
-    Cart.length = 0;
+    window.Cart.length = 0;
     persistCart();
 }
 
 function clearWishlist() {
-    Wishlist.length = 0;
+    window.Wishlist.length = 0;
     persistWishlist();
 }
 
 function getCartItems() {
-    return Cart;
+    return window.Cart;
 }
 
 function getWishlistItems() {
-    return Wishlist;
+    return window.Wishlist;
 }
 
 // --- INIT GLOBAL ---
