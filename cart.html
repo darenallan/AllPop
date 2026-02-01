@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mon Panier - Aurum</title>
   
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.cloudfunctions.net; frame-ancestors 'none'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://firebasestorage.googleapis.com; connect-src 'self' https://unpkg.com https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
@@ -216,15 +216,21 @@
         const watchdog = setTimeout(() => {
             const loadEl = document.getElementById('loading');
             if (loadEl && loadEl.style.display !== 'none') {
-                console.error("⏰ TIMEOUT : Le chargement a pris trop de temps.");
-                loadEl.innerHTML = `
-                    <div style="color: #d9534f; padding: 20px;">
-                        <h3>Le chargement est trop long.</h3>
-                        <p>Vérifiez votre connexion internet ou réessayez.</p>
-                        <button onclick="localStorage.removeItem('ac_cart'); location.reload();" class="btn btn-outline">Réinitialiser le panier</button>
-                    </div>`;
+                console.error("⏰ TIMEOUT 15s : Le chargement a pris trop de temps.");
+                console.log("📦 Affichage du panier même incomplet...");
+                
+                // Afficher ce qu'on a même si incomplet
+                const emptyEl = document.getElementById('cart-empty');
+                const contentEl = document.getElementById('cart-content');
+                if(emptyEl && loadEl) {
+                    emptyEl.style.display = 'none';
+                    loadEl.style.display = 'none';
+                }
+                if(contentEl) {
+                    contentEl.style.display = 'grid';
+                }
             }
-        }, 8000); // 8 secondes max
+        }, 15000); // 15 secondes max (augmenté depuis 8s)
 
         // --- 1. VÉRIFICATION FIREBASE ---
         if (typeof firebase === 'undefined' || !firebase.apps.length) {
@@ -255,20 +261,81 @@
 
         // --- 2. LECTURE ROBUSTE DU PANIER ---
         let cart = [];
-        try {
-            const stored = localStorage.getItem('ac_cart');
-            if (stored) {
-                cart = JSON.parse(stored);
-                // Filtre pour ne garder que les objets valides avec un ID
-                cart = Array.isArray(cart) ? cart.filter(i => i && i.pid && typeof i.pid === 'string') : [];
+        let cartModified = false;
+        
+        // PRIORITÉ 1 : Utiliser window.Cart (global depuis app.js) s'il existe
+        if (typeof window.Cart !== 'undefined' && Array.isArray(window.Cart) && window.Cart.length > 0) {
+            console.log("✅ Panier trouvé dans window.Cart:", window.Cart);
+            // NETTOYAGE CRITIQUE : Filtrer les articles corrompus (sans pid valide)
+            const lengthBefore = window.Cart.length;
+            cart = window.Cart.filter(item => 
+                item && 
+                typeof item.pid === 'string' && 
+                item.pid.trim() !== '' &&
+                (typeof item.qty === 'number' || item.qty > 0)
+            );
+            
+            if (cart.length < lengthBefore) {
+                console.warn(`⚠️ ${lengthBefore - cart.length} article(s) corrompu(s) supprimé(s) de window.Cart`);
+                cartModified = true;
+                // Mettre à jour window.Cart nettoyé
+                window.Cart = cart;
             }
-        } catch (e) {
-            console.warn("⚠️ Panier corrompu détecté, nettoyage.");
-            localStorage.removeItem('ac_cart');
-            cart = [];
+        } 
+        // PRIORITÉ 2 : Fallback à localStorage
+        else {
+            let rawCart = [];
+            try {
+                const stored = localStorage.getItem('ac_cart');
+                console.log("📋 localStorage.getItem('ac_cart'):", stored);
+                
+                if (stored) {
+                    rawCart = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.warn("⚠️ Panier localStorage corrompu (JSON invalid), nettoyage complet.");
+                console.error("Erreur parse:", e.message);
+                localStorage.removeItem('ac_cart');
+                rawCart = [];
+                cartModified = true;
+            }
+            
+            // FIX CRITIQUE : On ne garde que les items qui ont un PID valide (string non-vide)
+            const lengthBefore = Array.isArray(rawCart) ? rawCart.length : 0;
+            cart = Array.isArray(rawCart) ? rawCart.filter(item => 
+                item && 
+                typeof item.pid === 'string' && 
+                item.pid.trim() !== '' &&
+                (typeof item.qty === 'number' || item.qty > 0)
+            ) : [];
+            
+            if (cart.length < lengthBefore && lengthBefore > 0) {
+                console.warn(`⚠️ ${lengthBefore - cart.length} article(s) corrompu(s) supprimé(s) de localStorage`);
+                cartModified = true;
+            }
+        }
+        
+        // Si on a nettoyé des erreurs, on met à jour localStorage et window.Cart pour que le badge se corrige aussi
+        if (cartModified) {
+            console.log('💾 Mise à jour du localStorage avec le panier nettoyé');
+            try {
+                const minimalCart = cart.map(item => ({ pid: item.pid, qty: item.qty || 1 }));
+                localStorage.setItem('ac_cart', JSON.stringify(minimalCart));
+                window.Cart = minimalCart;
+                
+                // Mettre à jour le badge si la fonction existe
+                if (typeof updateCartBadge === 'function') {
+                    updateCartBadge();
+                }
+            } catch(e) {
+                console.error('❌ Impossible de sauvegarder le panier nettoyé:', e.message);
+            }
         }
 
-        console.log(`📦 Contenu du panier (${cart.length} articles) :`, cart);
+        console.log(`📦 Contenu du panier après traitement (${cart.length} articles) :`, cart);
+        if (cart.length === 0) {
+            console.warn("⚠️ Panier vide - window.Cart n'existe pas ou est vide, localStorage aussi");
+        }
 
         // Si panier vide
         if (cart.length === 0) {
@@ -323,7 +390,26 @@
             .catch(globalErr => {
                 clearTimeout(watchdog);
                 console.error("❌ ERREUR GLOBALE :", globalErr);
-                loadingEl.innerHTML = "<p style='color:red'>Erreur lors du chargement des produits.</p>";
+                console.warn("⚠️ Affichage du panier même si les données Firestore ont échoué...");
+                
+                // Afficher quand même avec les données qu'on a
+                if (cart.length > 0) {
+                    const loadEl = document.getElementById('loading');
+                    const contentEl = document.getElementById('cart-content');
+                    const emptyEl = document.getElementById('cart-empty');
+                    
+                    if(loadEl) loadEl.style.display = 'none';
+                    if(emptyEl) emptyEl.style.display = 'none';
+                    if(contentEl) contentEl.style.display = 'grid';
+                    
+                    // Afficher au moins les IDs des produits
+                    const listEl = document.getElementById('cart-list');
+                    if(listEl) {
+                        listEl.innerHTML = '<div style="padding:20px; color:#ff6b6b;"><p>⚠️ Les détails des produits n\'ont pas pu se charger.</p><p>IDs en panier: ' + cart.map(c => c.pid).join(', ') + '</p></div>';
+                    }
+                } else {
+                    showEmptyState();
+                }
             });
 
         // --- FONCTIONS D'AFFICHAGE ---
