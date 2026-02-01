@@ -1,456 +1,667 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Restaurant - Aurum</title>
-<meta name="description" content="Commandez vos plats préférés sur Aurum Marketplace" />
-<link rel="stylesheet" href="assets/css/styles.css" />
-<link rel="preload" href="assets/css/styles.css" as="style" />
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" href="assets/img/placeholder-product-1.svg" />
-<script defer src="assets/js/utils.js"></script>
-<script defer src="assets/js/data.js"></script>
-<script defer src="assets/js/icons.js"></script>
-<script defer src="assets/js/app.js"></script>
-<script defer src="assets/js/auth.js"></script>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Candidature Vendeur — Aurum</title>
+  
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.cloudfunctions.net; frame-ancestors 'none'; form-action 'self';">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js" crossorigin="anonymous"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
+  
+  <style>
+    .application-form-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .form-section {
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .form-section h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: var(--aurum-black);
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--aurum-gold);
+      padding-bottom: 10px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--aurum-black);
+      font-size: 14px;
+    }
+    .form-group label .required {
+      color: var(--aurum-red-unique);
+      margin-left: 4px;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--aurum-gold);
+    }
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .file-upload-area {
+      border: 2px dashed #d0d0d0;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #fafafa;
+    }
+    .file-upload-area:hover {
+      border-color: var(--aurum-gold);
+      background: rgba(198, 149, 63, 0.05);
+    }
+    .file-upload-area i {
+      color: var(--aurum-gold);
+      margin-bottom: 10px;
+    }
+    .file-upload-area.has-file {
+      border-color: var(--aurum-gold);
+      background: rgba(198, 149, 63, 0.1);
+    }
+    .file-name {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
+      font-weight: 600;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+    .submit-section {
+      text-align: center;
+      margin-top: 40px;
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, var(--aurum-red-unique) 0%, var(--aurum-red-deep) 100%);
+      color: #fff;
+      font-weight: 600;
+      padding: 16px 48px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(139, 0, 0, 0.35);
+    }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .progress-container {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--aurum-gold), var(--aurum-red-unique));
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .progress-text {
+      font-size: 14px;
+      color: #666;
+    }
+    .success-message {
+      display: none;
+      background: #f0fdf4;
+      border: 2px solid #86efac;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .success-message i {
+      color: #16a34a;
+      margin-bottom: 10px;
+    }
+    .success-message h4 {
+      color: #16a34a;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .success-message p {
+      color: #166534;
+    }
+  </style>
 </head>
 <body>
-<header id="app-header" class="header"></header>
-<main class="container resto-page">
-  <!-- Hero Restaurant -->
-  <section id="resto-hero" class="resto-hero">
-    <!-- Injecté par JS -->
-  </section>
-  
-  <!-- Navigation Menu (sticky) -->
-  <nav id="resto-menu-nav" class="resto-menu-nav">
-    <!-- Catégories du menu injectées par JS -->
-  </nav>
-  
-  <!-- Contenu principal -->
-  <div class="resto-layout">
-    <!-- Menu scrollable -->
-    <section id="resto-menu" class="resto-menu-section">
-      <!-- Menu injecté par JS -->
-    </section>
-    
-    <!-- Panier latéral (sticky sur desktop) -->
-    <aside id="resto-cart" class="resto-cart-sidebar">
-      <div class="resto-cart-header">
-        <h3><i data-lucide="shopping-bag" class="lucide-icon"></i> Votre commande</h3>
-      </div>
-      <div id="resto-cart-items" class="resto-cart-items">
-        <div class="resto-cart-empty">
-          <i data-lucide="utensils" class="lucide-icon lucide-lg"></i>
-          <p>Votre panier est vide</p>
-          <small>Ajoutez des articles pour commander</small>
+  <!-- Header -->
+  <header id="app-header" class="header">
+    <div class="container navbar">
+      <a href="index.html" class="brand">
+        <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
+        <div style="display:flex; flex-direction:column; margin-left:10px;">
+          <span class="brand-name" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">AURUM</span>
+          <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
         </div>
-      </div>
-      <div id="resto-cart-summary" class="resto-cart-summary hidden">
-        <div class="resto-cart-row">
-          <span>Sous-total</span>
-          <span id="resto-subtotal">0 FCFA</span>
-        </div>
-        <div class="resto-cart-row">
-          <span>Frais de livraison</span>
-          <span id="resto-delivery-fee">0 FCFA</span>
-        </div>
-        <div class="resto-cart-row resto-cart-total">
-          <span>Total</span>
-          <span id="resto-total">0 FCFA</span>
-        </div>
-        <button id="resto-checkout-btn" class="btn btn-gold btn-block resto-checkout-btn">
-          <i data-lucide="check" class="lucide-icon"></i>
-          <span>Commander</span>
-        </button>
-      </div>
-    </aside>
-  </div>
-  
-  <!-- Bouton panier mobile (sticky bottom) -->
-  <div id="resto-cart-mobile-btn" class="resto-cart-mobile-btn hidden">
-    <button class="btn btn-gold btn-block">
-      <i data-lucide="shopping-bag" class="lucide-icon"></i>
-      <span>Voir le panier</span>
-      <span id="resto-cart-mobile-total" class="resto-cart-mobile-total">0 FCFA</span>
-    </button>
-  </div>
-</main>
-<footer id="app-footer" class="footer"></footer>
-<div class="toast-container" id="toast-container"></div>
-
-<script>
-// ===== Page Restaurant =====
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(location.search);
-  const restoId = params.get('id');
-  
-  if(!restoId || !Store.restaurants) {
-    document.getElementById('resto-hero').innerHTML = '<div class="card"><div class="info">Restaurant non trouvé. <a href="catalogue.html?cat=Restauration%20%26%20Boissons">Retour</a></div></div>';
-    return;
-  }
-  
-  const restaurant = Store.restaurants.find(r => r.id === restoId);
-  if(!restaurant) {
-    document.getElementById('resto-hero').innerHTML = '<div class="card"><div class="info">Restaurant non trouvé. <a href="catalogue.html?cat=Restauration%20%26%20Boissons">Retour</a></div></div>';
-    return;
-  }
-  
-  // État du panier restaurant (lié à un seul restaurant)
-  let restoCart = JSON.parse(localStorage.getItem('ac_resto_cart') || '{"restaurantId":null,"items":[]}');
-  
-  // Si le panier est pour un autre restaurant, proposer de le vider
-  if(restoCart.restaurantId && restoCart.restaurantId !== restoId && restoCart.items.length > 0) {
-    const otherResto = Store.restaurants.find(r => r.id === restoCart.restaurantId);
-    if(confirm(`Vous avez déjà des articles de "${otherResto?.name || 'un autre restaurant'}". Voulez-vous vider votre panier pour commander ici ?`)) {
-      restoCart = { restaurantId: restoId, items: [] };
-      localStorage.setItem('ac_resto_cart', JSON.stringify(restoCart));
-    } else {
-      // Rediriger vers l'autre restaurant
-      window.location.href = `restaurant.html?id=${restoCart.restaurantId}`;
-      return;
-    }
-  }
-  restoCart.restaurantId = restoId;
-  
-  // Render Hero
-  renderHero(restaurant);
-  
-  // Render Menu Navigation
-  renderMenuNav(restaurant);
-  
-  // Render Menu
-  renderMenu(restaurant);
-  
-  // Render Cart
-  renderCart();
-  
-  // Init Lucide
-  if(typeof lucide !== 'undefined') lucide.createIcons();
-  
-  function renderHero(r) {
-    const isOpen = isRestaurantOpenLocal(r);
-    const heroEl = document.getElementById('resto-hero');
-    
-    heroEl.innerHTML = `
-      <div class="resto-hero-image" style="background-image: url('${r.image}')">
-        <div class="resto-hero-overlay"></div>
-        <a href="catalogue.html?cat=Restauration%20%26%20Boissons" class="resto-back-btn">
-          <i data-lucide="arrow-left" class="lucide-icon"></i>
+      </a>
+      <nav class="nav-actions">
+        <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
+        <a href="cart.html" class="icon-btn" style="position:relative;">
+          <i data-lucide="shopping-bag"></i>
+          <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
         </a>
-        ${!isOpen ? '<div class="resto-hero-closed">Fermé</div>' : ''}
+        <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>
+      </nav>
+    </div>
+  </header>
+
+
+  <main style="background: #F9F7F2; min-height: 100vh; padding-top: 100px; padding-bottom: 60px;">
+    <div class="application-form-container">
+      <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; color: var(--aurum-black); margin-bottom: 10px;">Candidature Vendeur</h1>
+        <p style="color: #666; font-size: 16px;">Remplissez ce formulaire pour rejoindre Aurum Marketplace</p>
+        <p style="color: #999; font-size: 14px; margin-top: 8px;">
+          <i data-lucide="info" style="width: 16px; height: 16px; vertical-align: middle;"></i>
+          Besoin d'aide ? <a href="seller-onboarding.html" style="color: var(--aurum-gold); text-decoration: none; font-weight: 600;">Voir la liste des informations requises</a>
+        </p>
       </div>
-      <div class="resto-hero-content">
-        <div class="resto-hero-badges">
-          ${r.badges.map(b => {
-            if(b === 'populaire') return '<span class="resto-badge resto-badge-popular"><i data-lucide="flame" class="lucide-icon lucide-sm"></i> Populaire</span>';
-            if(b === 'livraison-rapide') return '<span class="resto-badge resto-badge-fast"><i data-lucide="zap" class="lucide-icon lucide-sm"></i> Rapide</span>';
-            if(b === 'promo') return '<span class="resto-badge resto-badge-promo"><i data-lucide="percent" class="lucide-icon lucide-sm"></i> -' + r.promoPercent + '%</span>';
-            return '';
-          }).join('')}
-        </div>
-        <h1 class="resto-hero-title">${r.name}</h1>
-        <div class="resto-hero-meta">
-          <span class="resto-rating">
-            <i data-lucide="star" class="lucide-icon lucide-sm star-filled"></i>
-            ${r.rating} (${r.reviewCount} avis)
-          </span>
-          <span class="resto-separator">•</span>
-          <span>${r.cuisineType}</span>
-          <span class="resto-separator">•</span>
-          <span>${r.priceRange.split(' ')[0]}</span>
-        </div>
-        <div class="resto-hero-info">
-          <div class="resto-info-item">
-            <i data-lucide="clock" class="lucide-icon lucide-sm"></i>
-            <span>${isOpen ? 'Ouvert' : 'Fermé'} • ${r.openHour}h - ${r.closeHour}h</span>
-          </div>
-          <div class="resto-info-item">
-            <i data-lucide="map-pin" class="lucide-icon lucide-sm"></i>
-            <span>${r.address}</span>
-          </div>
-          <div class="resto-info-item">
-            <i data-lucide="phone" class="lucide-icon lucide-sm"></i>
-            <span>${r.phone}</span>
-          </div>
-          ${r.deliveryEnabled ? `
-            <div class="resto-info-item">
-              <i data-lucide="bike" class="lucide-icon lucide-sm"></i>
-              <span>Livraison ${r.deliveryTime} min • ${r.deliveryFee === 0 ? 'Gratuite' : formatFCFA(r.deliveryFee)}</span>
+
+      <form id="seller-application-form">
+        <!-- Section 1: Identité & Légal -->
+        <div class="form-section">
+          <h3><i data-lucide="building" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"></i>Identité & Légal</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom de la boutique <span class="required">*</span></label>
+              <input type="text" name="shop_name" required placeholder="Ex: La Maison du Luxe">
             </div>
-            <div class="resto-info-item">
-              <i data-lucide="wallet" class="lucide-icon lucide-sm"></i>
-              <span>Min. ${formatFCFA(r.minOrder)}</span>
+            <div class="form-group">
+              <label>Statut juridique <span class="required">*</span></label>
+              <select name="legal_status" required>
+                <option value="">Sélectionnez...</option>
+                <option value="entreprise_individuelle">Entreprise individuelle</option>
+                <option value="sarl">SARL</option>
+                <option value="sa">SA</option>
+                <option value="auto_entrepreneur">Auto-entrepreneur</option>
+                <option value="autre">Autre</option>
+              </select>
             </div>
-          ` : `
-            <div class="resto-info-item resto-no-delivery">
-              <i data-lucide="x" class="lucide-icon lucide-sm"></i>
-              <span>Pas de livraison (à emporter uniquement)</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>N° RCCM / Registre de commerce</label>
+              <input type="text" name="rccm" placeholder="BF-OUA-01-2023-A12-00001">
             </div>
-          `}
+            <div class="form-group">
+              <label>IFU / N° Identification fiscale</label>
+              <input type="text" name="ifu" placeholder="00000000A">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom et prénom du responsable <span class="required">*</span></label>
+              <input type="text" name="owner_name" required placeholder="Jean OUÉDRAOGO">
+            </div>
+            <div class="form-group">
+              <label>Fonction <span class="required">*</span></label>
+              <input type="text" name="owner_role" required placeholder="Ex: Gérant, Directeur">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Téléphone <span class="required">*</span></label>
+              <input type="tel" name="phone" required placeholder="+226 XX XX XX XX">
+            </div>
+            <div class="form-group">
+              <label>Email officiel <span class="required">*</span></label>
+              <input type="email" name="email" required placeholder="contact@maboutique.com">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Adresse complète <span class="required">*</span></label>
+            <input type="text" name="address" required placeholder="Quartier, Secteur, Avenue, Ville">
+          </div>
         </div>
-        <div class="resto-hero-actions">
-          <label class="resto-delivery-toggle">
-            <input type="checkbox" id="delivery-toggle" ${r.deliveryEnabled ? 'checked' : ''} ${!r.deliveryEnabled ? 'disabled' : ''}>
-            <span class="toggle-slider"></span>
-            <span class="toggle-label">Livraison</span>
-          </label>
+
+        <!-- Section 2: Paiements & Facturation -->
+        <div class="form-section">
+          <h3><i data-lucide="credit-card" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"></i>Paiements & Facturation</h3>
+          
+          <div class="form-group">
+            <label>Coordonnées bancaires (IBAN ou N° compte)</label>
+            <input type="text" name="bank_account" placeholder="BF00 0000 0000 0000 0000 00">
+          </div>
+
+          <div class="form-group">
+            <label>Moyens de paiement acceptés <span class="required">*</span></label>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
+                <input type="checkbox" name="payment_mobile_money" value="mobile_money"> Mobile Money
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
+                <input type="checkbox" name="payment_cash" value="cash"> Espèces
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
+                <input type="checkbox" name="payment_card" value="card"> Carte bancaire
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer;">
+                <input type="checkbox" name="payment_transfer" value="transfer"> Virement bancaire
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Adresse de facturation</label>
+            <input type="text" name="billing_address" placeholder="Si différente de l'adresse principale">
+          </div>
         </div>
-      </div>
-    `;
-  }
-  
-  function renderMenuNav(r) {
-    const navEl = document.getElementById('resto-menu-nav');
-    if(!r.menu || !r.menu.categories) return;
-    
-    navEl.innerHTML = r.menu.categories.map((cat, idx) => `
-      <a href="#menu-cat-${idx}" class="resto-menu-nav-item ${idx === 0 ? 'active' : ''}">${cat.name}</a>
-    `).join('');
-    
-    // Scroll spy
-    navEl.querySelectorAll('.resto-menu-nav-item').forEach(link => {
-      link.addEventListener('click', (e) => {
+
+        <!-- Section 3: Branding & Catalogue -->
+        <div class="form-section">
+          <h3><i data-lucide="sparkles" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"></i>Branding & Catalogue</h3>
+          
+          <div class="form-group">
+            <label>Catégories de produits <span class="required">*</span></label>
+            <input type="text" name="categories" required placeholder="Ex: Mode femme, Bijoux, Chaussures">
+          </div>
+
+          <div class="form-group">
+            <label>Histoire de votre marque (150-300 mots) <span class="required">*</span></label>
+            <textarea name="brand_story" required placeholder="Parlez-nous de votre entreprise, vos valeurs, ce qui vous rend unique..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Délai de livraison moyen</label>
+              <input type="text" name="delivery_time" placeholder="Ex: 2-5 jours ouvrés">
+            </div>
+            <div class="form-group">
+              <label>Politique de retours</label>
+              <input type="text" name="return_policy" placeholder="Ex: 14 jours, remboursement intégral">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Liens réseaux sociaux</label>
+            <input type="url" name="social_facebook" placeholder="https://facebook.com/maboutique" style="margin-bottom: 10px;">
+            <input type="url" name="social_instagram" placeholder="https://instagram.com/maboutique" style="margin-bottom: 10px;">
+            <input type="url" name="social_website" placeholder="https://maboutique.com">
+          </div>
+        </div>
+
+        <!-- Section 4: Documents -->
+        <div class="form-section">
+          <h3><i data-lucide="file-text" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"></i>Documents</h3>
+          
+          <div class="form-group">
+            <label>Logo de la boutique (PNG/JPG, max 5MB) <span class="required">*</span></label>
+            <div class="file-upload-area" id="logo-upload-area" onclick="document.getElementById('logo-input').click()">
+              <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+              <p>Cliquez pour sélectionner votre logo</p>
+              <p class="file-name" id="logo-file-name"></p>
+            </div>
+            <input type="file" id="logo-input" accept="image/*" style="display: none;" required>
+          </div>
+
+          <div class="form-group">
+            <label>Pièce d'identité du responsable (Scan recto-verso)</label>
+            <div class="file-upload-area" id="id-upload-area" onclick="document.getElementById('id-input').click()">
+              <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+              <p>Cliquez pour sélectionner la pièce d'identité</p>
+              <p class="file-name" id="id-file-name"></p>
+            </div>
+            <input type="file" id="id-input" accept="image/*,application/pdf" style="display: none;">
+          </div>
+
+          <div class="form-group">
+            <label>Copie du RCCM / Registre de commerce</label>
+            <div class="file-upload-area" id="rccm-upload-area" onclick="document.getElementById('rccm-input').click()">
+              <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+              <p>Cliquez pour sélectionner le document</p>
+              <p class="file-name" id="rccm-file-name"></p>
+            </div>
+            <input type="file" id="rccm-input" accept="image/*,application/pdf" style="display: none;">
+          </div>
+
+          <div class="form-group">
+            <label>Attestation IFU / Fiscale</label>
+            <div class="file-upload-area" id="ifu-upload-area" onclick="document.getElementById('ifu-input').click()">
+              <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+              <p>Cliquez pour sélectionner le document</p>
+              <p class="file-name" id="ifu-file-name"></p>
+            </div>
+            <input type="file" id="ifu-input" accept="image/*,application/pdf" style="display: none;">
+          </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="submit-section">
+          <button type="submit" class="btn-submit" id="submit-btn">
+            <i data-lucide="send" style="width: 20px; height: 20px;"></i>
+            Envoyer ma candidature
+          </button>
+
+          <div class="progress-container" id="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <p class="progress-text" id="progress-text">Upload en cours...</p>
+          </div>
+
+          <div class="success-message" id="success-message">
+            <i data-lucide="check-circle" style="width: 48px; height: 48px;"></i>
+            <h4>Candidature envoyée avec succès !</h4>
+            <p>Merci pour votre intérêt. Notre équipe va examiner votre dossier et vous contacter dans les 48-72 heures.</p>
+            <p style="margin-top: 16px;">
+              <a href="index.html" style="color: var(--aurum-gold); text-decoration: none; font-weight: 600;">Retour à l'accueil</a>
+            </p>
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Footer -->
+
+  <script>
+    // Setup header menu
+    function setupHeaderMenu() {
+      const menuToggle = document.getElementById('menu-toggle');
+      const closeBtn = document.getElementById('close-btn');
+      const drawer = document.getElementById('mobile-drawer');
+      const overlay = document.getElementById('menu-overlay');
+      const toggleMenu = () => {
+        if (!drawer || !overlay) return;
+        drawer.classList.toggle('active');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
+      };
+      if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+      if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+      if (overlay) overlay.addEventListener('click', toggleMenu);
+    }
+
+    // File upload preview
+    function setupFileUpload(inputId, areaId, nameId) {
+      const input = document.getElementById(inputId);
+      const area = document.getElementById(areaId);
+      const nameDisplay = document.getElementById(nameId);
+      
+      input.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          const fileName = e.target.files[0].name;
+          const fileSize = (e.target.files[0].size / 1024 / 1024).toFixed(2);
+          nameDisplay.textContent = `${fileName} (${fileSize} MB)`;
+          area.classList.add('has-file');
+        }
+      });
+    }
+
+    const invalidCharsRegex = /[<>\/'"]/;
+
+    function validateInput(input, type) {
+      const value = (input ?? '').toString().trim();
+      if (type === 'phone') {
+        return value !== '' && /^\+?\d+$/.test(value);
+      }
+      if (type === 'safeText') {
+        return value !== '' && !invalidCharsRegex.test(value);
+      }
+      if (type === 'optionalSafeText') {
+        return value === '' || !invalidCharsRegex.test(value);
+      }
+      if (type === 'email') {
+        return value !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      }
+      if (type === 'url') {
+        return value === '' || /^https?:\/\/[^\s]+$/i.test(value);
+      }
+      return true;
+    }
+
+    // Firebase Application Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      // Setup
+      const yearSpan = document.getElementById('year');
+      if (yearSpan) yearSpan.innerText = new Date().getFullYear();
+      setupHeaderMenu();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      // File uploads
+      setupFileUpload('logo-input', 'logo-upload-area', 'logo-file-name');
+      setupFileUpload('id-input', 'id-upload-area', 'id-file-name');
+      setupFileUpload('rccm-input', 'rccm-upload-area', 'rccm-file-name');
+      setupFileUpload('ifu-input', 'ifu-upload-area', 'ifu-file-name');
+
+      // Form submission
+      const form = document.getElementById('seller-application-form');
+      const submitBtn = document.getElementById('submit-btn');
+      const progressContainer = document.getElementById('progress-container');
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+      const successMessage = document.getElementById('success-message');
+
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const target = document.querySelector(link.getAttribute('href'));
-        if(target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          navEl.querySelectorAll('.resto-menu-nav-item').forEach(l => l.classList.remove('active'));
-          link.classList.add('active');
+
+        const formData = new FormData(form);
+
+        const validations = [
+          { name: 'shop_name', type: 'safeText', label: 'Nom de la boutique', required: true },
+          { name: 'legal_status', type: 'safeText', label: 'Statut juridique', required: true },
+          { name: 'owner_name', type: 'safeText', label: 'Nom et prénom du responsable', required: true },
+          { name: 'owner_role', type: 'safeText', label: 'Fonction', required: true },
+          { name: 'phone', type: 'phone', label: 'Téléphone', required: true },
+          { name: 'email', type: 'email', label: 'Email officiel', required: true },
+          { name: 'address', type: 'safeText', label: 'Adresse complète', required: true },
+          { name: 'categories', type: 'safeText', label: 'Catégories de produits', required: true },
+          { name: 'brand_story', type: 'safeText', label: 'Histoire de votre marque', required: true },
+          { name: 'rccm', type: 'optionalSafeText', label: 'N° RCCM', required: false },
+          { name: 'ifu', type: 'optionalSafeText', label: 'IFU', required: false },
+          { name: 'bank_account', type: 'optionalSafeText', label: 'Coordonnées bancaires', required: false },
+          { name: 'billing_address', type: 'optionalSafeText', label: 'Adresse de facturation', required: false },
+          { name: 'delivery_time', type: 'optionalSafeText', label: 'Délai de livraison', required: false },
+          { name: 'return_policy', type: 'optionalSafeText', label: 'Politique de retours', required: false },
+          { name: 'social_facebook', type: 'url', label: 'Lien Facebook', required: false },
+          { name: 'social_instagram', type: 'url', label: 'Lien Instagram', required: false },
+          { name: 'social_website', type: 'url', label: 'Lien site web', required: false }
+        ];
+
+        for (const v of validations) {
+          const raw = formData.get(v.name);
+          const value = (raw ?? '').toString().trim();
+          if (v.required && value === '') {
+            alert(`Le champ "${v.label}" est requis.`);
+            return;
+          }
+          if (!validateInput(value, v.type)) {
+            alert(`Le champ "${v.label}" est invalide.`);
+            return;
+          }
+        }
+
+        if (typeof firebase === 'undefined') {
+          alert('Firebase n\'est pas configuré. Veuillez vérifier votre configuration.');
+          return;
+        }
+
+        // Disable submit button
+        submitBtn.disabled = true;
+        progressContainer.style.display = 'block';
+
+        try {
+          const db = firebase.firestore();
+          const storage = firebase.storage();
+          
+          // Get form data
+          const shopName = formData.get('shop_name').toString().trim().replace(/\s+/g, '_').toLowerCase();
+          const timestamp = Date.now();
+          const folderPath = `candidatures/${shopName}_${timestamp}`;
+
+          // Collect payment methods
+          const paymentMethods = [];
+          if (formData.get('payment_mobile_money')) paymentMethods.push('Mobile Money');
+          if (formData.get('payment_cash')) paymentMethods.push('Espèces');
+          if (formData.get('payment_card')) paymentMethods.push('Carte bancaire');
+          if (formData.get('payment_transfer')) paymentMethods.push('Virement');
+
+          // Prepare application data
+          const applicationData = {
+            // Identity
+            shop_name: formData.get('shop_name').toString().trim(),
+            legal_status: formData.get('legal_status').toString().trim(),
+            rccm: (formData.get('rccm') || '').toString().trim(),
+            ifu: (formData.get('ifu') || '').toString().trim(),
+            owner_name: formData.get('owner_name').toString().trim(),
+            owner_role: formData.get('owner_role').toString().trim(),
+            phone: formData.get('phone').toString().trim(),
+            email: formData.get('email').toString().trim(),
+            address: formData.get('address').toString().trim(),
+            
+            // Payments
+            bank_account: (formData.get('bank_account') || '').toString().trim(),
+            payment_methods: paymentMethods,
+            billing_address: (formData.get('billing_address') || '').toString().trim(),
+            
+            // Branding
+            categories: formData.get('categories').toString().trim(),
+            brand_story: formData.get('brand_story').toString().trim(),
+            delivery_time: (formData.get('delivery_time') || '').toString().trim(),
+            return_policy: (formData.get('return_policy') || '').toString().trim(),
+            social_facebook: (formData.get('social_facebook') || '').toString().trim(),
+            social_instagram: (formData.get('social_instagram') || '').toString().trim(),
+            social_website: (formData.get('social_website') || '').toString().trim(),
+            
+            // Status
+            status: 'pending',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          // Upload files to Storage
+          progressText.textContent = 'Upload des fichiers...';
+          const files = [
+            { id: 'logo-input', field: 'logo_url', name: 'logo' },
+            { id: 'id-input', field: 'id_card_url', name: 'id_card' },
+            { id: 'rccm-input', field: 'rccm_doc_url', name: 'rccm_doc' },
+            { id: 'ifu-input', field: 'ifu_doc_url', name: 'ifu_doc' }
+          ];
+
+          let uploadedCount = 0;
+          const totalFiles = files.filter(f => document.getElementById(f.id).files.length > 0).length;
+
+          for (const fileInfo of files) {
+            const fileInput = document.getElementById(fileInfo.id);
+            if (fileInput.files.length > 0) {
+              const file = fileInput.files[0];
+              const fileExtension = file.name.split('.').pop();
+              const filePath = `${folderPath}/${fileInfo.name}.${fileExtension}`;
+              
+              const storageRef = storage.ref(filePath);
+              const uploadTask = storageRef.put(file);
+
+              await new Promise((resolve, reject) => {
+                uploadTask.on('state_changed',
+                  (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    const overallProgress = ((uploadedCount + (progress / 100)) / totalFiles) * 100;
+                    progressFill.style.width = overallProgress + '%';
+                  },
+                  (error) => reject(error),
+                  async () => {
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    applicationData[fileInfo.field] = downloadURL;
+                    uploadedCount++;
+                    resolve();
+                  }
+                );
+              });
+            }
+          }
+
+          // Save to Firestore
+          progressText.textContent = 'Enregistrement de la candidature...';
+          progressFill.style.width = '100%';
+          
+          await db.collection('seller_applications').add(applicationData);
+
+          // Show success
+          form.style.display = 'none';
+          progressContainer.style.display = 'none';
+          successMessage.style.display = 'block';
+          
+          // Scroll to success message
+          successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Une erreur est survenue lors de l\'envoi de votre candidature. Veuillez réessayer.');
+          submitBtn.disabled = false;
+          progressContainer.style.display = 'none';
         }
       });
     });
-  }
-  
-  function renderMenu(r) {
-    const menuEl = document.getElementById('resto-menu');
-    if(!r.menu || !r.menu.categories) {
-      menuEl.innerHTML = '<p>Menu non disponible</p>';
-      return;
-    }
-    
-    menuEl.innerHTML = r.menu.categories.map((cat, idx) => `
-      <div id="menu-cat-${idx}" class="resto-menu-category">
-        <h2 class="resto-menu-category-title">${cat.name}</h2>
-        <div class="resto-menu-items">
-          ${cat.items.map(item => `
-            <div class="resto-menu-item ${!item.available ? 'resto-item-unavailable' : ''}" data-item-id="${item.id}">
-              <div class="resto-item-info">
-                <div class="resto-item-header">
-                  <h3 class="resto-item-name">${item.name}</h3>
-                  ${item.popular ? '<span class="resto-item-popular"><i data-lucide="flame" class="lucide-icon lucide-sm"></i></span>' : ''}
-                </div>
-                ${item.description ? `<p class="resto-item-desc">${item.description}</p>` : ''}
-                <div class="resto-item-price">${formatFCFA(item.price)}</div>
-              </div>
-              <div class="resto-item-action">
-                ${item.available ? `
-                  <button class="resto-add-btn" data-add-item='${JSON.stringify(item)}' aria-label="Ajouter ${item.name}">
-                    <i data-lucide="plus" class="lucide-icon"></i>
-                  </button>
-                ` : '<span class="resto-unavailable-label">Indisponible</span>'}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `).join('');
-    
-    // Event listeners pour ajouter au panier
-    menuEl.querySelectorAll('.resto-add-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const itemData = JSON.parse(btn.getAttribute('data-add-item'));
-        addToRestoCart(itemData);
-      });
-    });
-  }
-  
-  function addToRestoCart(item) {
-    const existing = restoCart.items.find(i => i.id === item.id);
-    if(existing) {
-      existing.qty += 1;
-    } else {
-      restoCart.items.push({ ...item, qty: 1 });
-    }
-    saveRestoCart();
-    renderCart();
-    showToast(`${item.name} ajouté au panier`, 'success');
-    
-    // Animation du bouton
-    const btn = document.querySelector(`[data-add-item*='"id":"${item.id}"']`);
-    if(btn) {
-      btn.classList.add('pulse');
-      setTimeout(() => btn.classList.remove('pulse'), 400);
-    }
-  }
-  
-  function updateRestoCartQty(itemId, delta) {
-    const item = restoCart.items.find(i => i.id === itemId);
-    if(item) {
-      item.qty += delta;
-      if(item.qty <= 0) {
-        restoCart.items = restoCart.items.filter(i => i.id !== itemId);
-      }
-    }
-    saveRestoCart();
-    renderCart();
-  }
-  
-  function removeFromRestoCart(itemId) {
-    restoCart.items = restoCart.items.filter(i => i.id !== itemId);
-    saveRestoCart();
-    renderCart();
-  }
-  
-  function saveRestoCart() {
-    localStorage.setItem('ac_resto_cart', JSON.stringify(restoCart));
-  }
-  
-  function renderCart() {
-    const itemsEl = document.getElementById('resto-cart-items');
-    const summaryEl = document.getElementById('resto-cart-summary');
-    const mobileBtn = document.getElementById('resto-cart-mobile-btn');
-    
-    if(restoCart.items.length === 0) {
-      itemsEl.innerHTML = `
-        <div class="resto-cart-empty">
-          <i data-lucide="utensils" class="lucide-icon lucide-lg"></i>
-          <p>Votre panier est vide</p>
-          <small>Ajoutez des articles pour commander</small>
-        </div>
-      `;
-      summaryEl.classList.add('hidden');
-      mobileBtn.classList.add('hidden');
-      if(typeof lucide !== 'undefined') lucide.createIcons();
-      return;
-    }
-    
-    itemsEl.innerHTML = restoCart.items.map(item => `
-      <div class="resto-cart-item">
-        <div class="resto-cart-item-info">
-          <span class="resto-cart-item-name">${item.name}</span>
-          <span class="resto-cart-item-price">${formatFCFA(item.price)}</span>
-        </div>
-        <div class="resto-cart-item-controls">
-          <button class="resto-qty-btn" data-minus="${item.id}" aria-label="Diminuer">
-            <i data-lucide="minus" class="lucide-icon lucide-sm"></i>
-          </button>
-          <span class="resto-qty-value">${item.qty}</span>
-          <button class="resto-qty-btn" data-plus="${item.id}" aria-label="Augmenter">
-            <i data-lucide="plus" class="lucide-icon lucide-sm"></i>
-          </button>
-        </div>
-      </div>
-    `).join('');
-    
-    // Calculs
-    const subtotal = restoCart.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-    const deliveryEnabled = document.getElementById('delivery-toggle')?.checked && restaurant.deliveryEnabled;
-    const deliveryFee = deliveryEnabled ? restaurant.deliveryFee : 0;
-    let total = subtotal + deliveryFee;
-    
-    // Appliquer promo si existante
-    if(restaurant.promoPercent > 0) {
-      total = total * (1 - restaurant.promoPercent / 100);
-    }
-    
-    document.getElementById('resto-subtotal').textContent = formatFCFA(subtotal);
-    document.getElementById('resto-delivery-fee').textContent = deliveryEnabled ? formatFCFA(deliveryFee) : 'N/A';
-    document.getElementById('resto-total').textContent = formatFCFA(Math.round(total));
-    document.getElementById('resto-cart-mobile-total').textContent = formatFCFA(Math.round(total));
-    
-    summaryEl.classList.remove('hidden');
-    mobileBtn.classList.remove('hidden');
-    
-    // Event listeners
-    itemsEl.querySelectorAll('[data-minus]').forEach(btn => {
-      btn.addEventListener('click', () => updateRestoCartQty(btn.getAttribute('data-minus'), -1));
-    });
-    itemsEl.querySelectorAll('[data-plus]').forEach(btn => {
-      btn.addEventListener('click', () => updateRestoCartQty(btn.getAttribute('data-plus'), 1));
-    });
-    
-    // Minimum de commande
-    const checkoutBtn = document.getElementById('resto-checkout-btn');
-    if(subtotal < restaurant.minOrder && deliveryEnabled) {
-      checkoutBtn.disabled = true;
-      checkoutBtn.innerHTML = `<i data-lucide="alert-circle" class="lucide-icon"></i> Min. ${formatFCFA(restaurant.minOrder)}`;
-    } else {
-      checkoutBtn.disabled = false;
-      checkoutBtn.innerHTML = `<i data-lucide="check" class="lucide-icon"></i> Commander`;
-    }
-    
-    if(typeof lucide !== 'undefined') lucide.createIcons();
-  }
-  
-  // Toggle livraison
-  document.addEventListener('change', (e) => {
-    if(e.target.id === 'delivery-toggle') {
-      renderCart();
-    }
-  });
-  
-  // Checkout
-  document.getElementById('resto-checkout-btn')?.addEventListener('click', () => {
-    if(restoCart.items.length === 0) return;
-    const subtotal = restoCart.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-    if(subtotal < restaurant.minOrder && document.getElementById('delivery-toggle')?.checked) {
-      showToast(`Minimum de commande: ${formatFCFA(restaurant.minOrder)}`, 'warning');
-      return;
-    }
-    
-    // Créer la commande
-    const deliveryEnabled = document.getElementById('delivery-toggle')?.checked && restaurant.deliveryEnabled;
-    const deliveryFee = deliveryEnabled ? restaurant.deliveryFee : 0;
-    let total = subtotal + deliveryFee;
-    if(restaurant.promoPercent > 0) {
-      total = total * (1 - restaurant.promoPercent / 100);
-    }
-    
-    const order = {
-      id: 'OR' + Date.now(),
-      type: 'restaurant',
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
-      userEmail: currentUser?.email || 'guest',
-      date: Date.now(),
-      status: 'pending',
-      items: restoCart.items.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
-      subtotal,
-      deliveryFee,
-      discount: restaurant.promoPercent > 0 ? Math.round((subtotal + deliveryFee) * restaurant.promoPercent / 100) : 0,
-      total: Math.round(total),
-      deliveryEnabled,
-      address: null
-    };
-    
-    Store.orders.push(order);
-    localStorage.setItem('ac_orders', JSON.stringify(Store.orders));
-    
-    // Vider le panier resto
-    restoCart = { restaurantId: null, items: [] };
-    localStorage.setItem('ac_resto_cart', JSON.stringify(restoCart));
-    
-    showToast('Commande passée avec succès !', 'success');
-    setTimeout(() => window.location.href = 'order.html', 1500);
-  });
-  
-  // Mobile cart button
-  document.querySelector('#resto-cart-mobile-btn button')?.addEventListener('click', () => {
-    document.getElementById('resto-cart').classList.toggle('resto-cart-open');
-  });
-  
-  function isRestaurantOpenLocal(r) {
-    const now = new Date();
-    const hours = now.getHours();
-    return hours >= r.openHour && hours < r.closeHour;
-  }
-});
-</script>
+  </script>
+  <script src="assets/js/footer.js" defer></script>
 </body>
 </html>
