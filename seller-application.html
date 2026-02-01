@@ -200,26 +200,10 @@
           <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
         </a>
         <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>
-        <!--<button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>-->
       </nav>
     </div>
   </header>
 
-  <!--<div class="mobile-drawer" id="mobile-drawer">
-    <div class="drawer-header">
-      <span class="drawer-title">Menu</span>
-      <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
-    </div>
-    <nav class="drawer-nav">
-      <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
-      <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
-      <a href="boutique-list.html" class="drawer-link"><i data-lucide="store"></i> Nos Boutiques</a>
-      <div class="drawer-divider"></div>
-      <a href="seller-onboarding.html" class="drawer-link"><i data-lucide="info"></i> Infos requises</a>
-      <a href="contact.html" class="drawer-link"><i data-lucide="mail"></i> Nous contacter</a>
-    </nav>
-  </div>
-  <div id="menu-overlay"></div>-->
 
   <main style="background: #F9F7F2; min-height: 100vh; padding-top: 100px; padding-bottom: 60px;">
     <div class="application-form-container">
@@ -468,6 +452,28 @@
       });
     }
 
+    const invalidCharsRegex = /[<>\/'"]/;
+
+    function validateInput(input, type) {
+      const value = (input ?? '').toString().trim();
+      if (type === 'phone') {
+        return value !== '' && /^\+?\d+$/.test(value);
+      }
+      if (type === 'safeText') {
+        return value !== '' && !invalidCharsRegex.test(value);
+      }
+      if (type === 'optionalSafeText') {
+        return value === '' || !invalidCharsRegex.test(value);
+      }
+      if (type === 'email') {
+        return value !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      }
+      if (type === 'url') {
+        return value === '' || /^https?:\/\/[^\s]+$/i.test(value);
+      }
+      return true;
+    }
+
     // Firebase Application Logic
     document.addEventListener('DOMContentLoaded', () => {
       // Setup
@@ -493,6 +499,42 @@
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const formData = new FormData(form);
+
+        const validations = [
+          { name: 'shop_name', type: 'safeText', label: 'Nom de la boutique', required: true },
+          { name: 'legal_status', type: 'safeText', label: 'Statut juridique', required: true },
+          { name: 'owner_name', type: 'safeText', label: 'Nom et prénom du responsable', required: true },
+          { name: 'owner_role', type: 'safeText', label: 'Fonction', required: true },
+          { name: 'phone', type: 'phone', label: 'Téléphone', required: true },
+          { name: 'email', type: 'email', label: 'Email officiel', required: true },
+          { name: 'address', type: 'safeText', label: 'Adresse complète', required: true },
+          { name: 'categories', type: 'safeText', label: 'Catégories de produits', required: true },
+          { name: 'brand_story', type: 'safeText', label: 'Histoire de votre marque', required: true },
+          { name: 'rccm', type: 'optionalSafeText', label: 'N° RCCM', required: false },
+          { name: 'ifu', type: 'optionalSafeText', label: 'IFU', required: false },
+          { name: 'bank_account', type: 'optionalSafeText', label: 'Coordonnées bancaires', required: false },
+          { name: 'billing_address', type: 'optionalSafeText', label: 'Adresse de facturation', required: false },
+          { name: 'delivery_time', type: 'optionalSafeText', label: 'Délai de livraison', required: false },
+          { name: 'return_policy', type: 'optionalSafeText', label: 'Politique de retours', required: false },
+          { name: 'social_facebook', type: 'url', label: 'Lien Facebook', required: false },
+          { name: 'social_instagram', type: 'url', label: 'Lien Instagram', required: false },
+          { name: 'social_website', type: 'url', label: 'Lien site web', required: false }
+        ];
+
+        for (const v of validations) {
+          const raw = formData.get(v.name);
+          const value = (raw ?? '').toString().trim();
+          if (v.required && value === '') {
+            alert(`Le champ "${v.label}" est requis.`);
+            return;
+          }
+          if (!validateInput(value, v.type)) {
+            alert(`Le champ "${v.label}" est invalide.`);
+            return;
+          }
+        }
+
         if (typeof firebase === 'undefined') {
           alert('Firebase n\'est pas configuré. Veuillez vérifier votre configuration.');
           return;
@@ -507,8 +549,7 @@
           const storage = firebase.storage();
           
           // Get form data
-          const formData = new FormData(form);
-          const shopName = formData.get('shop_name').replace(/\s+/g, '_').toLowerCase();
+          const shopName = formData.get('shop_name').toString().trim().replace(/\s+/g, '_').toLowerCase();
           const timestamp = Date.now();
           const folderPath = `candidatures/${shopName}_${timestamp}`;
 
@@ -522,29 +563,29 @@
           // Prepare application data
           const applicationData = {
             // Identity
-            shop_name: formData.get('shop_name'),
-            legal_status: formData.get('legal_status'),
-            rccm: formData.get('rccm') || '',
-            ifu: formData.get('ifu') || '',
-            owner_name: formData.get('owner_name'),
-            owner_role: formData.get('owner_role'),
-            phone: formData.get('phone'),
-            email: formData.get('email'),
-            address: formData.get('address'),
+            shop_name: formData.get('shop_name').toString().trim(),
+            legal_status: formData.get('legal_status').toString().trim(),
+            rccm: (formData.get('rccm') || '').toString().trim(),
+            ifu: (formData.get('ifu') || '').toString().trim(),
+            owner_name: formData.get('owner_name').toString().trim(),
+            owner_role: formData.get('owner_role').toString().trim(),
+            phone: formData.get('phone').toString().trim(),
+            email: formData.get('email').toString().trim(),
+            address: formData.get('address').toString().trim(),
             
             // Payments
-            bank_account: formData.get('bank_account') || '',
+            bank_account: (formData.get('bank_account') || '').toString().trim(),
             payment_methods: paymentMethods,
-            billing_address: formData.get('billing_address') || '',
+            billing_address: (formData.get('billing_address') || '').toString().trim(),
             
             // Branding
-            categories: formData.get('categories'),
-            brand_story: formData.get('brand_story'),
-            delivery_time: formData.get('delivery_time') || '',
-            return_policy: formData.get('return_policy') || '',
-            social_facebook: formData.get('social_facebook') || '',
-            social_instagram: formData.get('social_instagram') || '',
-            social_website: formData.get('social_website') || '',
+            categories: formData.get('categories').toString().trim(),
+            brand_story: formData.get('brand_story').toString().trim(),
+            delivery_time: (formData.get('delivery_time') || '').toString().trim(),
+            return_policy: (formData.get('return_policy') || '').toString().trim(),
+            social_facebook: (formData.get('social_facebook') || '').toString().trim(),
+            social_instagram: (formData.get('social_instagram') || '').toString().trim(),
+            social_website: (formData.get('social_website') || '').toString().trim(),
             
             // Status
             status: 'pending',
@@ -618,190 +659,3 @@
   <script src="assets/js/footer.js" defer></script>
 </body>
 </html>
-
-<!-- 
-═══════════════════════════════════════════════════════════════════════════════
-BACKEND: EXEMPLE DE CLOUD FUNCTION (Node.js)
-═══════════════════════════════════════════════════════════════════════════════
-
-Créez ce fichier dans functions/index.js de votre projet Firebase:
-
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const nodemailer = require('nodemailer');
-
-admin.initializeApp();
-
-// Configuration du transporteur email (exemple avec Gmail)
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'votre-email@gmail.com',
-    pass: 'votre-mot-de-passe-app' // Utilisez un mot de passe d'application
-  }
-});
-
-exports.onSellerApplicationCreated = functions.firestore
-  .document('seller_applications/{docId}')
-  .onCreate(async (snap, context) => {
-    const data = snap.data();
-    const docId = context.params.docId;
-
-    // Préparer le contenu de l'email
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #D4AF37;">Nouvelle candidature vendeur sur Aurum</h2>
-        
-        <h3>Informations de la boutique:</h3>
-        <ul>
-          <li><strong>Nom:</strong> ${data.shop_name}</li>
-          <li><strong>Statut juridique:</strong> ${data.legal_status}</li>
-          <li><strong>RCCM:</strong> ${data.rccm || 'Non fourni'}</li>
-          <li><strong>IFU:</strong> ${data.ifu || 'Non fourni'}</li>
-        </ul>
-
-        <h3>Responsable:</h3>
-        <ul>
-          <li><strong>Nom:</strong> ${data.owner_name}</li>
-          <li><strong>Fonction:</strong> ${data.owner_role}</li>
-          <li><strong>Téléphone:</strong> ${data.phone}</li>
-          <li><strong>Email:</strong> ${data.email}</li>
-          <li><strong>Adresse:</strong> ${data.address}</li>
-        </ul>
-
-        <h3>Informations commerciales:</h3>
-        <ul>
-          <li><strong>Catégories:</strong> ${data.categories}</li>
-          <li><strong>Moyens de paiement:</strong> ${data.payment_methods.join(', ')}</li>
-          <li><strong>Délai de livraison:</strong> ${data.delivery_time || 'Non spécifié'}</li>
-          <li><strong>Politique de retours:</strong> ${data.return_policy || 'Non spécifiée'}</li>
-        </ul>
-
-        <h3>Histoire de la marque:</h3>
-        <p>${data.brand_story}</p>
-
-        <h3>Documents joints:</h3>
-        <ul>
-          ${data.logo_url ? `<li><a href="${data.logo_url}">Logo</a></li>` : ''}
-          ${data.id_card_url ? `<li><a href="${data.id_card_url}">Pièce d'identité</a></li>` : ''}
-          ${data.rccm_doc_url ? `<li><a href="${data.rccm_doc_url}">RCCM</a></li>` : ''}
-          ${data.ifu_doc_url ? `<li><a href="${data.ifu_doc_url}">IFU</a></li>` : ''}
-        </ul>
-
-        <h3>Réseaux sociaux:</h3>
-        <ul>
-          ${data.social_facebook ? `<li><a href="${data.social_facebook}">Facebook</a></li>` : ''}
-          ${data.social_instagram ? `<li><a href="${data.social_instagram}">Instagram</a></li>` : ''}
-          ${data.social_website ? `<li><a href="${data.social_website}">Site web</a></li>` : ''}
-        </ul>
-
-        <p style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-left: 4px solid #D4AF37;">
-          <strong>ID de la candidature:</strong> ${docId}<br>
-          <strong>Date:</strong> ${new Date().toLocaleString('fr-FR')}
-        </p>
-
-        <p style="margin-top: 20px; color: #666; font-size: 12px;">
-          Pour approuver ou rejeter cette candidature, connectez-vous à votre <a href="https://votre-site.com/admin.html">panneau d'administration</a>.
-        </p>
-      </div>
-    `;
-
-    // Envoyer l'email
-    const mailOptions = {
-      from: 'Aurum Marketplace <noreply@aurum.bf>',
-      to: 'aurumcorporate.d@gmail.com',
-      subject: `[Aurum] Nouvelle candidature vendeur: ${data.shop_name}`,
-      html: emailHtml
-    };
-
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log('Email sent successfully for application:', docId);
-      
-      // Optionnel: Envoyer un email de confirmation au candidat
-      const confirmationEmail = {
-        from: 'Aurum Marketplace <noreply@aurum.bf>',
-        to: data.email,
-        subject: 'Candidature reçue - Aurum Marketplace',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #D4AF37;">Bonjour ${data.owner_name},</h2>
-            <p>Nous avons bien reçu votre candidature pour rejoindre Aurum Marketplace.</p>
-            <p><strong>Nom de la boutique:</strong> ${data.shop_name}</p>
-            <p>Notre équipe va examiner votre dossier et vous contactera dans les 48-72 heures.</p>
-            <p>Merci de votre confiance !</p>
-            <p style="margin-top: 30px; color: #666;">
-              L'équipe Aurum<br>
-              <a href="https://votre-site.com">votre-site.com</a>
-            </p>
-          </div>
-        `
-      };
-      
-      await transporter.sendMail(confirmationEmail);
-      console.log('Confirmation email sent to:', data.email);
-
-      return null;
-    } catch (error) {
-      console.error('Error sending email:', error);
-      return null;
-    }
-  });
-
-═══════════════════════════════════════════════════════════════════════════════
-INSTALLATION DE LA CLOUD FUNCTION:
-═══════════════════════════════════════════════════════════════════════════════
-
-1. Initialiser Firebase Functions:
-   firebase init functions
-
-2. Installer les dépendances:
-   cd functions
-   npm install nodemailer
-
-3. Déployer:
-   firebase deploy --only functions
-
-4. Pour Gmail, créer un mot de passe d'application:
-   - Allez dans votre compte Google
-   - Sécurité > Validation en deux étapes > Mots de passe des applications
-   - Créez un mot de passe pour "Mail"
-   - Utilisez ce mot de passe dans la config nodemailer
-
-═══════════════════════════════════════════════════════════════════════════════
-RÈGLES FIRESTORE (pour sécuriser):
-═══════════════════════════════════════════════════════════════════════════════
-
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /seller_applications/{docId} {
-      // Permettre à tout le monde de créer une candidature
-      allow create: if request.auth != null || true;
-      
-      // Seuls les admins peuvent lire/modifier
-      allow read, update, delete: if request.auth != null && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-  }
-}
-
-═══════════════════════════════════════════════════════════════════════════════
-RÈGLES STORAGE (pour sécuriser):
-═══════════════════════════════════════════════════════════════════════════════
-
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /candidatures/{allPaths=**} {
-      // Permettre l'upload pendant la candidature
-      allow write: if request.resource.size < 5 * 1024 * 1024; // Max 5MB
-      
-      // Seuls les admins peuvent lire
-      allow read: if request.auth != null && 
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-  }
-}
-
--->
