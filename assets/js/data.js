@@ -868,3 +868,98 @@ function saveStore(){
   localStorage.setItem('ac_invoices', JSON.stringify(Store.invoices || []));
   localStorage.setItem('ac_promos', JSON.stringify(Store.promos || []));
 }
+
+// Initialisation optimisée du catalogue avec chargement parallèle Firestore
+async function initializeCatalogue() {
+  const allProducts = [];
+  const allColors = new Set();
+  const allLocations = new Set();
+  const allCategories = [];
+  let minPrice = Infinity;
+  let maxPrice = 0;
+
+  // 1. Charger les catégories (Optimisé : en parallèle)
+  const categoriesPromise = db.collection('categories').get();
+
+  // 2. Charger TOUTES les boutiques en une seule fois (Optimisation majeure)
+  const shopsPromise = db.collection('shops').get();
+
+  // 3. Charger les produits
+  const productsPromise = db.collectionGroup('products').get();
+
+  // Attendre tout
+  const [categoriesSnap, shopsSnap, productsSnap] = await Promise.all([
+    categoriesPromise, 
+    shopsPromise, 
+    productsPromise
+  ]);
+
+  // Traiter Catégories
+  categoriesSnap.forEach(doc => {
+    allCategories.push({ id: doc.id, ...doc.data() });
+  });
+
+  // Créer une Map des boutiques pour accès rapide
+  const shopsMap = new Map();
+  shopsSnap.forEach(doc => {
+    shopsMap.set(doc.id, doc.data());
+  });
+
+  if (productsSnap.empty) {
+    console.warn('Aucun produit trouvé dans Firestore');
+    return {
+      products: [],
+      categories: allCategories,
+      colors: Array.from(allColors),
+      locations: Array.from(allLocations),
+      priceRange: { min: 0, max: 0 }
+    };
+  }
+
+  // Construire la liste produits (Instantané car tout est en mémoire)
+  productsSnap.forEach(doc => {
+    const productData = doc.data();
+    // Le shopId est souvent stocké directement dans le produit, ou via la structure de collection
+    // Si c'est une sous-collection: shops/{shopId}/products/{productId}
+    const shopId = productData.shopId || doc.ref.parent.parent.id; 
+    
+    const shopData = shopsMap.get(shopId) || {};
+    
+    const shopName = shopData.name || 'Boutique';
+    const shopRating = shopData.rating || 0;
+    const shopCity = shopData.city || shopData.address || '';
+
+    // Collecter couleurs et localités
+    if (productData.colors && Array.isArray(productData.colors)) {
+      productData.colors.forEach(c => allColors.add(c));
+    }
+    if (shopCity) allLocations.add(shopCity);
+
+    // Calculer min/max prices
+    const price = productData.price || 0;
+    if (price > 0) {
+      minPrice = Math.min(minPrice, price);
+      maxPrice = Math.max(maxPrice, price);
+    }
+
+    allProducts.push({
+      id: doc.id,
+      shopId,
+      shopName,
+      shopRating,
+      shopCity,
+      ...productData
+    });
+  });
+
+  // Normaliser les prix si nécessaire
+  if (minPrice === Infinity) minPrice = 0;
+
+  return {
+    products: allProducts,
+    categories: allCategories,
+    colors: Array.from(allColors),
+    locations: Array.from(allLocations),
+    priceRange: { min: minPrice, max: maxPrice }
+  };
+}
