@@ -319,7 +319,7 @@ function openInvoice(orderId) {
         <div class="footer">
             <p class="thank-you">Merci pour votre confiance</p>
             <p>AURUM CORP - Joaillerie de Luxe</p>
-            <p>contact@aurumcorp.com | www.aurumcorp.com</p>
+            <p>aurumcorporate.d@gmail.com | www.aurumcorp.com</p>
             <p style="margin-top: 15px; font-size: 12px;">Ce document fait office de recu officiel.</p>
         </div>
     </div>
