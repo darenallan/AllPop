@@ -1,4 +1,8 @@
 {
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
   "hosting": {
     "public": ".",
     "ignore": [
@@ -12,27 +16,19 @@
         "headers": [
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' https://unpkg.com https://*.googleapis.com https://*.firebaseio.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://*.googleapis.com; connect-src 'self' https://unpkg.com https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; img-src 'self' data: https://unpkg.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
-          },
-          {
-            "key": "X-Frame-Options",
-            "value": "DENY"
+            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://firebasestorage.googleapis.com; connect-src 'self' https://unpkg.com https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;"
           },
           {
             "key": "Strict-Transport-Security",
             "value": "max-age=31536000; includeSubDomains"
           },
           {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
             "key": "X-Content-Type-Options",
             "value": "nosniff"
-          },
-          {
-            "key": "Referrer-Policy",
-            "value": "strict-origin-when-cross-origin"
-          },
-          {
-            "key": "Permissions-Policy",
-            "value": "geolocation=(), microphone=(), camera=()"
           }
         ]
       }
