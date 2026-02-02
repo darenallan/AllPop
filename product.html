@@ -5,19 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Produit — Aurum</title>
   
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.cloudfunctions.net; frame-ancestors 'none'; form-action 'self';">
-  <meta http-equiv="X-Frame-Options" content="DENY">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css" />
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/cart.js"></script>
@@ -831,35 +825,16 @@
         const productId = urlParams.get('id');
 
         if (!productId) {
-            const container = document.getElementById('product-container');
-            container.textContent = '';
-            
-            const errorDiv = document.createElement('div');
-            errorDiv.style.cssText = 'text-align: center; padding: 60px 20px;';
-            
-            const icon = document.createElement('i');
-            icon.setAttribute('data-lucide', 'alert-circle');
-            icon.style.cssText = 'width: 64px; height: 64px; color: #ef4444;';
-            
-            const title = document.createElement('h3');
-            title.style.cssText = 'color: #ef4444; margin-top: 20px;';
-            title.textContent = 'Produit introuvable';
-            
-            const msg = document.createElement('p');
-            msg.style.cssText = 'color: #999;';
-            msg.textContent = 'Aucun ID de produit spécifié.';
-            
-            const link = document.createElement('a');
-            link.href = 'catalogue.html';
-            link.style.cssText = 'display: inline-block; margin-top: 20px; padding: 12px 24px; background: #D4AF37; color: #000; border-radius: 8px; text-decoration: none; font-weight: 600;';
-            link.textContent = 'Retour au catalogue';
-            
-            errorDiv.appendChild(icon);
-            errorDiv.appendChild(title);
-            errorDiv.appendChild(msg);
-            errorDiv.appendChild(link);
-            container.appendChild(errorDiv);
-            
+            document.getElementById('product-container').innerHTML = `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <i data-lucide="alert-circle" style="width: 64px; height: 64px; color: #ef4444;"></i>
+                    <h3 style="color: #ef4444; margin-top: 20px;">Produit introuvable</h3>
+                    <p style="color: #999;">Aucun ID de produit spécifié.</p>
+                    <a href="catalogue.html" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #D4AF37; color: #000; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                        Retour au catalogue
+                    </a>
+                </div>
+            `;
             if (typeof lucide !== 'undefined') lucide.createIcons();
             return;
         }
@@ -1588,9 +1563,9 @@
         if (selectedColor) cartItem.variants.color = selectedColor;
         if (selectedSize) cartItem.variants.size = selectedSize;
 
-        // Ajouter au panier - CORRECTION: passer l'ID et la quantité séparément, pas l'objet entier
+        // Ajouter au panier (utilise la fonction de cart.js ou fallback)
         if (typeof addToCart === 'function') {
-            addToCart(window.currentProduct.id, quantity);
+            addToCart(cartItem);
         } else {
             // Fallback: stocker dans localStorage
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
