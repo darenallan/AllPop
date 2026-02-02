@@ -1,26 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mon Panier - Aurum</title>
-  
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://firebasestorage.googleapis.com; connect-src 'self' https://unpkg.com https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;">
-  <meta http-equiv="X-Frame-Options" content="DENY">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css" />
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
   <script src="assets/js/auth.js"></script>
- <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js"></script>
   <style>
       /* --- Styles spécifiques Panier --- */
       .cart-container { padding-top: 40px; padding-bottom: 80px; min-height: 60vh; }
@@ -210,41 +204,17 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("🚀 Démarrage du script Panier...");
-
-        // --- 0. SÉCURITÉ : WATCHDOG (Force l'arrêt si ça bloque) ---
-        const watchdog = setTimeout(() => {
-            const loadEl = document.getElementById('loading');
-            if (loadEl && loadEl.style.display !== 'none') {
-                console.error("⏰ TIMEOUT 15s : Le chargement a pris trop de temps.");
-                console.log("📦 Affichage du panier même incomplet...");
-                
-                // Afficher ce qu'on a même si incomplet
-                const emptyEl = document.getElementById('cart-empty');
-                const contentEl = document.getElementById('cart-content');
-                if(emptyEl && loadEl) {
-                    emptyEl.style.display = 'none';
-                    loadEl.style.display = 'none';
-                }
-                if(contentEl) {
-                    contentEl.style.display = 'grid';
-                }
-            }
-        }, 15000); // 15 secondes max (augmenté depuis 8s)
-
-        // --- 1. VÉRIFICATION FIREBASE ---
-        if (typeof firebase === 'undefined' || !firebase.apps.length) {
-            clearTimeout(watchdog);
-            console.error("❌ ERREUR CRITIQUE : Firebase n'est pas chargé ou initialisé.");
-            const loadEl = document.getElementById('loading');
-            if(loadEl) loadEl.innerHTML = "<p style='color:red'>Erreur technique : Firebase non détecté. Vérifiez auth.js</p>";
+        // --- 1. SÉCURITÉ INITIALISATION FIREBASE ---
+        if (!firebase.apps.length) {
+            console.error("❌ Firebase n'est pas initialisé !");
+            document.getElementById('loading').innerHTML = "<p style='color:red; text-align:center;'>Erreur de connexion (Firebase non détecté).</p>";
             return;
         }
 
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Éléments DOM (Avec vérification)
+        // Éléments DOM
         const loadingEl = document.getElementById('loading');
         const emptyEl = document.getElementById('cart-empty');
         const contentEl = document.getElementById('cart-content');
@@ -254,179 +224,102 @@
         const totalEl = document.getElementById('total-display');
         const checkoutBtn = document.getElementById('btn-checkout');
 
-        if (!loadingEl || !emptyEl || !contentEl) {
-            console.error("❌ ERREUR DOM : Il manque des IDs dans le HTML (loading, cart-empty ou cart-content).");
-            return;
+        // --- 2. RÉCUPÉRATION ET NETTOYAGE DU PANIER ---
+        let rawCart = [];
+        try {
+            const stored = localStorage.getItem('ac_cart');
+            rawCart = stored ? JSON.parse(stored) : [];
+        } catch (e) {
+            console.error("Panier corrompu, réinitialisation...", e);
+            localStorage.removeItem('ac_cart');
+            rawCart = [];
         }
 
-        // --- 2. LECTURE ROBUSTE DU PANIER ---
-        let cart = [];
-        let cartModified = false;
+        // IMPORTANT : On ne garde que les items valides (qui ont un PID)
+        // Cela évite l'erreur "Function requires string"
+        let cart = Array.isArray(rawCart) ? rawCart.filter(item => item && item.pid) : [];
         
-        // PRIORITÉ 1 : Utiliser window.Cart (global depuis app.js) s'il existe
-        if (typeof window.Cart !== 'undefined' && Array.isArray(window.Cart) && window.Cart.length > 0) {
-            console.log("✅ Panier trouvé dans window.Cart:", window.Cart);
-            // NETTOYAGE CRITIQUE : Filtrer les articles corrompus (sans pid valide)
-            const lengthBefore = window.Cart.length;
-            cart = window.Cart.filter(item => 
-                item && 
-                typeof item.pid === 'string' && 
-                item.pid.trim() !== '' &&
-                (typeof item.qty === 'number' || item.qty > 0)
-            );
-            
-            if (cart.length < lengthBefore) {
-                console.warn(`⚠️ ${lengthBefore - cart.length} article(s) corrompu(s) supprimé(s) de window.Cart`);
-                cartModified = true;
-                // Mettre à jour window.Cart nettoyé
-                window.Cart = cart;
-            }
-        } 
-        // PRIORITÉ 2 : Fallback à localStorage
-        else {
-            let rawCart = [];
-            try {
-                const stored = localStorage.getItem('ac_cart');
-                console.log("📋 localStorage.getItem('ac_cart'):", stored);
-                
-                if (stored) {
-                    rawCart = JSON.parse(stored);
-                }
-            } catch (e) {
-                console.warn("⚠️ Panier localStorage corrompu (JSON invalid), nettoyage complet.");
-                console.error("Erreur parse:", e.message);
-                localStorage.removeItem('ac_cart');
-                rawCart = [];
-                cartModified = true;
-            }
-            
-            // FIX CRITIQUE : On ne garde que les items qui ont un PID valide (string non-vide)
-            const lengthBefore = Array.isArray(rawCart) ? rawCart.length : 0;
-            cart = Array.isArray(rawCart) ? rawCart.filter(item => 
-                item && 
-                typeof item.pid === 'string' && 
-                item.pid.trim() !== '' &&
-                (typeof item.qty === 'number' || item.qty > 0)
-            ) : [];
-            
-            if (cart.length < lengthBefore && lengthBefore > 0) {
-                console.warn(`⚠️ ${lengthBefore - cart.length} article(s) corrompu(s) supprimé(s) de localStorage`);
-                cartModified = true;
-            }
-        }
-        
-        // Si on a nettoyé des erreurs, on met à jour localStorage et window.Cart pour que le badge se corrige aussi
-        if (cartModified) {
-            console.log('💾 Mise à jour du localStorage avec le panier nettoyé');
-            try {
-                const minimalCart = cart.map(item => ({ pid: item.pid, qty: item.qty || 1 }));
-                localStorage.setItem('ac_cart', JSON.stringify(minimalCart));
-                window.Cart = minimalCart;
-                
-                // Mettre à jour le badge si la fonction existe
-                if (typeof updateCartBadge === 'function') {
-                    updateCartBadge();
-                }
-            } catch(e) {
-                console.error('❌ Impossible de sauvegarder le panier nettoyé:', e.message);
-            }
+        // Mise à jour du localStorage si nettoyage effectué
+        if (cart.length !== rawCart.length) {
+            localStorage.setItem('ac_cart', JSON.stringify(cart));
         }
 
-        console.log(`📦 Contenu du panier après traitement (${cart.length} articles) :`, cart);
-        if (cart.length === 0) {
-            console.warn("⚠️ Panier vide - window.Cart n'existe pas ou est vide, localStorage aussi");
-        }
+        let cartProductsData = [];
 
         // Si panier vide
         if (cart.length === 0) {
-            clearTimeout(watchdog);
             showEmptyState();
             return;
         }
 
-        // --- 3. CHARGEMENT DES DONNÉES (PRODUITS) ---
-        let cartProductsData = [];
+        // --- 3. CHARGEMENT DES PRODUITS SÉCURISÉ ---
+        console.log(`Chargement de ${cart.length} articles...`);
         
-        // On crée un tableau de promesses
-        const promises = cart.map(item => {
-            return db.collection('products').doc(item.pid).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        return { found: true, data: doc.data(), id: doc.id, qty: item.qty || 1 };
-                    } else {
-                        console.warn(`Produit introuvable (ID: ${item.pid})`);
-                        return { found: false, id: item.pid };
-                    }
-                })
-                .catch(err => {
-                    console.error(`Erreur lecture produit ${item.pid}:`, err);
-                    return { found: false, id: item.pid };
-                });
-        });
+        // On mappe chaque requête avec un .catch individuel pour qu'une erreur sur UN produit ne bloque pas TOUT
+        const promises = cart.map(item => 
+            db.collection('products').doc(item.pid).get()
+            .then(doc => ({ doc, error: null }))
+            .catch(error => ({ doc: null, error }))
+        );
 
         Promise.all(promises)
             .then(results => {
-                clearTimeout(watchdog); // On arrête le chrono de sécurité
-                console.log("✅ Toutes les requêtes sont terminées.");
+                let hasChanges = false;
 
-                // Filtrer les succès
-                cartProductsData = results.filter(r => r.found).map(r => ({
-                    id: r.id,
-                    ...r.data,
-                    qty: parseInt(r.qty) || 1
-                }));
-
-                // Si après filtrage il ne reste rien (ex: tous les produits supprimés)
-                if (cartProductsData.length === 0) {
-                    // Nettoyage préventif
-                    if (cart.length > 0) {
-                        localStorage.removeItem('ac_cart');
+                results.forEach((result, index) => {
+                    if (result.doc && result.doc.exists) {
+                        const productData = result.doc.data();
+                        const cartItem = cart.find(i => i.pid === result.doc.id);
+                        
+                        cartProductsData.push({
+                            id: result.doc.id,
+                            ...productData,
+                            qty: cartItem ? (parseInt(cartItem.qty) || 1) : 1
+                        });
+                    } else {
+                        // Le produit n'existe plus ou erreur -> on le retirera du panier visuel
+                        console.warn(`Produit introuvable ou erreur :`, result.error);
+                        hasChanges = true;
                     }
+                });
+
+                // Si des produits n'ont pas été trouvés (supprimés), on met à jour le localStorage
+                if (hasChanges) {
+                    const validIds = cartProductsData.map(p => p.id);
+                    cart = cart.filter(i => validIds.includes(i.pid));
+                    localStorage.setItem('ac_cart', JSON.stringify(cart));
+                }
+
+                if (cartProductsData.length === 0) {
                     showEmptyState();
                 } else {
                     renderCart();
                 }
             })
-            .catch(globalErr => {
-                clearTimeout(watchdog);
-                console.error("❌ ERREUR GLOBALE :", globalErr);
-                console.warn("⚠️ Affichage du panier même si les données Firestore ont échoué...");
-                
-                // Afficher quand même avec les données qu'on a
-                if (cart.length > 0) {
-                    const loadEl = document.getElementById('loading');
-                    const contentEl = document.getElementById('cart-content');
-                    const emptyEl = document.getElementById('cart-empty');
-                    
-                    if(loadEl) loadEl.style.display = 'none';
-                    if(emptyEl) emptyEl.style.display = 'none';
-                    if(contentEl) contentEl.style.display = 'grid';
-                    
-                    // Afficher au moins les IDs des produits
-                    const listEl = document.getElementById('cart-list');
-                    if(listEl) {
-                        listEl.innerHTML = '<div style="padding:20px; color:#ff6b6b;"><p>⚠️ Les détails des produits n\'ont pas pu se charger.</p><p>IDs en panier: ' + cart.map(c => c.pid).join(', ') + '</p></div>';
-                    }
-                } else {
-                    showEmptyState();
-                }
+            .catch(err => {
+                console.error("❌ Erreur critique chargement panier :", err);
+                loadingEl.innerHTML = `
+                    <div style="color: #ef4444; text-align:center;">
+                        <h3>Oups !</h3>
+                        <p>Une erreur est survenue lors du chargement.</p>
+                        <button onclick="localStorage.removeItem('ac_cart'); location.reload();" class="btn btn-outline">Vider le panier et réessayer</button>
+                    </div>`;
             });
 
-        // --- FONCTIONS D'AFFICHAGE ---
-
         function showEmptyState() {
-            if(loadingEl) loadingEl.style.display = 'none';
-            if(emptyEl) emptyEl.style.display = 'flex';
-            if(contentEl) contentEl.style.display = 'none';
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'flex';
+            contentEl.style.display = 'none';
             if(typeof lucide !== 'undefined') lucide.createIcons();
         }
 
+        // Calcul du total et affichage
         function renderCart() {
-            if(loadingEl) loadingEl.style.display = 'none';
-            if(emptyEl) emptyEl.style.display = 'none';
-            if(contentEl) contentEl.style.display = 'grid';
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'none';
+            contentEl.style.display = 'grid';
             
-            if(listEl) listEl.innerHTML = "";
+            listEl.innerHTML = "";
             let total = 0;
             let itemCount = 0;
 
@@ -435,94 +328,79 @@
                 total += lineTotal;
                 itemCount += p.qty;
                 
+                // Gestion image par défaut
                 let img = 'assets/img/placeholder-product-1.svg';
                 if (p.image) img = p.image;
                 else if (p.images && p.images.length > 0) img = p.images[0];
 
-                if(listEl) {
-                    listEl.innerHTML += `
-                        <div class="cart-item">
-                            <a href="product.html?id=${p.id}">
-                                <img src="${img}" class="cart-item-img" alt="${p.name}" onerror="this.src='assets/img/placeholder-product-1.svg'">
-                            </a>
-                            <div class="cart-item-info">
-                                <a href="product.html?id=${p.id}" class="cart-item-title">${p.name || 'Produit'}</a>
-                                <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price || 0)} FCFA / unité</div>
-                                ${p.variants && (p.variants.color || p.variants.size) ? `<div style="font-size:12px; color:#888;">Option: ${p.variants.color || ''} ${p.variants.size || ''}</div>` : ''}
+                listEl.innerHTML += `
+                    <div class="cart-item">
+                        <a href="product.html?id=${p.id}">
+                            <img src="${img}" class="cart-item-img" alt="${p.name}" onerror="this.src='assets/img/placeholder-product-1.svg'">
+                        </a>
+                        <div class="cart-item-info">
+                            <a href="product.html?id=${p.id}" class="cart-item-title">${p.name || 'Produit sans nom'}</a>
+                            <div class="cart-item-price">${new Intl.NumberFormat('fr-FR').format(p.price || 0)} FCFA / unité</div>
+                            ${p.shopName ? `<div style="font-size:12px; color:#888; margin-top:4px;"><i data-lucide="store" style="width:12px;"></i> ${p.shopName}</div>` : ''}
+                        </div>
+                        <div class="cart-item-actions">
+                            <div class="qty-selector-sm">
+                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', -1)">-</button>
+                                <span class="qty-val-sm">${p.qty}</span>
+                                <button class="qty-btn-sm" onclick="changeQty('${p.id}', 1)">+</button>
                             </div>
-                            <div class="cart-item-actions">
-                                <div class="qty-selector-sm">
-                                    <button class="qty-btn-sm" onclick="changeQty('${p.id}', -1)">-</button>
-                                    <span class="qty-val-sm">${p.qty}</span>
-                                    <button class="qty-btn-sm" onclick="changeQty('${p.id}', 1)">+</button>
-                                </div>
-                                <div class="item-total">
-                                    ${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA
-                                </div>
-                                <div class="btn-delete" onclick="removeItem('${p.id}')">
-                                    <i data-lucide="trash-2"></i>
-                                </div>
+                            <div class="item-total">
+                                ${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA
+                            </div>
+                            <div class="btn-delete" onclick="removeItem('${p.id}')">
+                                <i data-lucide="trash-2"></i>
                             </div>
                         </div>
-                    `;
-                }
+                    </div>
+                `;
             });
 
             const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
-            if(subtotalEl) subtotalEl.innerText = formattedTotal;
-            if(totalEl) totalEl.innerText = formattedTotal;
-            if(countLabel) countLabel.innerText = itemCount;
-
-            if(typeof lucide !== 'undefined') lucide.createIcons();
+            if(subtotalEl) subtotalEl.textContent = formattedTotal;
+            if(totalEl) totalEl.textContent = formattedTotal;
+            countLabel.textContent = itemCount;
         }
 
-        // --- ACTIONS GLOBALES ---
-        window.changeQty = function(pid, delta) {
-            const product = cartProductsData.find(p => p.id === pid);
-            if(product) {
-                product.qty += delta;
-                if(product.qty < 1) product.qty = 1;
-                
-                // Maj LocalStorage
-                const cartIndex = cart.findIndex(i => i.pid === pid);
-                if(cartIndex > -1) {
-                    cart[cartIndex].qty = product.qty;
-                    localStorage.setItem('ac_cart', JSON.stringify(cart));
-                }
+        // Modifier la quantité
+        window.changeQty = (productId, delta) => {
+            const item = cartProductsData.find(p => p.id === productId);
+            if (item) {
+                item.qty = Math.max(1, item.qty + delta);
+                const cartItem = cart.find(i => i.pid === productId);
+                if (cartItem) cartItem.qty = item.qty;
+                localStorage.setItem('ac_cart', JSON.stringify(cart));
                 renderCart();
             }
         };
 
-        window.removeItem = function(pid) {
-            if(!confirm("Supprimer cet article ?")) return;
-            
-            // Maj Mémoire
-            cartProductsData = cartProductsData.filter(p => p.id !== pid);
-            // Maj Storage
-            cart = cart.filter(i => i.pid !== pid);
+        // Supprimer un article
+        window.removeItem = (productId) => {
+            cart = cart.filter(i => i.pid !== productId);
+            cartProductsData = cartProductsData.filter(p => p.id !== productId);
             localStorage.setItem('ac_cart', JSON.stringify(cart));
-
-            if(cartProductsData.length === 0) showEmptyState();
-            else renderCart();
-            
-            // Maj badge header si dispo
-            if(window.updateCartBadge) window.updateCartBadge();
+            if (cart.length === 0) {
+                showEmptyState();
+            } else {
+                renderCart();
+            }
         };
 
-        // --- BOUTON CHECKOUT ---
-        if(checkoutBtn) {
-            checkoutBtn.addEventListener('click', () => {
-                if (!auth.currentUser) {
-                    sessionStorage.setItem('redirect_after_login', 'cart.html');
-                    window.location.href = "login.html";
-                } else {
-                    // Ici, intégrez votre logique de checkout complexe (batch write)
-                    // Pour l'instant, on redirige juste pour tester
-                    alert("Validation de la commande en cours...");
-                    // Insérez ici votre grosse fonction checkout() si vous l'avez
-                }
-            });
-        }
+        // Checkout
+        checkoutBtn.addEventListener('click', () => {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Veuillez vous connecter pour continuer.');
+                window.location.href = 'login.html';
+            } else {
+                localStorage.setItem('ac_cart_checkout', JSON.stringify(cartProductsData));
+                window.location.href = 'checkout.html';
+            }
+        });
     });
 </script>
 
