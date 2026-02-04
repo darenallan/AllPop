@@ -79,6 +79,53 @@ window.Auth = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 3.1 SYNC UTILISATEUR CONNECTÉ (LOCAL STORAGE)
+// ─────────────────────────────────────────────────────────────────────────────
+
+window.syncCurrentUser = function(user) {
+    if (!user) {
+        localStorage.removeItem('ac_currentUser');
+        return Promise.resolve(null);
+    }
+
+    const isAdminEmail = (user.email || '').toLowerCase() === 'aurumcorporate.d@gmail.com';
+    const baseUser = {
+        uid: user.uid,
+        email: user.email || '',
+        name: user.displayName || '',
+        role: isAdminEmail ? 'admin' : 'client'
+    };
+
+    // Récupérer les infos depuis Firestore si disponibles
+    return window.db.collection('users').doc(user.uid).get()
+        .then((doc) => {
+            if (doc.exists) {
+                const data = doc.data() || {};
+                const merged = {
+                    ...baseUser,
+                    name: data.name || baseUser.name,
+                    role: data.role || baseUser.role
+                };
+                localStorage.setItem('ac_currentUser', JSON.stringify(merged));
+                return merged;
+            }
+            localStorage.setItem('ac_currentUser', JSON.stringify(baseUser));
+            return baseUser;
+        })
+        .catch(() => {
+            localStorage.setItem('ac_currentUser', JSON.stringify(baseUser));
+            return baseUser;
+        });
+};
+
+// Écoute globale de l'auth Firebase pour garder le storage à jour
+if (window.auth) {
+    window.auth.onAuthStateChanged((user) => {
+        window.syncCurrentUser(user);
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 4. UTILITAIRES DOM
 // ─────────────────────────────────────────────────────────────────────────────
 

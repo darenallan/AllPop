@@ -117,15 +117,26 @@
                 window.auth.signInWithEmailAndPassword(email, pass)
                     .then((userCredential) => {
                         console.log("✅ Connexion réussie:", userCredential.user.email);
-                        
-                        // Redirection basée sur le rôle
-                        if (email === 'aurumcorporate.d@gmail.com') {
-                            window.location.href = "admin.html";
-                        } else if(sessionStorage.getItem('ac_checkout_pending') === 'true') {
-                            sessionStorage.removeItem('ac_checkout_pending');
-                            window.location.href = "cart.html";
+
+                        const finishRedirect = () => {
+                            // Redirection basée sur le rôle
+                            if (email === 'aurumcorporate.d@gmail.com') {
+                                window.location.href = "admin.html";
+                            } else if (sessionStorage.getItem('ac_checkout_pending') === 'true') {
+                                sessionStorage.removeItem('ac_checkout_pending');
+                                window.location.href = "cart.html";
+                            } else {
+                                window.location.href = "index.html";
+                            }
+                        };
+
+                        // Synchroniser l'utilisateur dans le localStorage avant redirection
+                        if (typeof window.syncCurrentUser === 'function') {
+                            window.syncCurrentUser(userCredential.user)
+                                .then(finishRedirect)
+                                .catch(finishRedirect);
                         } else {
-                            window.location.href = "index.html";
+                            finishRedirect();
                         }
                     })
                     .catch((error) => {

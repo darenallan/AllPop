@@ -159,8 +159,16 @@
                                 createdAt: new Date()
                             });
                         }).then(() => {
-                            alert("✅ Compte crée avec succès !");
-                            window.location.href = "index.html";
+                            const finishRedirect = () => {
+                                alert("✅ Compte crée avec succès !");
+                                window.location.href = "index.html";
+                            };
+
+                            if (typeof window.syncCurrentUser === 'function') {
+                                return window.syncCurrentUser(user).then(finishRedirect).catch(finishRedirect);
+                            }
+                            finishRedirect();
+                            return null;
                         });
                     })
                     .catch((error) => {
