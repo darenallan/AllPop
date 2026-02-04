@@ -15,8 +15,12 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/app.js"></script>
+  <!-- Configuration & Utilities -->
+  <script src="assets/js/config.js"></script>
+  <!-- Data Store -->
+  <script src="assets/js/data.js" defer></script>
+  <!-- App Module -->
+  <script src="assets/js/app.js" defer></script>
   <meta name="description" content="Aurum est la première marketplace premium du Burkina Faso. Achetez et vendez des produits de qualité en toute confiance.">
 <meta property="og:title" content="Aurum - L'Excellence à Votre Portée">
 <meta property="og:description" content="La marketplace de référence au Burkina Faso. Mode, Électronique, Déco.">
@@ -235,8 +239,9 @@
         if (yearSpan) yearSpan.innerText = new Date().getFullYear();
 
         // FIREBASE - Chargement dynamique
-        if(typeof firebase !== 'undefined') {
-            const db = firebase.firestore();
+        if(typeof firebase !== 'undefined' && window.db) {
+            // Utiliser le db global
+            const db = window.db;
 
             // 1. Charger CATÉGORIES
             db.collection('categories').get().then(snap => {
@@ -295,7 +300,7 @@
                     e.preventDefault();
                     const email = newsletterForm.querySelector('input').value;
                     if(email) {
-                        showToast("Merci pour votre inscription !", "success");
+                        window.showToast("Merci pour votre inscription !", "success");
                         newsletterForm.reset();
                     }
                 });

@@ -13,45 +13,14 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/app.js"></script>
+  <!-- Configuration & Utilities -->
+  <script src="assets/js/config.js"></script>
+  <!-- Data Store -->
+  <script src="assets/js/data.js" defer></script>
+  <!-- App Module -->
+  <script src="assets/js/app.js" defer></script>
 
-  <style>
-      /* --- CSS SPÉCIFIQUE BOUTIQUE --- */
-      .shop-header-wrapper { position: relative; margin-bottom: 60px; }
-      .shop-banner-container { width: 100%; height: 300px; background-color: #f0f0f0; overflow: hidden; }
-      .shop-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-      
-      .shop-profile-card {
-          position: relative; max-width: 900px; margin: -80px auto 0;
-          background: #fff; border-radius: 16px; padding: 30px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.08); display: flex;
-          align-items: center; gap: 30px; z-index: 10;
-      }
-      
-      .shop-logo-container {
-          width: 120px; height: 120px; border-radius: 50%;
-          border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-          overflow: hidden; background: #fff; flex-shrink: 0;
-      }
-      .shop-logo-img { width: 100%; height: 100%; object-fit: cover; }
-      
-      .shop-info { flex: 1; }
-      .shop-name { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; margin: 0 0 5px 0; line-height: 1.1; }
-      .shop-slogan { color: #D4AF37; font-style: italic; margin-bottom: 10px; font-weight: 500; }
-      .shop-desc { font-size: 14px; color: #666; line-height: 1.5; margin-bottom: 15px; max-width: 600px; }
-      
-      .shop-badges { display: flex; gap: 10px; margin-bottom: 15px; }
-      .badge-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; background: #f9f9f9; font-size: 12px; font-weight: 600; border: 1px solid #eee; }
 
-      /* Mobile */
-      @media (max-width: 768px) {
-          .shop-banner-container { height: 200px; }
-          .shop-profile-card { flex-direction: column; text-align: center; margin-top: -50px; width: 90%; }
-          .shop-desc { margin: 0 auto 15px; }
-          .shop-badges { justify-content: center; }
-      }
-  </style>
 </head>
 
 <body class="shop-page">

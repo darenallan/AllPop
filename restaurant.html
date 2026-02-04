@@ -6,23 +6,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Restaurant - Aurum</title>
 <meta name="description" content="Commandez vos plats préférés sur Aurum Marketplace" />
-
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.cloudfunctions.net; frame-ancestors 'none'; form-action 'self';">
-<meta http-equiv="X-Frame-Options" content="DENY">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-
 <link rel="stylesheet" href="assets/css/styles.css" />
 <link rel="preload" href="assets/css/styles.css" as="style" />
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="assets/img/placeholder-product-1.svg" />
-<script defer src="assets/js/utils.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<!-- Configuration & Utilities -->
+<script src="assets/js/config.js"></script>
+<!-- Data Store -->
 <script defer src="assets/js/data.js"></script>
-<script defer src="assets/js/icons.js"></script>
+<!-- App Module -->
 <script defer src="assets/js/app.js"></script>
-<script defer src="assets/js/auth.js"></script>
 
 </head>
 <body>
@@ -187,11 +187,11 @@ window.addEventListener('DOMContentLoaded', () => {
           ${r.deliveryEnabled ? `
             <div class="resto-info-item">
               <i data-lucide="bike" class="lucide-icon lucide-sm"></i>
-              <span>Livraison ${r.deliveryTime} min • ${r.deliveryFee === 0 ? 'Gratuite' : formatFCFA(r.deliveryFee)}</span>
+              <span>Livraison ${r.deliveryTime} min • ${r.deliveryFee === 0 ? 'Gratuite' : window.formatFCFA(r.deliveryFee)}</span>
             </div>
             <div class="resto-info-item">
               <i data-lucide="wallet" class="lucide-icon lucide-sm"></i>
-              <span>Min. ${formatFCFA(r.minOrder)}</span>
+              <span>Min. ${window.formatFCFA(r.minOrder)}</span>
             </div>
           ` : `
             <div class="resto-info-item resto-no-delivery">
@@ -252,7 +252,7 @@ window.addEventListener('DOMContentLoaded', () => {
                   ${item.popular ? '<span class="resto-item-popular"><i data-lucide="flame" class="lucide-icon lucide-sm"></i></span>' : ''}
                 </div>
                 ${item.description ? `<p class="resto-item-desc">${item.description}</p>` : ''}
-                <div class="resto-item-price">${formatFCFA(item.price)}</div>
+                <div class="resto-item-price">${window.formatFCFA(item.price)}</div>
               </div>
               <div class="resto-item-action">
                 ${item.available ? `
@@ -285,7 +285,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     saveRestoCart();
     renderCart();
-    showToast(`${item.name} ajouté au panier`, 'success');
+    window.showToast(`${item.name} ajouté au panier`, 'success');
     
     // Animation du bouton
     const btn = document.querySelector(`[data-add-item*='"id":"${item.id}"']`);
@@ -340,7 +340,7 @@ window.addEventListener('DOMContentLoaded', () => {
       <div class="resto-cart-item">
         <div class="resto-cart-item-info">
           <span class="resto-cart-item-name">${item.name}</span>
-          <span class="resto-cart-item-price">${formatFCFA(item.price)}</span>
+          <span class="resto-cart-item-price">${window.formatFCFA(item.price)}</span>
         </div>
         <div class="resto-cart-item-controls">
           <button class="resto-qty-btn" data-minus="${item.id}" aria-label="Diminuer">
@@ -365,10 +365,10 @@ window.addEventListener('DOMContentLoaded', () => {
       total = total * (1 - restaurant.promoPercent / 100);
     }
     
-    document.getElementById('resto-subtotal').textContent = formatFCFA(subtotal);
-    document.getElementById('resto-delivery-fee').textContent = deliveryEnabled ? formatFCFA(deliveryFee) : 'N/A';
-    document.getElementById('resto-total').textContent = formatFCFA(Math.round(total));
-    document.getElementById('resto-cart-mobile-total').textContent = formatFCFA(Math.round(total));
+    document.getElementById('resto-subtotal').textContent = window.formatFCFA(subtotal);
+    document.getElementById('resto-delivery-fee').textContent = deliveryEnabled ? window.formatFCFA(deliveryFee) : 'N/A';
+    document.getElementById('resto-total').textContent = window.formatFCFA(Math.round(total));
+    document.getElementById('resto-cart-mobile-total').textContent = window.formatFCFA(Math.round(total));
     
     summaryEl.classList.remove('hidden');
     mobileBtn.classList.remove('hidden');
@@ -385,7 +385,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const checkoutBtn = document.getElementById('resto-checkout-btn');
     if(subtotal < restaurant.minOrder && deliveryEnabled) {
       checkoutBtn.disabled = true;
-      checkoutBtn.innerHTML = `<i data-lucide="alert-circle" class="lucide-icon"></i> Min. ${formatFCFA(restaurant.minOrder)}`;
+      checkoutBtn.innerHTML = `<i data-lucide="alert-circle" class="lucide-icon"></i> Min. ${window.formatFCFA(restaurant.minOrder)}`;
     } else {
       checkoutBtn.disabled = false;
       checkoutBtn.innerHTML = `<i data-lucide="check" class="lucide-icon"></i> Commander`;
@@ -406,7 +406,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if(restoCart.items.length === 0) return;
     const subtotal = restoCart.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
     if(subtotal < restaurant.minOrder && document.getElementById('delivery-toggle')?.checked) {
-      showToast(`Minimum de commande: ${formatFCFA(restaurant.minOrder)}`, 'warning');
+      window.showToast(`Minimum de commande: ${window.formatFCFA(restaurant.minOrder)}`, 'warning');
       return;
     }
     
@@ -442,7 +442,7 @@ window.addEventListener('DOMContentLoaded', () => {
     restoCart = { restaurantId: null, items: [] };
     localStorage.setItem('ac_resto_cart', JSON.stringify(restoCart));
     
-    showToast('Commande passée avec succès !', 'success');
+    window.showToast('Commande passée avec succès !', 'success');
     setTimeout(() => window.location.href = 'order.html', 1500);
   });
   

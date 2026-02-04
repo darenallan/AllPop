@@ -15,8 +15,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/app.js"></script>
+  <!-- Configuration & Utilities -->
+  <script src="assets/js/config.js"></script>
+  <!-- App Module -->
+  <script src="assets/js/app.js" defer></script>
 </head>
 
 <body>
@@ -112,7 +114,7 @@
 
                 console.log("ðŸ“§ Tentative connexion:", email);
 
-                auth.signInWithEmailAndPassword(email, pass)
+                window.auth.signInWithEmailAndPassword(email, pass)
                     .then((userCredential) => {
                         console.log("✅ Connexion réussie:", userCredential.user.email);
                         
@@ -158,7 +160,7 @@
                 
                 firebase.auth().sendPasswordResetEmail(email)
                     .then(() => {
-                        showToast("✅ Email de réinitialisation envoyé à " + email, 'success');
+                        window.showToast("✅ Email de réinitialisation envoyé à " + email, 'success');
                     })
                     .catch((error) => {
                         let msg = "Erreur: " + error.message;

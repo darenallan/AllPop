@@ -15,57 +15,14 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/app.js"></script>
+  <!-- Configuration & Utilities -->
+  <script src="assets/js/config.js"></script>
+  <!-- Data Store -->
+  <script src="assets/js/data.js" defer></script>
+  <!-- App Module -->
+  <script src="assets/js/app.js" defer></script>
 
-  <style>
-      .invoice-container { padding: 40px 20px; max-width: 900px; margin: 0 auto; }
-      
-      .success-banner {
-          background: linear-gradient(135deg, #1F8A70 0%, #156652 100%);
-          color: white; padding: 25px; border-radius: 12px; margin-bottom: 30px;
-          display: flex; align-items: flex-start; gap: 16px;
-          box-shadow: 0 10px 30px rgba(31, 138, 112, 0.2);
-      }
-      
-      .invoice-card {
-          background: white; border-radius: 16px; border: 1px solid #eee;
-          overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-      }
-      
-      .invoice-header {
-          background: #fcfcfc; padding: 40px; border-bottom: 2px solid #f0f0f0;
-          display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;
-      }
-      
-      .invoice-body { padding: 40px; }
-      
-      .invoice-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
-      .invoice-label { color: #666; font-weight: 500; }
-      .invoice-val { font-weight: 600; color: #000; }
-      
-      .invoice-table { width: 100%; border-collapse: collapse; margin: 30px 0; }
-      .invoice-table th { text-align: left; color: #666; font-size: 12px; text-transform: uppercase; padding: 10px 0; border-bottom: 1px solid #eee; }
-      .invoice-table td { padding: 15px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
-      .invoice-table td:last-child, .invoice-table th:last-child { text-align: right; }
-      
-      .invoice-total-section { 
-          background: #fafafa; padding: 20px; border-radius: 12px; 
-          margin-left: auto; width: 100%; max-width: 300px;
-      }
-      
-      .invoice-actions {
-          padding: 30px 40px; background: #fafafa; border-top: 1px solid #eee;
-          display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;
-      }
 
-      @media (max-width: 768px) {
-          .invoice-header { flex-direction: column; }
-          .invoice-body { padding: 20px; }
-          .invoice-actions { flex-direction: column; }
-          .invoice-actions .btn { width: 100%; }
-      }
-  </style>
 </head>
 
 <body>
