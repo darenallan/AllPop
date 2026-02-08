@@ -21,6 +21,9 @@
 // Alias pour accéder au Store global
 const Store = window.Store;
 
+// Cache global pour les produits chargés dynamiquement
+window.allProducts = Array.isArray(window.allProducts) ? window.allProducts : [];
+
 let currentUser = JSON.parse(localStorage.getItem('ac_currentUser') || 'null');
 
 /**
@@ -64,6 +67,10 @@ function addToCart(productId, qty = 1, productObj = null) {
 
     const storeProducts = Array.isArray(window.Store?.products) ? window.Store.products : [];
     let prod = storeProducts.find(p => String(p.id) === String(pid));
+
+    if (!prod && Array.isArray(window.allProducts)) {
+        prod = window.allProducts.find(p => String(p.id) === String(pid));
+    }
 
     // Fallback: page produit
     if (!prod && window.currentProduct && String(window.currentProduct.id) === String(pid)) {
@@ -239,8 +246,10 @@ async function loadProducts() {
         }
 
         let html = '';
+        window.allProducts = [];
         snap.forEach((doc) => {
             const product = doc.data() || {};
+            window.allProducts.push({ id: doc.id, ...product });
             const image = product.imageURL || product.image || (product.images && product.images[0]) || 'assets/img/placeholder-product-1.svg';
             const rating = product.rating || '4.8';
             const shopName = product.shopName || product.shop || product.vendorName || product.sellerName || 'Boutique';
