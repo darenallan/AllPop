@@ -25,12 +25,12 @@
 
 <body class="shop-page">
   
-  <header id="app-header" class="header">
-      <div class="container navbar">
+  <header id="app-header" class="glass-nav">
+      <div class="nav-content">
           <a href="index.html" class="brand">
               <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
           </a>
-          <nav class="nav-actions">
+          <nav class="nav-icons">
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
                   <span class="badge" id="cart-badge" style="display:none;">0</span>
@@ -64,10 +64,11 @@
 
   <main>
     <section class="shop-header-wrapper">
-        <div class="shop-banner-container">
-            <img id="shop-banner" src="assets/img/placeholder-banner.jpg" alt="Cover" class="shop-banner-img">
+        <div class="shop-banner">
+            <img id="shop-banner" src="assets/img/placeholder-banner.jpg" alt="Cover">
+            <div class="shop-banner-overlay"></div>
         </div>
-        <div class="shop-profile-card">
+        <div class="shop-info-card">
             <div class="shop-logo-container">
                 <img id="shop-logo" src="assets/img/placeholder.png" alt="Logo" class="shop-logo-img">
             </div>
@@ -93,12 +94,17 @@
         </div>
     </section>
 
-    <section class="shop-toolbar" style="max-width:900px; margin:0 auto 40px;">
-      <div class="shop-search" style="display:flex; background:#f9f9f9; padding:10px; border-radius:12px; align-items:center;">
-          <i data-lucide="search" style="color:#999; margin:0 10px;"></i>
-          <input id="shop-search-input" type="search" placeholder="Chercher un article dans cette boutique..." style="border:none; background:transparent; flex:1; outline:none; font-size:16px;">
-      </div>
-    </section>
+        <section class="shop-toolbar">
+            <div class="search-container catalogue-search-container">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input id="shop-search-input" type="text" placeholder="Chercher dans la boutique...">
+                    <button class="search-btn" type="button">
+                        <i data-lucide="search"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
 
     <section class="container shop-products" style="margin-bottom:80px;">
       <h2 style="margin-bottom:20px; font-family:'Playfair Display', serif;">Collection</h2>
@@ -216,18 +222,32 @@
 
         function renderCard(p) {
             const price = new Intl.NumberFormat('fr-FR').format(p.price);
-            const img = p.image || 'assets/img/placeholder.png';
-            
+            const img = p.imageURL || p.image || (p.images && p.images[0]) || 'assets/img/placeholder-product-1.svg';
+            const rating = p.rating || '4.8';
+            const shopName = p.shopName || p.shop || p.vendorName || p.sellerName || 'Boutique';
+            const isFavorite = typeof isInWishlist === 'function' ? isInWishlist(p.id) : false;
             els.grid.innerHTML += `
-                <div class="card product-card">
-                    <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;">
-                        <div class="card-img" style="height:250px; overflow:hidden;">
-                            <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
+                <div class="product-card-glass" onclick="window.location.href='product.html?id=${p.id}'">
+                    <div class="card-image-header">
+                        <button class="wishlist-btn${isFavorite ? ' active' : ''}" type="button" aria-pressed="${isFavorite ? 'true' : 'false'}" onclick="event.stopPropagation(); event.preventDefault(); if (typeof toggleWishlist === 'function') toggleWishlist(event, '${p.id}'); return false;">
+                            <i data-lucide="heart"></i>
+                        </button>
+                        <img src="${img}" alt="${p.name || 'Produit Aurum'}">
+                    </div>
+
+                    <div class="card-content">
+                        <small class="brand">${shopName}</small>
+                        <h3 class="title">${p.name || 'Produit Aurum'}</h3>
+                        <div class="rating">
+                            ★★★★★ <span style="color:#666; font-size:0.8em">(${rating})</span>
                         </div>
-                    </a>
-                    <div class="card-body" style="padding:15px;">
-                        <h4 style="font-size:16px; margin:0 0 5px 0;">${p.name}</h4>
-                        <div style="font-weight:bold; color:#D4AF37;">${price} FCFA</div>
+
+                        <div class="card-footer">
+                            <span class="price">${price} FCFA</span>
+                            <button class="add-to-cart-btn" onclick="addToCart(event, '${p.id}')">
+                                <i data-lucide="shopping-bag"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;

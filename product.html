@@ -20,8 +20,8 @@
 </head>
 
 <body>
-  <header id="app-header" class="header">
-      <div class="container navbar">
+  <header id="app-header" class="glass-nav">
+      <div class="nav-content">
           <a href="index.html" class="brand">
               <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
               <div style="display:flex; flex-direction:column; margin-left:10px;">
@@ -30,7 +30,7 @@
               </div>
           </a>
 
-          <nav class="nav-actions">
+          <nav class="nav-icons">
               <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
@@ -835,9 +835,15 @@
         if (selectedColor) cartItem.variants.color = selectedColor;
         if (selectedSize) cartItem.variants.size = selectedSize;
 
-        // Ajouter au panier (utilise la fonction de cart.js ou fallback)
+        // Ajouter au panier (utilise la fonction globale si dispo)
         if (typeof addToCart === 'function') {
-            addToCart(cartItem);
+            const pid = (typeof safeProductId === 'function')
+                ? safeProductId(window.currentProduct.id)
+                : String(window.currentProduct.id || '').trim();
+            addToCart(pid, quantity, window.currentProduct);
+            if (typeof window.showToast === 'function') {
+                window.showToast('✅ Produit ajouté au panier', 'success');
+            }
         } else {
             // Fallback: stocker dans localStorage
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');

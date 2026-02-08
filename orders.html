@@ -24,12 +24,12 @@
   </head>
 
 <body>
-  <header id="app-header" class="header">
-      <div class="container navbar">
+  <header id="app-header" class="glass-nav">
+      <div class="nav-content">
           <a href="index.html" class="brand">
               <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
           </a>
-          <nav class="nav-actions">
+          <nav class="nav-icons">
               <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
@@ -125,8 +125,10 @@
         const loginBtn = document.getElementById('mobile-login-btn');
         const logoutBtn = document.getElementById('mobile-logout-btn');
 
-        auth.onAuthStateChanged((user) => {
+        firebase.auth().onAuthStateChanged((user) => {
             if (user) {
+                console.log("Utilisateur connecté :", user.uid);
+
                 // Connecté
                 if(loginBtn) loginBtn.style.display = 'none';
                 if(logoutBtn) logoutBtn.style.display = 'flex';

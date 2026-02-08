@@ -25,8 +25,8 @@
 </head>
 
 <body>
-  <header id="app-header" class="header">
-      <div class="container navbar">
+    <header id="app-header" class="glass-nav">
+      <div class="nav-content">
           <a href="index.html" class="brand">
               <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
               <div style="display:flex; flex-direction:column; margin-left:10px;">
@@ -35,7 +35,7 @@
               </div>
           </a>
           
-          <nav class="nav-actions">
+          <nav class="nav-icons">
               <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
@@ -312,16 +312,21 @@
         if(closeBtn) closeBtn.addEventListener('click', closeMenu);
         if(overlay) overlay.addEventListener('click', closeMenu);
 
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                loadUserProfile(user);
-                setupProfileImageUpload(user);
+        firebase.auth().onAuthStateChanged((user) => {
+          if (user) {
+            console.log("Utilisateur connecté :", user.uid);
+
+            loadUserProfile(user);
+            loadUserAddresses(user.uid);
+            loadOrdersAndStats(user.uid);
+            setupProfileImageUpload(user);
+
             // Mettre à jour l'UI de rétention
             updateClientRetentionUI();
-            } else {
-                window.location.href = 'login.html';
-            }
-            if(typeof lucide !== 'undefined') lucide.createIcons();
+          } else {
+            window.location.href = 'login.html';
+          }
+          if(typeof lucide !== 'undefined') lucide.createIcons();
         });
 
         async function loadUserProfile(user) {
@@ -978,24 +983,29 @@
                 const price = new Intl.NumberFormat('fr-FR').format(product.price || 0);
                 const image = product.image || 'assets/img/placeholder.jpg';
                 
+                const rating = Math.round(product.rating || 0);
+                const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
                 return `
-                    <div class="product-card">
-                        <div class="product-image-container">
-                            <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)}" class="product-image" onerror="this.src='assets/img/placeholder.jpg'">
-                            <button class="product-remove-btn" title="Retirer des favoris" onclick="removeFromWishlist('${escapeHtml(product.id)}')">
-                                ×
-                            </button>
-                        </div>
-                        <div class="product-info">
-                            <h4 class="product-name">${escapeHtml(product.name)}</h4>
-                            <div class="product-price">${price} FCFA</div>
-                            <div class="product-actions">
-                                <button class="btn-add-to-cart" onclick="addToCart('${escapeHtml(product.id)}')">
-                                    <i data-lucide="shopping-bag" style="width:14px; height:14px; display:inline; margin-right:4px;"></i> Ajouter
-                                </button>
-                            </div>
-                        </div>
+                  <div class="product-card">
+                    <div class="product-image-container">
+                      <span class="product-badge">Favori</span>
+                      <button class="product-wishlist-btn" title="Retirer des favoris" onclick="removeFromWishlist('${escapeHtml(product.id)}')">
+                        <i data-lucide="heart"></i>
+                      </button>
+                      <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)}" class="product-image" onerror="this.src='assets/img/placeholder.jpg'">
                     </div>
+                    <div class="product-info">
+                      <div class="product-vendor"><i data-lucide="store"></i> ${escapeHtml(product.shopName || 'Boutique')}</div>
+                      <h4 class="product-name">${escapeHtml(product.name)}</h4>
+                      <div class="product-rating">${stars}</div>
+                      <div class="product-card-footer">
+                        <div class="product-price">${price} FCFA</div>
+                        <button class="product-add-btn" onclick="addToCart('${escapeHtml(product.id)}')">
+                          <i data-lucide="shopping-bag"></i> Ajouter
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 `;
             }).join('');
             lucide.createIcons();

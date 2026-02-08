@@ -26,8 +26,8 @@
 </head>
 
 <body>
-  <header id="app-header" class="header">
-      <div class="container navbar">
+  <header id="app-header" class="glass-nav">
+      <div class="nav-content">
           <a href="index.html" class="brand">
               <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
               <div style="display:flex; flex-direction:column; margin-left:10px;">
@@ -35,7 +35,7 @@
                   <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
               </div>
           </a>
-          <nav class="nav-actions">
+          <nav class="nav-icons">
               <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
@@ -98,7 +98,7 @@
                     <div style="margin-top:15px; font-size:13px; color:#444; line-height:1.6;">
                         Ouagadougou, Burkina Faso<br>
                         Tél: +226 64 50 26 26<br>
-                        Email: contact@aurum.bf
+                        Email: aurumcorporate.d@gmail.com
                     </div>
                 </div>
                 <div style="text-align:right;">
@@ -153,7 +153,7 @@
                     <i data-lucide="download"></i> Télécharger PDF
                 </button>
                 <button class="btn btn-success" id="btn-whatsapp" style="background:#25D366; color:white; border:none;">
-                    <i data-lucide="message-circle"></i> Envoyer sur WhatsApp
+                    <i data-lucide="send"></i> Envoyer sur WhatsApp
                 </button>
             </div>
         </div>
@@ -228,8 +228,28 @@
         // Ici on va chercher la commande réelle dans Firebase
         
         if (!orderId) {
-            alert("Aucune commande spécifiée.");
-            window.location.href = "cart.html";
+            const localCheckout = JSON.parse(localStorage.getItem('ac_cart_checkout') || 'null');
+            if (!localCheckout || !Array.isArray(localCheckout) || localCheckout.length === 0) {
+                alert("Aucune commande spécifiée.");
+                window.location.href = "cart.html";
+                return;
+            }
+
+            const user = auth.currentUser;
+            const order = {
+                userName: user?.displayName || "Client",
+                userEmail: user?.email || "",
+                userPhone: "",
+                createdAt: { seconds: Math.floor(Date.now() / 1000) },
+                items: localCheckout.map(item => ({
+                    id: item.id,
+                    name: item.name || "Produit",
+                    price: Number(item.price || 0),
+                    qty: Number(item.qty || item.quantity || 1)
+                }))
+            };
+
+            renderInvoice(order, `LOCAL-${Date.now()}`);
             return;
         }
 

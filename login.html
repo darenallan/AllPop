@@ -22,8 +22,8 @@
 </head>
 
 <body>
-  <header id="app-header" class="header">
-      <div class="container navbar">
+  <header id="app-header" class="glass-nav">
+      <div class="nav-content">
           <a href="index.html" class="brand">
               <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
               <div style="display:flex; flex-direction:column; margin-left:10px;">
@@ -119,14 +119,31 @@
                         console.log("✅ Connexion réussie:", userCredential.user.email);
 
                         const finishRedirect = () => {
-                            // Redirection basée sur le rôle
-                            if (email === 'aurumcorporate.d@gmail.com') {
-                                window.location.href = "admin.html";
-                            } else if (sessionStorage.getItem('ac_checkout_pending') === 'true') {
-                                sessionStorage.removeItem('ac_checkout_pending');
-                                window.location.href = "cart.html";
+                            const redirectWithRole = (role = '') => {
+                                // Redirection basée sur le rôle
+                                if (email === 'aurumcorporate.d@gmail.com') {
+                                    window.location.href = "admin.html";
+                                } else if (['admin', 'superadmin', 'maintainer'].includes(role)) {
+                                    window.location.href = "admin.html";
+                                } else if (role === 'seller') {
+                                    window.location.href = "seller.html";
+                                } else if (sessionStorage.getItem('ac_checkout_pending') === 'true') {
+                                    sessionStorage.removeItem('ac_checkout_pending');
+                                    window.location.href = "cart.html";
+                                } else {
+                                    window.location.href = "index.html";
+                                }
+                            };
+
+                            if (window.db && userCredential.user?.uid) {
+                                window.db.collection('users').doc(userCredential.user.uid).get()
+                                    .then((doc) => {
+                                        const role = doc.exists ? (doc.data().role || '') : '';
+                                        redirectWithRole(role);
+                                    })
+                                    .catch(() => redirectWithRole(''));
                             } else {
-                                window.location.href = "index.html";
+                                redirectWithRole('');
                             }
                         };
 

@@ -24,8 +24,8 @@
 </head>
 
 <body>
-  <header id="app-header" class="header">
-      <div class="container navbar">
+  <header id="app-header" class="glass-nav">
+      <div class="nav-content">
                 <a href="index.html" class="brand">
                     <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
                     <div style="display:flex; flex-direction:column; margin-left:10px;">
@@ -33,7 +33,7 @@
                         <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
                     </div>
                 </a>
-          <nav class="nav-actions">
+          <nav class="nav-icons">
               <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
@@ -73,17 +73,19 @@
           <div id="wishlist-items"></div>
           <div class="mt-4">
             <button class="btn" id="clear-wishlist-btn">Tout retirer</button>
-            <a href="catalogue.html" class="btn btn-outline">Continuer vos achats</a>
+            <a href="catalogue.html" class="btn btn-outline wishlist-cta">Continuer vos achats</a>
           </div>
         </div>
         <aside>
-          <div class="card">
-            <div class="info">
-              <h3>Astuce</h3>
-              <p class="text-muted">Cliquez sur « Ajouter au panier » pour préparer votre commande.</p>
-              <p class="text-muted">Vous pouvez gérer vos favoris ici.</p>
-            </div>
-          </div>
+                    <div class="aurum-tip-box">
+                        <div class="tip-icon">
+                            <i data-lucide="lightbulb"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h4>Le Conseil Aurum</h4>
+                            <p>Cliquez sur « Ajouter au panier » pour preparer votre commande. Vous pouvez gerer vos favoris ici.</p>
+                        </div>
+                    </div>
         </aside>
       </div>
     </section>
@@ -94,8 +96,6 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- LOGIQUE WISHLIST UNIQUEMENT ---
-        const db = firebase.firestore();
-
         const db = firebase.firestore();
         let wishlistData = [];
 
@@ -140,6 +140,7 @@
             
             wishlistData.forEach((item) => {
                 const price = new Intl.NumberFormat('fr-FR').format(item.price);
+                const image = item.imageURL || item.image || (item.images && item.images[0]) || 'assets/img/placeholder-product-1.svg';
                 const card = document.createElement('div');
                 card.style.cssText = 'background:#fff; border:1px solid #eee; border-radius:12px; overflow:hidden; position:relative;';
                 card.innerHTML = `
@@ -147,7 +148,7 @@
                         <i data-lucide="x" style="color:#ff4444; width:20px; height:20px;"></i>
                     </button>
                     <a href="product.html?id=${item.id}">
-                        <img src="${item.image || 'assets/img/placeholder-product-1.svg'}" style="width:100%; height:250px; object-fit:cover;">
+                        <img src="${image}" style="width:100%; height:250px; object-fit:cover;">
                     </a>
                     <div style="padding:15px;">
                         <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px;">

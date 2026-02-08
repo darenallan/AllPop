@@ -1,41 +1,89 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Public read access for products, categories, shops, and promos
-    match /products/{productId} {
-      allow read: if true;
+    // --- FONCTIONS UTILITAIRES (Pour simplifier la lecture) ---
+    
+    // Récupère les données de l'utilisateur qui fait la demande
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
-    match /categories/{categoryId} {
-      allow read: if true;
+
+    // Vérifie si c'est un Admin
+    function isAdmin() {
+      return request.auth != null && (getUserData().role == 'admin' || getUserData().role == 'superadmin');
     }
+
+    // Vérifie si c'est un Vendeur
+    function isSeller() {
+      return request.auth != null && getUserData().role == 'seller';
+    }
+
+    // Vérifie si l'utilisateur est propriétaire de la donnée (ex: son profil)
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // --- RÈGLES PAR COLLECTION ---
+
+    // 1. UTILISATEURS
+    // - L'Admin peut TOUT faire (créer des vendeurs, supprimer des comptes).
+    // - Le Client/Vendeur peut lire et modifier SON propre profil uniquement.
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // 2. BOUTIQUES (Shops)
+    // - Lecture : Tout le monde.
+    // - Création/Suppression : Admin seulement (comme tu as demandé).
+    // - Modif : Admin OU le Vendeur propriétaire de la boutique.
     match /shops/{shopId} {
       allow read: if true;
+      allow create, delete: if isAdmin(); 
+      allow update: if isAdmin() || (isSeller() && resource.data.ownerId == request.auth.uid);
     }
-    match /promos/{promoId} {
+
+   // 3. PRODUITS (Règle Universelle)
+    // Le joker {path=**} permet de lire les produits qu'ils soient à la racine 
+    // OU à l'intérieur d'une boutique (/shops/x/products/y).
+    // Indispensable pour collectionGroup('products').
+    match /{path=**}/products/{productId} {
       allow read: if true;
+      allow write: if isAdmin() || isSeller();
     }
 
-    // Private read/write access for users
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // 4. CATÉGORIES
+    // - Seul l'Admin gère les catégories.
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // Private read/write access for carts
-    match /carts/{cartId} {
-      allow read, write: if request.auth != null && request.auth.uid == cartId;
-    }
-
-    // Orders collection rules
+    // 5. COMMANDES
+    // - Création : Tout utilisateur connecté (Client).
+    // - Lecture : L'acheteur, le vendeur concerné ou l'Admin.
+    // - Mise à jour (ex: changer statut) : Vendeur ou Admin.
     match /orders/{orderId} {
       allow create: if request.auth != null;
-      allow read: if request.auth != null && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid);
+      allow read: if isAdmin() || resource.data.userId == request.auth.uid || resource.data.sellerId == request.auth.uid;
+      allow update: if isAdmin() || resource.data.sellerId == request.auth.uid;
     }
 
-    // Admin write access
-    match /{document=**} {
-      allow write: if request.auth != null && request.auth.token.email == 'aurumcorporate.d@gmail.com';
+    // 6. AVIS (Reviews)
+    // - Les clients mettent des avis.
+    // - On suppose que les avis sont dans une sous-collection de produits ou à part.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow delete: if isAdmin();
+    }
+    
+    // 7. PROMOS
+    // - Admin ou Vendeur seulement
+    match /promos/{promoId} {
+      allow read: if true;
+      allow write: if isAdmin() || isSeller();
     }
   }
 }

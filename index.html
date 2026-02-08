@@ -29,8 +29,8 @@
 </head>
 
 <body>
-  <header id="app-header" class="header">
-      <div class="container navbar">
+  <header id="app-header" class="glass-nav">
+      <div class="nav-content">
           <a href="index.html" class="brand">
               <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
               <div style="display:flex; flex-direction:column; margin-left:10px;">
@@ -39,7 +39,7 @@
               </div>
           </a>
           
-          <nav class="nav-actions">
+          <nav class="nav-icons">
               <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
@@ -77,72 +77,69 @@
   <div id="menu-overlay"></div>
   
     <main>
-        <!-- Hero full-width, responsive row -->
+        <!-- Hero search style -->
         <section class="hero">
-            <div style="flex:1;">
-                <h1 style="font-family:'Playfair Display', serif; font-size:60px; line-height:1.05; margin-bottom:18px;">L'Excellence à Votre Portée</h1>
-                <p style="color:#d4d7de; font-size:18px; line-height:1.8; margin-bottom:26px;">Le meilleur du style Burkinabè, livré chez vous.</p>
-                <div style="display:flex; gap:14px; flex-wrap:wrap;">
-                    <a href="catalogue.html" class="btn btn-gold" style="min-width:190px; text-align:center;">Découvrir la collection</a>
-                    <a href="seller-onboarding.html" class="btn" style="border:1px solid rgba(255,255,255,0.25); color:#fff; min-width:190px; text-align:center;">Devenir vendeur</a>
+            <div class="hero-glass-box">
+                <h1>L'Excellence à Votre Portée</h1>
+                <p>Le meilleur du style Burkinabè, livré chez vous.</p>
+                <div class="hero-search-wrapper">
+                    <input class="hero-search-input" type="text" placeholder="Rechercher un produit, une boutique..." />
+                    <button class="hero-search-btn" type="button">Rechercher</button>
                 </div>
-            </div>
-            <div style="flex:1; display:flex; justify-content:flex-end; align-items:center;">
-                <div style="width:100%; max-width:700px; aspect-ratio: 16 / 9; border-radius:18px; background:#0f0f0f url('assets/img/hero.png') center/cover no-repeat; box-shadow:0 24px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.05);"></div>
+                                <div class="hero-tags">
+                                    <a href="catalogue.html" class="category-pill"><i data-lucide="grid"></i> Catalogue</a>
+                                    <a href="catalogue.html?category=Mode" class="category-pill"><i data-lucide="shirt"></i> Mode</a>
+                                    <a href="catalogue.html?category=Beaut%C3%A9" class="category-pill"><i data-lucide="sparkles"></i> Beauté</a>
+                                    <a href="catalogue.html?category=Digital" class="category-pill"><i data-lucide="globe"></i> Digital</a>
+                                    <a href="catalogue.html?category=%C3%89lectronique" class="category-pill"><i data-lucide="smartphone"></i> Électronique</a>
+                                </div>
             </div>
         </section>
 
-    <section class="section container category-section">
-      <h2 class="section-title">Nos Univers</h2>
-      <div class="category-carousel-wrapper">
-        <div class="category-carousel" id="category-carousel" style="display:flex; gap:15px; overflow-x:auto; padding-bottom:15px;">
-          <p style="padding:20px;">Chargement des catégories...</p>
-        </div>
+    <section class="section container">
+      <h2 class="section-title">Nouveautés</h2>
+            <div id="products-container" class="grid grid-4">
+          <p>Chargement des pépites...</p>
       </div>
     </section>
-    <section class="section container" style="background-color: #fafafa; padding: 60px 20px; border-radius: 16px; margin-top: 40px;">
-    <div style="text-align: center; margin-bottom: 40px;">
-        <h2 class="section-title">L'Expérience Aurum</h2>
-        <p style="color: #666;">Pourquoi des milliers de Burkinabè nous font confiance.</p>
-    </div>
     
-    <div class="grid grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
-        <div style="text-align: center; padding: 20px;">
-            <div style="width: 60px; height: 60px; background: rgba(212, 175, 55, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                <i data-lucide="shield-check" style="color: var(--gold); width: 30px; height: 30px;"></i>
-            </div>
-            <h3 style="font-size: 18px; margin-bottom: 10px;">Paiement Sécurisé</h3>
-            <p style="font-size: 14px; color: #777;">Transactions cryptées et protection acheteur garantie sur chaque commande.</p>
+    <section class="section experience-section">
+    <div class="container experience-container glass-panel">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h2 class="section-title">L'Expérience Aurum</h2>
+            <p class="experience-subtitle">Pourquoi des milliers de Burkinabè nous font confiance.</p>
         </div>
-
-        <div style="text-align: center; padding: 20px;">
-            <div style="width: 60px; height: 60px; background: rgba(212, 175, 55, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                <i data-lucide="truck" style="color: var(--gold); width: 30px; height: 30px;"></i>
+        
+        <div class="grid grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+            <div style="text-align: center; padding: 20px;">
+                <div class="glass-icon">
+                    <i data-lucide="shield-check"></i>
+                </div>
+                <h3 class="experience-title">Paiement Sécurisé</h3>
+                <p class="experience-text">Transactions cryptées et protection acheteur garantie sur chaque commande.</p>
             </div>
-            <h3 style="font-size: 18px; margin-bottom: 10px;">Livraison Rapide</h3>
-            <p style="font-size: 14px; color: #777;">Livraison express partout à Ouagadougou et expédition en province. Pour tout les Vendeur locaux</p>
-        </div>
 
-        <div style="text-align: center; padding: 20px;">
-            <div style="width: 60px; height: 60px; background: rgba(212, 175, 55, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                <i data-lucide="star" style="color: var(--gold); width: 30px; height: 30px;"></i>
+            <div style="text-align: center; padding: 20px;">
+                <div class="glass-icon">
+                    <i data-lucide="truck"></i>
+                </div>
+                <h3 class="experience-title">Livraison Rapide</h3>
+                <p class="experience-text">Livraison express partout à Ouagadougou et expédition en province. Pour tout les Vendeur locaux</p>
             </div>
-            <h3 style="font-size: 18px; margin-bottom: 10px;">Qualité Premium</h3>
-            <p style="font-size: 14px; color: #777;">Nous sélectionnons rigoureusement nos vendeurs pour garantir l'excellence.</p>
+
+            <div style="text-align: center; padding: 20px;">
+                <div class="glass-icon">
+                    <i data-lucide="star"></i>
+                </div>
+                <h3 class="experience-title">Qualité Premium</h3>
+                <p class="experience-text">Nous sélectionnons rigoureusement nos vendeurs pour garantir l'excellence.</p>
+            </div>
         </div>
     </div>
 </section>
 
-
     <section class="section container">
-      <h2 class="section-title">Nouveautés</h2>
-      <div id="home-new" class="grid grid-4">
-          <p>Chargement des pépites...</p>
-      </div>
-    </section>
-
-    <section class="section container">
-      <h2 class="section-title">Promotions</h2>
+      <h2 class="section-title"></h2>
       <div id="home-promos" class="grid grid-4">
           </div>
     </section>
@@ -155,8 +152,8 @@
                 Une boutique en ligne clé en main, sans frais cachés.
             </p>
             <div style="display: flex; gap: 15px;" class="business-buttons">
-                <a href="seller-onboarding.html" class="btn btn-gold">Créer ma boutique</a>
-                <a href="contact.html" style="padding: 12px 25px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: #fff; text-decoration: none; transition: 0.3s;">En savoir plus</a>
+                <a href="seller-onboarding.html" class="btn-aurum-gold">Créer ma boutique</a>
+                <a href="contact.html" class="btn-aurum-outline">En savoir plus</a>
             </div>
         </div>
         <!--<div style="flex: 1; min-width: 300px; display: flex; justify-content: center;" class="business-card">
@@ -211,8 +208,8 @@
         <h2 class="section-title" style="color:#000;">Rejoignez le Cercle</h2>
         <p class="section-subtitle" style="color:#000;">Offres exclusives et nouveautés.</p>
         <form class="newsletter-form" style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
-            <input type="email" placeholder="Votre email..." style="padding:15px; border-radius:8px; border:none; width:300px;">
-            <button class="btn btn-gold">Je rejoins le club</button>
+            <input type="email" placeholder="Votre email...">
+            <button class="btn-aurum-gold">Je rejoins le club</button>
         </form>
     </section>
   </main>
@@ -238,73 +235,38 @@
         const yearSpan = document.getElementById('year');
         if (yearSpan) yearSpan.innerText = new Date().getFullYear();
 
-        // FIREBASE - Chargement dynamique
-        if(typeof firebase !== 'undefined' && window.db) {
-            // Utiliser le db global
-            const db = window.db;
-
-            // 1. Charger CATÉGORIES
-            db.collection('categories').get().then(snap => {
-                const box = document.getElementById('category-carousel');
-                if(!snap.empty) {
-                    box.innerHTML = "";
-                    snap.forEach(doc => {
-                        const d = doc.data();
-                        box.innerHTML += `
-                            <a href="catalogue.html?category=${encodeURIComponent(d.name)}" class="category-card">
-                                <div class="category-card-icon">
-                                    <i data-lucide="${d.icon||'tag'}"></i>
-                                </div>
-                                <span class="category-card-label">${d.name}</span>
-                            </a>`;
-                    });
-                    lucide.createIcons();
-                } else { box.innerHTML = "<p>Aucune catégorie.</p>"; }
-            });
-
-            // 2. Charger NOUVEAUTÉS
-            db.collection('products').orderBy('createdAt', 'desc').limit(8).get().then(snap => {
-                const grid = document.getElementById('home-new');
-                if(!snap.empty) {
-                    grid.innerHTML = "";
-                    snap.forEach(doc => {
-                        const p = doc.data();
-                        const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                        
-                        grid.innerHTML += `
-                            <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden;">
-                                <a href="product.html?id=${doc.id}">
-                                    <div style="height:250px; overflow:hidden;">
-                                        <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" style="width:100%; height:100%; object-fit:cover;">
-                                    </div>
-                                </a>
-                                <div style="padding:15px;">
-                                    <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px;">
-                                        <a href="boutique.html?id=${p.shopId}" style="text-decoration:none; color:#888;">
-                                            <i data-lucide="store" style="width:12px;"></i> ${p.shopName || 'Boutique'}
-                                        </a>
-                                    </div>
-                                    <h3 style="font-size:16px; margin:5px 0;"><a href="product.html?id=${doc.id}" style="color:black; text-decoration:none;">${p.name}</a></h3>
-                                    <div style="font-weight:bold; color:#D4AF37; margin-top:5px;">${price} FCFA</div>
-                                </div>
-                            </div>`;
-                    });
-                    lucide.createIcons();
-                } else { grid.innerHTML = "<p>Aucun produit récent.</p>"; }
-            });
-
-            // 3. Newsletter
-            const newsletterForm = document.querySelector('.newsletter-form');
-            if(newsletterForm) {
-                newsletterForm.addEventListener('submit', (e) => {
+        const heroSearchInput = document.querySelector('.hero-search-input');
+        const heroSearchBtn = document.querySelector('.hero-search-btn');
+        const goToSearch = () => {
+            const q = (heroSearchInput?.value || '').trim();
+            const url = q ? `catalogue.html?q=${encodeURIComponent(q)}` : 'catalogue.html';
+            window.location.href = url;
+        };
+        if (heroSearchBtn) heroSearchBtn.addEventListener('click', goToSearch);
+        if (heroSearchInput) {
+            heroSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
                     e.preventDefault();
-                    const email = newsletterForm.querySelector('input').value;
-                    if(email) {
-                        window.showToast("Merci pour votre inscription !", "success");
-                        newsletterForm.reset();
-                    }
-                });
-            }
+                    goToSearch();
+                }
+            });
+        }
+
+        if (typeof window.loadProducts === 'function') {
+            window.loadProducts();
+        }
+
+        // Newsletter
+        const newsletterForm = document.querySelector('.newsletter-form');
+        if (newsletterForm) {
+            newsletterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = newsletterForm.querySelector('input').value;
+                if (email) {
+                    window.showToast("Merci pour votre inscription !", "success");
+                    newsletterForm.reset();
+                }
+            });
         }
         
         if(typeof lucide !== 'undefined') lucide.createIcons();

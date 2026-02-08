@@ -23,9 +23,9 @@
 
 </head>
 
-<body>
-  <header id="app-header" class="header">
-      <div class="container navbar">
+<body class="catalogue-page">
+  <header id="app-header" class="glass-nav">
+      <div class="nav-content">
           <a href="index.html" class="brand">
               <div class="brand-logo-img" style="background:var(--gold); display:flex; align-items:center; justify-content:center;">
                   <span style="font-weight:bold; color:black;">A</span>
@@ -36,7 +36,7 @@
               </div>
           </a>
 
-          <nav class="nav-actions">
+          <nav class="nav-icons">
              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
               <a href="cart.html" class="icon-btn" style="position:relative;">
                   <i data-lucide="shopping-bag"></i>
@@ -78,7 +78,7 @@
         </div>
       
       <!-- Recherche Premium avec Bouton Gold -->
-      <div class="search-container">
+    <div class="search-container catalogue-search-container">
         <div class="search-input-wrapper">
           <i data-lucide="search" class="search-icon"></i>
           <input 
@@ -363,6 +363,8 @@
         const toggleFiltersBtn = document.getElementById('toggle-filters');
         const filtersSidebar = document.getElementById('filters-sidebar');
         const filtersOverlay = document.getElementById('filters-overlay');
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialSearch = (urlParams.get('q') || '').trim();
 
         // === INITIALISATION ===
         initializeCatalogue();
@@ -488,6 +490,10 @@
                 renderCategoryFilters();
                 renderColorFilters();
                 renderLocationFilters();
+
+                if (initialSearch && searchInput) {
+                    searchInput.value = initialSearch;
+                }
 
                 // Appliquer filtres initiaux (ex: depuis URL)
                 console.log('🔍 Application des filtres initiaux...');

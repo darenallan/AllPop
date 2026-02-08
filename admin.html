@@ -34,6 +34,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    // Exports globaux pour compat avec le reste du code
+    window.db = db;
+    window.auth = auth;
 
     // --- 1. LES DONNÃ‰ES DE BASE ---
     const INITIAL_DATA = {
