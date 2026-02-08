@@ -423,4 +423,60 @@ window.setupAuthUI = function() {
     }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 3.2 FIX RÔLES UTILISATEURS (AUTO-REPAIR)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function checkAndFixUserRoles() {
+    if (!window.auth || !window.db) return;
+
+    window.auth.onAuthStateChanged((user) => {
+        if (!user) return;
+
+        const isAdminEmail = (user.email || '').toLowerCase() === 'aurumcorporate.d@gmail.com';
+
+        window.db.collection('users').doc(user.uid).get()
+            .then((doc) => {
+                const data = doc.exists ? (doc.data() || {}) : {};
+                const currentRole = data.role || '';
+                let nextRole = currentRole;
+
+                if (isAdminEmail) {
+                    nextRole = 'admin';
+                } else if (!currentRole) {
+                    nextRole = 'client';
+                }
+
+                if (!doc.exists) {
+                    const payload = {
+                        name: user.displayName || data.name || '',
+                        email: user.email || data.email || '',
+                        role: nextRole || 'client',
+                        createdAt: data.createdAt || new Date()
+                    };
+                    return window.db.collection('users').doc(user.uid).set(payload, { merge: true })
+                        .then(() => {
+                            console.log('✅ Rôle utilisateur initialisé:', payload.role);
+                        });
+                }
+
+                if (nextRole && nextRole !== currentRole) {
+                    return window.db.collection('users').doc(user.uid).update({ role: nextRole })
+                        .then(() => {
+                            console.log('✅ Rôle utilisateur corrigé:', nextRole);
+                        });
+                }
+
+                console.log('ℹ️ Rôle utilisateur OK:', currentRole || 'client');
+                return null;
+            })
+            .catch((err) => {
+                console.log('⚠️ Impossible de vérifier le rôle utilisateur:', err?.message || err);
+            });
+    });
+}
+
+// Auto-run
+checkAndFixUserRoles();
+
 console.log("✅ Config.js chargé - Firebase, Services & Utilitaires OK");
