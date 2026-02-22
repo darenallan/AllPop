@@ -465,6 +465,20 @@ window.logout = function() {
 };
 
 function setupSellerForms() {
+    // ════════════════════════════════════════════════════════════════════
+    // Initialiser le système de catégories en cascade
+    // ════════════════════════════════════════════════════════════════════
+    if (typeof window.initCategoryCascade === 'function') {
+        window.initCategoryCascade({
+            mainCategoryId: 'p-cat-main',
+            subCategoryId: 'p-cat-sub',
+            subSubCategoryId: 'p-cat-subsub',
+            containerId: 'category-cascade-container'
+        });
+    } else {
+        console.warn('⚠️ categories.js non chargé - système de cascade indisponible');
+    }
+
     const formAddProduct = document.getElementById('form-add-product');
     if (formAddProduct) {
         formAddProduct.addEventListener('submit', (e) => {
@@ -473,14 +487,30 @@ function setupSellerForms() {
             const nameInput = document.getElementById('p-name') || document.getElementById('prod-name');
             const priceInput = document.getElementById('p-price') || document.getElementById('prod-price');
             const descInput = document.getElementById('p-desc') || document.getElementById('prod-desc');
-            const catInput = document.getElementById('p-cat');
             const imgInput = document.getElementById('prod-img');
 
             const name = nameInput ? nameInput.value : '';
             const price = priceInput ? priceInput.value : '';
             const desc = descInput ? descInput.value : '';
             const img = imgInput ? imgInput.value : '';
-            const category = catInput ? catInput.value : (currentShop ? currentShop.category : '');
+
+            // ════════════════════════════════════════════════════════════════
+            // Récupération de la catégorie depuis le système en cascade
+            // ════════════════════════════════════════════════════════════════
+            let category = '';
+            if (typeof window.getCategorySelection === 'function') {
+                const categoryData = window.getCategorySelection({
+                    mainCategoryId: 'p-cat-main',
+                    subCategoryId: 'p-cat-sub',
+                    subSubCategoryId: 'p-cat-subsub'
+                });
+                category = categoryData.fullPath; // Ex: "Mode > Homme > T-shirts"
+            } else {
+                // Fallback si categories.js n'est pas chargé
+                const catInput = document.getElementById('p-cat');
+                category = catInput ? catInput.value : (currentShop ? currentShop.category : '');
+            }
+
             const skuInput = document.getElementById('p-sku');
             const stockInput = document.getElementById('p-stock');
             const minStockInput = document.getElementById('p-min-stock');
@@ -809,5 +839,127 @@ document.addEventListener('DOMContentLoaded', () => {
         initAfterAuth();
     }
 });
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PARTIE 2 : WORKFLOW VENDEUR - COMMANDES PRÊTES POUR LIVRAISON
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Charge les commandes en attente de préparation par le vendeur
+ * Filtre: status === 'pending_seller'
+ */
+window.loadPendingSellerOrders = function(shopId) {
+    if (!window.db) {
+        console.error('Firestore non initialisé');
+        return;
+    }
+
+    const container = document.getElementById('seller-orders-pending');
+    if (!container) return;
+
+    container.innerHTML = '<p style="padding:20px; text-align:center;">Chargement des commandes...</p>';
+
+    // Écoute en temps réel des commandes pending_seller
+    window.db.collection('orders')
+        .where('status', '==', 'pending_seller')
+        .onSnapshot((snapshot) => {
+            const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div style="padding:40px; text-align:center; color:#999;">
+                        <i data-lucide="package-check" style="width:64px; height:64px; margin-bottom:16px; opacity:0.5;"></i>
+                        <p>Aucune commande en préparation</p>
+                    </div>
+                `;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+
+            // Afficher les commandes
+            container.innerHTML = orders.map(order => {
+                const createdAt = order.createdAt ? 
+                    (order.createdAt.toDate ? order.createdAt.toDate() : new Date(order.createdAt)) : 
+                    new Date();
+                const dateStr = createdAt.toLocaleDateString('fr-FR', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
+                });
+
+                const total = new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: 'XOF'
+                }).format(order.total || 0);
+
+                const items = order.items || [];
+                const itemsList = items.map(item => 
+                    `<li>${item.qty}x ${item.name}</li>`
+                ).join('');
+
+                return `
+                    <div class="card" style="margin-bottom:15px; padding:20px; border-left:4px solid #007bff;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                            <div>
+                                <strong>Commande ${order.reference || order.id.substr(-6)}</strong>
+                                <div style="font-size:0.9em; color:#666;">${dateStr}</div>
+                                <div style="font-size:0.85em; color:#666;">Client: ${order.userEmail || 'N/A'}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:bold; color:#007bff; font-size:1.2em;">${total}</div>
+                                <span style="background:#007bff; color:white; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">
+                                    EN PRÉPARATION
+                                </span>
+                            </div>
+                        </div>
+                        <div style="border-top:1px solid #ddd; padding-top:10px; margin-bottom:15px;">
+                            <strong>Articles:</strong>
+                            <ul style="margin:5px 0; padding-left:20px;">${itemsList}</ul>
+                        </div>
+                        <button onclick="markAsReadyForDelivery('${order.id}')" 
+                            class="btn-gold" 
+                            style="width:100%; padding:12px; font-weight:600;">
+                            📦 Marquer comme Prêt pour Expédition
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }, (error) => {
+            console.error('Erreur chargement commandes vendeur:', error);
+            container.innerHTML = `
+                <div style="padding:20px; text-align:center; color:#dc2626;">
+                    <p>❌ Erreur de chargement</p>
+                    <p style="font-size:12px;">${error.message}</p>
+                </div>
+            `;
+        });
+};
+
+/**
+ * PARTIE 2 : Marque une commande comme prête pour livraison
+ * Statut: pending_seller → ready_for_delivery
+ */
+window.markAsReadyForDelivery = async function(orderId) {
+    if (!confirm('Confirmer que cette commande est prête pour expédition ?')) {
+        return;
+    }
+
+    try {
+        await window.db.collection('orders').doc(orderId).update({
+            status: 'ready_for_delivery',
+            readyForDeliveryAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        console.log('✅ Commande marquée prête pour livraison:', orderId);
+        alert('✅ Commande prête pour expédition ! Le livreur peut maintenant la prendre en charge.');
+
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        alert('❌ Erreur lors de la mise à jour: ' + error.message);
+    }
+};
 
 console.log("✅ Admin.js chargé - Vendeur, Produits, Commandes & Factures OK");

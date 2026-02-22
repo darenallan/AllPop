@@ -17,44 +17,14 @@
   
   <!-- Configuration & Utilities -->
   <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
   <!-- App Module -->
   <script src="assets/js/app.js" defer></script>
 </head>
 
 <body>
-  <header id="app-header" class="glass-nav">
-      <div class="nav-content">
-          <a href="index.html" class="brand">
-              <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
-              <div style="display:flex; flex-direction:column; margin-left:10px;">
-                  <span class="brand-name" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">AURUM</span>
-                  <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
-              </div>
-          </a>
-      </div>
-  </header>
+  <div id="header-placeholder"></div>
 
-  <div class="mobile-drawer" id="mobile-drawer">
-      <div class="drawer-header">
-          <span class="drawer-title">Menu</span>
-          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
-      </div>
-      <nav class="drawer-nav">
-          <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
-          <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
-          <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
-          <a href="wishlist.html" class="drawer-link"><i data-lucide="heart"></i> Mes Favoris</a>
-          <a href="boutique-list.html" class="drawer-link"><i data-lucide="store"></i> Nos Boutiques</a>
-          <div class="drawer-divider"></div>
-          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
-          <a href="profile.html" class="drawer-link"><i data-lucide="user"></i> Mon Profil</a>
-          <div class="drawer-divider"></div>
-          <a href="#" id="mobile-logout-btn" class="drawer-link" style="color: #ef4444;">
-              <i data-lucide="log-out"></i> Déconnexion
-          </a>
-      </nav>
-  </div>
-  <div id="menu-overlay"></div>
 
     <main class="container">
         <section class="section">

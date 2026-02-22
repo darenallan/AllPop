@@ -17,6 +17,9 @@
   
   <!-- Configuration & Utilities -->
   <script src="assets/js/config.js"></script>
+  <!-- Categories System -->
+  <script src="assets/js/categories.js"></script>
+  <script src="assets/js/components/header.js"></script>
   <!-- Data Store -->
   <script src="assets/js/data.js" defer></script>
 
@@ -24,50 +27,8 @@
 </head>
 
 <body class="catalogue-page">
-  <header id="app-header" class="glass-nav">
-      <div class="nav-content">
-          <a href="index.html" class="brand">
-              <div class="brand-logo-img" style="background:var(--gold); display:flex; align-items:center; justify-content:center;">
-                  <span style="font-weight:bold; color:black;">A</span>
-              </div>
-              <div style="display:flex; flex-direction:column; margin-left:10px;">
-                  <span class="brand-name">AURUM</span>
-                  <span class="tagline" style="font-size:10px; letter-spacing:1px;">EXCELLENCE À VOTRE PORTÉE</span>
-              </div>
-          </a>
+  <div id="header-placeholder"></div>
 
-          <nav class="nav-icons">
-             <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
-              <a href="cart.html" class="icon-btn" style="position:relative;">
-                  <i data-lucide="shopping-bag"></i>
-                  <span class="badge" id="cart-badge" style="display:none;">0</span>
-              </a>
-              <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>
-              <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
-          </nav>
-      </div>
-  </header>
-
-  <div class="mobile-drawer" id="mobile-drawer">
-      <div class="drawer-header">
-          <span class="drawer-title">Menu</span>
-          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
-      </div>
-      <nav class="drawer-nav">
-          <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
-          <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
-          <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
-          <a href="wishlist.html" class="drawer-link"><i data-lucide="heart"></i> Mes Favoris</a>
-          <a href="boutique-list.html" class="drawer-link"><i data-lucide="store"></i> Nos Boutiques</a>
-          <div class="drawer-divider"></div>
-          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
-          <div class="drawer-divider"></div>
-          <a href="#" id="mobile-logout-btn" class="drawer-link" style="color: #ef4444;">
-              <i data-lucide="log-out"></i> Déconnexion
-          </a>
-      </nav>
-  </div>
-  <div id="menu-overlay"></div>
 
   <main class="container">
     <div style="background: transparent !important; padding: 0;">
@@ -543,38 +504,24 @@
 
         // === RENDU DES FILTRES ===
         function renderCategoryFilters() {
-            // Compter les produits par catégorie
-            const categoryCounts = {};
-            allProducts.forEach(p => {
-                const cat = p.category || 'Autre';
-                categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-            });
-
-            // Générer toutes les catégories dynamiquement (seulement celles qui ont des produits)
-            categoryFilters.innerHTML = '';
-            
-            // Trier les catégories par nombre de produits (décroissant)
-            const sortedCategories = Object.entries(categoryCounts)
-                .sort((a, b) => b[1] - a[1])
-                .filter(([cat, count]) => count > 0); // Seulement les catégories avec produits
-
-            sortedCategories.forEach(([catName, count]) => {
-                const catId = catName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-                categoryFilters.innerHTML += `
-                    <div class="filter-checkbox">
-                        <input type="checkbox" id="cat-${catId}" value="${catName}" class="category-filter">
-                        <label for="cat-${catId}">
-                            <span>${catName}</span>
-                            <span class="filter-count">(${count})</span>
-                        </label>
-                    </div>
-                `;
-            });
-
-            // Réattacher les event listeners
-            document.querySelectorAll('.category-filter').forEach(cb => {
-                cb.addEventListener('change', applyFilters);
-            });
+            // ════════════════════════════════════════════════════════════════
+            // Utiliser le système de catégories en cascade (categories.js)
+            // ════════════════════════════════════════════════════════════════
+            if (typeof window.renderCategoryFilters === 'function') {
+                window.renderCategoryFilters('category-filters-dynamic');
+                
+                // Attacher les event listeners sur tous les checkboxes générés
+                setTimeout(() => {
+                    document.querySelectorAll('#category-filters-dynamic input[type="checkbox"]').forEach(cb => {
+                        cb.addEventListener('change', applyFilters);
+                    });
+                }, 100);
+                
+                console.log('✅ Filtres de catégories hiérarchiques générés');
+            } else {
+                console.warn('⚠️ categories.js non chargé - filtres de catégories indisponibles');
+                categoryFilters.innerHTML = '<p style="color: #999; font-size: 13px;">Catégories non disponibles</p>';
+            }
         }
 
         function renderColorFilters() {
@@ -739,9 +686,17 @@
             const minPrice = parseFloat(priceMin.value) || 0;
             const maxPrice = parseFloat(priceMax.value) || Infinity;
 
-            // Catégories sélectionnées
-            const selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked'))
-                .map(cb => cb.value);
+            // ════════════════════════════════════════════════════════════════
+            // Catégories sélectionnées (système en cascade)
+            // ════════════════════════════════════════════════════════════════
+            let selectedCategories = [];
+            if (typeof window.getSelectedCategoryFilters === 'function') {
+                selectedCategories = window.getSelectedCategoryFilters();
+            } else {
+                // Fallback pour ancien système
+                selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked'))
+                    .map(cb => cb.value);
+            }
 
             // Notes sélectionnées
             const rating4Plus = document.getElementById('rating-4plus')?.checked;
@@ -771,9 +726,18 @@
                 const productPrice = parseFloat(p.price) || 0;
                 const matchPrice = productPrice >= minPrice && productPrice <= maxPrice;
 
-                // Catégorie
-                const matchCategory = selectedCategories.length === 0 || 
-                    selectedCategories.includes(p.category);
+                // ════════════════════════════════════════════════════════════
+                // Catégorie (avec support hiérarchique)
+                // Un produit match si sa catégorie CONTIENT une catégorie sélectionnée
+                // Ex: "Mode > Homme > T-shirts" match "Mode" ou "Mode > Homme"
+                // ════════════════════════════════════════════════════════════
+                let matchCategory = selectedCategories.length === 0;
+                if (selectedCategories.length > 0 && p.category) {
+                    matchCategory = selectedCategories.some(selectedCat => {
+                        // Match exact OU le produit appartient à une sous-catégorie
+                        return p.category === selectedCat || p.category.startsWith(selectedCat + ' >');
+                    });
+                }
 
                 // Note vendeur
                 let matchRating = true;
@@ -1007,7 +971,10 @@
             
             // Reset tous les filtres
             searchInput.value = '';
-            document.querySelectorAll('.category-filter').forEach(cb => cb.checked = false);
+            
+            // Réinitialiser tous les checkboxes de catégories (ancien + nouveau système)
+            document.querySelectorAll('#category-filters-dynamic input[type="checkbox"]').forEach(cb => cb.checked = false);
+            
             locationSelect.value = '';
             document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
             if (document.getElementById('rating-4plus')) document.getElementById('rating-4plus').checked = false;
@@ -1055,7 +1022,7 @@
         };
 
         window.uncheckCategory = (catName) => {
-            const checkbox = Array.from(document.querySelectorAll('.category-filter'))
+            const checkbox = Array.from(document.querySelectorAll('#category-filters-dynamic input[type="checkbox"]'))
                 .find(cb => cb.value === catName);
             if (checkbox) {
                 checkbox.checked = false;

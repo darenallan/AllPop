@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Espace Livreur - Aurum</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="stylesheet" href="assets/css/admin.css" />
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body class="admin-layout">
+
+    <!-- ═════════════════════════════════════════════════════════════════════════
+         SIDEBAR NAVIGATION
+         ═════════════════════════════════════════════════════════════════════════ -->
+    <aside class="admin-sidebar" id="delivery-sidebar">
+        <div class="admin-sidebar-header">
+            <h1 class="admin-sidebar-title">
+                <i data-lucide="truck"></i> Aurum Livraison
+            </h1>
+        </div>
+        <nav>
+            <div class="admin-nav-item active" onclick="navTab('pending')">
+                <i data-lucide="package"></i> Livraisons en attente
+                <span id="badge-pending" class="badge" style="background:#ff6b6b; color:white; margin-left:auto; padding:2px 8px; border-radius:12px; font-size:11px;">0</span>
+            </div>
+            <div class="admin-nav-item" onclick="navTab('history')">
+                <i data-lucide="check-circle"></i> Historique
+            </div>
+            <div class="admin-nav-item" onclick="navTab('profile')">
+                <i data-lucide="user"></i> Mon Profil
+            </div>
+        </nav>
+        <div style="margin-top:30px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
+            <div class="admin-nav-item" style="color:#ff6b6b; cursor:pointer;" onclick="logout()">
+                <i data-lucide="log-out"></i> Déconnexion
+            </div>
+        </div>
+    </aside>
+
+    <button class="admin-mobile-toggle" onclick="document.getElementById('delivery-sidebar').classList.toggle('mobile-open')" aria-label="Menu">
+        <i data-lucide="menu"></i>
+    </button>
+
+    <main class="admin-main">
+        
+        <div id="loader" style="text-align:center; margin-top:20%;">
+            <p>Vérification des accès...</p>
+        </div>
+
+        <div id="delivery-content" class="hidden">
+
+            <!-- ═════════════════════════════════════════════════════════════════
+                 TAB: LIVRAISONS EN ATTENTE
+                 ═════════════════════════════════════════════════════════════════ -->
+            <section id="tab-pending" class="admin-section active-section">
+                <h1 class="admin-page-title">
+                    <i data-lucide="package"></i> Livraisons en attente
+                </h1>
+                <div class="admin-card">
+                    <p style="color:#666; margin-bottom:20px;">
+                        <i data-lucide="info" style="width:16px; vertical-align:middle;"></i>
+                        Commandes prêtes pour expédition (statut: <code>ready_for_delivery</code>)
+                    </p>
+                    <div id="orders-ready-list">
+                        <p style="padding:20px; text-align:center; color:#999;">Chargement...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═════════════════════════════════════════════════════════════════
+                 TAB: HISTORIQUE
+                 ═════════════════════════════════════════════════════════════════ -->
+            <section id="tab-history" class="admin-section hidden">
+                <h1 class="admin-page-title">
+                    <i data-lucide="check-circle"></i> Historique des livraisons
+                </h1>
+                <div class="admin-card">
+                    <div id="orders-delivered-list">
+                        <p style="padding:20px; text-align:center; color:#999;">Chargement...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═════════════════════════════════════════════════════════════════
+                 TAB: PROFIL
+                 ═════════════════════════════════════════════════════════════════ -->
+            <section id="tab-profile" class="admin-section hidden">
+                <h1 class="admin-page-title">
+                    <i data-lucide="user"></i> Mon Profil Livreur
+                </h1>
+                <div class="admin-card">
+                    <div id="profile-info">
+                        <p>Chargement...</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ═════════════════════════════════════════════════════════════════════════
+         PARTIE 3 : LOGIQUE ESPACE LIVREUR
+         ═════════════════════════════════════════════════════════════════════════ -->
+    <script>
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
+            authDomain: "aurum-bf.firebaseapp.com",
+            projectId: "aurum-bf",
+            storageBucket: "aurum-bf.firebasestorage.app",
+            messagingSenderId: "858318726586",
+            appId: "1:858318726586:web:14687fff6d4d08527a6983",
+            measurementId: "G-SY7DY6WV97"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Navigation entre tabs
+        window.navTab = function(tabId) {
+            document.querySelectorAll('.admin-section').forEach(s => {
+                s.classList.add('hidden');
+                s.classList.remove('active-section');
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            document.getElementById('tab-' + tabId).classList.add('active-section');
+            
+            document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            if (window.innerWidth < 900) {
+                document.getElementById('delivery-sidebar').classList.remove('mobile-open');
+            }
+        };
+
+        // Déconnexion
+        window.logout = function() {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                auth.signOut().then(() => {
+                    window.location.href = 'index.html';
+                }).catch(err => {
+                    console.error('Erreur déconnexion:', err);
+                    window.location.href = 'index.html';
+                });
+            }
+        };
+
+        // ───────────────────────────────────────────────────────────────────────
+        // INITIALISATION
+        // ───────────────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚚 Espace Livreur - Initialisation...');
+            
+            auth.onAuthStateChanged(async (user) => {
+                const loader = document.getElementById('loader');
+                const content = document.getElementById('delivery-content');
+
+                if (!user) {
+                    console.log('⚠️ Non connecté -> Redirection');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Vérifier le rôle livreur
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    const userData = userDoc.exists ? userDoc.data() : {};
+                    const role = userData.role || '';
+
+                    if (role !== 'livreur') {
+                        console.log('❌ Accès refusé - Rôle:', role);
+                        document.body.innerHTML = `
+                            <div style="display:flex; align-items:center; justify-content:center; height:100vh; font-family:Arial; text-align:center;">
+                                <div>
+                                    <h1 style="color:#ff6b6b;">Accès Refusé</h1>
+                                    <p style="font-size:18px;">Cette page est réservée aux livreurs certifiés.</p>
+                                    <p style="color:#666;">Votre rôle: ${role || 'client'}</p>
+                                    <a href="index.html" style="margin-top:20px; display:inline-block; padding:10px 20px; background:#007bff; color:white; text-decoration:none; border-radius:5px;">
+                                        Retourner à l'accueil
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Accès autorisé
+                    console.log('✅ Livreur authentifié:', user.email);
+                    if (loader) loader.style.display = 'none';
+                    if (content) content.classList.remove('hidden');
+
+                    // Charger les données
+                    loadReadyForDeliveryOrders();
+                    loadDeliveredOrders();
+                    loadProfileInfo(user.uid, userData);
+
+                    // Initialiser les icônes
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                } catch (error) {
+                    console.error('❌ Erreur vérification rôle:', error);
+                    alert('Erreur de vérification. Veuillez réessayer.');
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+
+        // ───────────────────────────────────────────────────────────────────────
+        // PARTIE 3.1 : CHARGER LES COMMANDES PRÊTES (ready_for_delivery)
+        // ───────────────────────────────────────────────────────────────────────
+        function loadReadyForDeliveryOrders() {
+            const container = document.getElementById('orders-ready-list');
+            const badge = document.getElementById('badge-pending');
+
+            if (!container) return;
+
+            container.innerHTML = '<p style="padding:20px; text-align:center;">Chargement...</p>';
+
+            // Écoute en temps réel
+            db.collection('orders')
+                .where('status', '==', 'ready_for_delivery')
+                .onSnapshot((snapshot) => {
+                    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                    // Mettre à jour le badge
+                    if (badge) {
+                        badge.textContent = orders.length;
+                        badge.style.display = orders.length > 0 ? 'inline-block' : 'none';
+                    }
+
+                    if (orders.length === 0) {
+                        container.innerHTML = `
+                            <div style="padding:40px; text-align:center; color:#999;">
+                                <i data-lucide="package-check" style="width:64px; height:64px; margin-bottom:16px; opacity:0.5;"></i>
+                                <p>Aucune livraison en attente</p>
+                                <p style="font-size:13px;">Les nouvelles commandes apparaîtront ici automatiquement.</p>
+                            </div>
+                        `;
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                        return;
+                    }
+
+                    // Afficher les commandes
+                    container.innerHTML = orders.map(order => {
+                        const date = order.readyForDeliveryAt ? 
+                            (order.readyForDeliveryAt.toDate ? order.readyForDeliveryAt.toDate() : new Date(order.readyForDeliveryAt)) : 
+                            new Date();
+                        const dateStr = date.toLocaleDateString('fr-FR', { 
+                            day: '2-digit', 
+                            month: '2-digit', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        const total = new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'XOF'
+                        }).format(order.total || 0);
+
+                        const items = order.items || [];
+                        const itemsList = items.map(item => 
+                            `<li>${item.qty}x ${item.name}</li>`
+                        ).join('');
+
+                        const address = order.deliveryAddress ? 
+                            `${order.deliveryAddress.street || ''}, ${order.deliveryAddress.city || ''}` : 
+                            'Adresse non spécifiée';
+
+                        return `
+                            <div class="admin-card" style="margin-bottom:20px; border-left:4px solid #8b5cf6;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                                    <div>
+                                        <strong style="font-size:18px;">📦 ${order.reference || order.id.substr(-6)}</strong>
+                                        <div style="font-size:13px; color:#666; margin-top:4px;">
+                                            Prêt depuis: ${dateStr}
+                                        </div>
+                                        <div style="font-size:13px; color:#666;">
+                                            Client: ${order.userEmail || 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="font-weight:bold; color:#8b5cf6; font-size:1.3em;">${total}</div>
+                                        <span style="background:#8b5cf6; color:white; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">
+                                            PRÊT
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div style="background:#f9fafb; padding:15px; border-radius:8px; margin-bottom:15px;">
+                                    <div style="display:flex; align-items:start; gap:10px;">
+                                        <i data-lucide="map-pin" style="width:20px; color:#8b5cf6; flex-shrink:0; margin-top:2px;"></i>
+                                        <div>
+                                            <strong>Adresse de livraison:</strong>
+                                            <div style="margin-top:4px; color:#666;">${address}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom:15px;">
+                                    <strong>Articles à livrer:</strong>
+                                    <ul style="margin:8px 0; padding-left:20px; color:#666;">${itemsList}</ul>
+                                </div>
+
+                                <button onclick="markAsDelivered('${order.id}')" 
+                                    class="btn-gold" 
+                                    style="width:100%; padding:14px; font-weight:600; font-size:15px;">
+                                    ✅ Confirmer la Livraison
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }, (error) => {
+                    console.error('❌ Erreur chargement commandes:', error);
+                    container.innerHTML = `
+                        <div style="padding:20px; text-align:center; color:#dc2626;">
+                            <p>❌ Erreur de chargement</p>
+                            <p style="font-size:12px;">${error.message}</p>
+                        </div>
+                    `;
+                });
+        }
+
+        // ───────────────────────────────────────────────────────────────────────
+        // PARTIE 3.2 : MARQUER COMME LIVRÉ
+        // ───────────────────────────────────────────────────────────────────────
+        window.markAsDelivered = async function(orderId) {
+            if (!confirm('Confirmer que cette commande a été livrée au client ?')) {
+                return;
+            }
+
+            try {
+                const deliveryData = {
+                    status: 'delivered',
+                    deliveredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    deliveredBy: auth.currentUser.uid,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection('orders').doc(orderId).update(deliveryData);
+
+                console.log('✅ Commande marquée comme livrée:', orderId);
+                alert('✅ Livraison confirmée avec succès !');
+
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                alert('❌ Erreur lors de la confirmation: ' + error.message);
+            }
+        };
+
+        // ───────────────────────────────────────────────────────────────────────
+        // HISTORIQUE DES LIVRAISONS
+        // ───────────────────────────────────────────────────────────────────────
+        function loadDeliveredOrders() {
+            const container = document.getElementById('orders-delivered-list');
+            if (!container) return;
+
+            db.collection('orders')
+                .where('status', '==', 'delivered')
+                .where('deliveredBy', '==', auth.currentUser.uid)
+                .orderBy('deliveredAt', 'desc')
+                .limit(50)
+                .onSnapshot((snapshot) => {
+                    const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                    if (orders.length === 0) {
+                        container.innerHTML = `
+                            <div style="padding:40px; text-align:center; color:#999;">
+                                <i data-lucide="inbox" style="width:48px; height:48px; margin-bottom:16px; opacity:0.5;"></i>
+                                <p>Aucune livraison effectuée</p>
+                            </div>
+                        `;
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                        return;
+                    }
+
+                    container.innerHTML = orders.map(order => {
+                        const date = order.deliveredAt ? 
+                            (order.deliveredAt.toDate ? order.deliveredAt.toDate() : new Date(order.deliveredAt)) : 
+                            new Date();
+                        const dateStr = date.toLocaleDateString('fr-FR', { 
+                            day: '2-digit', 
+                            month: '2-digit', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        const total = new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'XOF'
+                        }).format(order.total || 0);
+
+                        return `
+                            <div class="admin-card" style="margin-bottom:15px; opacity:0.8;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <div>
+                                        <strong>${order.reference || order.id.substr(-6)}</strong>
+                                        <div style="font-size:13px; color:#666;">Livré le ${dateStr}</div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="font-weight:bold;">${total}</div>
+                                        <span style="background:#10b981; color:white; padding:4px 12px; border-radius:20px; font-size:12px;">
+                                            LIVRÉ
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }, (error) => {
+                    console.error('❌ Erreur chargement historique:', error);
+                    container.innerHTML = '<p style="color:#dc2626;">Erreur de chargement</p>';
+                });
+        }
+
+        // ───────────────────────────────────────────────────────────────────────
+        // PROFIL LIVREUR
+        // ───────────────────────────────────────────────────────────────────────
+        function loadProfileInfo(uid, userData) {
+            const container = document.getElementById('profile-info');
+            if (!container) return;
+
+            const certDate = userData.certifiedAt ? 
+                (userData.certifiedAt.toDate ? userData.certifiedAt.toDate() : new Date(userData.certifiedAt)).toLocaleDateString('fr-FR') : 
+                'N/A';
+
+            container.innerHTML = `
+                <div style="padding:20px;">
+                    <div style="margin-bottom:20px;">
+                        <h3>👤 ${userData.name || 'N/A'}</h3>
+                        <div style="color:#666; margin-top:8px;">
+                            📧 ${userData.email || 'N/A'}<br>
+                            📱 ${userData.phone || 'N/A'}<br>
+                            ${userData.zone ? `📍 Zone: ${userData.zone}` : ''}
+                        </div>
+                    </div>
+                    <div style="background:#f9fafb; padding:15px; border-radius:8px;">
+                        <strong>Statut:</strong> 
+                        <span style="background:#10b981; color:white; padding:4px 12px; border-radius:20px; font-size:12px; margin-left:10px;">
+                            ${userData.status === 'active' ? 'ACTIF' : 'INACTIF'}
+                        </span>
+                        <div style="margin-top:10px; font-size:13px; color:#666;">
+                            Certifié le ${certDate}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        console.log('✅ delivery.html chargé - Espace Livreur OK');
+    </script>
+
+</body>
+</html>

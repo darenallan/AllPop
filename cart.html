@@ -15,6 +15,7 @@
   
   <!-- Configuration & Utilities -->
   <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
   <!-- Data Store -->
   <script src="assets/js/data.js" defer></script>
   <!-- App Module -->
@@ -23,48 +24,8 @@
 </head>
 
 <body>
-  <header id="app-header" class="glass-nav">
-      <div class="nav-content">
-          <a href="index.html" class="brand">
-              <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
-              <div style="display:flex; flex-direction:column; margin-left:10px;">
-                  <span class="brand-name" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">AURUM</span>
-                  <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
-              </div>
-          </a>
-          <nav class="nav-icons">
-              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
-              <a href="cart.html" class="icon-btn" style="position:relative;">
-                  <i data-lucide="shopping-bag"></i>
-                  <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
-              </a>
-              <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>
-              <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
-          </nav>
-      </div>
-  </header>
+  <div id="header-placeholder"></div>
 
-  <div class="mobile-drawer" id="mobile-drawer">
-      <div class="drawer-header">
-          <span class="drawer-title">Menu</span>
-          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
-      </div>
-      <nav class="drawer-nav">
-          <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
-          <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
-          <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
-          <a href="wishlist.html" class="drawer-link"><i data-lucide="heart"></i> Mes Favoris</a>
-          <a href="boutique-list.html" class="drawer-link"><i data-lucide="store"></i> Nos Boutiques</a>
-          <div class="drawer-divider"></div>
-          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
-          <a href="profile.html" class="drawer-link"><i data-lucide="user"></i> Mon Profil</a>
-          <div class="drawer-divider"></div>
-          <a href="#" id="mobile-logout-btn" class="drawer-link" style="color: #ef4444;">
-              <i data-lucide="log-out"></i> Déconnexion
-          </a>
-      </nav>
-  </div>
-  <div id="menu-overlay"></div>
 
   <main class="container cart-container">
     
@@ -100,7 +61,17 @@
                 </div>
                 <div class="summary-row">
                     <span>Livraison</span>
-                    <span>Calculé à l'étape suivante</span>
+                    <span id="shipping-fee-display">Sélectionnez une adresse</span>
+                </div>
+
+                <div class="summary-row" style="align-items:flex-start; gap:10px;">
+                    <span>Adresse</span>
+                    <div style="text-align:right; flex:1;">
+                        <select id="delivery-address-select" class="input" style="width:100%;">
+                            <option value="">Chargement...</option>
+                        </select>
+                        <div id="shipping-note" style="font-size:11px; color:#888; margin-top:6px;"></div>
+                    </div>
                 </div>
                 
                 <div style="margin: 20px 0; display:flex; gap:10px;">
@@ -147,10 +118,18 @@
         const subtotalEl = document.getElementById('subtotal-display');
         const totalEl = document.getElementById('total-display');
         const checkoutBtn = document.getElementById('btn-checkout');
+        const shippingFeeEl = document.getElementById('shipping-fee-display');
+        const addressSelectEl = document.getElementById('delivery-address-select');
+        const shippingNoteEl = document.getElementById('shipping-note');
+
+        let shippingRates = null;
+        let currentShippingFee = 0;
+        let currentAddress = null;
+        const addressById = new Map();
 
         // Checkout
         if (checkoutBtn) {
-            checkoutBtn.addEventListener('click', () => {
+            checkoutBtn.addEventListener('click', async () => {
                 const user = (auth && auth.currentUser) || (firebase.auth && firebase.auth().currentUser) || null;
                 if (!user) {
                     alert('Veuillez vous connecter pour continuer.');
@@ -158,9 +137,86 @@
                     return;
                 }
 
-                localStorage.setItem('ac_cart_checkout', JSON.stringify(cartProductsData));
-                window.location.href = 'invoice.html';
+                try {
+                    // Désactiver le bouton pendant le traitement
+                    checkoutBtn.disabled = true;
+                    checkoutBtn.textContent = 'Traitement...';
+
+                    // Générer la référence commande (AUR-XXXXXX)
+                    const orderRef = 'AUR-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+                    // Obtenir le prochain numéro de facture depuis Firestore
+                    const invoiceNumber = await getNextInvoiceNumber(db);
+
+                    // Calculer le total
+                    const subtotal = cartProductsData.reduce((acc, item) => acc + (item.price * item.qty), 0);
+                    const total = subtotal + currentShippingFee;
+
+                    // Créer la commande dans Firestore
+                    const orderData = {
+                        reference: orderRef,
+                        invoiceNumber: invoiceNumber,
+                        userId: user.uid,
+                        userEmail: user.email,
+                        items: cartProductsData.map(item => ({
+                            productId: item.id,
+                            name: item.name,
+                            price: item.price,
+                            qty: item.qty,
+                            image: item.image || ''
+                        })),
+                        subtotal: subtotal,
+                        shippingFee: currentShippingFee,
+                        total: total,
+                        deliveryAddress: currentAddress || null,
+                        status: 'pending_admin',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    const docRef = await db.collection('orders').add(orderData);
+                    console.log('✅ Commande créée:', docRef.id);
+
+                    // Sauvegarder également en localStorage pour compatibilité
+                    localStorage.setItem('ac_cart_checkout', JSON.stringify({
+                        orderId: docRef.id,
+                        items: cartProductsData,
+                        invoiceNumber: invoiceNumber,
+                        reference: orderRef
+                    }));
+
+                    // Vider le panier
+                    localStorage.removeItem('ac_cart');
+                    window.location.href = 'invoice.html?orderId=' + docRef.id;
+
+                } catch (error) {
+                    console.error('❌ Erreur création commande:', error);
+                    alert('Erreur lors de la création de la commande. Veuillez réessayer.');
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.textContent = 'Valider la commande';
+                }
             });
+        }
+
+        // Fonction pour obtenir le prochain numéro de facture
+        async function getNextInvoiceNumber(db) {
+            const counterRef = db.collection('meta').doc('invoiceCounter');
+            try {
+                const newNumber = await db.runTransaction(async (transaction) => {
+                    const counterDoc = await transaction.get(counterRef);
+                    const currentValue = counterDoc.exists ? (counterDoc.data().value || 0) : 0;
+                    const nextValue = currentValue + 1;
+                    transaction.set(counterRef, { value: nextValue }, { merge: true });
+                    return nextValue;
+                });
+                return newNumber;
+            } catch (error) {
+                console.error('❌ Erreur obtention numéro facture:', error);
+                // Fallback sur localStorage en cas d'erreur
+                const counter = Number(localStorage.getItem('ac_invoice_counter') || '0') + 1;
+                localStorage.setItem('ac_invoice_counter', String(counter));
+                return counter;
+            }
         }
 
         // --- 2. RÉCUPÉRATION ET NETTOYAGE DU PANIER ---
@@ -286,9 +342,11 @@
                 itemCount += qty;
             });
 
-            const formattedTotal = new Intl.NumberFormat('fr-FR').format(total) + " FCFA";
+            const subtotal = total;
+            const grandTotal = subtotal + (Number(currentShippingFee) || 0);
+            const formattedTotal = new Intl.NumberFormat('fr-FR').format(subtotal) + " FCFA";
             if (subtotalEl) subtotalEl.textContent = formattedTotal;
-            if (totalEl) totalEl.textContent = formattedTotal;
+            if (totalEl) totalEl.textContent = new Intl.NumberFormat('fr-FR').format(grandTotal) + " FCFA";
             if (countLabel) countLabel.textContent = itemCount;
         }
 
@@ -341,6 +399,147 @@
 
             recalculateCartTotal();
         }
+
+        function formatFCFA(value) {
+            return new Intl.NumberFormat('fr-FR').format(Number(value) || 0) + ' FCFA';
+        }
+
+        function normalizeCity(value) {
+            return String(value || '').trim();
+        }
+
+        function getShippingFeeForCity(city) {
+            if (!shippingRates) return null;
+            const target = normalizeCity(city).toLowerCase();
+            if (!target) return null;
+            const matchKey = Object.keys(shippingRates).find(k => k.toLowerCase() === target);
+            const rate = matchKey ? shippingRates[matchKey] : shippingRates.default;
+            return Number(rate) || 0;
+        }
+
+        function updateShippingUI() {
+            if (!shippingRates) {
+                if (shippingFeeEl) shippingFeeEl.textContent = 'Tarif indisponible';
+                if (shippingNoteEl) shippingNoteEl.textContent = 'Impossible de charger les tarifs.';
+                currentShippingFee = 0;
+                recalculateCartTotal();
+                return;
+            }
+
+            if (!currentAddress) {
+                if (shippingFeeEl) shippingFeeEl.textContent = 'Sélectionnez une adresse';
+                if (shippingNoteEl) shippingNoteEl.textContent = '';
+                currentShippingFee = 0;
+                recalculateCartTotal();
+                return;
+            }
+
+            const city = normalizeCity(currentAddress.city);
+            const fee = getShippingFeeForCity(city);
+            if (fee === null) {
+                if (shippingFeeEl) shippingFeeEl.textContent = 'Ville non reconnue';
+                if (shippingNoteEl) shippingNoteEl.textContent = 'Tarif par defaut applique.';
+                currentShippingFee = Number(shippingRates?.default) || 0;
+            } else {
+                if (shippingFeeEl) shippingFeeEl.textContent = formatFCFA(fee);
+                if (shippingNoteEl) shippingNoteEl.textContent = city ? `Ville: ${city}` : '';
+                currentShippingFee = fee;
+            }
+
+            localStorage.setItem('ac_checkout_shipping', JSON.stringify({
+                addressId: currentAddress.id || null,
+                city: currentAddress.city || '',
+                fee: currentShippingFee
+            }));
+
+            recalculateCartTotal();
+        }
+
+        function setAddressOptions(addresses) {
+            if (!addressSelectEl) return;
+            addressById.clear();
+
+            if (!Array.isArray(addresses) || addresses.length === 0) {
+                addressSelectEl.innerHTML = '<option value="">Aucune adresse</option>';
+                addressSelectEl.disabled = true;
+                currentAddress = null;
+                updateShippingUI();
+                if (shippingNoteEl) {
+                    shippingNoteEl.innerHTML = '<a href="profile.html" style="color:var(--gold); text-decoration:none;">Ajouter une adresse</a>';
+                }
+                return;
+            }
+
+            addresses.forEach(addr => addressById.set(String(addr.id), addr));
+            addressSelectEl.disabled = false;
+            addressSelectEl.innerHTML = '<option value="">Choisir une adresse</option>' + addresses.map(addr => {
+                const label = `${addr.name || 'Adresse'} · ${addr.city || ''} · ${addr.description || ''}`.trim();
+                return `<option value="${addr.id}">${label}</option>`;
+            }).join('');
+
+            const savedId = localStorage.getItem('ac_selected_address_id');
+            if (savedId && addressById.has(savedId)) {
+                addressSelectEl.value = savedId;
+                currentAddress = addressById.get(savedId);
+            } else if (addresses.length === 1) {
+                addressSelectEl.value = addresses[0].id;
+                currentAddress = addresses[0];
+            } else {
+                currentAddress = null;
+            }
+
+            updateShippingUI();
+        }
+
+        async function loadShippingRates() {
+            try {
+                const doc = await db.collection('shipping_settings').doc('rates').get();
+                shippingRates = doc.exists ? doc.data() : null;
+            } catch (error) {
+                console.error('Erreur chargement tarifs livraison:', error);
+                shippingRates = null;
+            }
+            updateShippingUI();
+        }
+
+        async function loadUserAddresses(user) {
+            if (!user) {
+                if (addressSelectEl) {
+                    addressSelectEl.innerHTML = '<option value="">Connectez-vous</option>';
+                    addressSelectEl.disabled = true;
+                }
+                currentAddress = null;
+                updateShippingUI();
+                return;
+            }
+
+            try {
+                const snap = await db.collection('users').doc(user.uid).collection('addresses').get();
+                const addresses = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setAddressOptions(addresses);
+            } catch (error) {
+                console.error('Erreur chargement adresses:', error);
+                if (addressSelectEl) {
+                    addressSelectEl.innerHTML = '<option value="">Erreur chargement</option>';
+                    addressSelectEl.disabled = true;
+                }
+            }
+        }
+
+        if (addressSelectEl) {
+            addressSelectEl.addEventListener('change', () => {
+                const selectedId = addressSelectEl.value;
+                localStorage.setItem('ac_selected_address_id', selectedId || '');
+                currentAddress = selectedId && addressById.has(selectedId) ? addressById.get(selectedId) : null;
+                updateShippingUI();
+            });
+        }
+
+        auth.onAuthStateChanged(user => {
+            loadUserAddresses(user);
+        });
+
+        loadShippingRates();
 
         function updateLineTotal(productId, qty) {
             const row = document.querySelector(`.cart-item[data-product-id="${productId}"]`);

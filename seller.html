@@ -16,6 +16,8 @@
 
     <!-- Configuration & Utilities -->
     <script src="assets/js/config.js"></script>
+    <!-- Categories System -->
+    <script src="assets/js/categories.js"></script>
     <!-- Data Store -->
     <script src="assets/js/data.js" defer></script>
     <!-- Admin Module -->
@@ -136,10 +138,8 @@
                             <label>Description <span style="color: red;">*</span></label>
                             <textarea class="input" id="p-desc" rows="4" required placeholder="Décrivez votre produit en détail..."></textarea>
                             
-                            <label>Catégorie <span style="color: red;">*</span></label>
-                            <select class="input" id="p-cat" required>
-                                <option value="">-- Sélectionner --</option>
-                            </select>
+                            <label style="margin-top: 16px;">Catégorie <span style="color: red;">*</span></label>
+                            <div id="category-cascade-container"></div>
                         </div>
 
                         <!-- SECTION 2: Champs dynamiques selon catégorie -->

@@ -15,24 +15,16 @@
   
   <!-- Configuration & Utilities -->
   <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
   <!-- App Module -->
   <script src="assets/js/app.js" defer></script>
 
 </head>
 
 <body>
-  <header id="app-header" class="glass-nav">
-      <div class="nav-content">
-          <a href="index.html" class="brand">
-              <span class="brand-name" style="font-size:24px; font-weight:bold;">AURUM</span>
-          </a>
-          <nav class="nav-icons">
-              <a href="index.html" class="icon-btn"><i data-lucide="x"></i></a>
-          </nav>
-      </div>
-  </header>
+  <div id="header-placeholder"></div>
 
-  <main class="container" style="padding-top: 40px; padding-bottom: 80px;">
+    <main class="container" style="padding-top: calc(40px + var(--header-height, 72px)); padding-bottom: 80px;">
       
       <div class="legal-content">
           <h1>Politique de Confidentialité</h1>

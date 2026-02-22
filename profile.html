@@ -18,6 +18,7 @@
   
   <!-- Configuration & Utilities -->
   <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
   <!-- Data Store -->
   <script src="assets/js/data.js" defer></script>
   <!-- App Module -->
@@ -25,44 +26,8 @@
 </head>
 
 <body>
-    <header id="app-header" class="glass-nav">
-      <div class="nav-content">
-          <a href="index.html" class="brand">
-              <div class="brand-logo-img" style="width:44px; height:44px; border-radius:12px; background:var(--gold); display:flex; align-items:center; justify-content:center; color:black; font-weight:800;">A</div>
-              <div style="display:flex; flex-direction:column; margin-left:10px;">
-                  <span class="brand-name" style="font-size:22px; font-weight:800; letter-spacing:0.5px;">AURUM</span>
-                  <span class="tagline" style="font-size:11px; letter-spacing:1px; color:#666;">EXCELLENCE À VOTRE PORTÉE</span>
-              </div>
-          </a>
-          
-          <nav class="nav-icons">
-              <a href="catalogue.html" class="icon-btn"><i data-lucide="search"></i></a>
-              <a href="cart.html" class="icon-btn" style="position:relative;">
-                  <i data-lucide="shopping-bag"></i>
-                  <span class="badge" id="cart-badge" style="display:none; position:absolute; top:-5px; right:-5px; background:red; color:white; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
-              </a>
-              <a href="wishlist.html" class="icon-btn"><i data-lucide="heart"></i></a>
-              <button class="menu-toggle" id="menu-toggle" style="z-index: 1001;"><i data-lucide="menu"></i></button>
-          </nav>
-      </div>
-  </header>
+  <div id="header-placeholder"></div>
 
-  <div class="mobile-drawer" id="mobile-drawer">
-      <div class="drawer-header">
-          <span class="drawer-title">Menu</span>
-          <button class="close-btn" id="close-btn"><i data-lucide="x"></i></button>
-      </div>
-      <nav class="drawer-nav">
-          <a href="index.html" class="drawer-link"><i data-lucide="home"></i> Accueil</a>
-          <a href="catalogue.html" class="drawer-link"><i data-lucide="grid"></i> Catalogue</a>
-          <a href="cart.html" class="drawer-link"><i data-lucide="shopping-bag"></i> Panier</a>
-          <a href="wishlist.html" class="drawer-link"><i data-lucide="heart"></i> Mes Favoris</a>
-          <div class="drawer-divider"></div>
-          <a href="seller.html" class="drawer-link"><i data-lucide="store"></i> Espace Vendeur</a>
-          <a href="profile.html" class="drawer-link active"><i data-lucide="user"></i> Mon Profil</a>
-      </nav>
-  </div>
-  <div id="menu-overlay"></div>
 
   <!-- DASHBOARD LAYOUT -->
   <div class="dashboard-container">
@@ -245,6 +210,11 @@
           <label class="form-label">Téléphone</label>
           <input type="tel" id="addr-phone" class="form-input" placeholder="ex: +226 12 34 56 78" required>
         </div>
+
+        <button type="button" id="btn-geoloc" class="btn-glass-geo">
+          <i data-lucide="map-pin"></i> Utiliser ma position actuelle
+        </button>
+        <p id="geo-status" style="font-size: 0.8rem; color: #666; display: none;">Recherche en cours...</p>
 
         <div class="form-group">
           <label class="form-label">Ville</label>
@@ -663,23 +633,101 @@
           };
         }
 
+        // ═════════════════════════════════════════════════════════════════════
+        // PARTIE 4 : TRADUCTION DES STATUTS POUR LE CLIENT
+        // ═════════════════════════════════════════════════════════════════════
         function formatStatus(status) {
           const normalized = (status || 'pending').toLowerCase();
           
+          // Workflow Marketplace complet
+          if (normalized === 'pending_admin' || normalized === 'pending admin') {
+            return { 
+              label: '⏳ En attente de confirmation', 
+              className: 'status-warning',
+              color: '#f59e0b',
+              description: 'Votre commande est en cours de vérification par notre équipe'
+            };
+          }
+          
+          if (normalized === 'pending_seller' || normalized === 'pending seller') {
+            return { 
+              label: '🔄 En préparation', 
+              className: 'status-info',
+              color: '#3b82f6',
+              description: 'Le vendeur prépare vos articles'
+            };
+          }
+          
+          if (normalized === 'ready_for_delivery' || normalized === 'ready for delivery') {
+            return { 
+              label: '🚚 En cours de livraison', 
+              className: 'status-purple',
+              color: '#8b5cf6',
+              description: 'Votre commande est en route'
+            };
+          }
+          
           if (normalized === 'delivered' || normalized.includes('livr')) {
-            return { label: '✅ Livrée', className: 'status-success' };
+            return { 
+              label: '✅ Livré', 
+              className: 'status-success',
+              color: '#10b981',
+              description: 'Commande livrée avec succès'
+            };
           }
+          
+          // Statuts supplémentaires
           if (normalized === 'cancelled' || normalized.includes('annul')) {
-            return { label: '❌ Annulée', className: 'status-danger' };
+            return { 
+              label: '❌ Annulée', 
+              className: 'status-danger',
+              color: '#dc2626',
+              description: 'Cette commande a été annulée'
+            };
           }
+          
           if (normalized === 'shipped' || normalized.includes('expéd')) {
-            return { label: '📦 Expédiée', className: 'status-info' };
+            return { 
+              label: '📦 Expédiée', 
+              className: 'status-info',
+              color: '#06b6d4',
+              description: 'Commande expédiée'
+            };
           }
+          
           if (normalized === 'pending' || normalized.includes('attente')) {
-            return { label: '⏳ En attente', className: 'status-warning' };
+            return { 
+              label: '⏳ En attente', 
+              className: 'status-warning',
+              color: '#f59e0b',
+              description: 'Commande en attente de traitement'
+            };
           }
-          return { label: 'En cours', className: 'status-info' };
+          
+          // Défaut
+          return { 
+            label: 'En cours', 
+            className: 'status-info',
+            color: '#6b7280',
+            description: 'Commande en cours de traitement'
+          };
         }
+
+        /**
+         * Fonction utilitaire globale pour traduire les statuts
+         * Retourne un badge HTML formaté
+         */
+        window.translateOrderStatus = function(status) {
+          const statusData = formatStatus(status);
+          
+          return `
+            <span class="${statusData.className}" 
+                  style="background:${statusData.color}; color:white; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; display:inline-block;"
+                  title="${statusData.description}">
+              ${statusData.label}
+            </span>
+          `;
+        };
 
         function formatDate(timestamp) {
           try {
@@ -815,10 +863,33 @@
         const btnAddAddress = document.getElementById('btn-add-address');
         const btnCancelAddress = document.getElementById('btn-cancel-address');
         const modalClose = document.getElementById('modal-close');
+        const geoBtn = document.getElementById('btn-geoloc');
+        const geoStatus = document.getElementById('geo-status');
+        const citySelect = document.getElementById('addr-city');
+        const descInput = document.getElementById('addr-description');
+
+        const resetGeoStatus = () => {
+          if (geoStatus) {
+            geoStatus.textContent = 'Recherche en cours...';
+            geoStatus.style.display = 'none';
+            geoStatus.style.color = '#666';
+          }
+          if (geoBtn) geoBtn.disabled = false;
+        };
+
+        const setGeoStatus = (message, tone = 'info') => {
+          if (!geoStatus) return;
+          geoStatus.textContent = message;
+          geoStatus.style.display = 'block';
+          if (tone === 'error') geoStatus.style.color = '#b91c1c';
+          else if (tone === 'success') geoStatus.style.color = '#0f766e';
+          else geoStatus.style.color = '#666';
+        };
 
         // Ouvrir modal
         btnAddAddress.addEventListener('click', () => {
             addressForm.reset();
+          resetGeoStatus();
             addressModal.classList.add('active');
         });
 
@@ -830,6 +901,48 @@
         addressModal.addEventListener('click', (e) => {
             if (e.target === addressModal) addressModal.classList.remove('active');
         });
+
+        if (geoBtn) {
+          geoBtn.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+              setGeoStatus('Geolocalisation non supportee par votre navigateur.', 'error');
+              return;
+            }
+
+            geoBtn.disabled = true;
+            setGeoStatus('Recherche en cours...', 'info');
+
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                const lat = Number(pos.coords.latitude || 0).toFixed(6);
+                const lng = Number(pos.coords.longitude || 0).toFixed(6);
+                const accuracy = Math.round(pos.coords.accuracy || 0);
+                        const accuracyLabel = accuracy ? ` (+/-${accuracy}m)` : '';
+                const current = descInput ? descInput.value.trim() : '';
+                const prefix = current ? `${current} ` : '';
+
+                if (descInput) {
+                  descInput.value = `${prefix}GPS: ${lat}, ${lng}${accuracyLabel}`;
+                }
+                if (citySelect && !citySelect.value) {
+                  citySelect.value = 'Autre';
+                }
+
+                setGeoStatus('Position detectee. Verifiez la ville et le quartier.', 'success');
+                geoBtn.disabled = false;
+              },
+              (err) => {
+                let message = 'Impossible de recuperer la position.';
+                if (err.code === 1) message = 'Autorisation refusee pour la geolocalisation.';
+                if (err.code === 2) message = 'Position indisponible pour le moment.';
+                if (err.code === 3) message = 'Delai depasse. Reessayez.';
+                setGeoStatus(message, 'error');
+                geoBtn.disabled = false;
+              },
+              { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+          });
+        }
 
         // Soumettre formulaire adresse
         addressForm.addEventListener('submit', async (e) => {
@@ -989,9 +1102,6 @@
                   <div class="product-card">
                     <div class="product-image-container">
                       <span class="product-badge">Favori</span>
-                      <button class="product-wishlist-btn" title="Retirer des favoris" onclick="removeFromWishlist('${escapeHtml(product.id)}')">
-                        <i data-lucide="heart"></i>
-                      </button>
                       <img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)}" class="product-image" onerror="this.src='assets/img/placeholder.jpg'">
                     </div>
                     <div class="product-info">
