@@ -25,18 +25,18 @@
 
 .aurum-glass-header.scrolled {
   /* Au scroll - fond plus opaque avec ombre */
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
-  padding: 12px 5%;
 }
 
-/* ===== SECTION GAUCHE - LOGO ===== */
 .header-left {
   display: flex;
   align-items: center;
-  flex-shrink: 0;
+  gap: 12px;
+  min-width: 0;
 }
 
 .header-brand {
@@ -44,36 +44,17 @@
   align-items: center;
   gap: 12px;
   text-decoration: none;
-  transition: transform 0.3s ease;
-}
-
-.header-brand:hover {
-  transform: scale(1.02);
+  color: inherit;
 }
 
 .header-logo {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
   border-radius: 12px;
-  background: linear-gradient(135deg, #D4AF37, #F4E4C1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-  transition: all 0.3s ease;
-}
-
-.header-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 4px;
-}
-
-.header-brand:hover .header-logo {
-  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
-  transform: rotate(-5deg);
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .header-brand-text {
@@ -440,6 +421,10 @@
   
   /* Ajuster le header */
   .aurum-glass-header {
+    padding: 12px 20px;
+  }
+
+  .aurum-glass-header.scrolled {
     padding: 12px 20px;
   }
   
@@ -997,6 +982,25 @@ header,
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-soft);
+}
+
+/* Restore Aurum header transparency on load, white on scroll */
+.aurum-glass-header {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+}
+
+.aurum-glass-header.scrolled {
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+  padding: 15px 5%;
 }
 
 .header {
@@ -11584,36 +11588,88 @@ main .section {
   margin-bottom: 20px;
 }
 
+.btn-floating-filter {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  border: none;
+  color: #fff;
+  background: #D4AF37;
+  border-radius: 50px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.btn-floating-filter i {
+  width: 18px;
+  height: 18px;
+}
+
+.close-mobile-filters {
+  display: none;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: #111;
+}
+
 @media (max-width: 1024px) {
   .filters-sidebar {
     position: fixed;
-    left: -300px;
-    top: 0;
-    height: 100vh;
-    z-index: 2000;
-    transition: left 0.3s ease;
-    width: 280px;
-    overflow-y: auto;
-  }
-
-  .filters-sidebar.open {
+    top: auto;
+    bottom: -100%;
     left: 0;
+    width: 100%;
+    height: 85vh;
+    border-radius: 25px 25px 0 0;
+    background: #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    z-index: 9999;
+    overflow-y: auto;
+    padding: 25px;
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.15);
   }
 
-  .filters-overlay {
+  .filters-sidebar.show-mobile {
+    bottom: 0;
+  }
+
+  #filter-overlay {
     display: none;
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 1999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
   }
 
-  .filters-overlay.show {
+  #filter-overlay.active {
     display: block;
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .mobile-filters-toggle {
-    display: block;
+    display: none;
+  }
+
+  .btn-floating-filter {
+    display: inline-flex;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
   }
 
   .mobile-filters-btn {
@@ -11644,6 +11700,61 @@ main .section {
 
   .price-inputs {
     flex-direction: column;
+  }
+
+  .mobile-filters-toggle {
+    display: none;
+  }
+
+  .btn-floating-filter {
+    display: inline-flex;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+  }
+
+  .filters-header {
+    position: relative;
+  }
+
+  .close-mobile-filters {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f4f4f4;
+  }
+
+  .filters-sidebar {
+    position: fixed;
+    top: auto;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    height: 85vh;
+    border-radius: 25px 25px 0 0;
+    background: #fff;
+    z-index: 9999;
+    overflow-y: auto;
+    padding: 25px;
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .filters-sidebar.show-mobile {
+    bottom: 0;
+  }
+
+  #filter-overlay {
+    display: block;
+    z-index: 9998;
   }
 }
 

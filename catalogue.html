@@ -63,180 +63,10 @@
         </button>
       </div>
 
-      <!-- Layout avec Sidebar + Content -->
-      <div class="catalogue-layout">
-        
-        <!-- SIDEBAR FILTRES AVEC ACCORDÉON -->
-        <aside class="filters-sidebar" id="filters-sidebar">
-          <div class="filters-header">
-            <h3>
-              <i data-lucide="sliders"></i>
-              Filtres
-            </h3>
-            <a href="#" class="filters-reset" id="reset-filters">Réinitialiser</a>
-          </div>
-
-          <!-- Filtre Prix -->
-          <div class="filter-group" data-filter="price">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i data-lucide="dollar-sign"></i>
-                <span>Prix (FCFA)</span>
-              </div>
-              <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-              <div class="price-inputs">
-                <input 
-                  type="number" 
-                  class="price-input" 
-                  id="price-min" 
-                  placeholder="Min"
-                  min="0"
-                >
-                <span style="color: #D4AF37; font-weight: 700;">—</span>
-                <input 
-                  type="number" 
-                  class="price-input" 
-                  id="price-max" 
-                  placeholder="Max"
-                  min="0"
-                >
-              </div>
-              <div class="price-slider">
-                <input 
-                  type="range" 
-                  id="price-range-min" 
-                  min="0" 
-                  max="1000000" 
-                  step="1000"
-                  value="0"
-                >
-                <input 
-                  type="range" 
-                  id="price-range-max" 
-                  min="0" 
-                  max="1000000" 
-                  step="1000"
-                  value="1000000"
-                >
-              </div>
-            </div>
-          </div>
-
-          <!-- Filtre Catégories -->
-          <div class="filter-group" data-filter="category">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i data-lucide="grid"></i>
-                <span>Catégories</span>
-              </div>
-              <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-              <!-- Catégories générées dynamiquement -->
-              <div id="category-filters-dynamic">
-                <!-- Toutes les catégories chargées ici -->
-              </div>
-            </div>
-          </div>
-
-          <!-- Filtre Note Vendeur -->
-          <div class="filter-group" data-filter="rating">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i data-lucide="star"></i>
-                <span>Note Vendeur</span>
-              </div>
-              <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-              <div class="filter-checkbox">
-                <input type="checkbox" id="rating-4plus" value="4">
-                <label for="rating-4plus">
-                  <span>⭐⭐⭐⭐ 4 étoiles et plus</span>
-                </label>
-              </div>
-              <div class="filter-checkbox">
-                <input type="checkbox" id="rating-3plus" value="3">
-                <label for="rating-3plus">
-                  <span>⭐⭐⭐ 3 étoiles et plus</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Filtre Couleurs (Cercles cliquables) -->
-          <div class="filter-group" data-filter="color">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i data-lucide="palette"></i>
-                <span>Couleurs</span>
-              </div>
-              <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-              <div class="colors-grid">
-                <div class="color-swatch" data-color="#000000" style="background: #000000;" title="Noir"></div>
-                <div class="color-swatch" data-color="#FFFFFF" style="background: #FFFFFF; border-color: #ddd;" title="Blanc"></div>
-                <div class="color-swatch" data-color="#D4AF37" style="background: #D4AF37;" title="Or"></div>
-                <div class="color-swatch" data-color="#FF0000" style="background: #FF0000;" title="Rouge"></div>
-                <div class="color-swatch" data-color="#0000FF" style="background: #0000FF;" title="Bleu"></div>
-                <div class="color-swatch" data-color="#00FF00" style="background: #00FF00;" title="Vert"></div>
-                <div class="color-swatch" data-color="#FFC0CB" style="background: #FFC0CB;" title="Rose"></div>
-                <div class="color-swatch" data-color="#FFA500" style="background: #FFA500;" title="Orange"></div>
-                <div id="color-filters-dynamic">
-                  <!-- Autres couleurs chargées dynamiquement -->
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Filtre Localisation (Select Stylisé) -->
-          <div class="filter-group" data-filter="location">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i data-lucide="map-pin"></i>
-                <span>Localisation</span>
-              </div>
-              <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-              <select id="location-select" class="location-select">
-                <option value="">Toutes les villes</option>
-                <option value="Ouagadougou">Ouagadougou</option>
-                <option value="Bobo-Dioulasso">Bobo-Dioulasso</option>
-                <option value="Koudougou">Koudougou</option>
-                <option value="Ouahigouya">Ouahigouya</option>
-                <option value="Banfora">Banfora</option>
-                <option value="Tenkodogo">Tenkodogo</option>
-                <option value="Dédougou">Dédougou</option>
-                <option value="Kaya">Kaya</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Filtre Tri -->
-          <div class="filter-group" data-filter="sort">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i data-lucide="arrow-down-up"></i>
-                <span>Trier par</span>
-              </div>
-              <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-              <select id="sort-select" class="location-select">
-                <option value="recent">Plus récent</option>
-                <option value="price-asc">Prix croissant</option>
-                <option value="price-desc">Prix décroissant</option>
-                <option value="popular">Plus populaire</option>
-              </select>
-            </div>
-          </div>
-        </aside>
-
-        <!-- CONTENU CATALOGUE -->
+            <!-- Layout avec Sidebar + Content -->
+            <div class="catalogue-layout">
+                <div id="filters-slot"></div>
+                <!-- CONTENU CATALOGUE -->
         <div class="catalogue-content">
           <!-- Tags Filtres Actifs -->
           <div class="active-filters" id="active-filters"></div>
@@ -251,9 +81,6 @@
       
     </section>
   </main>
-
-  <!-- Overlay pour mobile -->
-  <div class="filters-overlay" id="filters-overlay"></div>
 
   <!-- App Module -->
   <script src="assets/js/app.js" defer></script>
@@ -322,8 +149,11 @@
         const activeFiltersDiv = document.getElementById('active-filters');
         const resetFiltersBtn = document.getElementById('reset-filters');
         const toggleFiltersBtn = document.getElementById('toggle-filters');
+        const mobileFilterFab = document.getElementById('mobile-filter-fab');
+        const closeMobileFiltersBtn = document.querySelector('.close-mobile-filters');
         const filtersSidebar = document.getElementById('filters-sidebar');
-        const filtersOverlay = document.getElementById('filters-overlay');
+        const filterOverlay = document.getElementById('filter-overlay');
+        const filtersSlot = document.getElementById('filters-slot');
         const urlParams = new URLSearchParams(window.location.search);
         const initialSearch = (urlParams.get('q') || '').trim();
 
@@ -992,15 +822,49 @@
         });
 
         // === MOBILE FILTERS TOGGLE ===
-        toggleFiltersBtn?.addEventListener('click', () => {
-            filtersSidebar.classList.add('open');
-            filtersOverlay.classList.add('show');
-        });
+        const isSmallScreen = () => window.matchMedia('(max-width: 1024px)').matches;
+        const isDesktopScreen = () => window.matchMedia('(min-width: 1025px)').matches;
 
-        filtersOverlay?.addEventListener('click', () => {
-            filtersSidebar.classList.remove('open');
-            filtersOverlay.classList.remove('show');
-        });
+        const positionFiltersPanel = () => {
+            if (!filtersSidebar) return;
+
+            if (isDesktopScreen()) {
+                if (filtersSlot && filtersSidebar.parentElement !== filtersSlot) {
+                    filtersSlot.appendChild(filtersSidebar);
+                }
+            } else {
+                if (filtersSidebar.parentElement !== document.body) {
+                    document.body.appendChild(filtersSidebar);
+                }
+            }
+        };
+
+        const openMobileFilters = () => {
+            if (!filtersSidebar || !filterOverlay) return;
+
+            if (isSmallScreen()) {
+                filtersSidebar.classList.add('show-mobile');
+                document.body.style.overflow = 'hidden';
+            }
+
+            filterOverlay.classList.add('active');
+        };
+
+        const closeMobileFilters = () => {
+            if (!filtersSidebar || !filterOverlay) return;
+
+            filtersSidebar.classList.remove('show-mobile');
+            filterOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        };
+
+        toggleFiltersBtn?.addEventListener('click', openMobileFilters);
+        mobileFilterFab?.addEventListener('click', openMobileFilters);
+        closeMobileFiltersBtn?.addEventListener('click', closeMobileFilters);
+        filterOverlay?.addEventListener('click', closeMobileFilters);
+
+        positionFiltersPanel();
+        window.addEventListener('resize', positionFiltersPanel);
 
         // === FONCTIONS GLOBALES (pour onclick) ===
         window.toggleFilterGroup = (element) => {
@@ -1038,5 +902,179 @@
     });
   </script>
   <script src="assets/js/footer.js" defer></script>
+    <div id="filter-overlay"></div>
+    <aside class="filters-sidebar sidebar-filters" id="filters-sidebar">
+        <div class="filters-header">
+            <button type="button" class="close-mobile-filters" aria-label="Fermer les filtres">×</button>
+            <h3>
+                <i data-lucide="sliders"></i>
+                Filtres
+            </h3>
+            <a href="#" class="filters-reset" id="reset-filters">Réinitialiser</a>
+        </div>
+
+        <!-- Filtre Prix -->
+        <div class="filter-group" data-filter="price">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="dollar-sign"></i>
+                    <span>Prix (FCFA)</span>
+                </div>
+                <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+                <div class="price-inputs">
+                    <input 
+                        type="number" 
+                        class="price-input" 
+                        id="price-min" 
+                        placeholder="Min"
+                        min="0"
+                    >
+                    <span style="color: #D4AF37; font-weight: 700;">—</span>
+                    <input 
+                        type="number" 
+                        class="price-input" 
+                        id="price-max" 
+                        placeholder="Max"
+                        min="0"
+                    >
+                </div>
+                <div class="price-slider">
+                    <input 
+                        type="range" 
+                        id="price-range-min" 
+                        min="0" 
+                        max="1000000" 
+                        step="1000"
+                        value="0"
+                    >
+                    <input 
+                        type="range" 
+                        id="price-range-max" 
+                        min="0" 
+                        max="1000000" 
+                        step="1000"
+                        value="1000000"
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtre Catégories -->
+        <div class="filter-group" data-filter="category">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="grid"></i>
+                    <span>Catégories</span>
+                </div>
+                <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+                <!-- Catégories générées dynamiquement -->
+                <div id="category-filters-dynamic">
+                    <!-- Toutes les catégories chargées ici -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtre Note Vendeur -->
+        <div class="filter-group" data-filter="rating">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="star"></i>
+                    <span>Note Vendeur</span>
+                </div>
+                <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+                <div class="filter-checkbox">
+                    <input type="checkbox" id="rating-4plus" value="4">
+                    <label for="rating-4plus">
+                        <span>⭐⭐⭐⭐ 4 étoiles et plus</span>
+                    </label>
+                </div>
+                <div class="filter-checkbox">
+                    <input type="checkbox" id="rating-3plus" value="3">
+                    <label for="rating-3plus">
+                        <span>⭐⭐⭐ 3 étoiles et plus</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtre Couleurs (Cercles cliquables) -->
+        <div class="filter-group" data-filter="color">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="palette"></i>
+                    <span>Couleurs</span>
+                </div>
+                <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+                <div class="colors-grid">
+                    <div class="color-swatch" data-color="#000000" style="background: #000000;" title="Noir"></div>
+                    <div class="color-swatch" data-color="#FFFFFF" style="background: #FFFFFF; border-color: #ddd;" title="Blanc"></div>
+                    <div class="color-swatch" data-color="#D4AF37" style="background: #D4AF37;" title="Or"></div>
+                    <div class="color-swatch" data-color="#FF0000" style="background: #FF0000;" title="Rouge"></div>
+                    <div class="color-swatch" data-color="#0000FF" style="background: #0000FF;" title="Bleu"></div>
+                    <div class="color-swatch" data-color="#00FF00" style="background: #00FF00;" title="Vert"></div>
+                    <div class="color-swatch" data-color="#FFC0CB" style="background: #FFC0CB;" title="Rose"></div>
+                    <div class="color-swatch" data-color="#FFA500" style="background: #FFA500;" title="Orange"></div>
+                    <div id="color-filters-dynamic">
+                        <!-- Autres couleurs chargées dynamiquement -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtre Localisation (Select Stylisé) -->
+        <div class="filter-group" data-filter="location">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="map-pin"></i>
+                    <span>Localisation</span>
+                </div>
+                <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+                <select id="location-select" class="location-select">
+                    <option value="">Toutes les villes</option>
+                    <option value="Ouagadougou">Ouagadougou</option>
+                    <option value="Bobo-Dioulasso">Bobo-Dioulasso</option>
+                    <option value="Koudougou">Koudougou</option>
+                    <option value="Ouahigouya">Ouahigouya</option>
+                    <option value="Banfora">Banfora</option>
+                    <option value="Tenkodogo">Tenkodogo</option>
+                    <option value="Dédougou">Dédougou</option>
+                    <option value="Kaya">Kaya</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Filtre Tri -->
+        <div class="filter-group" data-filter="sort">
+            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="arrow-down-up"></i>
+                    <span>Trier par</span>
+                </div>
+                <i data-lucide="chevron-down" class="chevron"></i>
+            </div>
+            <div class="filter-group-content">
+                <select id="sort-select" class="location-select">
+                    <option value="recent">Plus récent</option>
+                    <option value="price-asc">Prix croissant</option>
+                    <option value="price-desc">Prix décroissant</option>
+                    <option value="popular">Plus populaire</option>
+                </select>
+            </div>
+        </div>
+    </aside>
+    <button id="mobile-filter-fab" class="btn-floating-filter">
+        <i data-lucide="sliders-horizontal"></i>
+        Filtres
+    </button>
 </body>
 </html>

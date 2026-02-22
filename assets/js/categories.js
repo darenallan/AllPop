@@ -269,7 +269,7 @@
         
         html += `
           <div class="filter-checkbox" style="margin-bottom: 6px;">
-            <input type="checkbox" id="cat-sub-${sanitizeId(mainCat)}-${sanitizeId(subCat)}" value="${mainCat} > ${subCat}" data-level="sub" data-main="${mainCat}">
+            <input type="checkbox" id="cat-sub-${sanitizeId(mainCat)}-${sanitizeId(subCat)}" value="${mainCat} > ${subCat}" data-level="sub" data-main="${mainCat}" onchange="toggleSubCategoryGroup(this)">
             <label for="cat-sub-${sanitizeId(mainCat)}-${sanitizeId(subCat)}">
               <span style="font-size: 13px;">${subCat}</span>
             </label>
@@ -278,7 +278,7 @@
 
         // Si sous-sous-catégories existent
         if (subSubCategories.length > 0) {
-          html += `<div style="margin-left: 16px; font-size: 12px; color: #666;">`;
+          html += `<div id="group-sub-${sanitizeId(mainCat)}-${sanitizeId(subCat)}" style="margin-left: 16px; font-size: 12px; color: #666; display: none;">`;
           subSubCategories.forEach(subSubCat => {
             html += `
               <div class="filter-checkbox" style="margin-bottom: 4px;">
@@ -314,6 +314,29 @@
       group.style.display = checkbox.checked ? 'block' : 'none';
       
       // Si décoché, décocher aussi tous les enfants
+      if (!checkbox.checked) {
+        const childCheckboxes = group.querySelectorAll('input[type="checkbox"]');
+        childCheckboxes.forEach(cb => cb.checked = false);
+
+        const subGroups = group.querySelectorAll('[id^="group-sub-"]');
+        subGroups.forEach(subGroup => {
+          subGroup.style.display = 'none';
+        });
+      }
+    }
+  };
+
+  /**
+   * Toggle l'affichage d'un groupe de sous-sous-catégories
+   */
+  window.toggleSubCategoryGroup = function(checkbox) {
+    const mainCat = checkbox.dataset.main;
+    const subCat = checkbox.value.split(' > ')[1] || '';
+    const group = document.getElementById('group-sub-' + sanitizeId(mainCat) + '-' + sanitizeId(subCat));
+
+    if (group) {
+      group.style.display = checkbox.checked ? 'block' : 'none';
+
       if (!checkbox.checked) {
         const childCheckboxes = group.querySelectorAll('input[type="checkbox"]');
         childCheckboxes.forEach(cb => cb.checked = false);
