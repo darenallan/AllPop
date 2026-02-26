@@ -23,9 +23,7 @@
 <body>
   <div id="header-placeholder"></div>
 
-
   <main class="product-container" id="product-container">
-    <!-- Le contenu sera injecté par JavaScript -->
     <div style="text-align: center; padding: 100px 20px;">
       <div class="skeleton" style="width: 200px; height: 30px; margin: 0 auto 20px;"></div>
       <div class="skeleton" style="width: 60%; height: 400px; margin: 0 auto;"></div>
@@ -38,7 +36,6 @@
   <script src="assets/js/app.js" defer></script>
   
   <script>
-    // === PAGE PRODUIT - LOGIQUE COMPLÈTE ===
     document.addEventListener('DOMContentLoaded', async () => {
         const yearSpan = document.getElementById('year');
         if (yearSpan) yearSpan.innerText = new Date().getFullYear();
@@ -81,51 +78,15 @@
         try {
             let product = null;
             let shopId = null;
-            let productDoc = null;
 
-            // TEST 1: Chercher dans shops/{shopId}/products/{productId}
-            console.log('🔍 TEST 1: Chercher dans shops/{shopId}/products/{productId}');
-            const shopsSnap = await db.collection('shops').get();
-            console.log(`Nombre de shops trouvés: ${shopsSnap.docs.length}`);
-            
-            for (const shopDoc of shopsSnap.docs) {
-                const productsSnap = await shopDoc.ref.collection('products').doc(productId).get();
-                if (productsSnap.exists) {
-                    product = { id: productsSnap.id, ...productsSnap.data() };
-                    shopId = shopDoc.id;
-                    productDoc = productsSnap;
-                    console.log(`✅ Produit trouvé dans shop: ${shopId}`);
-                    break;
-                }
-            }
-
-            // TEST 2: Chercher dans collection('products') directement
-            if (!product) {
-                console.log('🔍 TEST 2: Chercher dans collection("products")');
-                const directSnap = await db.collection('products').doc(productId).get();
-                if (directSnap.exists) {
-                    product = { id: directSnap.id, ...directSnap.data() };
-                    productDoc = directSnap;
-                    console.log('✅ Produit trouvé dans collection products');
-                    shopId = product.shopId || 'unknown';
-                }
-            }
-
-            // TEST 3: Chercher tous les produits et afficher
-            if (!product) {
-                console.log('🔍 TEST 3: Chercher dans tous les documents de tous les shops');
-                for (const shopDoc of shopsSnap.docs) {
-                    const productsSnap = await shopDoc.ref.collection('products').limit(100).get();
-                    console.log(`   Shop "${shopDoc.id}": ${productsSnap.docs.length} produits`);
-                    
-                    productsSnap.docs.forEach(doc => {
-                        console.log(`   - ${doc.id}: ${doc.data().name || 'Sans nom'}`);
-                    });
-                }
-            }
-
-            if (!product) {
-                throw new Error(`Produit "${productId}" non trouvé. Vérifiez que l'ID est correct et que le produit existe.`);
+            // ✅ CORRIGÉ: Chercher directement dans /products (collection racine)
+            const directSnap = await db.collection('products').doc(productId).get();
+            if (directSnap.exists) {
+                product = { id: directSnap.id, ...directSnap.data() };
+                shopId = product.shopId || 'unknown';
+                console.log('✅ Produit trouvé dans collection racine /products');
+            } else {
+                throw new Error(`Produit "${productId}" introuvable.`);
             }
 
             console.log('✅ Produit trouvé:', product.name);
@@ -133,18 +94,24 @@
             // Charger les infos du vendeur
             let shopData = {};
             try {
-                const shopDoc = await db.collection('shops').doc(shopId).get();
-                if (shopDoc.exists) {
-                    shopData = shopDoc.data();
+                if (shopId && shopId !== 'unknown') {
+                    const shopDoc = await db.collection('shops').doc(shopId).get();
+                    if (shopDoc.exists) {
+                        shopData = shopDoc.data();
+                    }
                 }
             } catch (err) {
                 console.warn('⚠️ Impossible de charger les infos vendeur:', err);
             }
 
-            // Charger les avis
+            // ✅ CORRIGÉ: Charger les avis depuis /reviews (collection racine)
             let reviews = [];
             try {
-                const reviewsSnap = await productDoc.ref.collection('reviews').orderBy('createdAt', 'desc').limit(10).get();
+                const reviewsSnap = await db.collection('reviews')
+                    .where('productId', '==', productId)
+                    .orderBy('createdAt', 'desc')
+                    .limit(10)
+                    .get();
                 reviewsSnap.forEach(doc => {
                     reviews.push({ id: doc.id, ...doc.data() });
                 });
@@ -152,8 +119,7 @@
                 console.warn('⚠️ Impossible de charger les avis:', err);
             }
 
-// Extraire les vraies couleurs et tailles depuis les variantes Firestore
-            // Structure: product.variants = [{color: "Blanche", size: "42", qty: 2}, ...]
+            // Extraire les variantes depuis Firestore
             let colors = [];
             let sizes = [];
             let totalStock = 0;
@@ -191,11 +157,10 @@
                 }
             }
 
-            // Appliquer au produit
             product.colors = colors;
             product.sizes = sizes;
 
-            // Stock : utiliser totalStock des variantes, sinon le champ stockLevel, sinon fallback
+            // Stock
             if (!product.stock || product.stock === undefined) {
                 if (totalStock > 0) {
                     product.stock = totalStock;
@@ -213,7 +178,6 @@
               stock: product.stock
             });
 
-            // Rendre la page
             renderProductPage(product, shopId, shopData, reviews);
 
         } catch (err) {
@@ -236,10 +200,8 @@
         const hasDiscount = product.originalPrice && product.originalPrice > product.price;
         const discountPercent = hasDiscount ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
         
-        // Images (gérer multiple images)
         const images = product.images && Array.isArray(product.images) ? product.images : [product.image || 'assets/img/placeholder-product-1.svg'];
         
-        // Calculer note moyenne des avis
         const avgRating = reviews.length > 0 
             ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
             : (product.rating || 0);
@@ -294,10 +256,7 @@
                         ` : ''}
                     </div>
 
-                    <!-- Variants -->
                     ${renderVariants(product)}
-
-                    <!-- Specifications -->
                     ${renderSpecifications(product)}
 
                     <!-- Quantity -->
@@ -379,8 +338,8 @@
             <!-- Tabs -->
             <div class="product-tabs">
                 <div class="tabs-nav">
-                    <button class="tab-btn active" onclick="switchTab('description')">Description</button>
-                    <button class="tab-btn" onclick="switchTab('reviews')" id="reviews">Avis clients (${reviews.length})</button>
+                    <button class="tab-btn active" onclick="switchTab('description', event)">Description</button>
+                    <button class="tab-btn" onclick="switchTab('reviews', event)" id="reviews-tab">Avis clients (${reviews.length})</button>
                 </div>
 
                 <!-- Tab: Description -->
@@ -405,47 +364,48 @@
 
                 <!-- Tab: Reviews -->
                 <div class="tab-content" id="tab-reviews">
-                    <!-- Formulaire de soumission d'avis -->
+                    <!-- Formulaire d'avis -->
                     <div class="review-form-section" style="background: #f9f9f9; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #eee;">
                         <h3 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 700; color: #1a1a1a;">Donner votre avis</h3>
                         
-                        <form id="review-form" style="display: grid; gap: 15px;">
-                            <!-- Nom -->
-                            <div>
-                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Votre nom</label>
-                                <input type="text" id="review-name" placeholder="Votre nom" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
-                            </div>
+                        <!-- Message si non connecté -->
+                        <div id="review-auth-warning" style="display: none; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 15px; color: #856404; font-size: 14px;">
+                            ⚠️ Vous devez être <a href="login.html" style="color: #D4AF37; font-weight: 700;">connecté</a> pour laisser un avis.
+                        </div>
 
-                            <!-- Email (optionnel) -->
-                            <div>
-                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Email (optionnel)</label>
-                                <input type="email" id="review-email" placeholder="votre@email.com" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
-                            </div>
-
-                            <!-- Note -->
-                            <div>
-                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Note</label>
-                                <div id="rating-stars" style="display: flex; gap: 8px; font-size: 32px; cursor: pointer;">
-                                    <span data-rating="1" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(1)" onclick="setRating(1)">★</span>
-                                    <span data-rating="2" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(2)" onclick="setRating(2)">★</span>
-                                    <span data-rating="3" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(3)" onclick="setRating(3)">★</span>
-                                    <span data-rating="4" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(4)" onclick="setRating(4)">★</span>
-                                    <span data-rating="5" style="color: #ddd; transition: color 0.2s;" onmouseover="highlightStars(5)" onclick="setRating(5)">★</span>
+                        <div id="review-form-wrapper">
+                            <div style="display: grid; gap: 15px;">
+                                <!-- Nom -->
+                                <div>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Votre nom</label>
+                                    <input type="text" id="review-name" placeholder="Votre nom" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
                                 </div>
-                                <input type="hidden" id="review-rating" value="5">
-                            </div>
 
-                            <!-- Commentaire -->
-                            <div>
-                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Votre avis</label>
-                                <textarea id="review-comment" placeholder="Partagez votre expérience avec ce produit..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; min-height: 120px; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
-                            </div>
+                                <!-- Note -->
+                                <div>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Note</label>
+                                    <div id="rating-stars" style="display: flex; gap: 8px; font-size: 32px; cursor: pointer;">
+                                        <span data-rating="1" style="color: #D4AF37; transition: color 0.2s;" onmouseover="highlightStars(1)" onclick="setRating(1)">★</span>
+                                        <span data-rating="2" style="color: #D4AF37; transition: color 0.2s;" onmouseover="highlightStars(2)" onclick="setRating(2)">★</span>
+                                        <span data-rating="3" style="color: #D4AF37; transition: color 0.2s;" onmouseover="highlightStars(3)" onclick="setRating(3)">★</span>
+                                        <span data-rating="4" style="color: #D4AF37; transition: color 0.2s;" onmouseover="highlightStars(4)" onclick="setRating(4)">★</span>
+                                        <span data-rating="5" style="color: #D4AF37; transition: color 0.2s;" onmouseover="highlightStars(5)" onclick="setRating(5)">★</span>
+                                    </div>
+                                    <input type="hidden" id="review-rating" value="5">
+                                </div>
 
-                            <!-- Bouton Soumettre -->
-                            <button type="button" onclick="submitReview()" style="padding: 12px 24px; background: #D4AF37; color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s;">
-                                Soumettre mon avis
-                            </button>
-                        </form>
+                                <!-- Commentaire -->
+                                <div>
+                                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Votre avis</label>
+                                    <textarea id="review-comment" placeholder="Partagez votre expérience avec ce produit..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; min-height: 120px; resize: vertical; box-sizing: border-box; font-family: inherit;"></textarea>
+                                </div>
+
+                                <!-- Bouton Soumettre -->
+                                <button type="button" onclick="submitReview(event)" style="padding: 12px 24px; background: #D4AF37; color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s;">
+                                    Soumettre mon avis
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     ${reviews.length > 0 ? `
@@ -487,32 +447,27 @@
             </div>
         `;
 
-        // Stocker les données globalement pour les fonctions
+        // Stocker les données globalement
         window.currentProduct = product;
         window.currentImages = images;
         window.currentShopId = shopId;
 
-        // Initialiser les icônes
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        // Vérifier si l'utilisateur est connecté et afficher le warning si besoin
+        firebase.auth().onAuthStateChanged((user) => {
+            const warning = document.getElementById('review-auth-warning');
+            if (warning) {
+                warning.style.display = user ? 'none' : 'block';
+            }
+        });
 
-        // Mettre à jour le badge panier
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         if (typeof updateCartBadge === 'function') updateCartBadge();
     }
 
     function renderVariants(product) {
-        console.log('🎨 renderVariants appelée avec:', {
-            hasColors: !!product.colors,
-            colors: product.colors,
-            hasSizes: !!product.sizes,
-            sizes: product.sizes
-        });
-
         let html = '';
-        let hasVariants = false;
 
-        // Couleurs
         if (product.colors && product.colors.length > 0) {
-            hasVariants = true;
             html += `
                 <div class="variant-section">
                     <div class="variant-label" style="font-weight: 700; font-size: 15px; margin-bottom: 12px; color: #1a1a1a;">
@@ -532,9 +487,7 @@
             `;
         }
 
-        // Tailles
         if (product.sizes && product.sizes.length > 0) {
-            hasVariants = true;
             html += `
                 <div class="variant-section" style="margin-top: ${html ? '20px' : '0'};">
                     <div class="variant-label" style="font-weight: 700; font-size: 15px; margin-bottom: 12px; color: #1a1a1a;">
@@ -553,20 +506,12 @@
             `;
         }
 
-        console.log('🎨 renderVariants retourne:', html.length > 0 ? `${html.length} caractères` : 'HTML vide');
         return html;
     }
 
     function renderSpecifications(product) {
-        console.log('📋 renderSpecifications appelée avec:', {
-            hasStock: product.stock !== undefined,
-            stock: product.stock,
-            category: product.category
-        });
-
         const specs = [];
 
-        // === STOCK - TOUJOURS EN PREMIER ===
         if (product.stock !== undefined && product.stock !== null) {
             const stockStatus = product.stock > 10 ? '✅ En stock' : 
                                product.stock > 0 ? '⚠️ Stock limité' : 
@@ -574,139 +519,39 @@
             const stockColor = product.stock > 10 ? '#16a34a' : 
                               product.stock > 0 ? '#ea580c' : 
                               '#dc2626';
-            specs.push({ 
-                label: 'Stock', 
-                value: `<span style="color: ${stockColor}; font-weight: 700;">${stockStatus}</span> (${product.stock} unité${product.stock > 1 ? 's' : ''})` 
-            });
+            specs.push({ label: 'Stock', value: `<span style="color: ${stockColor}; font-weight: 700;">${stockStatus}</span> (${product.stock} unité${product.stock > 1 ? 's' : ''})` });
         } else {
             specs.push({ label: 'Stock', value: '<span style="color: #666;">Non spécifié</span>' });
         }
 
-        // Catégorie
-        if (product.category) {
-            specs.push({ label: 'Catégorie', value: product.category });
-        }
+        if (product.category) specs.push({ label: 'Catégorie', value: product.category });
+        if (product.colors && product.colors.length > 0) specs.push({ label: 'Couleurs disponibles', value: `${product.colors.length} couleur${product.colors.length > 1 ? 's' : ''}` });
+        if (product.sizes && product.sizes.length > 0) specs.push({ label: 'Tailles disponibles', value: product.sizes.join(', ') });
+        if (product.beautyType) specs.push({ label: 'Type', value: product.beautyType });
+        if (product.skinType) specs.push({ label: 'Type de peau', value: product.skinType });
+        if (product.beautyBrand) specs.push({ label: 'Marque', value: product.beautyBrand });
+        if (product.techBrand) specs.push({ label: 'Marque', value: product.techBrand });
+        if (product.techCapacity) specs.push({ label: 'Capacité', value: product.techCapacity });
+        if (product.techCondition) specs.push({ label: 'État', value: product.techCondition });
+        if (product.techType) specs.push({ label: 'Type', value: product.techType });
+        if (product.homeMaterial) specs.push({ label: 'Matériau', value: product.homeMaterial });
+        if (product.homeDimensions) specs.push({ label: 'Dimensions', value: product.homeDimensions });
+        if (product.homeStyle) specs.push({ label: 'Style', value: product.homeStyle });
+        if (product.unit) specs.push({ label: 'Unité de vente', value: product.unit });
+        if (product.clientType) specs.push({ label: 'Destiné à', value: product.clientType });
+        if (product.pricePro) specs.push({ label: 'Prix professionnel', value: `${new Intl.NumberFormat('fr-FR').format(product.pricePro)} FCFA` });
+        if (product.btpBrand) specs.push({ label: 'Marque', value: product.btpBrand });
+        if (product.vehicleYear) specs.push({ label: 'Année', value: product.vehicleYear });
+        if (product.vehicleMileage !== undefined) specs.push({ label: 'Kilométrage', value: `${new Intl.NumberFormat('fr-FR').format(product.vehicleMileage)} km` });
+        if (product.vehicleFuel) specs.push({ label: 'Carburant', value: product.vehicleFuel });
+        if (product.vehicleTransmission) specs.push({ label: 'Transmission', value: product.vehicleTransmission });
+        if (product.vehicleBrand) specs.push({ label: 'Marque', value: product.vehicleBrand });
+        if (product.vehicleCondition) specs.push({ label: 'État', value: product.vehicleCondition });
+        if (product.rating) specs.push({ label: 'Note moyenne', value: `${product.rating} / 5 ⭐` });
+        if (product.sku || product.id) specs.push({ label: 'Référence', value: product.sku || product.id });
 
-        // Couleurs disponibles
-        if (product.colors && product.colors.length > 0) {
-            specs.push({ label: 'Couleurs disponibles', value: `${product.colors.length} couleur${product.colors.length > 1 ? 's' : ''}` });
-        }
+        if (specs.length === 0) return '';
 
-        // Tailles disponibles
-        if (product.sizes && product.sizes.length > 0) {
-            specs.push({ label: 'Tailles disponibles', value: product.sizes.join(', ') });
-        }
-
-        // Type de produit (pour beauté)
-        if (product.beautyType) {
-            specs.push({ label: 'Type', value: product.beautyType });
-        }
-
-        // Type de peau (pour beauté)
-        if (product.skinType) {
-            specs.push({ label: 'Type de peau', value: product.skinType });
-        }
-
-        // Marque (pour beauté/tech)
-        if (product.beautyBrand) {
-            specs.push({ label: 'Marque', value: product.beautyBrand });
-        }
-
-        if (product.techBrand) {
-            specs.push({ label: 'Marque', value: product.techBrand });
-        }
-
-        // Capacité (pour tech)
-        if (product.techCapacity) {
-            specs.push({ label: 'Capacité', value: product.techCapacity });
-        }
-
-        // État (pour tech)
-        if (product.techCondition) {
-            specs.push({ label: 'État', value: product.techCondition });
-        }
-
-        // Type de tech
-        if (product.techType) {
-            specs.push({ label: 'Type', value: product.techType });
-        }
-
-        // Matériau (pour maison)
-        if (product.homeMaterial) {
-            specs.push({ label: 'Matériau', value: product.homeMaterial });
-        }
-
-        // Dimensions (pour maison)
-        if (product.homeDimensions) {
-            specs.push({ label: 'Dimensions', value: product.homeDimensions });
-        }
-
-        // Style (pour maison)
-        if (product.homeStyle) {
-            specs.push({ label: 'Style', value: product.homeStyle });
-        }
-
-        // Unité (pour BTP)
-        if (product.unit) {
-            specs.push({ label: 'Unité de vente', value: product.unit });
-        }
-
-        // Type de client (pour BTP)
-        if (product.clientType) {
-            specs.push({ label: 'Destiné à', value: product.clientType });
-        }
-
-        // Prix pro (pour BTP)
-        if (product.pricePro) {
-            specs.push({ label: 'Prix professionnel', value: `${new Intl.NumberFormat('fr-FR').format(product.pricePro)} FCFA` });
-        }
-
-        // Marque BTP
-        if (product.btpBrand) {
-            specs.push({ label: 'Marque', value: product.btpBrand });
-        }
-
-        // Véhicules
-        if (product.vehicleYear) {
-            specs.push({ label: 'Année', value: product.vehicleYear });
-        }
-
-        if (product.vehicleMileage !== undefined) {
-            specs.push({ label: 'Kilométrage', value: `${new Intl.NumberFormat('fr-FR').format(product.vehicleMileage)} km` });
-        }
-
-        if (product.vehicleFuel) {
-            specs.push({ label: 'Carburant', value: product.vehicleFuel });
-        }
-
-        if (product.vehicleTransmission) {
-            specs.push({ label: 'Transmission', value: product.vehicleTransmission });
-        }
-
-        if (product.vehicleBrand) {
-            specs.push({ label: 'Marque', value: product.vehicleBrand });
-        }
-
-        if (product.vehicleCondition) {
-            specs.push({ label: 'État', value: product.vehicleCondition });
-        }
-
-        // Rating produit
-        if (product.rating) {
-            specs.push({ label: 'Note moyenne', value: `${product.rating} / 5 ⭐` });
-        }
-
-        // SKU / Référence
-        if (product.sku || product.id) {
-            specs.push({ label: 'Référence', value: product.sku || product.id });
-        }
-
-        // Si pas de specs, ne rien afficher
-        if (specs.length === 0) {
-            return '';
-        }
-
-        // Rendu HTML
         return `
             <div class="specifications-section" style="margin: 25px 0; padding: 20px; background: #f9f9f9; border-radius: 12px; border: 1px solid #eee;">
                 <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 700; color: #1a1a1a; display: flex; align-items: center; gap: 8px;">
@@ -726,64 +571,38 @@
     }
 
     // === FONCTIONS GLOBALES ===
-    
+
     window.changeImage = (index) => {
         const mainImage = document.getElementById('main-image');
         const thumbnails = document.querySelectorAll('.thumbnail');
-        
         mainImage.src = window.currentImages[index];
-        
         thumbnails.forEach((thumb, idx) => {
             thumb.classList.toggle('active', idx === index);
         });
     };
 
     window.selectVariant = (type, value, element) => {
-        // Désélectionner les autres variantes du même type
         const siblings = element.parentElement.querySelectorAll(`[data-variant="${type}"]`);
         siblings.forEach(s => {
             s.classList.remove('selected');
-            // Couleurs
-            if (type === 'color') {
-                s.style.borderColor = '#ddd';
-                s.style.borderWidth = '3px';
-            }
-            // Tailles
-            if (type === 'size') {
-                s.style.borderColor = '#ddd';
-                s.style.backgroundColor = 'white';
-                s.style.color = '#1a1a1a';
-            }
+            if (type === 'color') { s.style.borderColor = '#ddd'; s.style.borderWidth = '3px'; }
+            if (type === 'size') { s.style.borderColor = '#ddd'; s.style.backgroundColor = 'white'; }
         });
-        
-        // Sélectionner la variante cliquée
         element.classList.add('selected');
-        if (type === 'color') {
-            element.style.borderColor = '#D4AF37';
-            element.style.borderWidth = '4px';
-        }
-        if (type === 'size') {
-            element.style.borderColor = '#D4AF37';
-            element.style.backgroundColor = '#fffbf0';
-            element.style.color = '#1a1a1a';
-        }
-        
+        if (type === 'color') { element.style.borderColor = '#D4AF37'; element.style.borderWidth = '4px'; }
+        if (type === 'size') { element.style.borderColor = '#D4AF37'; element.style.backgroundColor = '#fffbf0'; }
         console.log(`✓ Variante sélectionnée: ${type} = ${value}`);
     };
 
     window.changeQuantity = (delta) => {
         const input = document.getElementById('quantity-input');
         const currentValue = parseInt(input.value) || 1;
-        const newValue = Math.max(1, Math.min(currentValue + delta, parseInt(input.max) || 999));
-        input.value = newValue;
+        input.value = Math.max(1, Math.min(currentValue + delta, parseInt(input.max) || 999));
     };
 
     window.addToCartAction = () => {
         if (!window.currentProduct) return;
-
         const quantity = parseInt(document.getElementById('quantity-input').value) || 1;
-        
-        // Récupérer les variantes sélectionnées
         const selectedColor = document.querySelector('.color-swatch.selected')?.dataset.value;
         const selectedSize = document.querySelector('.variant-option.selected[data-variant="size"]')?.dataset.value;
 
@@ -800,41 +619,25 @@
         if (selectedColor) cartItem.variants.color = selectedColor;
         if (selectedSize) cartItem.variants.size = selectedSize;
 
-        // Ajouter au panier (utilise la fonction globale si dispo)
         if (typeof addToCart === 'function') {
             const pid = (typeof safeProductId === 'function')
                 ? safeProductId(window.currentProduct.id)
                 : String(window.currentProduct.id || '').trim();
             addToCart(pid, quantity, window.currentProduct);
-            if (typeof window.showToast === 'function') {
-                window.showToast('✅ Produit ajouté au panier', 'success');
-            }
+            if (typeof window.showToast === 'function') window.showToast('✅ Produit ajouté au panier', 'success');
         } else {
-            // Fallback: stocker dans localStorage
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            
-            // Vérifier si le produit avec les mêmes variantes existe déjà
             const existingIndex = cart.findIndex(item => 
-                item.id === cartItem.id && 
-                JSON.stringify(item.variants) === JSON.stringify(cartItem.variants)
+                item.id === cartItem.id && JSON.stringify(item.variants) === JSON.stringify(cartItem.variants)
             );
-
             if (existingIndex > -1) {
                 cart[existingIndex].quantity += quantity;
             } else {
                 cart.push(cartItem);
             }
-
             localStorage.setItem('cart', JSON.stringify(cart));
-            
-            // Toast notification
-            if (typeof showToast === 'function') {
-                window.showToast('✅ Produit ajouté au panier', 'success');
-            } else {
-                alert('Produit ajouté au panier !');
-            }
-
-            // Mettre à jour le badge
+            if (typeof showToast === 'function') window.showToast('✅ Produit ajouté au panier', 'success');
+            else alert('Produit ajouté au panier !');
             if (typeof updateCartBadge === 'function') updateCartBadge();
         }
     };
@@ -842,31 +645,19 @@
     window.toggleWishlist = () => {
         const btn = document.getElementById('wishlist-btn');
         btn.classList.toggle('active');
-        
-        if (btn.classList.contains('active')) {
-            if (typeof showToast === 'function') {
-                window.showToast('❤️ Ajouté aux favoris', 'success');
-            }
-        } else {
-            if (typeof showToast === 'function') {
-                window.showToast('💔 Retiré des favoris', 'info');
-            }
+        if (typeof showToast === 'function') {
+            window.showToast(btn.classList.contains('active') ? '❤️ Ajouté aux favoris' : '💔 Retiré des favoris', 'info');
         }
     };
 
-    window.switchTab = (tabName) => {
-        // Désactiver tous les onglets
+    window.switchTab = (tabName, event) => {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-        // Activer l'onglet cliqué
-        event.target.classList.add('active');
-        document.getElementById(`tab-${tabName}`).classList.add('active');
+        if (event && event.target) event.target.classList.add('active');
+        const tabEl = document.getElementById(`tab-${tabName}`);
+        if (tabEl) tabEl.classList.add('active');
     };
 
-    // === GESTION DES AVIS ===
-    
-    // Fonction pour mettre en avant les étoiles au survol
     window.highlightStars = (rating) => {
         const ratingStars = document.getElementById('rating-stars');
         if (ratingStars) {
@@ -876,113 +667,68 @@
         }
     };
 
-    // Fonction pour définir la note
     window.setRating = (rating) => {
-        document.getElementById('review-rating').value = rating;
-        const ratingStars = document.getElementById('rating-stars');
-        if (ratingStars) {
-            ratingStars.querySelectorAll('span').forEach((star, idx) => {
-                star.style.color = (idx + 1) <= rating ? '#D4AF37' : '#ddd';
-            });
-        }
+        const input = document.getElementById('review-rating');
+        if (input) input.value = rating;
+        window.highlightStars(rating);
         console.log(`⭐ Note sélectionnée: ${rating}/5`);
     };
 
-    // Réinitialiser les étoiles au départ du curseur
-    document.addEventListener('mouseleave', () => {
-        const ratingStars = document.getElementById('rating-stars');
-        if (ratingStars && ratingStars.contains(event.target)) {
-            const currentRating = parseInt(document.getElementById('review-rating').value) || 5;
-            ratingStars.querySelectorAll('span').forEach((star, idx) => {
-                star.style.color = (idx + 1) <= currentRating ? '#D4AF37' : '#ddd';
-            });
-        }
-    }, true);
-
-
-    window.submitReview = async () => {
+    // ✅ CORRIGÉ: submitReview avec auth + collection racine /reviews
+    window.submitReview = async (event) => {
+        const btn = event.target;
         const name = document.getElementById('review-name').value.trim();
-        const email = document.getElementById('review-email').value.trim();
         const rating = parseInt(document.getElementById('review-rating').value) || 5;
         const comment = document.getElementById('review-comment').value.trim();
 
-        // Validation
-        if (!name) {
-            alert('⚠️ Veuillez entrer votre nom');
+        if (!name) { alert('⚠️ Veuillez entrer votre nom'); return; }
+        if (!comment) { alert('⚠️ Veuillez entrer votre avis'); return; }
+
+        // ✅ Vérification authentification obligatoire
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            alert('⚠️ Vous devez être connecté pour laisser un avis.');
             return;
         }
-        if (!comment) {
-            alert('⚠️ Veuillez entrer votre avis');
+
+        if (!window.currentProduct || !window.currentProduct.id) {
+            alert('❌ Produit non trouvé.');
             return;
         }
 
         try {
-            const btn = event.target;
             btn.disabled = true;
             btn.textContent = '⏳ Envoi...';
 
-            const productId = window.currentProduct?.id;
-            if (!productId) {
-                throw new Error('ID du produit non trouvé');
-            }
-
-            // Déterminer la collection racine du produit
-            let productDocRef = null;
             const db = firebase.firestore();
 
-            // Chercher dans shops/{shopId}/products/{productId}
-            const shopsSnap = await db.collection('shops').get();
-            for (const shopDoc of shopsSnap.docs) {
-                const productSnap = await shopDoc.ref.collection('products').doc(productId).get();
-                if (productSnap.exists) {
-                    productDocRef = productSnap.ref;
-                    break;
-                }
-            }
-
-            // Fallback: chercher dans collection('products') directement
-            if (!productDocRef) {
-                const directSnap = await db.collection('products').doc(productId).get();
-                if (directSnap.exists) {
-                    productDocRef = directSnap.ref;
-                }
-            }
-
-            if (!productDocRef) {
-                throw new Error('Produit non trouvé');
-            }
-
-            // Sauvegarder l'avis
-            const reviewData = {
+            // ✅ CORRIGÉ: Sauvegarder dans /reviews (collection racine)
+            await db.collection('reviews').add({
+                userId: user.uid,                          // requis par les règles Firebase
                 userName: name,
-                userEmail: email || '',
+                productId: window.currentProduct.id,
+                shopId: window.currentShopId || '',
                 rating: rating,
                 comment: comment,
                 createdAt: firebase.firestore.Timestamp.now(),
-                helpful: 0
-            };
+            });
 
-            await productDocRef.collection('reviews').add(reviewData);
-
-            // Succès
-            if (typeof showToast === 'function') {
+            if (typeof window.showToast === 'function') {
                 window.showToast('✅ Avis publié avec succès !', 'success');
             }
+
             // Réinitialiser le formulaire
-            document.getElementById('review-form').reset();
-            document.getElementById('review-rating').value = 5;
+            document.getElementById('review-name').value = '';
+            document.getElementById('review-comment').value = '';
             window.setRating(5);
 
-            // Recharger les avis après 2 secondes
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
+            // Recharger la page après 2 secondes
+            setTimeout(() => location.reload(), 2000);
 
         } catch (err) {
             console.error('❌ Erreur lors de la soumission:', err);
             alert(`❌ Erreur: ${err.message}`);
         } finally {
-            const btn = event.target;
             btn.disabled = false;
             btn.textContent = 'Soumettre mon avis';
         }
