@@ -6,29 +6,21 @@
   <title>Catalogue — Aurum</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="assets/css/styles.css" />
-  
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   
-  <!-- Configuration & Utilities -->
   <script src="assets/js/config.js"></script>
-  <!-- Categories System -->
   <script src="assets/js/categories.js"></script>
   <script src="assets/js/components/header.js"></script>
-  <!-- Data Store -->
   <script src="assets/js/data.js" defer></script>
-
-
 </head>
 
 <body class="catalogue-page">
   <div id="header-placeholder"></div>
-
 
   <main class="container">
     <div style="background: transparent !important; padding: 0;">
@@ -38,95 +30,61 @@
           <p style="text-align: center; color: #1a1a1a; font-size: 18px; margin-bottom: 100px; font-weight: 600;">Découvrez notre sélection d'excellence</p>
         </div>
       
-      <!-- Recherche Premium avec Bouton Gold -->
-    <div class="search-container catalogue-search-container">
-        <div class="search-input-wrapper">
-          <i data-lucide="search" class="search-icon"></i>
-          <input 
-            id="search-input" 
-            type="text"
-            placeholder="Recherchez vos produits..." 
-            autocomplete="off"
-          >
-          <button class="search-btn" type="button" onclick="applyFilters()">
-            <i data-lucide="search"></i>
+        <!-- Recherche -->
+        <div class="search-container catalogue-search-container">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input id="search-input" type="text" placeholder="Recherchez vos produits..." autocomplete="off">
+            <button class="search-btn" type="button" onclick="applyFilters()">
+              <i data-lucide="search"></i>
+            </button>
+          </div>
+          <div class="search-autocomplete" id="search-autocomplete"></div>
+        </div>
+
+        <!-- Mobile Filters Toggle -->
+        <div class="mobile-filters-toggle">
+          <button class="mobile-filters-btn" id="toggle-filters">
+            <i data-lucide="sliders"></i>
+            Filtres
           </button>
         </div>
-        <div class="search-autocomplete" id="search-autocomplete"></div>
-      </div>
 
-      <!-- Mobile Filters Toggle -->
-      <div class="mobile-filters-toggle">
-        <button class="mobile-filters-btn" id="toggle-filters">
-          <i data-lucide="sliders"></i>
-          Filtres
-        </button>
-      </div>
-
-            <!-- Layout avec Sidebar + Content -->
-            <div class="catalogue-layout">
-                <div id="filters-slot"></div>
-                <!-- CONTENU CATALOGUE -->
-        <div class="catalogue-content">
-          <!-- Tags Filtres Actifs -->
-          <div class="active-filters" id="active-filters"></div>
-
-          <!-- Grille Produits -->
-          <div id="catalogue-grid" class="grid grid-4">
-            <p>Chargement du catalogue...</p>
+        <!-- Layout -->
+        <div class="catalogue-layout">
+          <div id="filters-slot"></div>
+          <div class="catalogue-content">
+            <div class="active-filters" id="active-filters"></div>
+            <div id="catalogue-grid" class="grid grid-4">
+              <p>Chargement du catalogue...</p>
+            </div>
           </div>
         </div>
-
-      </div>
-      
-    </section>
+      </section>
+    </div>
   </main>
 
-  <!-- App Module -->
   <script src="assets/js/app.js" defer></script>
   
   <script>
-    // === CATALOGUE AVANCÉ - FILTRES & RECHERCHE INTELLIGENTE ===
     document.addEventListener('DOMContentLoaded', () => {
         console.log('🚀 Catalogue - Initialisation...');
         
-        // Vérifier Firebase
         if (typeof firebase === 'undefined') {
-            console.error('❌ Firebase n\'est pas chargé !');
-            document.getElementById('catalogue-grid').innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff3cd; border-radius: 12px;">
-                    <h3 style="color: #856404;">Firebase n'est pas chargé</h3>
-                    <p style="color: #856404;">Vérifiez que les scripts Firebase sont correctement inclus.</p>
-                    <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #000; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
-                        Recharger
-                    </button>
-                </div>
-            `;
+            document.getElementById('catalogue-grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;background:#fff3cd;border-radius:12px;"><h3 style="color:#856404;">Firebase n'est pas chargé</h3></div>`;
             return;
         }
-
         if (!firebase.apps || !firebase.apps.length) {
-            console.error('❌ Firebase n\'est pas initialisé !');
-            document.getElementById('catalogue-grid').innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff3cd; border-radius: 12px;">
-                    <h3 style="color: #856404;">Firebase n'est pas initialisé</h3>
-                    <p style="color: #856404;">Vérifiez votre configuration Firebase dans auth.js</p>
-                    <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #000; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
-                        Recharger
-                    </button>
-                </div>
-            `;
+            document.getElementById('catalogue-grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;background:#fff3cd;border-radius:12px;"><h3 style="color:#856404;">Firebase n'est pas initialisé</h3></div>`;
             return;
         }
 
         console.log('✅ Firebase OK');
-        
         const yearSpan = document.getElementById('year');
         if (yearSpan) yearSpan.innerText = new Date().getFullYear();
 
         const db = firebase.firestore();
-        console.log('✅ Firestore initialisé');
-        
+
         // === ÉTAT GLOBAL ===
         let allProducts = [];
         let allCategories = [];
@@ -157,23 +115,19 @@
         const urlParams = new URLSearchParams(window.location.search);
         const initialSearch = (urlParams.get('q') || '').trim();
 
-        // === INITIALISATION ===
         initializeCatalogue();
 
         async function initializeCatalogue() {
             try {
                 console.log('📦 Chargement du catalogue...');
-                catalogueGrid.innerHTML = "<p style='text-align:center; color:#888; padding: 40px;'><i data-lucide='loader' class='animate-spin'></i> Chargement du catalogue...</p>";
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+                catalogueGrid.innerHTML = "<p style='text-align:center;color:#888;padding:40px;'>Chargement du catalogue...</p>";
 
-                // === OPTIMISATION MAJEURE : CHARGEMENT PARALLÈLE ===
-                // Charger TOUT en même temps pour gagner du temps
+                // ✅ CORRIGÉ: Charger depuis /products (collection racine) + shops en parallèle
                 console.log('⚡ Chargement parallèle : catégories + shops + produits...');
-                
                 const [categoriesSnap, shopsSnap, productsSnap] = await Promise.all([
                     db.collection('categories').get(),
                     db.collection('shops').get(),
-                    db.collectionGroup('products').get()
+                    db.collection('products').get()   // ✅ collection racine, pas collectionGroup
                 ]);
 
                 console.log(`✅ Chargement terminé:`, {
@@ -182,63 +136,40 @@
                     produits: productsSnap.size
                 });
 
-                // Traiter les catégories
                 categoriesSnap.forEach(doc => {
                     allCategories.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Créer une Map des boutiques pour accès instantané (au lieu de requêtes répétées)
+                // Map des boutiques pour accès instantané
                 const shopsMap = new Map();
-                shopsSnap.forEach(doc => {
-                    shopsMap.set(doc.id, doc.data());
-                });
-                console.log(`📊 ${shopsMap.size} boutiques indexées en mémoire`);
+                shopsSnap.forEach(doc => shopsMap.set(doc.id, doc.data()));
 
                 if (productsSnap.empty) {
                     catalogueGrid.innerHTML = `
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
-                            <i data-lucide="package-x" style="width: 64px; height: 64px; color: #ddd; margin-bottom: 20px;"></i>
-                            <h3 style="color: #999; font-weight: 600; margin-bottom: 10px;">Catalogue vide</h3>
-                            <p style="color: #bbb;">Aucun produit n'est disponible pour le moment.</p>
-                            <p style="color: #bbb; font-size: 14px; margin-top: 10px;">Les vendeurs peuvent ajouter des produits depuis leur espace vendeur.</p>
-                        </div>
-                    `;
+                        <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+                            <i data-lucide="package-x" style="width:64px;height:64px;color:#ddd;margin-bottom:20px;"></i>
+                            <h3 style="color:#999;">Catalogue vide</h3>
+                            <p style="color:#bbb;">Aucun produit disponible pour le moment.</p>
+                        </div>`;
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                     return;
                 }
 
-                // === CONSTRUCTION ULTRA-RAPIDE (tout est en mémoire) ===
-                console.log('🚀 Construction de la liste produits...');
+                // Construction de la liste produits
                 productsSnap.forEach(doc => {
                     const productData = doc.data();
                     
-                    // Déterminer le shopId (selon la structure)
-                    let shopId;
-                    if (doc.ref.parent.parent) {
-                        // Structure : shops/{shopId}/products/{productId}
-                        shopId = doc.ref.parent.parent.id;
-                    } else if (productData.shopId) {
-                        // shopId stocké directement dans le produit
-                        shopId = productData.shopId;
-                    } else {
-                        shopId = 'unknown';
-                    }
-                    
-                    // Récupérer les infos boutique depuis la Map (instantané !)
+                    // ✅ CORRIGÉ: shopId directement depuis le champ du produit
+                    const shopId = productData.shopId || 'unknown';
                     const shopData = shopsMap.get(shopId) || {};
                     const shopName = shopData.name || 'Boutique';
                     const shopRating = shopData.rating || 0;
                     const shopCity = shopData.city || shopData.address || '';
 
-                    // Extraire couleurs si disponibles
                     if (productData.colors && Array.isArray(productData.colors)) {
                         productData.colors.forEach(c => allColors.add(c));
                     }
-
-                    // Ajouter localisation
-                    if (shopCity) {
-                        allLocations.add(shopCity);
-                    }
+                    if (shopCity) allLocations.add(shopCity);
 
                     allProducts.push({
                         id: doc.id,
@@ -250,21 +181,12 @@
                     });
                 });
 
-                console.log(`✅ ${allProducts.length} produits chargés avec succès`);
-                console.log(`📊 Statistiques:`, {
-                    produits: allProducts.length,
-                    catégories: allCategories.length,
-                    couleurs: allColors.size,
-                    villes: allLocations.size
-                });
+                console.log(`✅ ${allProducts.length} produits chargés`);
 
-                // Calculer min/max prix
                 const prices = allProducts.map(p => p.price || 0).filter(p => p > 0);
                 const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
                 const maxPrice = prices.length > 0 ? Math.max(...prices) : 1000000;
-                
-                console.log(`💰 Prix: ${minPrice} - ${maxPrice} FCFA`);
-                
+
                 priceMin.value = minPrice;
                 priceMax.value = maxPrice;
                 priceMin.placeholder = minPrice;
@@ -276,119 +198,72 @@
                 priceRangeMax.max = maxPrice;
                 priceRangeMax.value = maxPrice;
 
-                // Initialiser les filtres UI
-                console.log('🎨 Initialisation des filtres UI...');
                 renderCategoryFilters();
                 renderColorFilters();
                 renderLocationFilters();
 
-                if (initialSearch && searchInput) {
-                    searchInput.value = initialSearch;
+                if (initialSearch && searchInput) searchInput.value = initialSearch;
+
+                // Appliquer filtres URL (ex: ?category=Mode)
+                const urlCategory = urlParams.get('category');
+                if (urlCategory) {
+                    setTimeout(() => {
+                        const checkbox = Array.from(document.querySelectorAll('#category-filters-dynamic input[type="checkbox"]'))
+                            .find(cb => cb.value === urlCategory);
+                        if (checkbox) checkbox.checked = true;
+                        applyFilters();
+                    }, 150);
+                } else {
+                    applyFilters();
                 }
 
-                // Appliquer filtres initiaux (ex: depuis URL)
-                console.log('🔍 Application des filtres initiaux...');
-                applyFilters();
-                
-                console.log('✅ Catalogue initialisé avec succès !');
+                console.log('✅ Catalogue initialisé !');
 
             } catch (err) {
                 console.error('❌ ERREUR FIRESTORE:', err);
-                console.error('Message:', err.message);
-                console.error('Code:', err.code);
-                console.error('Stack:', err.stack);
                 
-                // Si c'est une erreur d'index manquant
                 if (err.code === 'failed-precondition' || err.message.includes('index')) {
-                    console.error('⚠️ INDEX MANQUANT DÉTECTÉ !');
-                    console.error('👉 SOLUTION: Cliquez sur le lien dans l\'erreur ci-dessus pour créer l\'index automatiquement.');
-                    console.error('ℹ️ Firebase va vous rediriger vers la console pour générer l\'index composite requis.');
-                    
                     catalogueGrid.innerHTML = `
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff3cd; border-radius: 12px; border: 2px solid #ffc107;">
-                            <i data-lucide="alert-triangle" style="width: 64px; height: 64px; color: #ffc107; margin-bottom: 20px;"></i>
-                            <h3 style="color: #856404; font-weight: 700; margin-bottom: 10px;">Index Firestore Manquant</h3>
-                            <p style="color: #856404; margin-bottom: 15px;">Une requête nécessite un index composite.</p>
-                            <p style="color: #856404; font-size: 14px; margin-bottom: 20px;">Ouvrez la console du navigateur (F12) et cliquez sur le lien d'erreur pour créer l'index automatiquement.</p>
-                            <button onclick="location.reload()" style="padding: 12px 24px; background: #ffc107; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                                Recharger la page
-                            </button>
-                        </div>
-                    `;
+                        <div style="grid-column:1/-1;text-align:center;padding:60px 20px;background:#fff3cd;border-radius:12px;border:2px solid #ffc107;">
+                            <h3 style="color:#856404;">Index Firestore Manquant</h3>
+                            <p style="color:#856404;">Ouvrez la console (F12) et cliquez sur le lien d'erreur pour créer l'index.</p>
+                            <button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#ffc107;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Recharger</button>
+                        </div>`;
                 } else {
                     catalogueGrid.innerHTML = `
-                        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
-                            <i data-lucide="alert-circle" style="width: 64px; height: 64px; color: #ef4444; margin-bottom: 20px;"></i>
-                            <h3 style="color: #ef4444; font-weight: 600; margin-bottom: 10px;">Erreur de chargement</h3>
-                            <p style="color: #999;">Impossible de charger le catalogue. Vérifiez votre connexion.</p>
-                            <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #000; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
-                                Réessayer
-                            </button>
-                        </div>
-                    `;
+                        <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+                            <h3 style="color:#ef4444;">Erreur de chargement</h3>
+                            <p style="color:#999;">${err.message}</p>
+                            <button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#000;color:#fff;border:none;border-radius:8px;cursor:pointer;">Réessayer</button>
+                        </div>`;
                 }
-                
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         }
 
-        // === RENDU DES FILTRES ===
+        // === FILTRES UI ===
         function renderCategoryFilters() {
-            // ════════════════════════════════════════════════════════════════
-            // Utiliser le système de catégories en cascade (categories.js)
-            // ════════════════════════════════════════════════════════════════
             if (typeof window.renderCategoryFilters === 'function') {
                 window.renderCategoryFilters('category-filters-dynamic');
-                
-                // Attacher les event listeners sur tous les checkboxes générés
                 setTimeout(() => {
                     document.querySelectorAll('#category-filters-dynamic input[type="checkbox"]').forEach(cb => {
                         cb.addEventListener('change', applyFilters);
                     });
                 }, 100);
-                
-                console.log('✅ Filtres de catégories hiérarchiques générés');
             } else {
-                console.warn('⚠️ categories.js non chargé - filtres de catégories indisponibles');
-                categoryFilters.innerHTML = '<p style="color: #999; font-size: 13px;">Catégories non disponibles</p>';
+                categoryFilters.innerHTML = '<p style="color:#999;font-size:13px;">Catégories non disponibles</p>';
             }
         }
 
         function renderColorFilters() {
-            const predefinedColors = ['#000000', '#FFFFFF', '#D4AF37', '#FF0000', '#0000FF', '#00FF00', '#FFC0CB', '#FFA500'];
-            const colorNames = {
-                '#000000': 'Noir',
-                '#FFFFFF': 'Blanc',
-                '#FF0000': 'Rouge',
-                '#00FF00': 'Vert',
-                '#0000FF': 'Bleu',
-                '#FFFF00': 'Jaune',
-                '#FFC0CB': 'Rose',
-                '#FFA500': 'Orange',
-                '#800080': 'Violet',
-                '#A52A2A': 'Marron',
-                '#808080': 'Gris',
-                '#D4AF37': 'Or'
-            };
-
-            // Ajouter les couleurs dynamiques qui ne sont pas prédéfinies
             colorFilters.innerHTML = '';
             allColors.forEach(color => {
-                if (!predefinedColors.includes(color.toUpperCase())) {
+                const predefined = ['#000000', '#FFFFFF', '#D4AF37', '#FF0000', '#0000FF', '#00FF00', '#FFC0CB', '#FFA500'];
+                if (!predefined.includes(color.toUpperCase())) {
                     const colorHex = color.startsWith('#') ? color : '#000000';
-                    const colorName = colorNames[colorHex.toUpperCase()] || colorHex;
-                    colorFilters.innerHTML += `
-                        <div 
-                            class="color-swatch" 
-                            data-color="${color}"
-                            style="background: ${colorHex};"
-                            title="${colorName}"
-                        ></div>
-                    `;
+                    colorFilters.innerHTML += `<div class="color-swatch" data-color="${color}" style="background:${colorHex};" title="${colorHex}"></div>`;
                 }
             });
-
-            // Ajouter les event listeners sur tous les swatches (prédéfinis + dynamiques)
             document.querySelectorAll('.color-swatch').forEach(swatch => {
                 swatch.addEventListener('click', function() {
                     this.classList.toggle('selected');
@@ -398,99 +273,64 @@
         }
 
         function renderLocationFilters() {
-            // La localisation est maintenant gérée par le <select> directement dans le HTML
-            // Pas besoin de rendu dynamique, juste ajouter l'event listener
             locationSelect.addEventListener('change', applyFilters);
         }
 
-        // === RECHERCHE INTELLIGENTE (DEBOUNCE + AUTOCOMPLETE) ===
+        // === RECHERCHE AVEC DEBOUNCE ===
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.trim().toLowerCase();
-            
-            // Debounce 300ms
             clearTimeout(searchDebounceTimer);
-            
             if (term.length >= 2) {
-                searchDebounceTimer = setTimeout(() => {
-                    showAutocomplete(term);
-                }, 300);
+                searchDebounceTimer = setTimeout(() => showAutocomplete(term), 300);
             } else {
                 hideAutocomplete();
-                if (term.length === 0) {
-                    applyFilters();
-                }
+                if (term.length === 0) applyFilters();
             }
         });
 
-        // Appliquer le filtre quand on appuie sur Entrée
         searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                hideAutocomplete();
-                applyFilters();
-            }
+            if (e.key === 'Enter') { hideAutocomplete(); applyFilters(); }
         });
 
         function showAutocomplete(term) {
-            // Recherche intelligente sur name, keywords, category
             const matches = allProducts.filter(p => {
-                const nameMatch = p.name && p.name.toLowerCase().includes(term);
-                const keywordsMatch = p.keywords && Array.isArray(p.keywords) && 
-                    p.keywords.some(kw => kw.toLowerCase().includes(term));
-                const categoryMatch = p.category && p.category.toLowerCase().includes(term);
-                const descMatch = p.description && p.description.toLowerCase().includes(term);
-                
-                return nameMatch || keywordsMatch || categoryMatch || descMatch;
-            })
-            .slice(0, 8)  // Limiter à 8 résultats
-            .sort((a, b) => {
-                // Priorité aux matchs exacts dans le nom
+                return (p.name && p.name.toLowerCase().includes(term)) ||
+                    (p.keywords && Array.isArray(p.keywords) && p.keywords.some(kw => kw.toLowerCase().includes(term))) ||
+                    (p.category && p.category.toLowerCase().includes(term)) ||
+                    (p.description && p.description.toLowerCase().includes(term));
+            }).slice(0, 8).sort((a, b) => {
                 const aExact = a.name.toLowerCase().startsWith(term) ? 1 : 0;
                 const bExact = b.name.toLowerCase().startsWith(term) ? 1 : 0;
                 return bExact - aExact;
             });
 
             if (matches.length === 0) {
-                searchAutocomplete.innerHTML = `
-                    <div class="autocomplete-no-results">
-                        <i data-lucide="search-x" style="width: 32px; height: 32px; color: #ddd; margin-bottom: 10px;"></i>
-                        <div>Aucun résultat pour "${term}"</div>
-                    </div>
-                `;
+                searchAutocomplete.innerHTML = `<div class="autocomplete-no-results"><div>Aucun résultat pour "${term}"</div></div>`;
                 searchAutocomplete.classList.add('show');
-                if (typeof lucide !== 'undefined') lucide.createIcons();
                 return;
             }
 
             searchAutocomplete.innerHTML = matches.map(p => {
                 const price = new Intl.NumberFormat('fr-FR').format(p.price);
-                // Highlight du terme recherché
                 const highlightedName = p.name.replace(
-                    new RegExp(term, 'gi'), 
-                    match => `<mark style="background: #fff3cd; padding: 2px 4px; border-radius: 3px;">${match}</mark>`
+                    new RegExp(term, 'gi'),
+                    match => `<mark style="background:#fff3cd;padding:2px 4px;border-radius:3px;">${match}</mark>`
                 );
-                
                 return `
                     <div class="autocomplete-item" data-product-id="${p.id}">
-                        <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" 
-                             class="autocomplete-img" 
-                             alt="${p.name}"
-                             onerror="this.src='assets/img/placeholder-product-1.svg'">
+                        <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" class="autocomplete-img" alt="${p.name}" onerror="this.src='assets/img/placeholder-product-1.svg'">
                         <div class="autocomplete-info">
                             <div class="autocomplete-name">${highlightedName}</div>
                             <div class="autocomplete-price">${price} FCFA</div>
-                            ${p.category ? `<div style="font-size: 12px; color: #999; margin-top: 2px;">${p.category}</div>` : ''}
+                            ${p.category ? `<div style="font-size:12px;color:#999;margin-top:2px;">${p.category}</div>` : ''}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
 
             searchAutocomplete.classList.add('show');
-
-            // Clic sur suggestion
             document.querySelectorAll('.autocomplete-item').forEach(item => {
                 item.addEventListener('click', () => {
-                    const productId = item.dataset.productId;
-                    window.location.href = `product.html?id=${productId}`;
+                    window.location.href = `product.html?id=${item.dataset.productId}`;
                 });
             });
         }
@@ -500,205 +340,107 @@
             searchAutocomplete.innerHTML = '';
         }
 
-        // Cacher autocomplete au clic ailleurs
         document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !searchAutocomplete.contains(e.target)) {
-                hideAutocomplete();
-            }
+            if (!searchInput.contains(e.target) && !searchAutocomplete.contains(e.target)) hideAutocomplete();
         });
 
-        // === LOGIQUE DE FILTRAGE (CÔTÉ CLIENT) ===
+        // === FILTRAGE CÔTÉ CLIENT ===
         function applyFilters() {
             const searchTerm = searchInput.value.trim().toLowerCase();
-            
-            // === FILTRAGE PRIX (CÔTÉ CLIENT) ===
-            // On récupère les valeurs min/max depuis les inputs
             const minPrice = parseFloat(priceMin.value) || 0;
             const maxPrice = parseFloat(priceMax.value) || Infinity;
 
-            // ════════════════════════════════════════════════════════════════
-            // Catégories sélectionnées (système en cascade)
-            // ════════════════════════════════════════════════════════════════
             let selectedCategories = [];
             if (typeof window.getSelectedCategoryFilters === 'function') {
                 selectedCategories = window.getSelectedCategoryFilters();
             } else {
-                // Fallback pour ancien système
-                selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked'))
-                    .map(cb => cb.value);
+                selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked')).map(cb => cb.value);
             }
 
-            // Notes sélectionnées
             const rating4Plus = document.getElementById('rating-4plus')?.checked;
             const rating3Plus = document.getElementById('rating-3plus')?.checked;
-
-            // Couleurs sélectionnées
-            const selectedColors = Array.from(document.querySelectorAll('.color-swatch.selected'))
-                .map(s => s.dataset.color);
-
-            // === LOCALISATION (CÔTÉ CLIENT) ===
+            const selectedColors = Array.from(document.querySelectorAll('.color-swatch.selected')).map(s => s.dataset.color);
             const selectedLocation = locationSelect.value;
-
-            // Tri
             const sortBy = sortSelect.value;
 
-            // === FILTRAGE COMPLET CÔTÉ CLIENT ===
-            // IMPORTANT: Tout le filtrage se fait en JavaScript pour éviter les index Firestore complexes
             let filtered = allProducts.filter(p => {
-                // Recherche textuelle
-                const matchSearch = searchTerm === '' || 
+                const matchSearch = searchTerm === '' ||
                     (p.name && p.name.toLowerCase().includes(searchTerm)) ||
                     (p.keywords && Array.isArray(p.keywords) && p.keywords.some(kw => kw.toLowerCase().includes(searchTerm))) ||
                     (p.category && p.category.toLowerCase().includes(searchTerm)) ||
                     (p.description && p.description.toLowerCase().includes(searchTerm));
 
-                // Filtrage prix (client-side)
                 const productPrice = parseFloat(p.price) || 0;
                 const matchPrice = productPrice >= minPrice && productPrice <= maxPrice;
 
-                // ════════════════════════════════════════════════════════════
-                // Catégorie (avec support hiérarchique)
-                // Un produit match si sa catégorie CONTIENT une catégorie sélectionnée
-                // Ex: "Mode > Homme > T-shirts" match "Mode" ou "Mode > Homme"
-                // ════════════════════════════════════════════════════════════
                 let matchCategory = selectedCategories.length === 0;
                 if (selectedCategories.length > 0 && p.category) {
-                    matchCategory = selectedCategories.some(selectedCat => {
-                        // Match exact OU le produit appartient à une sous-catégorie
-                        return p.category === selectedCat || p.category.startsWith(selectedCat + ' >');
-                    });
+                    matchCategory = selectedCategories.some(selectedCat =>
+                        p.category === selectedCat || p.category.startsWith(selectedCat + ' >')
+                    );
                 }
 
-                // Note vendeur
                 let matchRating = true;
-                if (rating4Plus) {
-                    matchRating = (p.shopRating || 0) >= 4;
-                } else if (rating3Plus) {
-                    matchRating = (p.shopRating || 0) >= 3;
-                }
+                if (rating4Plus) matchRating = (p.shopRating || 0) >= 4;
+                else if (rating3Plus) matchRating = (p.shopRating || 0) >= 3;
 
-                // Couleur
                 const matchColor = selectedColors.length === 0 ||
                     (p.colors && Array.isArray(p.colors) && p.colors.some(c => selectedColors.includes(c)));
 
-                // Localisation (client-side)
                 const matchLocation = selectedLocation === '' || p.shopCity === selectedLocation;
 
                 return matchSearch && matchPrice && matchCategory && matchRating && matchColor && matchLocation;
             });
 
-            console.log(`🔍 Filtrage: ${filtered.length} produits trouvés sur ${allProducts.length}`);
+            console.log(`🔍 ${filtered.length} produits trouvés sur ${allProducts.length}`);
 
-            // === TRI ===
-            if (sortBy === 'price-asc') {
-                filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
-            } else if (sortBy === 'price-desc') {
-                filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
-            } else if (sortBy === 'recent') {
-                filtered.sort((a, b) => {
-                    const dateA = a.createdAt?.seconds || 0;
-                    const dateB = b.createdAt?.seconds || 0;
-                    return dateB - dateA;
-                });
-            } else if (sortBy === 'popular') {
-                filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
-            }
+            // Tri
+            if (sortBy === 'price-asc') filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
+            else if (sortBy === 'price-desc') filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
+            else if (sortBy === 'recent') filtered.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            else if (sortBy === 'popular') filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
 
-            // Afficher les filtres actifs
-            renderActiveFilters({
-                searchTerm,
-                minPrice,
-                maxPrice,
-                selectedCategories,
-                rating4Plus,
-                rating3Plus,
-                selectedColors,
-                selectedLocation
-            });
-
+            renderActiveFilters({ searchTerm, minPrice, maxPrice, selectedCategories, rating4Plus, rating3Plus, selectedColors, selectedLocation });
             renderProducts(filtered);
         }
 
-        // === AFFICHAGE DES FILTRES ACTIFS ===
         function renderActiveFilters(filters) {
             activeFiltersDiv.innerHTML = '';
             let hasActiveFilters = false;
 
             if (filters.searchTerm) {
-                activeFiltersDiv.innerHTML += `
-                    <div class="filter-tag">
-                        <i data-lucide="search" style="width: 14px; height: 14px;"></i>
-                        "${filters.searchTerm}"
-                        <i data-lucide="x" onclick="document.getElementById('search-input').value=''; applyFilters();"></i>
-                    </div>
-                `;
+                activeFiltersDiv.innerHTML += `<div class="filter-tag"><i data-lucide="search" style="width:14px;height:14px;"></i>"${filters.searchTerm}"<i data-lucide="x" onclick="document.getElementById('search-input').value='';applyFilters();"></i></div>`;
                 hasActiveFilters = true;
             }
 
             const initialMinPrice = parseFloat(priceMin.placeholder) || 0;
             const initialMaxPrice = parseFloat(priceMax.placeholder) || Infinity;
-            
             if (filters.minPrice > initialMinPrice || filters.maxPrice < initialMaxPrice) {
                 const minDisplay = new Intl.NumberFormat('fr-FR').format(filters.minPrice);
                 const maxDisplay = filters.maxPrice === Infinity ? '∞' : new Intl.NumberFormat('fr-FR').format(filters.maxPrice);
-                
-                activeFiltersDiv.innerHTML += `
-                    <div class="filter-tag">
-                        <i data-lucide="dollar-sign" style="width: 14px; height: 14px;"></i>
-                        ${minDisplay} - ${maxDisplay} FCFA
-                        <i data-lucide="x" onclick="resetPriceFilter()"></i>
-                    </div>
-                `;
+                activeFiltersDiv.innerHTML += `<div class="filter-tag"><i data-lucide="dollar-sign" style="width:14px;height:14px;"></i>${minDisplay} - ${maxDisplay} FCFA<i data-lucide="x" onclick="resetPriceFilter()"></i></div>`;
                 hasActiveFilters = true;
             }
 
             filters.selectedCategories.forEach(cat => {
-                activeFiltersDiv.innerHTML += `
-                    <div class="filter-tag">
-                        <i data-lucide="grid" style="width: 14px; height: 14px;"></i>
-                        ${cat}
-                        <i data-lucide="x" onclick="uncheckCategory('${cat}')"></i>
-                    </div>
-                `;
+                activeFiltersDiv.innerHTML += `<div class="filter-tag"><i data-lucide="grid" style="width:14px;height:14px;"></i>${cat}<i data-lucide="x" onclick="uncheckCategory('${cat}')"></i></div>`;
                 hasActiveFilters = true;
             });
 
             if (filters.rating4Plus) {
-                activeFiltersDiv.innerHTML += `
-                    <div class="filter-tag">
-                        <i data-lucide="star" style="width: 14px; height: 14px;"></i>
-                        4★ et plus
-                        <i data-lucide="x" onclick="document.getElementById('rating-4plus').checked=false; applyFilters();"></i>
-                    </div>
-                `;
+                activeFiltersDiv.innerHTML += `<div class="filter-tag"><i data-lucide="star" style="width:14px;height:14px;"></i>4★ et plus<i data-lucide="x" onclick="document.getElementById('rating-4plus').checked=false;applyFilters();"></i></div>`;
                 hasActiveFilters = true;
             }
-
             if (filters.rating3Plus) {
-                activeFiltersDiv.innerHTML += `
-                    <div class="filter-tag">
-                        <i data-lucide="star" style="width: 14px; height: 14px;"></i>
-                        3★ et plus
-                        <i data-lucide="x" onclick="document.getElementById('rating-3plus').checked=false; applyFilters();"></i>
-                    </div>
-                `;
+                activeFiltersDiv.innerHTML += `<div class="filter-tag"><i data-lucide="star" style="width:14px;height:14px;"></i>3★ et plus<i data-lucide="x" onclick="document.getElementById('rating-3plus').checked=false;applyFilters();"></i></div>`;
                 hasActiveFilters = true;
             }
-
             if (filters.selectedLocation) {
-                activeFiltersDiv.innerHTML += `
-                    <div class="filter-tag">
-                        <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
-                        ${filters.selectedLocation}
-                        <i data-lucide="x" onclick="document.getElementById('location-select').value=''; applyFilters();"></i>
-                    </div>
-                `;
+                activeFiltersDiv.innerHTML += `<div class="filter-tag"><i data-lucide="map-pin" style="width:14px;height:14px;"></i>${filters.selectedLocation}<i data-lucide="x" onclick="document.getElementById('location-select').value='';applyFilters();"></i></div>`;
                 hasActiveFilters = true;
             }
 
-            if (hasActiveFilters && typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
+            if (hasActiveFilters && typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         // === RENDU DES PRODUITS ===
@@ -707,16 +449,12 @@
 
             if (products.length === 0) {
                 catalogueGrid.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
-                        <i data-lucide="search-x" style="width: 64px; height: 64px; color: #ddd; margin-bottom: 20px;"></i>
-                        <h3 style="color: #999; font-weight: 600; margin-bottom: 10px;">Aucun produit trouvé</h3>
-                        <p style="color: #bbb; margin-bottom: 20px;">Essayez de modifier vos critères de recherche.</p>
-                        <button onclick="document.getElementById('reset-filters').click()" 
-                                style="padding: 10px 20px; background: #D4AF37; color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                            Réinitialiser les filtres
-                        </button>
-                    </div>
-                `;
+                    <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+                        <i data-lucide="search-x" style="width:64px;height:64px;color:#ddd;margin-bottom:20px;"></i>
+                        <h3 style="color:#999;">Aucun produit trouvé</h3>
+                        <p style="color:#bbb;margin-bottom:20px;">Essayez de modifier vos critères de recherche.</p>
+                        <button onclick="document.getElementById('reset-filters').click()" style="padding:10px 20px;background:#D4AF37;color:#000;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Réinitialiser les filtres</button>
+                    </div>`;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
                 return;
             }
@@ -725,15 +463,14 @@
                 const price = new Intl.NumberFormat('fr-FR').format(p.price || 0);
                 const hasDiscount = p.originalPrice && p.originalPrice > p.price;
                 const discountPercent = hasDiscount ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
-                
+
                 catalogueGrid.innerHTML += `
-                    <div class="card" style="border:1px solid #eee; border-radius:12px; overflow:hidden; transition: transform 0.2s, box-shadow 0.2s; position: relative;">
-                        ${hasDiscount ? `<div style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; z-index: 10;">-${discountPercent}%</div>` : ''}
-                        
-                        <a href="product.html?id=${p.id}" style="text-decoration: none;">
-                            <div style="height:250px; overflow:hidden; background: #f5f5f5; position: relative;">
-                                <img src="${p.image || 'assets/img/placeholder-product-1.svg'}" 
-                                     style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s;"
+                    <div class="card" style="border:1px solid #eee;border-radius:12px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;position:relative;">
+                        ${hasDiscount ? `<div style="position:absolute;top:10px;right:10px;background:#ef4444;color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;z-index:10;">-${discountPercent}%</div>` : ''}
+                        <a href="product.html?id=${p.id}" style="text-decoration:none;">
+                            <div style="height:250px;overflow:hidden;background:#f5f5f5;">
+                                <img src="${p.image || 'assets/img/placeholder-product-1.svg'}"
+                                     style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s;"
                                      loading="lazy"
                                      alt="${p.name || 'Produit'}"
                                      onerror="this.src='assets/img/placeholder-product-1.svg'"
@@ -741,75 +478,63 @@
                                      onmouseout="this.style.transform='scale(1)'">
                             </div>
                         </a>
-                        
                         <div style="padding:15px;">
-                            <div style="font-size:11px; color:#888; text-transform:uppercase; margin-bottom:5px; display: flex; align-items: center; justify-content: space-between;">
-                                <a href="boutique.html?id=${p.shopId}" style="text-decoration:none; color:#888; display: flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="store" style="width:12px; height:12px;"></i>
+                            <div style="font-size:11px;color:#888;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;">
+                                <a href="boutique.html?id=${p.shopId}" style="text-decoration:none;color:#888;display:flex;align-items:center;gap:4px;">
+                                    <i data-lucide="store" style="width:12px;height:12px;"></i>
                                     ${p.shopName || 'Boutique'}
                                 </a>
-                                ${(p.shopRating || 0) >= 4 ? '<span style="color:#D4AF37; font-size: 14px;">⭐</span>' : ''}
+                                ${(p.shopRating || 0) >= 4 ? '<span style="color:#D4AF37;font-size:14px;">⭐</span>' : ''}
                             </div>
-                            
-                            <h3 style="font-size:16px; margin:8px 0; line-height: 1.3; min-height: 42px;">
-                                <a href="product.html?id=${p.id}" style="color:black; text-decoration:none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            <h3 style="font-size:16px;margin:8px 0;line-height:1.3;min-height:42px;">
+                                <a href="product.html?id=${p.id}" style="color:black;text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
                                     ${p.name || 'Produit sans nom'}
                                 </a>
                             </h3>
-                            
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top:8px;">
-                                <div style="font-weight:bold; color:#D4AF37; font-size: 18px;">${price} FCFA</div>
-                                ${hasDiscount ? `<div style="font-size: 14px; color: #999; text-decoration: line-through;">${new Intl.NumberFormat('fr-FR').format(p.originalPrice)} FCFA</div>` : ''}
+                            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                                <div style="font-weight:bold;color:#D4AF37;font-size:18px;">${price} FCFA</div>
+                                ${hasDiscount ? `<div style="font-size:14px;color:#999;text-decoration:line-through;">${new Intl.NumberFormat('fr-FR').format(p.originalPrice)} FCFA</div>` : ''}
                             </div>
-                            
-                            ${p.shopCity ? `<div style="font-size:12px; color:#999; margin-top:6px; display: flex; align-items: center; gap: 4px;"><i data-lucide="map-pin" style="width:12px; height:12px;"></i>${p.shopCity}</div>` : ''}
+                            ${p.shopCity ? `<div style="font-size:12px;color:#999;margin-top:6px;display:flex;align-items:center;gap:4px;"><i data-lucide="map-pin" style="width:12px;height:12px;"></i>${p.shopCity}</div>` : ''}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
 
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // === GESTION DES SLIDERS PRIX ===
-        priceMin.addEventListener('input', () => {
-            priceRangeMin.value = priceMin.value;
-            applyFilters();
-        });
+        // === SLIDERS PRIX ===
+        priceMin.addEventListener('input', () => { priceRangeMin.value = priceMin.value; applyFilters(); });
+        priceMax.addEventListener('input', () => { priceRangeMax.value = priceMax.value; applyFilters(); });
+        priceRangeMin.addEventListener('input', () => { priceMin.value = priceRangeMin.value; updatePriceSliderBackground(); applyFilters(); });
+        priceRangeMax.addEventListener('input', () => { priceMax.value = priceRangeMax.value; updatePriceSliderBackground(); applyFilters(); });
 
-        priceMax.addEventListener('input', () => {
-            priceRangeMax.value = priceMax.value;
-            applyFilters();
-        });
+        function updatePriceSliderBackground() {
+            const minVal = parseInt(priceRangeMin.value);
+            const maxVal = parseInt(priceRangeMax.value);
+            const sliderMax = parseInt(priceRangeMin.max);
+            const minPercent = (minVal / sliderMax) * 100;
+            const maxPercent = (maxVal / sliderMax) * 100;
+            const priceSlider = document.querySelector('.price-slider');
+            if (priceSlider) {
+                priceSlider.style.setProperty('--range-progress-min', minPercent + '%');
+                priceSlider.style.setProperty('--range-progress-max', maxPercent + '%');
+            }
+        }
+        updatePriceSliderBackground();
 
-        priceRangeMin.addEventListener('input', () => {
-            priceMin.value = priceRangeMin.value;
-            applyFilters();
-        });
-
-        priceRangeMax.addEventListener('input', () => {
-            priceMax.value = priceRangeMax.value;
-            applyFilters();
-        });
-
-        // === TRI ===
         sortSelect.addEventListener('change', applyFilters);
 
         // === RÉINITIALISATION ===
         resetFiltersBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // Reset tous les filtres
             searchInput.value = '';
-            
-            // Réinitialiser tous les checkboxes de catégories (ancien + nouveau système)
             document.querySelectorAll('#category-filters-dynamic input[type="checkbox"]').forEach(cb => cb.checked = false);
-            
             locationSelect.value = '';
             document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
             if (document.getElementById('rating-4plus')) document.getElementById('rating-4plus').checked = false;
             if (document.getElementById('rating-3plus')) document.getElementById('rating-3plus').checked = false;
-            
+
             const prices = allProducts.map(p => p.price || 0);
             const minPrice = Math.min(...prices);
             const maxPrice = Math.max(...prices);
@@ -817,42 +542,30 @@
             priceMax.value = maxPrice;
             priceRangeMin.value = minPrice;
             priceRangeMax.value = maxPrice;
-
             applyFilters();
         });
 
-        // === MOBILE FILTERS TOGGLE ===
+        // === MOBILE FILTERS ===
         const isSmallScreen = () => window.matchMedia('(max-width: 1024px)').matches;
         const isDesktopScreen = () => window.matchMedia('(min-width: 1025px)').matches;
 
         const positionFiltersPanel = () => {
             if (!filtersSidebar) return;
-
             if (isDesktopScreen()) {
-                if (filtersSlot && filtersSidebar.parentElement !== filtersSlot) {
-                    filtersSlot.appendChild(filtersSidebar);
-                }
+                if (filtersSlot && filtersSidebar.parentElement !== filtersSlot) filtersSlot.appendChild(filtersSidebar);
             } else {
-                if (filtersSidebar.parentElement !== document.body) {
-                    document.body.appendChild(filtersSidebar);
-                }
+                if (filtersSidebar.parentElement !== document.body) document.body.appendChild(filtersSidebar);
             }
         };
 
         const openMobileFilters = () => {
             if (!filtersSidebar || !filterOverlay) return;
-
-            if (isSmallScreen()) {
-                filtersSidebar.classList.add('show-mobile');
-                document.body.style.overflow = 'hidden';
-            }
-
+            if (isSmallScreen()) { filtersSidebar.classList.add('show-mobile'); document.body.style.overflow = 'hidden'; }
             filterOverlay.classList.add('active');
         };
 
         const closeMobileFilters = () => {
             if (!filtersSidebar || !filterOverlay) return;
-
             filtersSidebar.classList.remove('show-mobile');
             filterOverlay.classList.remove('active');
             document.body.style.overflow = '';
@@ -866,10 +579,9 @@
         positionFiltersPanel();
         window.addEventListener('resize', positionFiltersPanel);
 
-        // === FONCTIONS GLOBALES (pour onclick) ===
+        // === FONCTIONS GLOBALES ===
         window.toggleFilterGroup = (element) => {
-            const filterGroup = element.closest('.filter-group');
-            filterGroup.classList.toggle('collapsed');
+            element.closest('.filter-group').classList.toggle('collapsed');
             if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
@@ -877,204 +589,142 @@
             const prices = allProducts.map(p => p.price || 0).filter(p => p > 0);
             const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
             const maxPrice = prices.length > 0 ? Math.max(...prices) : 1000000;
-            
-            priceMin.value = minPrice;
-            priceMax.value = maxPrice;
-            priceRangeMin.value = minPrice;
-            priceRangeMax.value = maxPrice;
+            priceMin.value = minPrice; priceMax.value = maxPrice;
+            priceRangeMin.value = minPrice; priceRangeMax.value = maxPrice;
             applyFilters();
         };
 
         window.uncheckCategory = (catName) => {
             const checkbox = Array.from(document.querySelectorAll('#category-filters-dynamic input[type="checkbox"]'))
                 .find(cb => cb.value === catName);
-            if (checkbox) {
-                checkbox.checked = false;
-                applyFilters();
-            }
+            if (checkbox) { checkbox.checked = false; applyFilters(); }
         };
 
-        // Rendre applyFilters accessible globalement
         window.applyFilters = applyFilters;
 
-        // Initialiser Lucide Icons
         if (typeof lucide !== 'undefined') lucide.createIcons();
     });
   </script>
   <script src="assets/js/footer.js" defer></script>
-    <div id="filter-overlay"></div>
-    <aside class="filters-sidebar sidebar-filters" id="filters-sidebar">
-        <div class="filters-header">
-            <button type="button" class="close-mobile-filters" aria-label="Fermer les filtres">×</button>
-            <h3>
-                <i data-lucide="sliders"></i>
-                Filtres
-            </h3>
-            <a href="#" class="filters-reset" id="reset-filters">Réinitialiser</a>
-        </div>
 
-        <!-- Filtre Prix -->
-        <div class="filter-group" data-filter="price">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i data-lucide="dollar-sign"></i>
-                    <span>Prix (FCFA)</span>
-                </div>
-                <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-                <div class="price-inputs">
-                    <input 
-                        type="number" 
-                        class="price-input" 
-                        id="price-min" 
-                        placeholder="Min"
-                        min="0"
-                    >
-                    <span style="color: #D4AF37; font-weight: 700;">—</span>
-                    <input 
-                        type="number" 
-                        class="price-input" 
-                        id="price-max" 
-                        placeholder="Max"
-                        min="0"
-                    >
-                </div>
-                <div class="price-slider">
-                    <input 
-                        type="range" 
-                        id="price-range-min" 
-                        min="0" 
-                        max="1000000" 
-                        step="1000"
-                        value="0"
-                    >
-                    <input 
-                        type="range" 
-                        id="price-range-max" 
-                        min="0" 
-                        max="1000000" 
-                        step="1000"
-                        value="1000000"
-                    >
-                </div>
-            </div>
-        </div>
+  <div id="filter-overlay"></div>
+  <aside class="filters-sidebar sidebar-filters" id="filters-sidebar">
+    <div class="filters-header">
+      <button type="button" class="close-mobile-filters" aria-label="Fermer les filtres">×</button>
+      <h3><i data-lucide="sliders"></i> Filtres</h3>
+      <a href="#" class="filters-reset" id="reset-filters">Réinitialiser</a>
+    </div>
 
-        <!-- Filtre Catégories -->
-        <div class="filter-group" data-filter="category">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i data-lucide="grid"></i>
-                    <span>Catégories</span>
-                </div>
-                <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-                <!-- Catégories générées dynamiquement -->
-                <div id="category-filters-dynamic">
-                    <!-- Toutes les catégories chargées ici -->
-                </div>
-            </div>
+    <!-- Prix -->
+    <div class="filter-group" data-filter="price">
+      <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+        <div style="display:flex;align-items:center;gap:10px;"><i data-lucide="dollar-sign"></i><span>Prix (FCFA)</span></div>
+        <i data-lucide="chevron-down" class="chevron"></i>
+      </div>
+      <div class="filter-group-content">
+        <div class="price-inputs">
+          <input type="number" class="price-input" id="price-min" placeholder="Min" min="0">
+          <span style="color:#D4AF37;font-weight:700;">—</span>
+          <input type="number" class="price-input" id="price-max" placeholder="Max" min="0">
         </div>
+        <div class="price-slider">
+          <input type="range" id="price-range-min" min="0" max="1000000" step="1000" value="0">
+          <input type="range" id="price-range-max" min="0" max="1000000" step="1000" value="1000000">
+        </div>
+      </div>
+    </div>
 
-        <!-- Filtre Note Vendeur -->
-        <div class="filter-group" data-filter="rating">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i data-lucide="star"></i>
-                    <span>Note Vendeur</span>
-                </div>
-                <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-                <div class="filter-checkbox">
-                    <input type="checkbox" id="rating-4plus" value="4">
-                    <label for="rating-4plus">
-                        <span>⭐⭐⭐⭐ 4 étoiles et plus</span>
-                    </label>
-                </div>
-                <div class="filter-checkbox">
-                    <input type="checkbox" id="rating-3plus" value="3">
-                    <label for="rating-3plus">
-                        <span>⭐⭐⭐ 3 étoiles et plus</span>
-                    </label>
-                </div>
-            </div>
-        </div>
+    <!-- Catégories -->
+    <div class="filter-group" data-filter="category">
+      <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+        <div style="display:flex;align-items:center;gap:10px;"><i data-lucide="grid"></i><span>Catégories</span></div>
+        <i data-lucide="chevron-down" class="chevron"></i>
+      </div>
+      <div class="filter-group-content">
+        <div id="category-filters-dynamic"></div>
+      </div>
+    </div>
 
-        <!-- Filtre Couleurs (Cercles cliquables) -->
-        <div class="filter-group" data-filter="color">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i data-lucide="palette"></i>
-                    <span>Couleurs</span>
-                </div>
-                <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-                <div class="colors-grid">
-                    <div class="color-swatch" data-color="#000000" style="background: #000000;" title="Noir"></div>
-                    <div class="color-swatch" data-color="#FFFFFF" style="background: #FFFFFF; border-color: #ddd;" title="Blanc"></div>
-                    <div class="color-swatch" data-color="#D4AF37" style="background: #D4AF37;" title="Or"></div>
-                    <div class="color-swatch" data-color="#FF0000" style="background: #FF0000;" title="Rouge"></div>
-                    <div class="color-swatch" data-color="#0000FF" style="background: #0000FF;" title="Bleu"></div>
-                    <div class="color-swatch" data-color="#00FF00" style="background: #00FF00;" title="Vert"></div>
-                    <div class="color-swatch" data-color="#FFC0CB" style="background: #FFC0CB;" title="Rose"></div>
-                    <div class="color-swatch" data-color="#FFA500" style="background: #FFA500;" title="Orange"></div>
-                    <div id="color-filters-dynamic">
-                        <!-- Autres couleurs chargées dynamiquement -->
-                    </div>
-                </div>
-            </div>
+    <!-- Note Vendeur -->
+    <div class="filter-group" data-filter="rating">
+      <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+        <div style="display:flex;align-items:center;gap:10px;"><i data-lucide="star"></i><span>Note Vendeur</span></div>
+        <i data-lucide="chevron-down" class="chevron"></i>
+      </div>
+      <div class="filter-group-content">
+        <div class="filter-checkbox">
+          <input type="checkbox" id="rating-4plus" value="4">
+          <label for="rating-4plus"><span>⭐⭐⭐⭐ 4 étoiles et plus</span></label>
         </div>
+        <div class="filter-checkbox">
+          <input type="checkbox" id="rating-3plus" value="3">
+          <label for="rating-3plus"><span>⭐⭐⭐ 3 étoiles et plus</span></label>
+        </div>
+      </div>
+    </div>
 
-        <!-- Filtre Localisation (Select Stylisé) -->
-        <div class="filter-group" data-filter="location">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i data-lucide="map-pin"></i>
-                    <span>Localisation</span>
-                </div>
-                <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-                <select id="location-select" class="location-select">
-                    <option value="">Toutes les villes</option>
-                    <option value="Ouagadougou">Ouagadougou</option>
-                    <option value="Bobo-Dioulasso">Bobo-Dioulasso</option>
-                    <option value="Koudougou">Koudougou</option>
-                    <option value="Ouahigouya">Ouahigouya</option>
-                    <option value="Banfora">Banfora</option>
-                    <option value="Tenkodogo">Tenkodogo</option>
-                    <option value="Dédougou">Dédougou</option>
-                    <option value="Kaya">Kaya</option>
-                </select>
-            </div>
+    <!-- Couleurs -->
+    <div class="filter-group" data-filter="color">
+      <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+        <div style="display:flex;align-items:center;gap:10px;"><i data-lucide="palette"></i><span>Couleurs</span></div>
+        <i data-lucide="chevron-down" class="chevron"></i>
+      </div>
+      <div class="filter-group-content">
+        <div class="colors-grid">
+          <div class="color-swatch" data-color="#000000" style="background:#000000;" title="Noir"></div>
+          <div class="color-swatch" data-color="#FFFFFF" style="background:#FFFFFF;border-color:#ddd;" title="Blanc"></div>
+          <div class="color-swatch" data-color="#D4AF37" style="background:#D4AF37;" title="Or"></div>
+          <div class="color-swatch" data-color="#FF0000" style="background:#FF0000;" title="Rouge"></div>
+          <div class="color-swatch" data-color="#0000FF" style="background:#0000FF;" title="Bleu"></div>
+          <div class="color-swatch" data-color="#00FF00" style="background:#00FF00;" title="Vert"></div>
+          <div class="color-swatch" data-color="#FFC0CB" style="background:#FFC0CB;" title="Rose"></div>
+          <div class="color-swatch" data-color="#FFA500" style="background:#FFA500;" title="Orange"></div>
+          <div id="color-filters-dynamic"></div>
         </div>
+      </div>
+    </div>
 
-        <!-- Filtre Tri -->
-        <div class="filter-group" data-filter="sort">
-            <div class="filter-group-title" onclick="toggleFilterGroup(this)">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i data-lucide="arrow-down-up"></i>
-                    <span>Trier par</span>
-                </div>
-                <i data-lucide="chevron-down" class="chevron"></i>
-            </div>
-            <div class="filter-group-content">
-                <select id="sort-select" class="location-select">
-                    <option value="recent">Plus récent</option>
-                    <option value="price-asc">Prix croissant</option>
-                    <option value="price-desc">Prix décroissant</option>
-                    <option value="popular">Plus populaire</option>
-                </select>
-            </div>
-        </div>
-    </aside>
-    <button id="mobile-filter-fab" class="btn-floating-filter">
-        <i data-lucide="sliders-horizontal"></i>
-        Filtres
-    </button>
+    <!-- Localisation -->
+    <div class="filter-group" data-filter="location">
+      <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+        <div style="display:flex;align-items:center;gap:10px;"><i data-lucide="map-pin"></i><span>Localisation</span></div>
+        <i data-lucide="chevron-down" class="chevron"></i>
+      </div>
+      <div class="filter-group-content">
+        <select id="location-select" class="location-select">
+          <option value="">Toutes les villes</option>
+          <option value="Ouagadougou">Ouagadougou</option>
+          <option value="Bobo-Dioulasso">Bobo-Dioulasso</option>
+          <option value="Koudougou">Koudougou</option>
+          <option value="Ouahigouya">Ouahigouya</option>
+          <option value="Banfora">Banfora</option>
+          <option value="Tenkodogo">Tenkodogo</option>
+          <option value="Dédougou">Dédougou</option>
+          <option value="Kaya">Kaya</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tri -->
+    <div class="filter-group" data-filter="sort">
+      <div class="filter-group-title" onclick="toggleFilterGroup(this)">
+        <div style="display:flex;align-items:center;gap:10px;"><i data-lucide="arrow-down-up"></i><span>Trier par</span></div>
+        <i data-lucide="chevron-down" class="chevron"></i>
+      </div>
+      <div class="filter-group-content">
+        <select id="sort-select" class="location-select">
+          <option value="recent">Plus récent</option>
+          <option value="price-asc">Prix croissant</option>
+          <option value="price-desc">Prix décroissant</option>
+          <option value="popular">Plus populaire</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <button id="mobile-filter-fab" class="btn-floating-filter">
+    <i data-lucide="sliders-horizontal"></i>
+    Filtres
+  </button>
 </body>
 </html>
