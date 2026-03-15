@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" fill="#f0ebe8"/>
+  <circle cx="100" cy="80" r="35" fill="#d4ccc6"/>
+  <ellipse cx="100" cy="140" rx="45" ry="35" fill="#d4ccc6"/>
+  <text x="100" y="190" font-size="12" text-anchor="middle" fill="#a8a09a" font-family="Arial">Boutique</text>
+</svg>

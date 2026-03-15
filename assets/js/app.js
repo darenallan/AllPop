@@ -166,11 +166,11 @@ async function loadProducts() {
               onclick="event.stopPropagation();toggleWishlist(event,'${doc.id}');return false;">
               <i data-lucide="heart"></i>
             </button>
-            <img src="${img}" alt="${p.name || 'Produit Aurum'}" loading="lazy">
+            <img src="${img}" alt="${p.name || 'Produit Sanhia'}" loading="lazy">
           </div>
           <div class="card-content">
             <small class="brand">${p.shopName || 'Boutique'}</small>
-            <h3 class="title">${p.name || 'Produit Aurum'}</h3>
+            <h3 class="title">${p.name || 'Produit Sanhia'}</h3>
             <div class="card-footer">
               <span class="price">${window.formatFCFA(p.price)}</span>
             </div>

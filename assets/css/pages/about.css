@@ -103,9 +103,9 @@ body.cur-h #cur-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
   border-bottom:1px solid rgba(200,168,75,.1);
 }
 
-/* Watermark AURUM */
+/* Watermark SANHIA */
 .ab-hero::before{
-  content:'AURUM';
+  content:'SANHIA';
   position:absolute;
   left:50%;top:50%;
   transform:translate(-50%,-50%);

@@ -1,241 +1,412 @@
-/**
- * messages.js
- * Système de messagerie en temps réel avec Firestore
- * Section §13 de prime.js
- */
 
-document.addEventListener('DOMContentLoaded', function() {
-  if (!document.getElementById('inbox-sidebar')) return;
+/* ═══════════════════════════════════════════════════════════════
+   Aurum Inbox Controller
+   ─ Fonctionne avec messaging.js v2
+   ═══════════════════════════════════════════════════════════════ */
+(function AurumInbox() {
 
-  var sidebar    = document.getElementById('inbox-sidebar'); 
-  var convListEl = document.getElementById('inbox-conv-list');
-  var countBadge = document.getElementById('inbox-count');
-  var emptyState = document.getElementById('inbox-empty-state');
-  var threadPanel= document.getElementById('inbox-thread');
-  var threadInner= document.getElementById('inbox-thread-inner');
-  var messagesWrap=document.getElementById('inbox-messages-wrap');
-  var threadName = document.getElementById('inbox-thread-name');
-  var threadSub  = document.getElementById('inbox-thread-sub');
-  var threadAvatar=document.getElementById('inbox-thread-avatar');
-  var shopLink   = document.getElementById('inbox-shop-link');
-  var backBtn    = document.getElementById('inbox-back-btn');
-  var compose    = document.getElementById('inbox-compose');
-  var inputEl    = document.getElementById('inbox-input');
-  var charCount  = document.getElementById('inbox-char-count');
-  var sendBtn    = document.getElementById('inbox-send-btn');
+  /* ── DOM refs ── */
+  var sidebar      = document.getElementById('inbox-sidebar');
+  var convListEl   = document.getElementById('inbox-conv-list');
+  var countBadge   = document.getElementById('inbox-count');
+  var emptyState   = document.getElementById('inbox-empty-state');
+  var threadPanel  = document.getElementById('inbox-thread');
+  var threadInner  = document.getElementById('inbox-thread-inner');
+  var messagesWrap = document.getElementById('inbox-messages-wrap');
+  var threadName   = document.getElementById('inbox-thread-name');
+  var threadSub    = document.getElementById('inbox-thread-sub');
+  var threadAvatar = document.getElementById('inbox-thread-avatar');
+  var shopLink     = document.getElementById('inbox-shop-link');
+  var backBtn      = document.getElementById('inbox-back-btn');
+  var compose      = document.getElementById('inbox-compose');
+  var inputEl      = document.getElementById('inbox-input');
+  var charCount    = document.getElementById('inbox-char-count');
+  var sendBtn      = document.getElementById('inbox-send-btn');
 
-  var currentUser = null, activeChat = null, chatsCache = [], activeTab = 'all', searchTerm = '';
-  var unsubChats = null, unsubMessages = null;
+  /* ── State ── */
+  var currentUser   = null;
+  var activeChat    = null;
+  var chatsCache    = [];
+  var activeTab     = 'all';
+  var searchTerm    = '';
+  var unsubChats    = null;
+  var unsubMessages = null;
 
-  var params     = new URLSearchParams(location.search);
-  var initChatId = params.get('chatId')   || '';
-  var initShopId = params.get('shopId')   || '';
-  var initSelId  = params.get('sellerId') || '';
-  var initProdId = params.get('productId')|| '';
+  /* ── URL params ── */
+  var params       = new URLSearchParams(location.search);
+  var initChatId   = params.get('chatId')    || '';
+  var initShopId   = params.get('shopId')    || '';
+  var initSellerId = params.get('sellerId')  || '';
+  var initProdId   = params.get('productId') || '';
 
+  /* ── Toast ── */
+  function toast(msg, type) {
+    var tc  = document.getElementById('toast-container');
+    var el  = document.createElement('div');
+    el.className = 'toast-item ' + (type || '');
+    el.textContent = msg;
+    tc.appendChild(el);
+    setTimeout(function() { el.remove(); }, 3500);
+  }
+  window.showToast = function(m, t) { toast(m, t === 'error' ? 'danger' : t === 'success' ? 'success' : ''); };
+
+  /* ── Helpers ── */
+  function goLogin() {
+    location.href = 'login.html?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+  }
   function avatarLetters(name) {
-    return String(name||'?').trim().split(' ').map(function (w) { return w[0]; }).join('').toUpperCase().slice(0,2);
+    return String(name || '?').trim().split(' ').map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,2);
   }
   function fmt(ts) { return window.formatChatTime ? window.formatChatTime(ts) : ''; }
-  function esc(s)  {
-    return window._aurumMsg ? window._aurumMsg.escapeHtml(s) : String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-  function fmtLabel(ts) { return window._aurumMsg ? window._aurumMsg.formatDateLabel(ts) : ''; }
+  function esc(s) { return window._aurumMsg ? window._aurumMsg.escapeHtml(s) : String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function formatDateLabel(ts) { return window._aurumMsg ? window._aurumMsg.formatDateLabel(ts) : ''; }
 
+  /* ── Render conversation list ── */
   function renderList() {
     var chats = chatsCache.slice();
-    if (activeTab === 'buyer')  chats = chats.filter(function (c) { return c.buyerId === currentUser.uid; });
-    if (activeTab === 'seller') chats = chats.filter(function (c) { return c.sellerId === currentUser.uid || c.shopId; });
+
+    /* Tab filter */
+    if (activeTab === 'buyer') {
+      chats = chats.filter(function(c){ return c.buyerId === currentUser.uid; });
+    } else if (activeTab === 'seller') {
+      chats = chats.filter(function(c){ return c.sellerId === currentUser.uid || c.shopId; });
+    }
+
+    /* Search filter */
     if (searchTerm) {
       var q = searchTerm.toLowerCase();
-      chats = chats.filter(function (c) {
-        return (c.shopName||'').toLowerCase().includes(q) || (c.buyerName||'').toLowerCase().includes(q) || (c.lastMessage||'').toLowerCase().includes(q);
+      chats = chats.filter(function(c){
+        return (c.shopName||'').toLowerCase().includes(q)
+          || (c.buyerName||'').toLowerCase().includes(q)
+          || (c.lastMessage||'').toLowerCase().includes(q);
       });
     }
 
-    var totalUnread = chatsCache.reduce(function (acc, c) {
-      return acc + (c.buyerId === currentUser.uid ? (c.unreadBuyer||0) : (c.unreadSeller||0));
+    /* Global unread count */
+    var totalUnread = chatsCache.reduce(function(acc, c) {
+      var isBuyer = c.buyerId === currentUser.uid;
+      return acc + (isBuyer ? (c.unreadBuyer||0) : (c.unreadSeller||0));
     }, 0);
-    if (countBadge) { countBadge.textContent = totalUnread > 99 ? '99+' : totalUnread; countBadge.classList.toggle('show', totalUnread > 0); }
+    if (totalUnread > 0) {
+      countBadge.textContent = totalUnread > 99 ? '99+' : totalUnread;
+      countBadge.classList.add('show');
+    } else {
+      countBadge.classList.remove('show');
+    }
 
     if (!chats.length) {
-      convListEl.innerHTML = '<div class="inbox-conv-empty"><p>' + (searchTerm ? 'Aucun résultat.' : 'Aucune conversation.') + '</p>'\
-        + (!searchTerm ? '<a href="catalogue.html">Explorer la marketplace →</a>' : '') + '</div>';
+      convListEl.innerHTML =
+        '<div class="inbox-conv-empty">' +
+        '<p>' + (searchTerm ? 'Aucun résultat pour "' + esc(searchTerm) + '".' : 'Aucune conversation pour l\'instant.') + '</p>' +
+        (!searchTerm ? '<a href="catalogue.html">Explorer la marketplace →</a>' : '') +
+        '</div>';
       return;
     }
 
-    convListEl.innerHTML = chats.map(function (chat) {
-      var isBuyer  = chat.buyerId === currentUser.uid;
-      var partner  = isBuyer ? chat.shopName||'Boutique' : chat.buyerName||'Client';
-      var unread   = isBuyer ? (chat.unreadBuyer||0) : (chat.unreadSeller||0);
-      var preview  = chat.lastMessage || 'Aucun message.';
+    convListEl.innerHTML = chats.map(function(chat) {
+      var isBuyer = chat.buyerId === currentUser.uid;
+      var partner = isBuyer ? (chat.shopName || 'Boutique') : (chat.buyerName || 'Client');
+      var unread  = isBuyer ? (chat.unreadBuyer||0) : (chat.unreadSeller||0);
+      var preview = chat.lastMessage || 'Aucun message encore.';
       if (preview.length > 56) preview = preview.slice(0,56) + '…';
-      var time   = fmt(chat.lastMessageAt || chat.updatedAt);
-      var isAct  = activeChat && activeChat.id === chat.id;
-      return '<button class="inbox-conv-item' + (isAct?' active':'') + (unread>0?' has-unread':'') + '" data-cid="' + chat.id + '" type="button">'\
-        + '<div class="inbox-conv-avatar">' + avatarLetters(partner) + (unread > 0 ? '<span class="unread-pip">' + (unread>9?'9+':unread) + '</span>' : '') + '</div>'\
-        + '<div class="inbox-conv-body">'\
-          + '<div class="inbox-conv-top"><span class="inbox-conv-name">' + esc(partner) + '</span><span class="inbox-conv-time">' + esc(time) + '</span></div>'\
-          + '<div><span class="inbox-conv-role-tag ' + (isBuyer?'buyer':'seller') + '">' + (isBuyer?'Achat':'Vente') + '</span></div>'\
-          + '<p class="inbox-conv-preview">' + esc(preview) + '</p>'\
-        + '</div></button>';
+      var time    = fmt(chat.lastMessageAt || chat.updatedAt);
+      var isAct   = activeChat && activeChat.id === chat.id;
+
+      return '<button class="inbox-conv-item' + (isAct?' active':'') + (unread>0?' has-unread':'') + '" data-cid="' + chat.id + '" type="button">' +
+        '<div class="inbox-conv-avatar">' + avatarLetters(partner) +
+          (unread > 0 ? '<span class="unread-pip">' + (unread > 9 ? '9+' : unread) + '</span>' : '') +
+        '</div>' +
+        '<div class="inbox-conv-body">' +
+          '<div class="inbox-conv-top">' +
+            '<span class="inbox-conv-name">' + esc(partner) + '</span>' +
+            '<span class="inbox-conv-time">' + esc(time) + '</span>' +
+          '</div>' +
+          '<div style="margin-bottom:2px">' +
+            '<span class="inbox-conv-role-tag ' + (isBuyer?'buyer':'seller') + '">' + (isBuyer?'Achat':'Vente') + '</span>' +
+            '<span style="font-size:11px;color:#4A4540">' + esc(isBuyer ? (chat.shopName||'') : (chat.buyerName||'')) + '</span>' +
+          '</div>' +
+          '<p class="inbox-conv-preview">' + esc(preview) + '</p>' +
+        '</div></button>';
     }).join('');
 
-    convListEl.querySelectorAll('[data-cid]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var chat = chatsCache.find(function (c) { return c.id === btn.dataset.cid; });
+    convListEl.querySelectorAll('[data-cid]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var chat = chatsCache.find(function(c){ return c.id === btn.dataset.cid; });
         if (chat) openThread(chat);
       });
     });
   }
 
+  /* ── Open thread ── */
   function openThread(chat) {
     activeChat = chat;
-    var isBuyer = chat.buyerId === currentUser.uid;
-    var partner = isBuyer ? chat.shopName||'Boutique' : chat.buyerName||'Client';
-    if (threadAvatar) threadAvatar.textContent = avatarLetters(partner);
-    if (threadName)   threadName.textContent   = partner;
-    if (threadSub)    threadSub.textContent    = isBuyer ? 'Boutique Aurum' : 'Client · ' + (chat.buyerEmail||'');
-    if (shopLink) { if (chat.shopId && isBuyer) { shopLink.href = 'boutique.html?id=' + chat.shopId; shopLink.style.display = ''; } else { shopLink.style.display = 'none'; } }
 
+    var isBuyer = chat.buyerId === currentUser.uid;
+    var partner = isBuyer ? (chat.shopName || 'Boutique') : (chat.buyerName || 'Client');
+
+    threadAvatar.textContent = avatarLetters(partner);
+    threadName.textContent   = partner;
+    threadSub.textContent    = isBuyer
+      ? ('Boutique Aurum' + (chat.productId ? ' · Produit référencé' : ''))
+      : ('Client · ' + (chat.buyerEmail || ''));
+
+    if (chat.shopId && isBuyer) {
+      shopLink.href         = 'boutique.html?id=' + chat.shopId;
+      shopLink.style.display = '';
+    } else {
+      shopLink.style.display = 'none';
+    }
+
+    /* Update URL sans rechargement */
     var url = new URL(window.location.href);
     url.searchParams.set('chatId', chat.id);
     history.replaceState({}, '', url.toString());
 
-    if (sidebar)      sidebar.classList.add('mobile-hidden');
-    if (threadPanel)  threadPanel.classList.add('mobile-show');
-    if (emptyState)   emptyState.style.display = 'none';
-    if (threadInner)  threadInner.style.display = 'flex';
+    /* Mobile: cacher sidebar, montrer thread */
+    sidebar.classList.add('mobile-hidden');
+    threadPanel.classList.add('mobile-show');
 
-    renderList();
+    emptyState.style.display    = 'none';
+    threadInner.style.display   = 'flex';
+
+    renderList(); /* Rafraîchit le highlight actif */
     listenMessages(chat.id);
-    if (inputEl) inputEl.focus();
+    inputEl.focus();
   }
 
+  /* ── Subscribe messages ── */
   function listenMessages(chatId) {
     if (unsubMessages) { unsubMessages(); unsubMessages = null; }
-    if (messagesWrap) messagesWrap.innerHTML = '<div class="inbox-loading"><div class="inbox-spinner"></div></div>';
-    unsubMessages = window.subscribeMessages(chatId, function (msgs) { renderMessages(msgs); },\
-      function (err) { if (messagesWrap) messagesWrap.innerHTML = '<p class="inbox-msg-error">Impossible de charger les messages.</p>'; console.error(err); });
-    if (window._aurumMsg && window._aurumMsg.markConversationRead) window._aurumMsg.markConversationRead(chatId);
+    messagesWrap.innerHTML = '<div class="inbox-loading"><div class="inbox-spinner"></div></div>';
+
+    unsubMessages = window.subscribeMessages(
+      chatId,
+      function(msgs) { renderMessages(msgs); },
+      function(err)  {
+        messagesWrap.innerHTML = '<p class="inbox-msg-error">Impossible de charger les messages.</p>';
+        console.error('[Inbox] listenMessages:', err);
+      }
+    );
+
+    /* Marquer comme lu */
+    if (window._aurumMsg && window._aurumMsg.markConversationRead) {
+      window._aurumMsg.markConversationRead(chatId);
+    }
   }
 
+  /* ── Render messages ── */
   function renderMessages(msgs) {
-    if (!messagesWrap) return;
-    if (!msgs.length) { messagesWrap.innerHTML = '<div class="inbox-thread-empty">Envoyez le premier message.</div>'; return; }
-    var html = '', lastLabel = '';
-    msgs.forEach(function (msg) {
+    if (!msgs.length) {
+      messagesWrap.innerHTML = '<div class="inbox-thread-empty">Envoyez le premier message ci-dessous.</div>';
+      return;
+    }
+
+    var html      = '';
+    var lastLabel = '';
+
+    msgs.forEach(function(msg) {
       var isMine = msg.senderId === currentUser.uid;
-      var label  = fmtLabel(msg.createdAt);
-      if (label && label !== lastLabel) { html += '<div class="inbox-date-sep"><span>' + esc(label) + '</span></div>'; lastLabel = label; }
-      var lock = msg.hasMaskedContent ? '<span class="inbox-masked-badge" title="Coordonnées masquées">🔒</span>' : '';
-      html += '<div class="inbox-bubble-row ' + (isMine?'mine':'theirs') + '"><div class="inbox-bubble ' + (isMine?'mine':'theirs') + '"><p>' + esc(msg.text) + '</p><div class="inbox-bubble-meta">' + lock + '<span>' + esc(fmt(msg.createdAt)) + '</span></div></div></div>';
+      var label  = formatDateLabel(msg.createdAt);
+
+      if (label && label !== lastLabel) {
+        html += '<div class="inbox-date-sep"><span>' + esc(label) + '</span></div>';
+        lastLabel = label;
+      }
+
+      var time   = fmt(msg.createdAt);
+      var lock   = msg.hasMaskedContent
+        ? '<span class="inbox-masked-badge" title="Coordonnées masquées">🔒</span>'
+        : '';
+
+      html +=
+        '<div class="inbox-bubble-row ' + (isMine?'mine':'theirs') + '">' +
+          '<div class="inbox-bubble ' + (isMine?'mine':'theirs') + '">' +
+            '<p>' + esc(msg.text) + '</p>' +
+            '<div class="inbox-bubble-meta">' + lock + '<span>' + esc(time) + '</span></div>' +
+          '</div>' +
+        '</div>';
     });
+
     messagesWrap.innerHTML = html;
     messagesWrap.scrollTop = messagesWrap.scrollHeight;
   }
 
-  if (compose) {
-    compose.addEventListener('submit', async function (e) {
+  /* ── Send ── */
+  compose.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (!activeChat) { toast('Sélectionnez une conversation.', ''); return; }
+
+    var raw = inputEl.value.trim();
+    if (!raw) return;
+
+    sendBtn.disabled = true;
+    try {
+      if (activeChat._stub) {
+        /* Nouvelle conv : créer + envoyer */
+        var chatId = await window.sendMessage(activeChat.shopId, raw, {
+          sellerId:   activeChat.sellerId   || '',
+          shopName:   activeChat.shopName   || '',
+          sellerName: activeChat.sellerName || '',
+          productId:  activeChat.productId  || '',
+        });
+        activeChat._stub  = false;
+        activeChat.id     = chatId;
+        listenMessages(chatId);
+      } else {
+        await window.sendReply(activeChat.id, raw);
+      }
+      inputEl.value         = '';
+      charCount.textContent = '0 / 1200';
+      inputEl.style.height  = 'auto';
+      inputEl.focus();
+    } catch (err) {
+      toast(err.message || 'Envoi impossible.', 'danger');
+    } finally {
+      sendBtn.disabled = false;
+    }
+  });
+
+  /* ── Char counter + auto-grow ── */
+  inputEl.addEventListener('input', function() {
+    var len = inputEl.value.length;
+    charCount.textContent = len + ' / 1200';
+    if (len > 1100) charCount.style.color = '#D94F4F';
+    else            charCount.style.color = '';
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+  });
+
+  /* ── Enter = send ── */
+  inputEl.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!activeChat) return;
-      var raw = inputEl ? inputEl.value.trim() : '';
-      if (!raw) return;
-      if (sendBtn) sendBtn.disabled = true;
-      try {
-        if (activeChat._stub) {
-          var chatId = await window.sendMessage(activeChat.shopId, raw, {
-            sellerId: activeChat.sellerId||'', shopName: activeChat.shopName||'',\
-            sellerName: activeChat.sellerName||'', productId: activeChat.productId||'',
-          });
-          activeChat._stub = false; activeChat.id = chatId;
-          listenMessages(chatId);
-        } else { await window.sendReply(activeChat.id, raw); }
-        if (inputEl)   { inputEl.value = ''; inputEl.style.height = 'auto'; }
-        if (charCount)   charCount.textContent = '0 / 1200';
-        if (inputEl)     inputEl.focus();
-      } catch (err) { if (window.showToast) window.showToast(err.message||'Envoi impossible.', 'danger'); }
-      finally { if (sendBtn) sendBtn.disabled = false; }
-    });
-  }
+      compose.dispatchEvent(new Event('submit'));
+    }
+  });
 
-  if (inputEl) {
-    inputEl.addEventListener('input', function () {
-      var len = inputEl.value.length;
-      if (charCount) { charCount.textContent = len + ' / 1200'; charCount.style.color = len > 1100 ? '#D94F4F' : ''; }
-      inputEl.style.height = 'auto';
-      inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
-    });
-    inputEl.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (compose) compose.dispatchEvent(new Event('submit')); }
-    });
-  }
-
-  document.querySelectorAll('.inbox-tab').forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      document.querySelectorAll('.inbox-tab').forEach(function (t) { t.classList.remove('active'); });
+  /* ── Tabs ── */
+  document.querySelectorAll('.inbox-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.inbox-tab').forEach(function(t){ t.classList.remove('active'); });
       tab.classList.add('active');
       activeTab = tab.dataset.tab;
       renderList();
     });
   });
 
-  var searchEl = document.getElementById('inbox-search');
-  if (searchEl) searchEl.addEventListener('input', function (e) { searchTerm = e.target.value.trim(); renderList(); });
+  /* ── Search ── */
+  document.getElementById('inbox-search').addEventListener('input', function(e) {
+    searchTerm = e.target.value.trim();
+    renderList();
+  });
 
-  if (backBtn) {
-    backBtn.addEventListener('click', function () {
-      if (sidebar)     sidebar.classList.remove('mobile-hidden');
-      if (threadPanel) threadPanel.classList.remove('mobile-show');
-      if (emptyState)  emptyState.style.display = '';
-      if (threadInner) threadInner.style.display = 'none';
-      activeChat = null;
-      if (unsubMessages) { unsubMessages(); unsubMessages = null; }
-      renderList();
-    });
-  }
+  /* ── Back (mobile) ── */
+  backBtn.addEventListener('click', function() {
+    sidebar.classList.remove('mobile-hidden');
+    threadPanel.classList.remove('mobile-show');
+    emptyState.style.display    = '';
+    threadInner.style.display   = 'none';
+    activeChat = null;
+    if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+    renderList();
+  });
 
+  /* ── Bootstrap depuis URL params ── */
   async function bootstrapFromUrl() {
     if (!initChatId && !initShopId) return;
+
+    /* 1 — Essayer de trouver dans le cache */
     if (initChatId) {
-      var found = chatsCache.find(function (c) { return c.id === initChatId; });
+      var found = chatsCache.find(function(c){ return c.id === initChatId; });
       if (found) { openThread(found); return; }
+    }
+
+    /* 2 — Essayer de charger depuis Firestore */
+    if (initChatId) {
       try {
         var snap = await firebase.firestore().collection('conversations').doc(initChatId).get();
         if (snap.exists) { openThread(Object.assign({ id: snap.id }, snap.data())); return; }
       } catch (_) {}
     }
+
+    /* 3 — Stub nouvelle conversation */
     if (initShopId) {
-      var stub = { id: initChatId || window.buildChatId(currentUser.uid, initShopId), shopId: initShopId, sellerId: initSelId, productId: initProdId, shopName: '', sellerName: 'Vendeur', buyerId: currentUser.uid, participants: [currentUser.uid, initSelId||initShopId], unreadBuyer: 0, unreadSeller: 0, _stub: true };
+      var stub = {
+        id:         initChatId || window.buildChatId(currentUser.uid, initShopId),
+        shopId:     initShopId,
+        sellerId:   initSellerId,
+        productId:  initProdId,
+        shopName:   '',
+        sellerName: 'Vendeur',
+        buyerId:    currentUser.uid,
+        participants: [currentUser.uid, initSellerId || initShopId],
+        unreadBuyer: 0, unreadSeller: 0,
+        _stub: true,
+      };
+      /* Récupérer le nom de la boutique */
       try {
         var shopSnap = await firebase.firestore().collection('shops').doc(initShopId).get();
-        if (shopSnap.exists) { stub.shopName = shopSnap.data().name||''; stub.sellerId = stub.sellerId || shopSnap.data().ownerId||shopSnap.data().ownerUid||''; }
+        if (shopSnap.exists) {
+          stub.shopName   = shopSnap.data().name   || '';
+          stub.sellerName = shopSnap.data().ownerName || stub.sellerName;
+          stub.sellerId   = stub.sellerId || shopSnap.data().ownerId || shopSnap.data().ownerUid || '';
+        }
       } catch (_) {}
-      chatsCache = [stub].concat(chatsCache.filter(function (c) { return c.id !== stub.id; }));
+      chatsCache = [stub].concat(chatsCache.filter(function(c){ return c.id !== stub.id; }));
       renderList();
       openThread(stub);
     }
   }
 
-  firebase.auth().onAuthStateChanged(async function (user) {
-    if (!user) { window.location.href = 'login.html?returnUrl=' + encodeURIComponent(location.pathname + location.search); return; }
+  /* ── Auth listener ── */
+  if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
+    convListEl.innerHTML = '<div class="inbox-conv-empty"><p>Firebase non configuré. Vérifiez config.js.</p></div>';
+    return;
+  }
+
+  firebase.auth().onAuthStateChanged(async function(user) {
+    if (!user) { goLogin(); return; }
     currentUser = user;
+
     if (unsubChats) { unsubChats(); unsubChats = null; }
-    unsubChats = window.subscribeUserChats(currentUser.uid, function (chats) {
-      chatsCache = chats;
-      if (activeChat && !activeChat._stub) {
-        var updated = chats.find(function (c) { return c.id === activeChat.id; });
-        if (updated) activeChat = Object.assign({}, activeChat, updated);
+
+    unsubChats = window.subscribeUserChats(
+      currentUser.uid,
+      function(chats) {
+        chatsCache = chats;
+        /* Sync activeChat si mis à jour côté Firestore */
+        if (activeChat && !activeChat._stub) {
+          var updated = chats.find(function(c){ return c.id === activeChat.id; });
+          if (updated) activeChat = Object.assign({}, activeChat, updated);
+        }
+        renderList();
+      },
+      function(err) {
+        convListEl.innerHTML = '<div class="inbox-conv-empty"><p>Impossible de charger les conversations.<br>' + err.message + '</p></div>';
       }
-      renderList();
-    }, function (err) {
-      convListEl.innerHTML = '<div class="inbox-conv-empty"><p>Impossible de charger les conversations.<br>' + err.message + '</p></div>';
-    });
+    );
+
+    /* Attendre le premier batch onSnapshot avant de bootstrapper */
     setTimeout(bootstrapFromUrl, 450);
   });
 
-  window.addEventListener('beforeunload', function () { if (unsubChats) unsubChats(); if (unsubMessages) unsubMessages(); });
-});
+  window.addEventListener('beforeunload', function() {
+    if (unsubChats)    unsubChats();
+    if (unsubMessages) unsubMessages();
+  });
+
+  /* ── Cursor ── */
+  (function() {
+    var ring = document.getElementById('cur-ring');
+    var dot  = document.getElementById('cur-dot');
+    var mx=0, my=0, rx=0, ry=0;
+    document.addEventListener('mousemove', function(e){ mx=e.clientX; my=e.clientY; dot.style.left=mx+'px'; dot.style.top=my+'px'; });
+    (function loop(){ rx+=(mx-rx)*.1; ry+=(my-ry)*.1; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+    document.addEventListener('mouseover', function(e){ if(e.target.closest('a,button,input,textarea,.inbox-conv-item')) document.body.classList.add('ch'); });
+    document.addEventListener('mouseout',  function(e){ if(e.target.closest('a,button,input,textarea,.inbox-conv-item')) document.body.classList.remove('ch'); });
+  })();
+
+})();
 
 "use strict";
 

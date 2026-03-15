@@ -318,7 +318,7 @@ window.showAccessDenied = function ({
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         ${redirectLabel}
       </a>
-      <div class="aurum-denied-footer"><a href="index.html">AURUM</a></div>
+      <div class="aurum-denied-footer"><a href="index.html">SANHIA</a></div>
     </div>`;
 };
 

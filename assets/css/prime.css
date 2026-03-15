@@ -787,9 +787,9 @@ body.cur-h #cur-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
   border-bottom:1px solid rgba(200,168,75,.1);
 }
 
-/* Watermark AURUM */
+/* Watermark SANHIA */
 .ab-hero::before{
-  content:'AURUM';
+  content:'SANHIA';
   position:absolute;
   left:50%;top:50%;
   transform:translate(-50%,-50%);
@@ -4450,7 +4450,7 @@ body.cur-h #cur-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
 
 /* TABS */
 .ax-tabs{padding:96px 0;background:var(--sand);color:var(--ink);position:relative;overflow:hidden}
-.ax-tabs::before{content:'AURUM';position:absolute;right:-10px;top:30px;font-family:'Unbounded',sans-serif;font-size:220px;font-weight:900;color:rgba(11,10,8,.035);line-height:1;pointer-events:none;letter-spacing:-.02em}
+.ax-tabs::before{content:'SANHIA';position:absolute;right:-10px;top:30px;font-family:'Unbounded',sans-serif;font-size:220px;font-weight:900;color:rgba(11,10,8,.035);line-height:1;pointer-events:none;letter-spacing:-.02em}
 .ax-ti{padding:0 88px}
 .ax-tnav{display:flex;border-bottom:1px solid rgba(11,10,8,.1);margin-bottom:60px}
 .ax-tbtn{padding:15px 34px;background:none;border:none;font-family:'Syne',sans-serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;font-weight:800;cursor:none;color:rgba(11,10,8,.3);position:relative;transition:color .2s}

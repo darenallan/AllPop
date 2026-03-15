@@ -1,21 +1,21 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * AURUM — header.js  v3
+ * AURUM — header.js  v3 (Premium Contrast & Visibility)
  * Composant header universel — design system Awwwards
  * ═══════════════════════════════════════════════════════════════
  *
  * UTILISATION :
- *   <div id="header-placeholder"></div>
- *   <script src="assets/js/components/header.js"></script>
+ * <div id="header-placeholder"></div>
+ * <script src="assets/js/components/header.js"></script>
  *
  * MODES :
- *   Par défaut  → header dark (obsidian/gold) — convient aux pages dark
- *   data-theme="light" sur <html> → header light (sable/gold)
- *   Les pages dark n'ont plus besoin d'overrides CSS !
+ * Par défaut  → header dark (obsidian/gold) — convient aux pages dark
+ * data-theme="light" sur <html> → header light (sable/gold)
+ * Les pages dark n'ont plus besoin d'overrides CSS !
  *
  * FONCTIONS PUBLIQUES :
- *   window.refreshCartCount()  → recalcule le badge panier
- *   window.refreshMsgBadge()   → recalcule le badge messages (si Firebase dispo)
+ * window.refreshCartCount()  → recalcule le badge panier
+ * window.refreshMsgBadge()   → recalcule le badge messages (si Firebase dispo)
  * ═══════════════════════════════════════════════════════════════
  */
 (function () {
@@ -34,7 +34,7 @@
       --hdr-bg-light-scrolled: rgba(242,237,228,.96);
     }
 
-    /* ── BASE ── */
+    /* ── BASE & CONTRST PROTECTION ── */
     .aurum-glass-header {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -44,13 +44,16 @@
       justify-content: space-between;
       padding: 0 40px;
       z-index: 9000;
-      transition: background .4s ease, border-color .4s ease, backdrop-filter .4s ease;
+      transition: background .4s ease, border-color .4s ease, backdrop-filter .4s ease, box-shadow .4s ease;
       border-bottom: 1px solid transparent;
+      
+      /* Secret pour la lisibilité sur fond clair : un dégradé protecteur subtil */
+      background: linear-gradient(180deg, rgba(11,10,8,0.3) 0%, rgba(11,10,8,0) 100%);
     }
 
     /* ── DARK MODE (défaut) ── */
     .aurum-glass-header {
-      background: var(--hdr-bg-dark);
+      /* Le dégradé protecteur est appliqué par défaut */
     }
     .aurum-glass-header.scrolled {
       background: var(--hdr-bg-dark-scrolled) !important;
@@ -63,11 +66,13 @@
     /* ── LIGHT MODE ── */
     html[data-theme="light"] .aurum-glass-header {
       background: var(--hdr-bg-light);
+      background: linear-gradient(180deg, rgba(242,237,228,0.2) 0%, rgba(242,237,228,0) 100%);
     }
     html[data-theme="light"] .aurum-glass-header.scrolled {
       background: var(--hdr-bg-light-scrolled) !important;
       border-bottom-color: rgba(200,168,75,.18) !important;
       box-shadow: 0 1px 24px rgba(0,0,0,.08);
+      background: var(--hdr-bg-light-scrolled) !important; /* Force le fond plein en mode scrolled */
     }
 
     /* ── LOGO ── */
@@ -100,9 +105,13 @@
       color: #FEFCF8;
       line-height: 1;
       transition: color .25s;
+      
+      /* Légère ombre portée pour plus de lisibilité */
+      text-shadow: 0 1px 6px rgba(0,0,0,0.4);
     }
     html[data-theme="light"] .header-brand-name {
       color: #0B0A08;
+      text-shadow: 0 1px 4px rgba(254,252,248,0.4);
     }
     .header-tagline {
       font-family: 'Syne', sans-serif;
@@ -130,6 +139,9 @@
       color: rgba(254,252,248,.75);
       transition: color .25s;
       position: relative;
+      
+      /* Légère ombre portée pour plus de lisibilité */
+      text-shadow: 0 1px 4px rgba(0,0,0,0.3);
     }
     .header-link::after {
       content: '';
@@ -144,7 +156,10 @@
     .header-link:hover::after { transform: scaleX(1); }
     .header-link.active { color: #C8A84B; }
     .header-link.active::after { transform: scaleX(1); }
-    html[data-theme="light"] .header-link { color: rgba(11,10,8,.65); }
+    html[data-theme="light"] .header-link {
+      color: rgba(11,10,8,.65);
+      text-shadow: 0 1px 2px rgba(254,252,248,0.2);
+    }
     html[data-theme="light"] .header-link:hover { color: #0B0A08; }
 
     /* ── ICONES DROITE ── */
@@ -158,20 +173,27 @@
       display: flex; align-items: center; justify-content: center;
       text-decoration: none;
       position: relative;
-      transition: background .2s;
+      transition: background .2s, transform 0.2s ease;
       background: none; border: none; cursor: pointer;
     }
     .header-icon-btn:hover {
       background: rgba(200,168,75,.1);
+      transform: translateY(-2px);
     }
     .header-icon-btn svg {
       width: 18px; height: 18px;
       stroke: rgba(254,252,248,.8);
       fill: none;
       transition: stroke .25s;
+      
+      /* Légère ombre pour les icônes */
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
     }
     .header-icon-btn:hover svg { stroke: #C8A84B; }
-    html[data-theme="light"] .header-icon-btn svg { stroke: rgba(11,10,8,.7); }
+    html[data-theme="light"] .header-icon-btn svg {
+      stroke: rgba(11,10,8,.7);
+      filter: drop-shadow(0 1px 2px rgba(254,252,248,0.2));
+    }
     html[data-theme="light"] .header-icon-btn:hover svg { stroke: #0B0A08; }
 
     /* Cart badge */
@@ -214,8 +236,12 @@
       background: #FEFCF8;
       transition: all .3s cubic-bezier(.16,1,.3,1);
       transform-origin: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
-    html[data-theme="light"] .mobile-burger span { background: #0B0A08; }
+    html[data-theme="light"] .mobile-burger span {
+      background: #0B0A08;
+      box-shadow: 0 1px 2px rgba(254,252,248,0.2);
+    }
     .mobile-burger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
     .mobile-burger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
     .mobile-burger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
@@ -227,7 +253,7 @@
       width: min(320px, 85vw);
       height: 100vh;
       background: #1A1916;
-      border-left: 1px solid rgba(200,168,75,.1);
+      border-left: 1px solid rgba(200,168,75,.15); /* Légèrement plus contrastée */
       z-index: 9002;
       transform: translateX(100%);
       transition: transform .38s cubic-bezier(.16,1,.3,1);
@@ -250,14 +276,27 @@
       color: #FEFCF8;
     }
     .drawer-brand span { color: #C8A84B; }
+    
+    /* BOUTON FERMER SIDEBAR - PLUS VISIBLE */
     .drawer-close-btn {
       width: 32px; height: 32px;
-      background: none; border: 1px solid rgba(200,168,75,.15);
+      background: rgba(11,10,8,0.4); /* Fond plus sombre */
+      border: 1px solid rgba(200,168,75,.3); /* Bordure dorée plus visible */
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: border-color .2s;
+      cursor: pointer; transition: all .2s;
     }
-    .drawer-close-btn:hover { border-color: rgba(200,168,75,.4); }
-    .drawer-close-btn svg { width: 14px; height: 14px; stroke: #7A7570; }
+    .drawer-close-btn:hover {
+      border-color: rgba(200,168,75,.6);
+      background: rgba(11,10,8,0.6);
+    }
+    .drawer-close-btn svg {
+      width: 14px; height: 14px;
+      stroke: #C8A84B; /* 'X' couleur or brillant */
+      stroke-width: 2.5px; /* Plus épais */
+    }
+    .drawer-close-btn:hover svg {
+      stroke: #FEFCF8; /* S'éclaircit au survol */
+    }
 
     .drawer-nav { padding: 16px 0; flex: 1; }
     .drawer-section-label {
@@ -313,7 +352,7 @@
     .mobile-drawer-overlay.active { opacity: 1; pointer-events: all; }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
+    @media (max-width: 960px) { /* BREAKPOINT AUGMENTÉ POUR ÉVITER LES CLASHES HEADER */
       .aurum-glass-header { padding: 0 16px; }
       .header-center { display: none; }
       .mobile-burger { display: flex; }
@@ -340,57 +379,48 @@
     return `
       <header class="aurum-glass-header" id="aurum-header">
 
-        <!-- Logo gauche -->
         <a href="index.html" class="header-brand">
           <div class="header-logo">
-            <img src="assets/img/Logo.png" alt="Aurum" onerror="this.style.display='none'"/>
+            <img src="assets/img/Logo.png" alt="Sanhia" onerror="this.style.display='none'"/>
           </div>
           <div class="header-brand-text">
-            <span class="header-brand-name">AURUM</span>
-            <span class="header-tagline">Excellence à votre portée</span>
+            <span class="header-brand-name">SANHIA</span>
+            <span class="header-tagline">L'excellence à votre portée</span>
           </div>
         </a>
 
-        <!-- Nav centrale (desktop) -->
         <nav class="header-center" aria-label="Navigation principale">
           <a href="index.html"           class="header-link" data-page="index">Accueil</a>
           <a href="catalogue.html"       class="header-link" data-page="catalogue">Catalogue</a>
           <a href="boutique-list.html"   class="header-link" data-page="boutique-list">Boutiques</a>
           <a href="seller-onboarding.html" class="header-link" data-page="seller-onboarding">Vendre</a>
-          <a href="apropos.html"         class="header-link" data-page="apropos">À propos</a>
+          <a href="about.html"         class="header-link" data-page="about">À propos</a>
         </nav>
 
-        <!-- Actions droite -->
         <div class="header-right">
 
-          <!-- Recherche -->
           <a href="catalogue.html" class="header-icon-btn" aria-label="Rechercher">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </a>
 
-          <!-- Messages -->
           <a href="messages.html" class="header-icon-btn" id="header-msg-btn" aria-label="Messages">
             <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             <span class="header-msg-badge" id="header-msg-badge"></span>
           </a>
 
-          <!-- Favoris -->
           <a href="wishlist.html" class="header-icon-btn" aria-label="Favoris">
             <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
           </a>
 
-          <!-- Panier -->
           <a href="cart.html" class="header-icon-btn" aria-label="Panier">
             <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
             <span class="header-cart-badge" id="cart-count"></span>
           </a>
 
-          <!-- Profil -->
-          <a href="profil.html" class="header-icon-btn" id="header-profile-btn" aria-label="Mon profil">
+          <a href="profile.html" class="header-icon-btn" id="header-profile-btn" aria-label="Mon profil">
             <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </a>
 
-          <!-- Burger mobile -->
           <button class="mobile-burger" id="mobile-burger-btn" aria-label="Menu" aria-expanded="false">
             <span></span><span></span><span></span>
           </button>
@@ -398,7 +428,6 @@
         </div>
       </header>
 
-      <!-- Drawer mobile -->
       <div class="mobile-drawer" id="mobile-drawer" role="dialog" aria-label="Menu de navigation">
         <div class="drawer-header">
           <span class="drawer-brand">AUR<span>U</span>M</span>
@@ -446,7 +475,7 @@
             <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             Messages
           </a>
-          <a href="profil.html" class="drawer-link" id="drawer-profile-link">
+          <a href="profile.html" class="drawer-link" id="drawer-profile-link">
             <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             Mon profil
           </a>
@@ -476,7 +505,6 @@
         </nav>
       </div>
 
-      <!-- Overlay drawer -->
       <div class="mobile-drawer-overlay" id="drawer-overlay"></div>
     `;
   }
@@ -549,7 +577,7 @@
       if (user) {
         if (loginLink)  loginLink.style.display  = 'none';
         if (logoutLink) logoutLink.style.display  = 'flex';
-        if (profileBtn) profileBtn.href = 'profil.html';
+        if (profileBtn) profileBtn.href = 'profile.html';
         if (userCard) {
           userCard.style.display = 'block';
           if (userNameEl)  userNameEl.textContent  = user.displayName || 'Mon compte';

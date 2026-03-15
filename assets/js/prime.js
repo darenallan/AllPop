@@ -32,7 +32,7 @@
  *   §12 login.html
  *   §13 messages.html
  *   §14 product.html  (fiche produit Firestore)
- *   §15 profil.html
+ *   §15 profile.html
  *   §16 register.html
  *   §17 seller-application.html
  *   §18 seller-onboarding.html
@@ -766,7 +766,7 @@
       addressSelectEl.innerHTML = '<option value="">Aucune adresse enregistrée</option>';
       addressSelectEl.disabled = true;
       currentAddress = null; updateShipUI();
-      if (shippingNoteEl) shippingNoteEl.innerHTML = '<a href="profil.html">+ Ajouter une adresse</a>';
+      if (shippingNoteEl) shippingNoteEl.innerHTML = '<a href="profile.html">+ Ajouter une adresse</a>';
       return;
     }
     addresses.forEach(function (a) { addressById.set(String(a.id), a); });
@@ -1605,7 +1605,7 @@
     var partner = isBuyer ? chat.shopName||'Boutique' : chat.buyerName||'Client';
     if (threadAvatar) threadAvatar.textContent = avatarLetters(partner);
     if (threadName)   threadName.textContent   = partner;
-    if (threadSub)    threadSub.textContent    = isBuyer ? 'Boutique Aurum' : 'Client · ' + (chat.buyerEmail||'');
+    if (threadSub)    threadSub.textContent    = isBuyer ? 'Boutique Sanhia' : 'Client · ' + (chat.buyerEmail||'');
     if (shopLink) { if (chat.shopId && isBuyer) { shopLink.href = 'boutique.html?id=' + chat.shopId; shopLink.style.display = ''; } else { shopLink.style.display = 'none'; } }
 
     var url = new URL(window.location.href);
@@ -1871,7 +1871,7 @@
             + '<button class="ax-bcart" onclick="axCart()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span>Ajouter au panier</span></button>'
             + '<button class="ax-bwish" id="ax-wish" onclick="axWish()"><span style="font-family:\'Unbounded\',sans-serif; font-weight:700; font-size:11px; letter-spacing:.15em; text-transform:uppercase;">FAV</span></button>'
           + '</div>'
-          + '<div class="ax-seller rv"><div class="ax-sava">' + savaHTML + '</div><div><div class="ax-sname">Vendu par ' + (shopData.name||'Boutique Aurum') + '</div><div class="ax-ssub"><span style="color:var(--gold)">' + starH(shopData.rating||0) + '</span><span>📍 '+(shopData.city||shopData.address||'Ouagadougou')+'</span><span>🚚 Livraison 48–72h</span></div></div>'
+          + '<div class="ax-seller rv"><div class="ax-sava">' + savaHTML + '</div><div><div class="ax-sname">Vendu par ' + (shopData.name||'Boutique Sanhia') + '</div><div class="ax-ssub"><span style="color:var(--gold)">' + starH(shopData.rating||0) + '</span><span>📍 '+(shopData.city||shopData.address||'Ouagadougou')+'</span><span>🚚 Livraison 48–72h</span></div></div>'
             + '<button class="ax-bvisit" onclick="location.href=\'boutique.html?id='+shopId+'\'">Voir la boutique →</button>'
             + '<button class="ax-bvisit" style="margin-top:6px;border-color:rgba(200,168,75,.1);color:rgba(200,168,75,.7)" onclick="axContactSeller()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:6px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contacter le vendeur</button>'
           + '</div>'
@@ -2031,9 +2031,9 @@
 })();
 
 /* ══════════════════════════════════════════════════════════
-   §15 profil.html
+   §15 profile.html
    ══════════════════════════════════════════════════════════ */
-(function initProfil() {
+(function initProfile() {
   if (!document.getElementById('pr-hero-name') && !document.getElementById('tab-infos')) return;
 
   var auth    = window.auth;

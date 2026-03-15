@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var isFav    = typeof isInWishlist === 'function' ? isInWishlist(p.id) : false;
     var div = document.createElement('div');
     div.innerHTML =
-      '<a href="product.html?id=' + p.id + '" class="bp-card">"
+      '<a href="product.html?id=' + p.id + '" class="bp-card">'
       + '<div class="bp-card-img-wrap">'
         + '<button class="bp-card-wishlist' + (isFav ? ' active' : '') + '" type="button" onclick="event.stopPropagation();event.preventDefault();if(typeof toggleWishlist===\'function\')toggleWishlist(event,\'' + p.id + '\');return false;">'
           + '<i data-lucide="heart" style="width:16px;height:16px;fill:' + (isFav ? 'currentColor' : 'none') + '"></i>'
