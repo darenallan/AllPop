@@ -1,0 +1,557 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Votre Facture - Sanhia</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+  <link rel="stylesheet" href="assets/css/prime.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <!-- Configuration & Utilities -->
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <!-- Data Store -->
+  <script src="assets/js/data.js" defer></script>
+  <!-- App Module -->
+  <script src="assets/js/app.js" defer></script>
+
+
+</head>
+
+<body>
+  <div id="header-placeholder"></div>
+
+
+  <main class="invoice-container">
+    
+    <div id="loading" style="text-align:center; padding:100px;">
+        <i data-lucide="loader" class="spin" style="animation:spin 1s linear infinite; width:40px; height:40px; color:var(--gold);"></i>
+        <p style="margin-top:20px; color:#666;">Génération de votre facture...</p>
+    </div>
+
+    <div id="invoice-content" style="display:none;">
+        
+        <div class="success-banner">
+            <i data-lucide="check-circle" style="width:32px; height:32px; flex-shrink:0;"></i>
+            <div>
+                <h2 style="margin:0 0 5px 0; font-size:18px;">Commande confirmée !</h2>
+                <p style="margin:0; opacity:0.9; font-size:14px; line-height:1.5;">
+                    Votre commande a bien été enregistrée. Voici votre facture officielle. 
+                    Veuillez la télécharger et nous contacter pour finaliser le paiement.
+                </p>
+            </div>
+        </div>
+
+        <div class="invoice-card" id="invoice-document">
+            
+            <div class="invoice-header">
+                <div>
+                    <h1 style="font-family:'Playfair Display', serif; font-size:32px; margin:0; color:#D4AF37;">SANHIA</h1>
+                    <p style="margin:5px 0 0; color:#666; font-size:13px;">Excellence à votre portée</p>
+                    <div style="margin-top:15px; font-size:13px; color:#444; line-height:1.6;">
+                        Ouagadougou, Burkina Faso<br>
+                        Tél: +226 64 50 26 26<br>
+                        Email: aurumcorporate.d@gmail.com
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:14px; color:#999; text-transform:uppercase; margin-bottom:5px;">Facture N°</div>
+                    <div style="font-size:20px; font-weight:700;" id="inv-ref">...</div>
+                    <div style="margin-top:5px; font-size:14px; color:#666;" id="inv-date">...</div>
+                </div>
+            </div>
+
+            <div class="invoice-body">
+                <div style="margin-bottom:30px;">
+                    <h3 style="font-size:14px; text-transform:uppercase; color:#999; margin-bottom:10px;">Facturé à</h3>
+                    <div style="font-weight:600; font-size:16px;" id="client-name">...</div>
+                    <div style="color:#555; margin-top:5px;" id="client-phone">...</div>
+                    <div style="color:#555;" id="client-email">...</div>
+                </div>
+
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th style="text-align:center;">Qté</th>
+                            <th>Prix Unit.</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-items">
+                        </tbody>
+                </table>
+
+                <div style="display:flex; justify-content:flex-end;">
+                    <div class="invoice-total-section">
+                        <div class="invoice-row">
+                            <span class="invoice-label">Sous-total</span>
+                            <span class="invoice-val" id="inv-subtotal">...</span>
+                        </div>
+                        <div class="invoice-row">
+                            <span class="invoice-label">Livraison</span>
+                            <span class="invoice-val">À calculer</span>
+                        </div>
+                        <div style="border-top:1px solid #ddd; margin:10px 0;"></div>
+                        <div class="invoice-row" style="margin-bottom:0;">
+                            <span class="invoice-label" style="font-size:16px; color:#000;">Total à payer</span>
+                            <span class="invoice-val" style="font-size:18px; color:#D4AF37;" id="inv-total">...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="invoice-actions">
+                <button class="btn btn-gold" id="btn-download">
+                    <i data-lucide="download"></i> Télécharger PDF
+                </button>
+                <button class="btn btn-success" id="btn-whatsapp" style="background:#25D366; color:white; border:none;">
+                    <i data-lucide="send"></i> Envoyer sur WhatsApp
+                </button>
+            </div>
+        </div>
+
+    </div>
+  </main>
+
+  <script>
+    function setupHeaderMenu() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeBtn = document.getElementById('close-btn');
+        const drawer = document.getElementById('mobile-drawer');
+        const overlay = document.getElementById('menu-overlay');
+
+        const toggleMenu = () => {
+            if (!drawer || !overlay) return;
+            drawer.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
+        };
+
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
+
+        const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+        const badge = document.getElementById('cart-badge');
+        if (badge) {
+            const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
+            if (count > 0) {
+                badge.innerText = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    // Fonction utilitaire pour afficher les erreurs
+    function showError(message, type = 'error') {
+        console.error(`[${type}] ${message}`);
+        const loading = document.getElementById('loading');
+        const content = document.getElementById('invoice-content');
+        if (loading) loading.style.display = 'none';
+        if (content) content.style.display = 'block';
+        
+        const errorBanner = document.createElement('div');
+        errorBanner.className = 'error-banner';
+        errorBanner.style.cssText = `
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            color: #991b1b;
+            font-size: 14px;
+        `;
+        errorBanner.innerHTML = `
+            <i data-lucide="alert-circle" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+            <div>
+                <strong>Erreur</strong>
+                <p style="margin: 5px 0 0 0;">${message}</p>
+            </div>
+        `;
+        
+        const container = document.querySelector('.invoice-container');
+        if (container) container.insertBefore(errorBanner, container.firstChild);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    async function getNextInvoiceNumber(db) {
+        const counterRef = db.collection('meta').doc('invoiceCounter');
+        try {
+            const next = await db.runTransaction(async (tx) => {
+                const snap = await tx.get(counterRef);
+                const current = snap.exists ? Number(snap.data().value || 0) : 0;
+                const value = current + 1;
+                tx.set(counterRef, { value }, { merge: true });
+                return value;
+            });
+            return next;
+        } catch (err) {
+            console.error('Erreur compteur facture (Firestore):', err);
+            const fallback = Number(localStorage.getItem('ac_invoice_counter') || '0') + 1;
+            localStorage.setItem('ac_invoice_counter', String(fallback));
+            return fallback;
+        }
+    }
+    // Initialisation de la page
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            setupHeaderMenu();
+            
+            const yearSpan = document.getElementById('year');
+            if (yearSpan) {
+                yearSpan.innerText = new Date().getFullYear();
+            }
+
+            // Gestion de la déconnexion
+            const logoutBtn = document.getElementById('mobile-logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    firebase.auth().signOut().then(() => {
+                        window.location.href = "login.html";
+                    }).catch(err => {
+                        console.error('Erreur déconnexion:', err);
+                        showError('Erreur lors de la déconnexion');
+                    });
+                });
+            }
+
+            // Vérifier que jsPDF est disponible
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                throw new Error('Bibliothèque jsPDF non chargée');
+            }
+            
+            // Vérifier que Firebase est disponible
+            if (!window.firebase || !firebase.firestore || !firebase.auth) {
+                throw new Error('Firebase non initialisé corrcectement');
+            }
+
+            const { jsPDF } = window.jspdf;
+            const db = firebase.firestore();
+            const auth = firebase.auth();
+            
+            // Récupérer l'ID de la commande depuis l'URL
+            const params = new URLSearchParams(window.location.search);
+            const orderId = params.get('orderId');
+
+        // Si pas d'ID, on utilise le panier local pour simuler une facture (Checkout immédiat)
+        // Mais idéalement, il faut d'abord créer la commande dans Firebase.
+        
+        // Simulation pour l'exemple si pas d'ID (à adapter avec ton flux réel)
+        // Ici on va chercher la commande réelle dans Firebase
+        
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    showError('Vous devez être connecté pour voir votre facture.');
+                    setTimeout(() => window.location.href = "login.html", 2000);
+                    return;
+                }
+
+                if (!orderId) {
+                    try {
+                        const localCheckout = JSON.parse(localStorage.getItem('ac_cart_checkout') || 'null');
+                        const localItems = Array.isArray(localCheckout)
+                            ? localCheckout
+                            : (localCheckout && Array.isArray(localCheckout.items) ? localCheckout.items : null);
+                        let localInvoiceNumber = !Array.isArray(localCheckout) && localCheckout
+                            ? localCheckout.invoiceNumber
+                            : null;
+
+                        if (!localItems || localItems.length === 0) {
+                            showError('Aucune commande en cours. Veuillez passer une nouvelle commande.');
+                            setTimeout(() => window.location.href = "cart.html", 2000);
+                            return;
+                        }
+
+                        if (!localInvoiceNumber) {
+                            localInvoiceNumber = await getNextInvoiceNumber(db);
+                            localStorage.setItem('ac_cart_checkout', JSON.stringify({
+                                items: localItems,
+                                invoiceNumber: localInvoiceNumber
+                            }));
+                        }
+
+                        const order = {
+                            userName: user?.displayName || user?.email || "Client",
+                            userEmail: user?.email || "",
+                            userPhone: "",
+                            createdAt: { seconds: Math.floor(Date.now() / 1000) },
+                            invoiceNumber: localInvoiceNumber,
+                            items: localItems.map(item => ({
+                                id: item.id,
+                                name: item.name || "Produit",
+                                price: Number(item.price || 0),
+                                qty: Number(item.qty || item.quantity || 1)
+                            }))
+                        };
+
+                        renderInvoice(order, `LOCAL-${Date.now()}`);
+                    } catch (err) {
+                        console.error('Erreur chargement panier local:', err);
+                        showError('Erreur lors du chargement des données du panier.');
+                    }
+                    return;
+                }
+
+                // Charger la commande depuis Firestore
+                db.collection('orders').doc(orderId).get()
+                    .then(doc => {
+                        if (!doc.exists) {
+                            showError('Commande introuvable. Veuillez vérifier votre référence.');
+                            setTimeout(() => window.location.href = "index.html", 2000);
+                            return;
+                        }
+                        
+                        const order = doc.data();
+                        
+                        // Validation des données
+                        if (!order || !Array.isArray(order.items) || order.items.length === 0) {
+                            showError('Commande vide ou données corrompues.');
+                            return;
+                        }
+                        
+                        const ensureInvoiceNumber = async () => {
+                            if (order.invoiceNumber) return order.invoiceNumber;
+                            const next = await getNextInvoiceNumber(db);
+                            order.invoiceNumber = next;
+                            await db.collection('orders').doc(orderId).set({
+                                invoiceNumber: next
+                            }, { merge: true });
+                            return next;
+                        };
+
+                        ensureInvoiceNumber()
+                            .then(() => renderInvoice(order, doc.id))
+                            .catch(err => {
+                                console.error('Erreur numérotation facture:', err);
+                                renderInvoice(order, doc.id);
+                            });
+                    })
+                    .catch(err => {
+                        console.error('Erreur Firestore:', err);
+                        
+                        let message = 'Erreur lors du chargement de la commande.';
+                        if (err.code === 'permission-denied') {
+                            message = 'Vérifiez vos permissions d\'accès.';
+                        } else if (err.code === 'unavailable') {
+                            message = 'Service temporairement indisponible. Veuillez réessayer.';
+                        }
+                        
+                        showError(message);
+                    });
+            });
+
+            function renderInvoice(order, id) {
+                try {
+                    const loading = document.getElementById('loading');
+                    const content = document.getElementById('invoice-content');
+                    
+                    if (!loading || !content) {
+                        throw new Error('Éléments DOM manquants');
+                    }
+                    
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+
+                    // Validation des données de commande
+                    if (!order || typeof order !== 'object') {
+                        throw new Error('Données de commande invalides');
+                    }
+                    
+                    if (!Array.isArray(order.items)) {
+                        throw new Error('Liste des articles manquante ou invalide');
+                    }
+
+                    // Remplissage infos
+                    const date = order.createdAt 
+                        ? new Date(order.createdAt.seconds * 1000).toLocaleDateString('fr-FR') 
+                        : new Date().toLocaleDateString('fr-FR');
+                    
+                    const refElement = document.getElementById('inv-ref');
+                    const dateElement = document.getElementById('inv-date');
+                    const nameElement = document.getElementById('client-name');
+                    const phoneElement = document.getElementById('client-phone');
+                    const emailElement = document.getElementById('client-email');
+                    
+                    if (!refElement || !dateElement || !nameElement || !phoneElement || !emailElement) {
+                        throw new Error('Éléments de formulaire manquants');
+                    }
+                    
+                    const invoiceRef = order.invoiceNumber
+                        ? `AUR-${order.invoiceNumber}`
+                        : "AUR-" + String(id).substring(0, 6).toUpperCase();
+                    refElement.innerText = invoiceRef;
+                    dateElement.innerText = date;
+                    nameElement.innerText = order.userName || "Client";
+                    phoneElement.innerText = order.userPhone || "Non spécifié";
+                    emailElement.innerText = order.userEmail || "Non spécifié";
+
+                    // Items
+                    const tbody = document.getElementById('invoice-items');
+                    if (!tbody) {
+                        throw new Error('Élément tbody manquant');
+                    }
+                    
+                    tbody.innerHTML = "";
+                    let total = 0;
+
+                    order.items.forEach((item, index) => {
+                        try {
+                            if (!item || typeof item !== 'object') {
+                                console.warn(`Article invalide à l'index ${index}`);
+                                return;
+                            }
+                            
+                            const price = Number(item.price) || 0;
+                            const qty = Number(item.qty || item.quantity) || 1;
+                            
+                            if (price < 0 || qty < 0) {
+                                console.warn(`Valeurs négatives détectées pour l'article ${index}`);
+                                return;
+                            }
+                            
+                            const lineTotal = price * qty;
+                            total += lineTotal;
+                            
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${String(item.name || 'Produit').substring(0, 100)}</td>
+                                <td style="text-align:center;">${qty}</td>
+                                <td>${new Intl.NumberFormat('fr-FR').format(price)} FCFA</td>
+                                <td>${new Intl.NumberFormat('fr-FR').format(lineTotal)} FCFA</td>
+                            `;
+                            tbody.appendChild(tr);
+                        } catch (err) {
+                            console.warn(`Erreur traitement article ${index}:`, err);
+                        }
+                    });
+
+                    if (order.items.length === 0) {
+                        throw new Error('Aucun article dans la commande');
+                    }
+
+                    const formattedTotal = new Intl.NumberFormat('fr-FR').format(Math.round(total * 100) / 100) + " FCFA";
+                    
+                    const subtotalElement = document.getElementById('inv-subtotal');
+                    const totalElement = document.getElementById('inv-total');
+                    
+                    if (!subtotalElement || !totalElement) {
+                        throw new Error('Éléments total manquants');
+                    }
+                    
+                    subtotalElement.innerText = formattedTotal;
+                    totalElement.innerText = formattedTotal;
+
+                    // Setup Boutons
+                    setupActions(order, invoiceRef, formattedTotal);
+                    
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                } catch (err) {
+                    console.error('Erreur rendu facture:', err);
+                    showError(`Erreur lors du rendu de la facture: ${err.message}`);
+                }
+            }
+
+            function setupActions(order, invoiceRef, totalStr) {
+                const btnDownload = document.getElementById('btn-download');
+                const btnWhatsapp = document.getElementById('btn-whatsapp');
+                
+                if (btnDownload) {
+                    btnDownload.addEventListener('click', () => {
+                        try {
+                            const content = document.getElementById('invoice-document');
+                            if (!content) {
+                                showError('Élément facture non trouvé');
+                                return;
+                            }
+                            
+                            if (!window.jspdf || !window.jspdf.jsPDF) {
+                                throw new Error('jsPDF non disponible');
+                            }
+                            
+                            const doc = new jsPDF();
+                            btnDownload.disabled = true;
+                            btnDownload.innerText = 'Génération...';
+                            
+                            doc.html(content, {
+                                callback: function (doc) {
+                                    try {
+                                        doc.save(`Facture_${invoiceRef}.pdf`);
+                                        btnDownload.disabled = false;
+                                        btnDownload.innerText = 'Télécharger PDF';
+                                    } catch (err) {
+                                        console.error('Erreur lors de la sauvegarde PDF:', err);
+                                        showError('Erreur lors du téléchargement du PDF');
+                                        btnDownload.disabled = false;
+                                        btnDownload.innerText = 'Télécharger PDF';
+                                    }
+                                },
+                                x: 10,
+                                y: 10,
+                                width: 190,
+                                windowWidth: 900 
+                            });
+                        } catch (err) {
+                            console.error('Erreur génération PDF:', err);
+                            showError(`Erreur lors de la génération du PDF: ${err.message}`);
+                            if (btnDownload) {
+                                btnDownload.disabled = false;
+                                btnDownload.innerText = 'Télécharger PDF';
+                            }
+                        }
+                    });
+                }
+
+                if (btnWhatsapp) {
+                    btnWhatsapp.addEventListener('click', () => {
+                        try {
+                            const phone = "22664502626";
+                            if (!phone || !/^[0-9+]{7,}$/.test(phone)) {
+                                throw new Error('Numéro téléphone invalide');
+                            }
+                            
+                            const msg = `Bonjour Sanhia,\n\nJe viens de passer commande (Réf: ${invoiceRef}) pour un total de ${totalStr}.\n\nPouvez-vous me confirmer les moyens de paiement disponibles ?\n\nMerci.`;
+                            
+                            const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+                            if (!waUrl) {
+                                throw new Error('URL WhatsApp invalide');
+                            }
+                            
+                            window.open(waUrl, '_blank');
+                        } catch (err) {
+                            console.error('Erreur WhatsApp:', err);
+                            showError('Erreur lors de l\'ouverture de WhatsApp');
+                        }
+                    });
+                }
+            }
+        } catch (err) {
+            console.error('Erreur initialisation:', err);
+            showError(`Erreur initiale: ${err.message}`);
+        }
+    });
+  </script>
+  <script src="assets/js/prime-new.js" defer></script>
+  <script src="assets/js/footer.js" defer></script>
+</body>
+</html>

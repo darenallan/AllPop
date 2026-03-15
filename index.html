@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head> 
+     <!---clauder-->
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sanhia - L'Excellence - Votre Portée</title>
+  <meta name="description" content="Sanhia est la première marketplace premium du Burkina Faso. Achetez et vendez des produits de qualité en toute confiance."/>
+  <meta property="og:title" content="Sanhia - L'Excellence - Votre Portée"/>
+  <meta property="og:description" content="La marketplace de référence au Burkina Faso. Mode, Électronique, Déco."/>
+  <meta property="og:url" content="https://aurum.bf"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/index.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+
+<body>
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+<div id="noise"></div>
+
+<!-- Header injecté par header.js -->
+<div id="header-placeholder"></div>
+
+<main>
+
+  <!-- -- HERO ---------------------------------- -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-lines">
+      <span></span><span></span><span></span>
+    </div>
+
+    <div class="hero-center">
+      <p class="hero-eyebrow">Burkina Faso - Marketplace Premium</p>
+
+      <h1 class="hero-h1">
+        <span class="gold-text">L'Excellence</span><br>
+        <em>- Votre Portée</em>
+      </h1>
+      <p class="hero-sub">Le meilleur du style Burkinabé, livré chez vous.<br>Mode, Beauté, Électronique é sélectionnés avec exigence.</p>
+
+      <div class="hero-search">
+        <input class="hero-search-input" type="text" placeholder="Rechercher un produit, une boutique"/>
+        <button class="hero-search-btn" type="button"><span>Rechercher</span></button>
+      </div>
+
+      <div class="hero-pills">
+        <a href="catalogue.html" class="hero-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Catalogue
+        </a>
+        <a href="catalogue.html?category=Mode" class="hero-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>
+          Mode
+        </a>
+        <a href="catalogue.html?category=Beauté" class="hero-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10"/><path d="M12 8v4l3 3"/></svg>
+          Beauté
+        </a>
+        <a href="catalogue.html?category=Digital" class="hero-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          Digital
+        </a>
+        <a href="catalogue.html?category=Électronique" class="hero-pill">
+          <svg viewBox="0 0  24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="11" x2="12" y2="17"/></svg>
+          Électronique
+        </a>
+      </div>
+
+      <!--<div class="hero-stats">
+        <div class="hero-stat">
+          <span class="counter" id="stats-products" data-target="500"></span>
+          <span class="stat-label">Produits</span>
+        </div>
+        <div class="hero-stat">
+          <span class="counter" id="stats-shops" data-target="25"></span>
+          <span class="stat-label">Boutiques</span>
+        </div>
+        <div class="hero-stat">
+          <span class="counter" id="stats-rating" data-target="4.8" data-suffix="★"></span>
+          <span class="stat-label">Note Moyenne</span>
+        </div>
+      </div>-->
+    </div>
+
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span>Défiler</span>
+    </div>
+  </section>
+
+  <!-- -- MARQUEE -------------------------------- -->
+  <div class="marquee-wrap">
+    <div class="marquee-track" id="marquee-track">
+      <!-- Items duplicated in JS for infinite loop -->
+      <span class="marquee-item">Mode<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Beauté<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Électronique<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Artisanat<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Décoration<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Digital<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Alimentation<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Véhicules<span class="marquee-dot"></span></span>
+      <span class="marquee-item">BTP<span class="marquee-dot"></span></span>
+      <!-- duplicate for seamless -->
+      <span class="marquee-item">Mode<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Beauté<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Électronique<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Artisanat<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Décoration<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Digital<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Alimentation<span class="marquee-dot"></span></span>
+      <span class="marquee-item">Véhicules<span class="marquee-dot"></span></span>
+      <span class="marquee-item">BTP<span class="marquee-dot"></span></span>
+    </div>
+  </div>
+
+  <!-- -- NOUVEAUTS ----------------------------- -->
+  <section class="nouveautes rv">
+    <div class="section-head">
+      <div>
+        <p class="sec-label">Collection</p>
+        <h2 class="section-title-xl">
+          Nos <em>Nouveautés</em>
+        </h2>
+      </div>
+      <a href="catalogue.html" class="see-all">Voir tout le catalogue</a>
+    </div>
+
+    <!-- Skeleton shown until data.js injects cards -->
+    <div class="skel-grid" id="skel-products">
+      <div class="skel-card"><div class="skel-img"></div><div class="skel-body"><div class="skel-line w60"></div><div class="skel-line w80"></div><div class="skel-line w40"></div></div></div>
+      <div class="skel-card"><div class="skel-img"></div><div class="skel-body"><div class="skel-line w60"></div><div class="skel-line w80"></div><div class="skel-line w40"></div></div></div>
+      <div class="skel-card"><div class="skel-img"></div><div class="skel-body"><div class="skel-line w60"></div><div class="skel-line w80"></div><div class="skel-line w40"></div></div></div>
+      <div class="skel-card"><div class="skel-img"></div><div class="skel-body"><div class="skel-line w60"></div><div class="skel-line w80"></div><div class="skel-line w40"></div></div></div>
+    </div>
+    <div id="products-container" class="grid grid-4" style="display:none"></div>
+  </section>
+
+  <!-- -- EXP�RIENCE ----------------------------- -->
+  <section class="experience">
+    <div class="section-head rv">
+      <div>
+        <p class="sec-label">Pourquoi Sanhia</p>
+        <h2 class="section-title-xl">L'Expérience<br><em>Sanhia</em></h2>
+      </div>
+    </div>
+    <div class="exp-grid">
+      <div class="exp-card rv rv1">
+        <span class="exp-num">01</span>
+        <div class="exp-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="exp-title">Paiement Sécuris</h3>
+        <p class="exp-text">Transactions cryptes et protection acheteur garantie sur chaque commande. Votre argent, en sécurité.</p>
+      </div>
+      <div class="exp-card rv rv2">
+        <span class="exp-num">02</span>
+        <div class="exp-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <h3 class="exp-title">Livraison Rapide</h3>
+        <p class="exp-text">Livraison express partout à Ouagadougou et expedition en province. Tous nos vendeurs sont locaux.</p>
+      </div>
+      <div class="exp-card rv rv3">
+        <span class="exp-num">03</span>
+        <div class="exp-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <h3 class="exp-title">Qualité Premium</h3>
+        <p class="exp-text">Nous sélectionnons rigoureusement nos vendeurs pour garantir l'excellence. Chaque boutique est vérifiée.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- -- COMMERçANT SPLIT ----------------------- -->
+  <section class="split">
+    <div class="split-left rv">
+      <p class="sec-label">Pour les Vendeurs</p>
+      <h2 class="split-headline">
+        Vous êtes<br><em>commerçant ?</em>
+      </h2>
+      <p class="split-text">Ne laissez pas votre stock dormir. Rejoignez Sanhia et touchez des milliers de clients premium ds aujourd'hui. Une boutique en ligne cl en main, sans frais cachs.</p>
+      <div class="split-btns">
+        <a href="seller-onboarding.html" class="btn-aurum-secondary"><span>Créer ma boutique</span></a>
+        <a href="contact.html" class="btn-ghost">En savoir plus</a>
+      </div>
+    </div>
+    <div class="split-right">
+      <img src="assets/img/hero.png" alt="Marketplace Sanhia" class="split-visual rv rv2">
+    </div>
+  </section>
+
+  <!-- -- TéMOIGNAGES ---------------------------- -->
+  <section class="testimonials">
+    <div class="section-head rv">
+      <div>
+        <p class="sec-label">Communauté</p>
+        <h2 class="section-title-xl">Ils nous font<br><em>confiance</em></h2>
+      </div>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card rv rv1">
+        <p class="testi-quote">Service impeccable et produits de qualité. Je commande régulièrement et je ne suis jamais déçue.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">M</div>
+          <div>
+            <div class="testi-name">Mariam O.</div>
+            <div class="testi-role">Cliente fidèle</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card rv rv2">
+        <p class="testi-quote">Plateforme très simple pour vendre mes produits. Mes ventes ont triplié en 3 mois sur Sanhia.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">I</div>
+          <div>
+            <div class="testi-name">Issa C.</div>
+            <div class="testi-role">Vendeur vérifié</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card rv rv3">
+        <p class="testi-quote">La livraison est rapide et le support client est toujours disponible. Vraiment sérieux.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">F</div>
+          <div>
+            <div class="testi-name">Fatou K.</div>
+            <div class="testi-role">Acheteuse Premium</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- -- NEWSLETTER ----------------------------- -->
+  <section class="newsletter rv">
+    <p class="sec-label" style="justify-content:center">Rejoindre</p>
+    <h2 class="nl-title">Rejoignez<br>le <em>Cercle</em></h2>
+    <p class="nl-sub">Offres exclusives, nouvelles collections et avant-premires.<br>Aucun spam uniquement l'essentiel.</p>
+    <form class="nl-form" id="nl-form">
+      <input type="email" placeholder="Votre adresse email?" required/>
+      <button type="submit">Je rejoins</button>
+    </form>
+  </section>
+
+</main>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/index.js" defer></script>
+<script src="assets/js/footer.js" defer></script>
+</body>
+</html>
+

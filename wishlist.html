@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mes Favoris - Sanhia</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/components/header.js"></script>
+    <script src="assets/js/data.js" defer></script>
+    <script src="assets/js/app.js" defer></script>
+
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="stylesheet" href="assets/css/global.css" />
+    <link rel="stylesheet" href="assets/css/pages/wishlist.css" />
+    <link rel="stylesheet" href="assets/css/aurum-light.css" />
+  </head>
+  <body style="background: #0b0a08; margin: 0; cursor: none">
+    <!-- Cursor -->
+    <div id="wl-ring"></div>
+    <div id="wl-dot"></div>
+    <div id="wl-noise"></div>
+    <div id="wl-toasts"></div>
+
+    <!-- Header natif -->
+    <div id="header-placeholder"></div>
+
+    <div id="wl">
+      <div class="wl-spacer"></div>
+
+      <!-- PAGE HEADER -->
+      <div class="wl-pghead">
+        <div class="wl-pghead-left">
+          <div class="wl-kicker">Collection personnelle</div>
+          <h1 class="wl-title">Mes<br /><em>Favoris</em></h1>
+        </div>
+        <div class="wl-pghead-right">
+          <span class="wl-count-label">Articles sauvegardés</span>
+          <span class="wl-count-num" id="wl-count">-</span>
+          <span class="wl-count-sub" id="wl-count-sub"></span>
+        </div>
+      </div>
+      <div class="wl-divider"></div>
+
+      <!-- BREADCRUMB -->
+      <nav class="wl-crumb">
+        <a href="index.html">Accueil</a>
+        <span class="sep"> > </span>
+        <a href="profile.html">Mon compte</a>
+        <span class="sep"> > </span>
+        <span>Mes Favoris</span>
+      </nav>
+
+      <!-- TOOLBAR -->
+      <div class="wl-toolbar" id="wl-toolbar" style="display: none">
+        <div class="wl-filters" id="wl-filters">
+          <button class="wl-filter on" data-cat="all">Tous</button>
+        </div>
+        <div class="wl-toolbar-right">
+          <select class="wl-sort" id="wl-sort">
+            <option value="date">Récents en premier</option>
+            <option value="price-asc">Prix croissant</option>
+            <option value="price-desc">Prix décroissant</option>
+            <option value="name">Nom A?Z</option>
+          </select>
+          <button class="wl-clear-btn" onclick="wlClearAll()">
+            Tout supprimer
+          </button>
+        </div>
+      </div>
+
+      <!-- LOADER -->
+      <div id="wl-loader" class="wl-loader">
+        <span class="wl-loader-ring"></span>
+        <p class="wl-loader-txt">Chargement des favoris</p>
+      </div>
+
+      <!-- EMPTY -->
+      <div id="wl-empty" class="wl-empty">
+        <div class="wl-empty-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.2"
+          >
+            <path
+              d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
+            />
+          </svg>
+        </div>
+        <span class="wl-empty-ghost">Vide</span>
+        <span class="wl-empty-title">Aucun favori</span>
+        <span class="wl-empty-sub"
+          >Parcourez notre catalogue et sauvegardez les pièces qui vous font
+          envie.</span
+        >
+        <a href="catalogue.html" class="wl-empty-cta"
+          ><span>Découvrir le catalogue</span></a
+        >
+      </div>
+
+      <!-- CONTENT -->
+      <div id="wl-content" class="wl-content">
+        <div class="wl-grid" id="wl-grid"></div>
+      </div>
+    </div>
+
+    <script src="assets/js/global.js" defer></script>
+    <script src="assets/js/pages/wishlist.js" defer></script>
+    <script src="assets/js/footer.js" defer></script>
+  </body>
+</html>

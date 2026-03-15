@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Devenir Vendeur - Sanhia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <script src="assets/js/app.js" defer></script>
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/seller-onboarding.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+<body>
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+<div id="noise"></div>
+<div id="header-placeholder"></div>
+
+<!-- MARQUEE -->
+<div class="so-mq">
+  <div class="so-mqt">
+    <div class="so-mqi"><strong>Vendeurs</strong> sélectionnés avec soin</div>
+    <div class="so-mqi"><strong>Burkina Faso</strong> au cœur du projet</div>
+    <div class="so-mqi"><strong>Catalogue</strong> premium & exclusif</div>
+    <div class="so-mqi"><strong>Croissance</strong> visible dès le premier mois</div>
+    <div class="so-mqi"><strong>Support</strong> dédié aux marchands</div>
+    <div class="so-mqi"><strong>Vendeurs</strong> sélectionnés avec soin</div>
+    <div class="so-mqi"><strong>Burkina Faso</strong> au cœur du projet</div>
+    <div class="so-mqi"><strong>Catalogue</strong> premium & exclusif</div>
+    <div class="so-mqi"><strong>Croissance</strong> visible dès le premier mois</div>
+    <div class="so-mqi"><strong>Support</strong> dédié aux marchands</div>
+  </div>
+</div>
+
+
+<!-- HERO PLEINE PAGE -->
+<section class="so-hero">
+  <div class="so-hero-bg">
+    <div class="so-hero-grid"></div>
+    <div class="so-hero-orb-l"></div>
+    <div class="so-hero-orb-r"></div>
+  </div>
+  <div class="so-vline-l"></div>
+  <div class="so-vline-r"></div>
+
+  <div class="so-hero-content">
+    <p class="so-eyebrow rv">Rejoignez l'élite à Sanhia</p>
+    <h1 class="so-hero-title rv rv1">
+      Votre boutique mérite<br>
+      <em>une vitrine d'exception</em>
+    </h1>
+    <p class="so-hero-copy rv rv2">Sanhia connecte les meilleurs marchands du Burkina Faso avec une clientèle exigeante. Ouvrez votre galerie et développez votre commerce avec élégance.</p>
+    <div class="so-hero-actions rv rv3">
+      <a href="seller-application.html" class="so-btn-primary">
+        <span>Deposer ma candidature</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="#prerequisites" class="so-btn-outline">
+        <span>Voir les prérequis</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="so-hero-foot rv rv4">
+    <div class="so-scroll-hint">
+      <div class="so-scroll-dot"></div>
+      Découvrez les avantages
+    </div>
+    <div class="so-metrics">
+      <div class="so-metric">
+        <span class="so-metric-num" id="met-sellers">-</span>
+        <div class="so-metric-lbl">Vendeurs actifs</div>
+      </div>
+      <div class="so-metric">
+        <span class="so-metric-num" id="met-products">-</span>
+        <div class="so-metric-lbl">Produits en ligne</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY SANHIA -->
+<section class="so-why">
+  <div class="so-section-head rv">
+    <p class="so-section-eyebrow">Pourquoi Sanhia</p>
+    <h2 class="so-section-title">Les raisons de nous<br><em>rejoindre</em></h2>
+  </div>
+  <div class="so-why-grid">
+    <div class="so-why-card rv rv1">
+      <div class="so-why-num">01</div>
+      <div class="so-why-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <h3 class="so-why-title">Clientèle ciblée</h3>
+      <p class="so-why-copy">Accédez à une audience premium qui recherche activement des produits de qualité. Vos articles méritent d'être vus par les bonnes personnes.</p>
+    </div>
+    <div class="so-why-card rv rv2">
+      <div class="so-why-num">02</div>
+      <div class="so-why-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <h3 class="so-why-title">Visibilité immédiate</h3>
+      <p class="so-why-copy">Votre boutique est référencée dès validation. Les produits apparaissent dans le catalogue principal et bénéficient de notre SEO optimisé.</p>
+    </div>
+    <div class="so-why-card rv rv3">
+      <div class="so-why-num">03</div>
+      <div class="so-why-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <h3 class="so-why-title">Dashboard complet</h3>
+      <p class="so-why-copy">Gérez commandes, stock et messages depuis un espace vendeur intuitif. Des analytics clairs pour piloter votre croissance en temps réel.</p>
+    </div>
+    <div class="so-why-card rv rv1">
+      <div class="so-why-num">04</div>
+      <div class="so-why-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3 class="so-why-title">Paiements sécurisés</h3>
+      <p class="so-why-copy">Mobile Money, carte bancaire, virement : les paiements sont collectés et reversés automatiquement. Zéro friction, 100% sécuris.</p>
+    </div>
+    <div class="so-why-card rv rv2">
+      <div class="so-why-num">05</div>
+      <div class="so-why-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3 class="so-why-title">Support dédié</h3>
+      <p class="so-why-copy">Uneéquipe disponible pour vous accompagner : onboarding personnalisé, aide technique et conseils pour optimiser vos ventes dès le départ.</p>
+    </div>
+    <div class="so-why-card rv rv3">
+      <div class="so-why-num">06</div>
+      <div class="so-why-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <h3 class="so-why-title">Label de qualité</h3>
+      <p class="so-why-copy"Être vendeur Sanhia, c'est afficher un badge de confiance reconnu. Votre marque gagne en crédibilité auprès d'une clientèle exigeante.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="so-stats">
+  <div class="so-stat rv">
+    <span class="so-stat-num" id="stat-sellers">25+</span>
+    <div class="so-stat-lbl">Vendeurs partenaires</div>
+  </div>
+  <div class="so-stat rv rv1">
+    <span class="so-stat-num" id="stat-products">500+</span>
+    <div class="so-stat-lbl">Produits référencés</div>
+  </div>
+  <div class="so-stat rv rv2">
+    <span class="so-stat-num">72h</span>
+    <div class="so-stat-lbl">Délai de réponse max</div>
+  </div>
+  <div class="so-stat rv rv3">
+    <span class="so-stat-num">0%</span>
+    <div class="so-stat-lbl">Commission les 3 premiers mois</div>
+  </div>
+</div>
+
+<!-- PREQUIS -->
+<section class="so-reqs" id="prerequisites">
+  <div class="so-section-head rv">
+    <p class="so-section-eyebrow">Checklist vendeur</p>
+    <h2 class="so-section-title">Ce qu'il vous<br><em>faut</em></h2>
+  </div>
+  <div class="so-reqs-grid">
+    <div class="so-req-card rv rv1">
+      <div class="so-req-header">
+        <div class="so-req-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <h3 class="so-req-card-title">Identité & Légal</h3>
+      </div>
+      <ul class="so-req-list">
+        <li><span class="so-req-dot"></span>Raison sociale et nom de la boutique</li>
+        <li><span class="so-req-dot"></span>Statut juridique (EI, SARL, SA)</li>
+        <li><span class="so-req-dot"></span>Numéro RCCM / Registre de commerce <span class="so-req-badge">Recommandé</span></li>
+        <li><span class="so-req-dot"></span>IFU / N° d'identification fiscale <span class="so-req-badge">Recommandé</span></li>
+        <li><span class="so-req-dot"></span>Identité et fonction du responsable</li>
+        <li><span class="so-req-dot"></span>Adresse complète de l'établissement</li>
+      </ul>
+    </div>
+    <div class="so-req-card rv rv2">
+      <div class="so-req-header">
+        <div class="so-req-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        <h3 class="so-req-card-title">Paiements</h3>
+      </div>
+      <ul class="so-req-list">
+        <li><span class="so-req-dot"></span>Coordonnées bancaires (IBAN / RIB)</li>
+        <li><span class="so-req-dot"></span>Numéro Mobile Money actif</li>
+        <li><span class="so-req-dot"></span>Moyens de paiement acceptés</li>
+        <li><span class="so-req-dot"></span>Adresse de facturation dédiée</li>
+        <li><span class="so-req-dot"></span>Politique tarifaire et promotions</li>
+      </ul>
+    </div>
+    <div class="so-req-card rv rv1">
+      <div class="so-req-header">
+        <div class="so-req-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <h3 class="so-req-card-title">Image de marque</h3>
+      </div>
+      <ul class="so-req-list">
+        <li><span class="so-req-dot"></span>Logo haute résolution (SVG ou PNG)</li>
+        <li><span class="so-req-dot"></span>Histoire de la marque (150300 mots)</li>
+        <li><span class="so-req-dot"></span>Photos produits HD (min. 1200px)</li>
+        <li><span class="so-req-dot"></span>Délais de livraison et politique retours</li>
+        <li><span class="so-req-dot"></span>Liens réseaux sociaux officiels</li>
+      </ul>
+    </div>
+    <div class="so-req-card rv rv2">
+      <div class="so-req-header">
+        <div class="so-req-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </div>
+        <h3 class="so-req-card-title">Documents <span class="so-req-badge">Optionnels</span></h3>
+      </div>
+      <ul class="so-req-list">
+        <li><span class="so-req-dot"></span>Copie numérique de l'extrait RCCM</li>
+        <li><span class="so-req-dot"></span>Attestation fiscale IFU à jour</li>
+        <li><span class="so-req-dot"></span>Scan pièce d'identité du gérant</li>
+        <li><span class="so-req-dot"></span>Visuels bannière boutique</li>
+        <li><span class="so-req-dot"></span>Certifications d'authenticité si luxe/bijoux</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESSUS -->
+<section class="so-process">
+  <div class="so-section-head rv">
+    <p class="so-section-eyebrow">En 4 étapes</p>
+    <h2 class="so-section-title">Comment ça<br><em>marche</em></h2>
+  </div>
+  <div class="so-process-steps">
+    <div class="so-ps rv rv1">
+      <div class="so-ps-num">01</div>
+      <h4 class="so-ps-title">Déposez votre dossier</h4>
+      <p class="so-ps-copy">Remplissez le formulaire en ligne en 10 minutes. Identité, catalogue, documents tout en un seul endroit.</p>
+    </div>
+    <div class="so-ps rv rv2">
+      <div class="so-ps-num">02</div>
+      <h4 class="so-ps-title">Examen par le comit</h4>
+      <p class="so-ps-copy">Notrequipetudie chaque candidature avec soin sous 48 72 heures ouvres.</p>
+    </div>
+    <div class="so-ps rv rv3">
+      <div class="so-ps-num">03</div>
+      <h4 class="so-ps-title">Validation & onboarding</h4>
+      <p class="so-ps-copy">Accès à votre dashboard vendeur, configuration de votre boutique et ajout de vos premiers produits.</p>
+    </div>
+    <div class="so-ps rv rv4">
+      <div class="so-ps-num">04</div>
+      <h4 class="so-ps-title">Publiez & vendez</h4>
+      <p class="so-ps-copy">Votre boutique est en ligne. Les clients vous découvrent, commandent, et vous êtes payé directement après chaque vente livrée.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HIGHLIGHT CITATION -->
+<section class="so-highlight">
+  <div class="so-highlight-inner rv">
+    <p class="so-quote">Rejoindre Sanhia, c'est donner votre commerce le <em>cadre qu'il mrite</em> visible, crdible, et connect ceux qui valorisent la qualit.</p>
+    <div class="so-quote-divider"></div>
+    <span class="so-quote-attr">L'équipe Sanhia Ouagadougou</span>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="so-cta">
+  <div class="so-cta-inner">
+    <h2 class="so-cta-title rv">Prêt nous<br><em>rejoindre ?</em></h2>
+    <p class="so-cta-copy rv rv1">Vous avez runi vos informations. Il ne reste plus qu'unetape : dposer votre candidature et rejoindre l'lite des marchands Sanhia.</p>
+    <div class="so-cta-actions rv rv2">
+      <a href="seller-application.html" class="so-btn-primary">
+        <span>Commencer l'inscription</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="contact.html" class="so-btn-outline">
+        <span>Contacter l'équipe</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/seller-onboarding.js" defer></script>
+<script src="assets/js/footer.js" defer></script>
+</body>
+</html>
+

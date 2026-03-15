@@ -1,0 +1,307 @@
+﻿/* contact.css - Page-specific styles from AurumCorp Design System */
+/* content.html styles */
+
+/* â”€â”€ CURSOR & NOISE â”€â”€ */
+#ct-ring {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid #c8a84b;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.2s;
+  top: 0;
+  left: 0;
+}
+#ct-dot {
+  position: fixed;
+  width: 5px;
+  height: 5px;
+  background: #c8a84b;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+}
+body.ct-h #ct-ring {
+  width: 68px;
+  height: 68px;
+  background: rgba(200, 168, 75, 0.07);
+}
+#ct-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9990;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* â•â•â•â•â •â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CONTACT PAGE â€” SCOPED (BOUCLIER ANTI-CONFLIT)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+#ct {
+  --g: #c8a84b;
+  --g2: #e2c56a;
+  --i: #0b0a08;
+  --i2: #1a1916;
+  --i3: #2c2a27;
+  --s: #7a7570;
+  --w: #fefcf8;
+  display: block !important;
+  background: var(--i) !important;
+  color: var(--w) !important;
+  font-family: "Syne", sans-serif !important;
+  min-height: 100vh;
+  cursor: none;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+/* Reset local */
+#ct h1,
+#ct h2,
+#ct h3,
+#ct p,
+#ct span,
+#ct div {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.ct-spacer {
+  height: 80px;
+  display: block;
+}
+.ct-wrapper {
+  padding: 80px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0;
+  max-width: 1000px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* â”€â”€ LEFT : INFOS (maintenant en haut, centrÃ©) â”€â”€ */
+.ct-left {
+  width: 100%;
+  margin-bottom: 60px;
+  text-align: center;
+}
+.ct-kicker {
+  font-family: "Unbounded", sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--g);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.ct-kicker::before {
+  content: "";
+  width: 20px;
+  height: 1px;
+  background: var(--g);
+  display: block;
+}
+.ct-title {
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(60px, 8vw, 110px);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--w);
+  margin-bottom: 24px;
+}
+.ct-title em {
+  font-style: italic;
+  color: var(--g);
+}
+#ct .ct-subtitle {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--s);
+  max-width: 500px;
+  margin: 0 auto 60px !important;
+  text-align: center;
+}
+
+.ct-info-block {
+  margin-bottom: 30px;
+  text-align: center;
+}
+.ct-info-label {
+  font-family: "Unbounded", sans-serif;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--s);
+  margin-bottom: 8px;
+  display: block;
+  text-align: center;
+}
+.ct-info-value {
+  font-family: "Syne", sans-serif;
+  font-size: 24px;
+  letter-spacing: 0.03em;
+  color: var(--w);
+  text-decoration: none;
+  cursor: none;
+  transition: color 0.3s;
+  display: block;
+  text-align: center;
+}
+.ct-info-value:hover {
+  color: var(--g);
+}
+
+/* â”€â”€ FORMULAIRE LUXE (maintenant en bas, centrÃ©) â”€â”€ */
+.ct-right {
+  width: 100%;
+  max-width: 600px;
+}
+.ct-form-container {
+  background: transparent;
+  padding: 0;
+  border: none;
+  text-align: left;
+}
+.ct-form {
+  display: grid;
+  gap: 40px;
+}
+
+/* Champs de saisie invisibles */
+.ct-input-group {
+  position: relative;
+}
+.ct-input {
+  all: unset;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 0;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: var(--w);
+  font-family: "Syne", sans-serif;
+  font-size: 15px;
+  cursor: none;
+  transition: border-color 0.35s ease;
+  outline: none !important;
+}
+.ct-input::placeholder {
+  color: rgba(254, 252, 248, 0.2);
+  transition: opacity 0.3s;
+}
+.ct-input:focus {
+  border-bottom-color: var(--g) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.ct-input:focus::placeholder {
+  opacity: 0;
+}
+
+textarea.ct-input {
+  line-height: 1.6;
+  resize: none;
+}
+
+/* Bouton submit */
+.ct-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 40px;
+  font-family: "Unbounded", sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 800;
+  border: none;
+  background: var(--g);
+  color: var(--i);
+  cursor: none;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s;
+  margin-top: 20px;
+  border-radius: 40px;
+}
+.ct-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--w);
+  border-radius: 40px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ct-btn:hover::before {
+  transform: scaleX(1);
+}
+.ct-btn:hover {
+  color: var(--i);
+}
+.ct-btn span {
+  position: relative;
+  z-index: 1;
+}
+
+.ct-muted {
+  font-size: 12px;
+  color: var(--s);
+  margin-top: 16px;
+  text-align: center;
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .ct-wrapper {
+    padding: 60px 5%;
+  }
+  .ct-form-container {
+    padding: 40px;
+  }
+}
+@media (max-width: 600px) {
+  .ct-wrapper {
+    padding: 40px 5%;
+  }
+  .ct-left {
+    margin-bottom: 40px;
+  }
+  .ct-form-container {
+    padding: 20px 0;
+    border: none;
+  }
+  .ct-title {
+    font-size: 50px;
+  }
+  .ct-right {
+    max-width: 100%;
+  }
+}

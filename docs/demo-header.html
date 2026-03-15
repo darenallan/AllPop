@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Démo Header - Sanhia</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <!-- Configuration -->
+  <script src="assets/js/config.js"></script>
+  
+  <!-- ⭐ NOUVEAU : Header Component -->
+  <script src="assets/js/components/header.js"></script>
+  
+  <!-- App Module -->
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+
+  <style>
+    /* Styles temporaires pour la démo */
+    main {
+      padding-top: 100px; /* Espace pour le header fixe */
+      min-height: 100vh;
+    }
+
+    .demo-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .demo-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      color: #000;
+      margin-bottom: 20px;
+    }
+
+    .demo-header p {
+      font-size: 18px;
+      color: #666;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+    }
+
+    .demo-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .demo-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .demo-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      color: #D4AF37;
+      margin-bottom: 15px;
+    }
+
+    .demo-card p {
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .demo-card ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 15px;
+    }
+
+    .demo-card ul li {
+      padding: 8px 0;
+      color: #444;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .demo-card ul li::before {
+      content: '✓';
+      color: #D4AF37;
+      font-weight: bold;
+    }
+
+    .test-buttons {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 40px;
+    }
+
+    .test-btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: 2px solid #D4AF37;
+      background: white;
+      color: #D4AF37;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .test-btn:hover {
+      background: #D4AF37;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .status-box {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), transparent);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .status-box h4 {
+      color: #D4AF37;
+      margin-bottom: 10px;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .status-box p {
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ⭐ PLACEHOLDER POUR LE HEADER DYNAMIQUE -->
+  <div id="header-placeholder"></div>
+  
+  <main>
+    <div class="demo-section">
+      <div class="demo-header">
+        <h1>🎉 Nouveau Header Apple-Style</h1>
+        <p>
+          Votre header modulaire est maintenant actif. Il s'adapte automatiquement au Desktop et Mobile 
+          avec des animations fluides et une architecture réutilisable.
+        </p>
+      </div>
+
+      <div class="demo-grid">
+        <div class="demo-card">
+          <h3>🖥️ Vue Desktop</h3>
+          <p>Sur les écrans > 768px</p>
+          <ul>
+            <li>Logo SANHIA à gauche</li>
+            <li>Navigation centrale visible</li>
+            <li>Icônes (Recherche, Favoris, Panier)</li>
+            <li>Menu burger masqué</li>
+            <li>Effet glassmorphism</li>
+          </ul>
+        </div>
+
+        <div class="demo-card">
+          <h3>📱 Vue Mobile</h3>
+          <p>Sur les écrans < 768px</p>
+          <ul>
+            <li>Logo compact à gauche</li>
+            <li>Navigation centrale masquée</li>
+            <li>Icônes visibles</li>
+            <li>Menu burger visible</li>
+            <li>Drawer animé depuis la droite</li>
+          </ul>
+        </div>
+
+        <div class="demo-card">
+          <h3>⚙️ Fonctionnalités</h3>
+          <p>Automatiques et intelligentes</p>
+          <ul>
+            <li>Compteur de panier dynamique</li>
+            <li>Gestion authentification</li>
+            <li>Effet scroll (ombre)</li>
+            <li>Animations fluides</li>
+            <li>Responsive complet</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="status-box">
+        <h4>✅ Header Component Status</h4>
+        <p id="component-status">Chargement...</p>
+      </div>
+
+      <div class="test-buttons">
+        <button class="test-btn" onclick="testAddToCart()">
+          🛒 Ajouter au panier (Test)
+        </button>
+        <button class="test-btn" onclick="testClearCart()">
+          🗑️ Vider le panier
+        </button>
+        <button class="test-btn" onclick="testScrollEffect()">
+          📜 Tester l'effet scroll
+        </button>
+        <button class="test-btn" onclick="window.location.reload()">
+          🔄 Recharger la page
+        </button>
+      </div>
+
+      <div style="margin-top: 60px; padding: 40px; background: #f9f9f9; border-radius: 16px;">
+        <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 20px;">📚 Comment l'intégrer ?</h2>
+        <ol style="line-height: 2; color: #444;">
+          <li>Ajoutez <code style="background: #fff; padding: 2px 8px; border-radius: 4px;">&lt;script src="assets/js/components/header.js"&gt;&lt;/script&gt;</code> dans votre <code>&lt;head&gt;</code></li>
+          <li>Remplacez votre ancien header par <code style="background: #fff; padding: 2px 8px; border-radius: 4px;">&lt;div id="header-placeholder"&gt;&lt;/div&gt;</code></li>
+          <li>Supprimez l'ancien code du drawer et overlay</li>
+          <li>C'est tout ! 🎉 Le header s'injecte automatiquement</li>
+        </ol>
+        <p style="margin-top: 20px; color: #666;">
+          📄 Consultez le fichier <strong>INTEGRATION_GUIDE.md</strong> pour plus de détails.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Script de démonstration
+    
+    // Vérifier si le header est chargé
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const header = document.querySelector('.sanhia-glass-header');
+        const status = document.getElementById('component-status');
+        
+        if (header) {
+          status.textContent = '✅ Header Component chargé avec succès !';
+          status.style.color = '#22c55e';
+        } else {
+          status.textContent = '❌ Erreur : Header non trouvé';
+          status.style.color = '#ef4444';
+        }
+      }, 500);
+    });
+
+    // Test : Ajouter un article au panier
+    function testAddToCart() {
+      try {
+        const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+        
+        const newItem = {
+          id: Date.now(),
+          name: `Produit Test ${cart.length + 1}`,
+          price: Math.floor(Math.random() * 50000) + 10000,
+          qty: 1,
+          image: 'https://via.placeholder.com/150'
+        };
+        
+        cart.push(newItem);
+        localStorage.setItem('ac_cart', JSON.stringify(cart));
+        
+        // Rafraîchir le compteur
+        if (typeof window.refreshCartCount === 'function') {
+          window.refreshCartCount();
+        }
+        
+        alert(`✅ Article ajouté ! Total : ${cart.length} articles`);
+      } catch (error) {
+        alert('❌ Erreur : ' + error.message);
+      }
+    }
+
+    // Test : Vider le panier
+    function testClearCart() {
+      localStorage.setItem('ac_cart', JSON.stringify([]));
+      
+      if (typeof window.refreshCartCount === 'function') {
+        window.refreshCartCount();
+      }
+      
+      alert('✅ Panier vidé !');
+    }
+
+    // Test : Effet de scroll
+    function testScrollEffect() {
+      window.scrollTo({
+        top: 800,
+        behavior: 'smooth'
+      });
+      
+      setTimeout(() => {
+        alert('👀 Observez l\'ombre qui apparaît sur le header !');
+        
+        setTimeout(() => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }, 2000);
+      }, 1000);
+    }
+  </script>
+
+  <script src="assets/js/footer.js" defer></script>
+</body>
+</html>

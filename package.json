@@ -1,0 +1,10 @@
+{
+  "name": "aurumcorp-site",
+  "version": "0.1.0",
+  "scripts": {
+    "test:playwright": "node tests/playwright-check.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.37.0"
+  }
+}

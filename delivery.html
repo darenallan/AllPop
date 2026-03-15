@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Espace Livreur - Sanhia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/components/header.js"></script>
+
+  <!-- Anti-FOUC -->
+  
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/delivery.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+<body class="dv-guarded">
+<div id="header-placeholder"></div>
+
+<!-- ANTI-FOUC WALL -->
+<script>
+(function(){
+  var w=document.createElement('div'); w.id='dv-wall';
+  w.innerHTML='<div class="dv-wall-logo">AUR<span>U</span>M</div><div class="dv-wall-line"></div><div class="dv-wall-spin"></div><div class="dv-wall-txt" id="dv-wall-txt">Vérification en cours…</div>';
+  document.body.insertBefore(w,document.body.firstChild);
+})();
+</script>
+
+<!-- TOASTS -->
+<div id="dv-toasts"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="dv-modal-overlay" id="dv-modal">
+  <div class="dv-modal">
+    <h3 class="dv-modal-title">Confirmer la<br><em>livraison</em></h3>
+    <p class="dv-modal-sub">Vous confirmez avoir remis cette commande en main propre au client. Cette action est irréversible.</p>
+    <div class="dv-modal-order" id="dv-modal-ref">—</div>
+    <div class="dv-modal-actions">
+      <button class="dv-modal-cancel" onclick="closeModal()">Annuler</button>
+      <button class="dv-modal-ok" id="dv-modal-ok"><span>Confirmer la livraison</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE TOGGLE -->
+<button class="dv-mobile-toggle" onclick="document.querySelector('.dv-sidebar').classList.toggle('open')">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
+<aside class="dv-sidebar">
+  <div class="dv-sb-brand">
+    <div class="dv-sb-logo">AUR<span>U</span>M</div>
+    <div class="dv-sb-role">Espace Livreur</div>
+  </div>
+
+  <nav class="dv-nav">
+    <div class="dv-nav-item active" data-tab="pending" onclick="navTo('pending',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+      Livraisons en attente
+      <span class="dv-badge" id="badge-pending">0</span>
+    </div>
+    <div class="dv-nav-item" data-tab="history" onclick="navTo('history',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Historique
+    </div>
+    <div class="dv-nav-item" data-tab="profile" onclick="navTo('profile',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Mon Profil
+    </div>
+  </nav>
+
+  <div class="dv-sb-user">
+    <div class="dv-sb-user-name" id="sb-user-name">—</div>
+    <div class="dv-sb-user-email" id="sb-user-email">—</div>
+    <div class="dv-sb-user-status">En service</div>
+    <button class="dv-logout" onclick="doLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Déconnexion
+    </button>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════════ -->
+<main class="dv-main">
+
+  <!-- TOP BAR -->
+  <div class="dv-topbar">
+    <div class="dv-topbar-title" id="topbar-title">Livraisons <em>en attente</em></div>
+    <div class="dv-topbar-right">
+      <span class="dv-topbar-date" id="topbar-date">—</span>
+    </div>
+  </div>
+
+  <!-- ── TAB: EN ATTENTE ─────────────────────────────────────── -->
+  <section class="dv-section active" id="tab-pending">
+    <div class="dv-sec-head">
+      <div class="dv-sec-eyebrow">Commandes prêtes</div>
+      <h2 class="dv-sec-title">Livraisons à<br><em>effectuer</em></h2>
+    </div>
+
+    <!-- Stats bande -->
+    <div class="dv-stats">
+      <div class="dv-stat">
+        <span class="dv-stat-num" id="stat-pending">0</span>
+        <span class="dv-stat-label">En attente</span>
+      </div>
+      <div class="dv-stat">
+        <span class="dv-stat-num" id="stat-done-today">0</span>
+        <span class="dv-stat-label">Livrées aujourd'hui</span>
+      </div>
+      <div class="dv-stat">
+        <span class="dv-stat-num" id="stat-total">0</span>
+        <span class="dv-stat-label">Total livrées</span>
+      </div>
+    </div>
+
+    <div id="pending-list">
+      <div class="dv-spinner-wrap"><div class="dv-spin"></div></div>
+    </div>
+  </section>
+
+  <!-- ── TAB: HISTORIQUE ─────────────────────────────────────── -->
+  <section class="dv-section" id="tab-history">
+    <div class="dv-sec-head">
+      <div class="dv-sec-eyebrow">Mes livraisons</div>
+      <h2 class="dv-sec-title">Historique<br><em>complet</em></h2>
+    </div>
+    <div id="history-list">
+      <div class="dv-spinner-wrap"><div class="dv-spin"></div></div>
+    </div>
+  </section>
+
+  <!-- ── TAB: PROFIL ─────────────────────────────────────────── -->
+  <section class="dv-section" id="tab-profile">
+    <div class="dv-sec-head">
+      <div class="dv-sec-eyebrow">Livreur certifié</div>
+      <h2 class="dv-sec-title">Mon<br><em>profil</em></h2>
+    </div>
+    <div class="dv-profile-grid" id="profile-grid">
+      <div class="dv-spinner-wrap"><div class="dv-spin"></div></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ANTI-FOUC WALL -->
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/delivery.js" defer></script>
+<script src="assets/js/footer.js" defer></script>
+</body>
+</html>
+

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mon Espace - Sanhia</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/messaging.js" defer></script>
+
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/profile.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+
+<body>
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+<div id="noise"></div>
+<div id="pr-toasts"></div>
+
+<div id="header-placeholder"></div>
+
+<!-- ---- MARQUEE ---- -->
+<div class="pr-mq" style="margin-top:72px">
+  <div class="pr-mqt">
+    <div class="pr-mqi"><strong>Mon Espace</strong> Personnel</div>
+    <div class="pr-mqi"><strong>Commandes</strong> Historique complet</div>
+    <div class="pr-mqi"><strong>Adresses</strong> Carnet de livraison</div>
+    <div class="pr-mqi"><strong>Messages</strong> Vendeurs Sanhia</div>
+    <div class="pr-mqi"><strong>Profil</strong> Gestion du compte</div>
+    <div class="pr-mqi"><strong>Mon Espace</strong> Personnel</div>
+    <div class="pr-mqi"><strong>Commandes</strong> Historique complet</div>
+    <div class="pr-mqi"><strong>Adresses</strong> Carnet de livraison</div>
+    <div class="pr-mqi"><strong>Messages</strong> Vendeurs Sanhia</div>
+    <div class="pr-mqi"><strong>Profil</strong> Gestion du compte</div>
+  </div>
+</div>
+
+<!-- ---- HERO ---- -->
+<section class="pr-hero">
+  <div class="pr-vline"></div>
+  <div class="pr-hero-watermark" id="pr-wm">AA</div>
+
+  <div class="pr-hero-body">
+    <div class="pr-avatar-row">
+      <div class="pr-avatar-wrap">
+        <div class="pr-avatar-ring"></div>
+        <div class="pr-avatar-inner" id="pr-avatar-inner">
+          <span id="pr-initials">A</span>
+          <img id="pr-avatar-img" alt="Photo de profil">
+        </div>
+        <button class="pr-upload-btn" id="pr-upload-btn" title="Changer la photo">
+          <i data-lucide="camera"></i>
+        </button>
+        <input type="file" id="pr-file-input" accept="image/png,image/jpeg" style="display:none">
+      </div>
+      <div>
+        <div class="pr-eyebrow">Mon Espace</div>
+        <h1 class="pr-hero-name" id="pr-hero-name">
+          Bon<br><em>retour</em>
+        </h1>
+      </div>
+    </div>
+
+    <div class="pr-hero-meta">
+      <span class="pr-hero-role" id="pr-hero-role">Client</span>
+      <span class="pr-hero-dot"></span>
+      <span class="pr-hero-email" id="pr-hero-email">-</span>
+    </div>
+  </div>
+</section>
+
+<!-- ---- STATS BAND ---- -->
+<div class="pr-stats">
+  <div class="pr-stat">
+    <span class="pr-stat-num" id="pr-stat-orders">-</span>
+    <span class="pr-stat-label">Commandes</span>
+  </div>
+  <div class="pr-stat">
+    <span class="pr-stat-num" id="pr-stat-spent" style="font-size:clamp(22px,3vw,36px);line-height:1.2"></span>
+    <span class="pr-stat-label">Total dépensé</span>
+  </div>
+  <div class="pr-stat">
+    <span class="pr-stat-num" id="pr-stat-wishlist">-</span>
+    <span class="pr-stat-label">Favoris</span>
+  </div>
+</div>
+
+<!-- ---- BODY ---- -->
+<div class="pr-body">
+
+  <!-- ASIDE -->
+  <aside class="pr-aside">
+    <div class="pr-aside-label">Navigation</div>
+    <nav class="pr-aside-nav">
+      <button class="pr-aside-btn on" data-tab="profil">
+        <i data-lucide="user"></i> Profil
+      </button>
+      <div class="pr-aside-sep"></div>
+      <button class="pr-aside-btn" data-tab="commandes">
+        <i data-lucide="shopping-bag"></i> Commandes
+      </button>
+      <div class="pr-aside-sep"></div>
+      <button class="pr-aside-btn" data-tab="adresses">
+        <i data-lucide="map-pin"></i> Adresses
+      </button>
+      <div class="pr-aside-sep"></div>
+      <button class="pr-aside-btn" data-tab="messages">
+        <i data-lucide="message-circle"></i> Messages
+        <span class="pr-badge" id="pr-msg-badge" style="display:none">0</span>
+      </button>
+      <div class="pr-aside-sep"></div>
+      <button class="pr-aside-btn danger" id="pr-logout-btn">
+        <i data-lucide="log-out"></i> Déconnexion
+      </button>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="pr-main">
+
+    <!-- --- PROFIL --- -->
+    <div id="tab-profil" class="pr-tab on">
+      <div class="pr-pad">
+        <h2 class="pr-sec-title">Mon<br><em>Profil</em></h2>
+        <form id="pr-form" class="pr-form-grid">
+          <div class="pr-field full">
+            <label class="pr-label">Nom complet</label>
+            <input id="pr-name" class="pr-input" type="text" placeholder="Votre nom">
+          </div>
+          <div class="pr-field full">
+            <label class="pr-label">Adresse email</label>
+            <input id="pr-email" class="pr-input" type="email" disabled>
+          </div>
+          <div class="pr-field full">
+            <label class="pr-label">Statut du compte</label>
+            <input id="pr-role-input" class="pr-input" type="text" disabled>
+          </div>
+        </form>
+        <button class="pr-save-btn" id="pr-save-btn">
+          <span>Enregistrer les modifications</span>
+          <i data-lucide="arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- --- COMMANDES --- -->
+    <div id="tab-commandes" class="pr-tab">
+      <div class="pr-pad">
+        <div class="pr-orders-head">
+          <h2 class="pr-sec-title" style="margin-bottom:0">Mes<br><em>Commandes</em></h2>
+          <div class="pr-retention">
+            <span>Purge auto :</span>
+            <input type="number" id="pr-retention-input" min="7" max="180" value="30">
+            <span>jours</span>
+          </div>
+        </div>
+        <div id="pr-orders-list" class="pr-order-list"></div>
+      </div>
+    </div>
+
+    <!-- --- ADRESSES --- -->
+    <div id="tab-adresses" class="pr-tab">
+      <div class="pr-pad">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:20px">
+          <h2 class="pr-sec-title" style="margin-bottom:0">Carnet<br><em>d'adresses</em></h2>
+          <button class="pr-ghost-btn" id="pr-add-addr-btn">
+            <i data-lucide="plus"></i><span>Nouvelle adresse</span>
+          </button>
+        </div>
+        <div id="pr-addr-list" class="pr-addr-grid"></div>
+      </div>
+    </div>
+
+    <!-- --- MESSAGES --- -->
+    <div id="tab-messages" class="pr-tab">
+      <div class="pr-pad">
+        <h2 class="pr-sec-title">Ma<br><em>Messagerie</em></h2>
+        <div id="pr-msg-list" class="pr-msg-list"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ---- MODAL ADRESSE ---- -->
+<div class="pr-modal" id="pr-addr-modal">
+  <div class="pr-modal-box">
+    <button class="pr-modal-close" id="pr-modal-close"><i data-lucide="x"></i></button>
+    <h3 class="pr-modal-title">Nouvelle<br><em>Adresse</em></h3>
+
+    <form id="pr-addr-form" class="pr-modal-form">
+      <div class="pr-field full">
+        <label class="pr-label">Destinataire</label>
+        <input id="addr-name" class="pr-input" type="text" placeholder="Nom complet" required>
+      </div>
+      <div class="pr-field full">
+        <label class="pr-label">Téléphone</label>
+        <input id="addr-phone" class="pr-input" type="tel" placeholder="+226 00 00 00 00" required>
+      </div>
+      <div class="pr-field full">
+        <label class="pr-label">Ville</label>
+        <select id="addr-city" class="pr-input" required style="background:transparent;color:var(--white)">
+          <option value="" style="background:#1A1916">- Sélectionner -</option>
+          <option value="Ouagadougou" style="background:#1A1916">Ouagadougou</option>
+          <option value="Bobo-Dioulasso" style="background:#1A1916">Bobo-Dioulasso</option>
+          <option value="Koudougou" style="background:#1A1916">Koudougou</option>
+          <option value="Autre" style="background:#1A1916">Autre</option>
+        </select>
+      </div>
+      <div class="pr-field full">
+        <label class="pr-label">Repères / Quartier</label>
+        <input id="addr-desc" class="pr-input" type="text" placeholder="Ex: Quartier ZAD, portail noir..." required>
+      </div>
+      <p id="pr-geo-status"></p>
+      <div class="pr-modal-foot">
+        <button type="button" class="pr-ghost-btn" id="pr-modal-cancel"><span>Annuler</span></button>
+        <button type="submit" class="pr-save-btn"><span>Enregistrer</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ---- SCRIPTS ---- -->
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/profile.js" defer></script>
+<script src="assets/js/footer.js" defer></script>
+</body>
+</html>
+

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact - Sanhia</title>
+  <meta name="description" content="Contactez Sanhia, marketplace premium Burkinabè." />
+
+  <!-- Polices "Aurum Awwwards" -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700&display=swap" rel="stylesheet"/>
+  
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <script src="assets/js/app.js" defer></script>
+
+
+      <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/contact.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+<body style="background:#0B0A08;margin:0;cursor:none">
+
+<!-- Cursor & Noise -->
+<div id="ct-ring"></div>
+<div id="ct-dot"></div>
+<div id="ct-noise"></div>
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Header -->
+<div id="header-placeholder"></div>
+
+<!-- SCOPED MAIN -->
+<main id="ct">
+  <div class="ct-spacer"></div>
+
+  <div class="ct-wrapper">
+    <!-- Colonne Gauche -->
+    <div class="ct-left">
+      <div class="ct-kicker">Conciergerie Sanhia</div>
+      <h1 class="ct-title">Prenez <em>contact</em></h1>
+      <p class="ct-subtitle">Une question sur un produit, une commande ou envie de rejoindre nos créateurs ? L'équipe Sanhia est à votre écoute.</p>
+      
+      <div class="ct-info-block">
+        <span class="ct-info-label">Assistance Générale</span>
+        <a href="mailto:contact@sanhia.bf" class="ct-info-value">contact@sanhia.bf</a>
+      </div>
+      
+      <div class="ct-info-block">
+        <span class="ct-info-label">Téléphone / WhatsApp</span>
+        <a href="tel:+22600000000" class="ct-info-value">+226 00 00 00 00</a>
+      </div>
+
+      <div class="ct-info-block" style="margin-top: 40px;">
+        <span class="ct-info-label">Bureau</span>
+        <span class="ct-info-value" style="font-size: 20px; color: var(--s);">Ouagadougou, Burkina Faso<br>Du Lundi au Samedi, 9h-18h</span>
+      </div>
+    </div>
+
+    <!-- Colonne Droite (Formulaire) -->
+    <div class="ct-right">
+      <div class="ct-form-container">
+        <form id="contact-form" class="ct-form" aria-label="Formulaire de contact" onsubmit="handleContactSubmit(event)">
+          
+          <div class="ct-input-group">
+            <input class="ct-input" name="name" type="text" placeholder="Votre nom complet" required />
+          </div>
+          
+          <div class="ct-input-group">
+            <input class="ct-input" name="email" type="email" placeholder="Votre adresse email" required />
+          </div>
+          
+          <div class="ct-input-group">
+            <input class="ct-input" name="phone" type="tel" placeholder="Téléphone (Optionnel)" />
+          </div>
+          
+          <div class="ct-input-group">
+            <textarea class="ct-input" name="message" placeholder="Comment pouvons-nous vous aider ?" rows="4" required></textarea>
+          </div>
+          
+          <div>
+            <button class="ct-btn" type="submit" style="width: 100%;"><span>Envoyer le message</span></button>
+            <span class="ct-muted">Vos données sont protégées et resteront confidentielles.</span>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Scripts -->
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/contact.js" defer></script>
+<script src="assets/js/footer.js" defer></script>
+</body>
+</html>

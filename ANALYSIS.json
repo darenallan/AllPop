@@ -1,0 +1,918 @@
+{
+  "workspace": {
+    "name": "AurumCorp",
+    "type": "E-commerce Marketplace",
+    "framework": "Firebase + Vanilla JS",
+    "version": "3.0",
+    "timestamp": "2026-03-14"
+  },
+  "htmlFiles": {
+    "totalCount": 27,
+    "root": [
+      {
+        "filename": "index.html",
+        "title": "Homepage",
+        "category": "Core",
+        "scripts": [
+          "firebase-app-compat.js",
+          "firebase-auth-compat.js",
+          "firebase-firestore-compat.js",
+          "lucide.min.js",
+          "config.js",
+          "components/header.js",
+          "data.js (defer)",
+          "app.js (defer)"
+        ],
+        "purpose": "Homepage with hero, categories, featured products",
+        "inline": false,
+        "theme": "Dark with gold accents"
+      },
+      {
+        "filename": "404.html",
+        "title": "Error Page",
+        "category": "Utility",
+        "scripts": ["header.js"],
+        "purpose": "404 error page with animation",
+        "inline": false,
+        "theme": "Dark minimal"
+      },
+      {
+        "filename": "about.html",
+        "alternate": "apropos.html",
+        "title": "About Us",
+        "category": "Info",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "data.js (defer)",
+          "app.js (defer)"
+        ],
+        "purpose": "Company story, mission, animated counters",
+        "inline": false,
+        "theme": "Dark professional"
+      },
+      {
+        "filename": "admin.html",
+        "title": "Admin Dashboard",
+        "category": "Admin",
+        "scripts": [],
+        "purpose": "Admin panel for system management",
+        "inline": true,
+        "inlineContent": {
+          "firebase": "Complete Firebase config",
+          "auth": "Email-based verification",
+          "guardEmail": "aurumcorporate.d@gmail.com",
+          "structure": "Inline store, users, shops, promos, products"
+        },
+        "theme": "Dark professional"
+      },
+      {
+        "filename": "boutique-list.html",
+        "title": "Shop Gallery",
+        "category": "Commerce",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "categories.js",
+          "header.js",
+          "data.js (defer)"
+        ],
+        "purpose": "Browse shops with category filtering",
+        "inline": false,
+        "theme": "Dark with glass effect"
+      },
+      {
+        "filename": "boutique.html",
+        "title": "Shop Profile",
+        "category": "Commerce",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "categories.js",
+          "data.js"
+        ],
+        "purpose": "Individual shop page with products",
+        "inline": false,
+        "theme": "Dark professional"
+      },
+      {
+        "filename": "cart.html",
+        "title": "Shopping Cart",
+        "category": "Commerce",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "data.js (defer)",
+          "app.js (defer)"
+        ],
+        "purpose": "Cart summary, checkout prep, promo codes",
+        "inline": false,
+        "scopedCss": "#ct",
+        "theme": "Dark isolated"
+      },
+      {
+        "filename": "catalogue.html",
+        "title": "Product Catalog",
+        "category": "Commerce",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "categories.js",
+          "header.js",
+          "data.js (defer)"
+        ],
+        "purpose": "Browse products with sidebar filters",
+        "inline": false,
+        "theme": "Dark with sidebar"
+      },
+      {
+        "filename": "contact.html",
+        "title": "Contact Form",
+        "category": "Info",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "app.js (defer)"
+        ],
+        "purpose": "Contact information and form",
+        "inline": false,
+        "scopedCss": "#ct",
+        "theme": "Dark centered"
+      },
+      {
+        "filename": "delivery.html",
+        "title": "Delivery Dashboard",
+        "category": "Admin",
+        "scripts": ["inline firebase config"],
+        "purpose": "Courier dashboard with order tracking",
+        "inline": true,
+        "inlineContent": {
+          "deliveryJs": "Complete delivery.js inline",
+          "guardedWall": "Role-based access control",
+          "tabs": "pending, history, profile"
+        },
+        "theme": "Dark professional"
+      },
+      {
+        "filename": "invoice.html",
+        "title": "Invoice Generator",
+        "category": "Commerce",
+        "scripts": [
+          "firebase libs",
+          "html2canvas",
+          "jsPDF",
+          "config.js",
+          "header.js",
+          "data.js (defer)",
+          "app.js (defer)"
+        ],
+        "purpose": "Generate and export invoices as PDF",
+        "inline": false,
+        "theme": "Light professional"
+      },
+      {
+        "filename": "login.html",
+        "title": "Login Form",
+        "category": "Auth",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "app.js (defer)"
+        ],
+        "purpose": "User authentication",
+        "inline": false,
+        "scopedCss": "#lg",
+        "theme": "Dark centered"
+      },
+      {
+        "filename": "messages.html",
+        "title": "Messaging Hub",
+        "category": "Commerce",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "data.js (defer)",
+          "messaging.js (defer)"
+        ],
+        "purpose": "Real-time chat interface",
+        "inline": false,
+        "theme": "Dark with sidebar"
+      },
+      {
+        "filename": "product.html",
+        "alternate": "produit.html",
+        "title": "Product Detail",
+        "category": "Commerce",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "data.js (defer)",
+          "messaging.js (defer)"
+        ],
+        "purpose": "Product page with images, reviews, messaging",
+        "inline": false,
+        "theme": "Dark premium"
+      },
+      {
+        "filename": "profile.html",
+        "title": "User Profile",
+        "category": "User",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "data.js (defer)",
+          "app.js (defer)",
+          "messaging.js (defer)"
+        ],
+        "purpose": "User profile dashboard",
+        "inline": false,
+        "theme": "Dark professional"
+      },
+      {
+        "filename": "register.html",
+        "title": "Registration Form",
+        "category": "Auth",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "app.js (defer)"
+        ],
+        "purpose": "User registration",
+        "inline": false,
+        "scopedCss": "#rg",
+        "theme": "Dark centered"
+      },
+      {
+        "filename": "seller.html",
+        "title": "Seller Dashboard",
+        "category": "Seller",
+        "scripts": [
+          "firebase libs (4 modules)",
+          "config.js",
+          "header.js",
+          "data.js (defer)",
+          "app.js (defer)",
+          "messaging.js (defer)"
+        ],
+        "purpose": "Seller commerce dashboard",
+        "inline": false,
+        "scopedCss": "#sd",
+        "theme": "Dark professional with sidebar"
+      },
+      {
+        "filename": "seller-application.html",
+        "title": "Seller Onboarding",
+        "category": "Seller",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "app.js (defer)"
+        ],
+        "purpose": "Multi-step seller registration form",
+        "inline": false,
+        "theme": "Dark with progress bar"
+      },
+      {
+        "filename": "seller-onboarding.html",
+        "title": "Seller Onboarding Alt",
+        "category": "Seller",
+        "scripts": ["Similar to seller-application.html"],
+        "purpose": "Alternative seller registration flow",
+        "inline": false,
+        "theme": "Dark with steps"
+      },
+      {
+        "filename": "wishlist.html",
+        "title": "Favorites",
+        "category": "Commerce",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "data.js (defer)",
+          "app.js (defer)"
+        ],
+        "purpose": "User saved favorites list",
+        "inline": false,
+        "scopedCss": "#wl",
+        "theme": "Dark professional"
+      },
+      {
+        "filename": "privacy.html",
+        "title": "Privacy Policy",
+        "category": "Info",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "app.js (defer)"
+        ],
+        "purpose": "Privacy policy document",
+        "inline": false,
+        "theme": "Dark info"
+      },
+      {
+        "filename": "A.html",
+        "title": "Help / FAQ / Legal",
+        "category": "Info",
+        "scripts": [
+          "firebase libs",
+          "config.js",
+          "header.js",
+          "app.js (defer)"
+        ],
+        "purpose": "FAQ, CGU, Mentions légales with tabs",
+        "inline": false,
+        "scopedCss": "#hl",
+        "theme": "Dark info"
+      },
+      {
+        "filename": "theking.html",
+        "title": "Unknown",
+        "category": "Debug",
+        "purpose": "Debug/test page",
+        "status": "Needs inspection"
+      },
+      {
+        "filename": "test-firestore-debug.html",
+        "title": "Firestore Debug",
+        "category": "Debug",
+        "purpose": "Development testing utility",
+        "status": "Dev only"
+      }
+    ]
+  },
+  "javascriptModules": {
+    "totalFiles": 11,
+    "core": [
+      {
+        "filename": "config.js",
+        "type": "Global Module",
+        "loadOrder": 1,
+        "defer": false,
+        "exports": [
+          "window.auth",
+          "window.db",
+          "window.Store",
+          "window.Auth",
+          "window.formatFCFA()",
+          "window.formatDate()",
+          "window.showToast()",
+          "window.copyToClipboard()",
+          "window.updateCartBadge()"
+        ],
+        "dependencies": ["Firebase SDK"],
+        "description": "Firebase init, auth, global utilities",
+        "sizeEstimate": "~500 lines"
+      },
+      {
+        "filename": "components/header.js",
+        "type": "Component",
+        "loadOrder": 2,
+        "defer": false,
+        "exports": [
+          "window.refreshCartCount()",
+          "window.refreshMsgBadge()",
+          "Injected HTML/CSS"
+        ],
+        "dependencies": ["config.js"],
+        "description": "Universal header component (logo, nav, cart, user menu)",
+        "features": [
+          "Glass effect on scroll",
+          "Dark/light theme support",
+          "Mobile burgermenu",
+          "Cart badge integration",
+          "Message count badge"
+        ]
+      },
+      {
+        "filename": "footer.js",
+        "type": "Component",
+        "loadOrder": 3,
+        "defer": true,
+        "exports": ["Injected HTML/CSS"],
+        "description": "Universal footer component (links, newsletter, social)",
+        "features": [
+          "Newsletter signup",
+          "Social media links",
+          "Dynamic copyright year",
+          "Dark/light theme support"
+        ]
+      },
+      {
+        "filename": "categories.js",
+        "type": "System",
+        "loadOrder": 4,
+        "defer": false,
+        "exports": [
+          "window.aurumCategories",
+          "window.shopCategoryToProductCategories",
+          "window.getAllowedProductCategories()",
+          "window.initCategoryCascade()"
+        ],
+        "description": "Hierarchical category mapping and cascade select",
+        "structure": {
+          "mainCategories": 9,
+          "subCategories": "Varies (~40 total)",
+          "subSubCategories": "Varies (~100 total)"
+        }
+      }
+    ],
+    "data": [
+      {
+        "filename": "data.js",
+        "type": "Dev Data",
+        "loadOrder": 5,
+        "defer": true,
+        "exports": [
+          "window.Store.products",
+          "window.Store.shops",
+          "window.Store.orders",
+          "window.saveStore()"
+        ],
+        "description": "Demo data (disabled in production)",
+        "features": [
+          "Auto-detects dev vs production",
+          "Persists to localStorage",
+          "Version tracking for data upgrades"
+        ]
+      }
+    ],
+    "features": [
+      {
+        "filename": "app.js",
+        "type": "Feature Module",
+        "loadOrder": 6,
+        "defer": true,
+        "exports": [
+          "getCartItems()",
+          "addToCart()",
+          "updateCartQty()",
+          "removeFromCart()",
+          "clearCart()",
+          "isInWishlist()",
+          "toggleWishlist()",
+          "clearWishlist()",
+          "loadProducts()",
+          "initCart()",
+          "initCheckout()"
+        ],
+        "dependencies": ["config.js"],
+        "description": "Core commerce logic: cart, wishlist, products",
+        "sizeEstimate": "~800 lines"
+      },
+      {
+        "filename": "admin.js",
+        "type": "Feature Module",
+        "loadOrder": 7,
+        "defer": true,
+        "exports": [
+          "window.nav()",
+          "window.navigateSellerTab()",
+          "compressImageToBase64()",
+          "setupProductUpload()",
+          "setupProfileUpload()",
+          "listenToSellerProducts()",
+          "loadSellerOrders()"
+        ],
+        "dependencies": ["config.js"],
+        "description": "Seller dashboard and admin functions",
+        "sizeEstimate": "~1200 lines"
+      },
+      {
+        "filename": "messaging.js",
+        "type": "Feature Module",
+        "loadOrder": 8,
+        "defer": true,
+        "exports": [
+          "window.openSellerChat()",
+          "window.subscribeUserChats()",
+          "sendMessage()",
+          "sanitizeMessage()",
+          "buildChatId()"
+        ],
+        "dependencies": ["config.js"],
+        "description": "Real-time chat with contact info sanitization",
+        "features": [
+          "Masks phone/email in messages",
+          "Real-time Firestore listeners",
+          "Multi-seller support"
+        ]
+      },
+      {
+        "filename": "delivery.js",
+        "type": "Feature Module",
+        "location": "Inline in delivery.html",
+        "exports": [],
+        "description": "Courier dashboard (complete, self-contained)",
+        "features": [
+          "Guarded wall pattern",
+          "Tab navigation",
+          "Real-time order tracking"
+        ]
+      }
+    ],
+    "pages": [
+      {
+        "filename": "prime.js",
+        "type": "Page-Specific",
+        "loadOrder": 9,
+        "defer": true,
+        "sections": 21,
+        "totalSize": "~2500 lines",
+        "description": "Consolidates all page-specific logic",
+        "sections_detail": [
+          {
+            "number": 0,
+            "page": "All",
+            "name": "Cursor Animation",
+            "features": [
+              "Multi-prefix support (cur-, bp-, ct-, lg-, pr-, rg-, wl-, sd-, dv-)",
+              "Smooth easing with requestAnimationFrame",
+              "Hover state detection"
+            ]
+          },
+          {
+            "number": 1,
+            "page": "All",
+            "name": "Reveal on Scroll",
+            "features": [
+              "IntersectionObserver for .rv elements",
+              "Cascade delays (rv1-rv5)",
+              "Automatic addClass-on-view"
+            ]
+          },
+          {
+            "number": 3,
+            "page": "A.html",
+            "name": "FAQ Accordion",
+            "features": [
+              "Tab switching",
+              "Smooth max-height animation",
+              "Tab switching with scroll to main"
+            ]
+          },
+          {
+            "number": 4,
+            "page": "about.html",
+            "name": "Statistics Animation",
+            "features": [
+              "Counter animation from Firebase",
+              "Loads product/shop counts",
+              "Fallback to defaults"
+            ]
+          },
+          {
+            "number": 5,
+            "page": "boutique-list.html",
+            "name": "Shop Gallery",
+            "features": [
+              "Firebase shop queries",
+              "Category filtering dropdown",
+              "Fallback demo data"
+            ]
+          },
+          {
+            "number": 6,
+            "page": "boutique.html",
+            "name": "Shop Profile",
+            "features": [
+              "Dynamic shop loading by ID",
+              "Product grid rendering",
+              "Chat modal integration"
+            ]
+          },
+          {
+            "number": 11,
+            "page": "index.html",
+            "name": "Hero & Featured",
+            "features": [
+              "Hero animations",
+              "Featured products grid",
+              "Scroll triggers"
+            ]
+          },
+          {
+            "number": 14,
+            "page": "produit.html",
+            "name": "Product Detail",
+            "features": [
+              "Dynamic product loading",
+              "Image gallery",
+              "Messaging sidebar"
+            ]
+          },
+          {
+            "number": 17,
+            "page": "seller-application.html",
+            "name": "Seller App Form",
+            "features": [
+              "Multi-step progress bar",
+              "Form validation",
+              "Step-by-step guidance"
+            ]
+          },
+          {
+            "number": 20,
+            "page": "wishlist.html",
+            "name": "Wishelist Display",
+            "features": [
+              "Saved items grid",
+              "Remove from favorites",
+              "Empty state handling"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "globalFunctionality": {
+    "alwaysLoaded": [
+      {
+        "category": "Firebase",
+        "items": [
+          "window.auth - Firebase Auth reference",
+          "window.db - Firestore reference",
+          "firebase.initializeApp() - Initialization"
+        ],
+        "source": "config.js"
+      },
+      {
+        "category": "Utilities",
+        "items": [
+          "window.formatFCFA() - Currency formatting (FCFA)",
+          "window.formatDate() - Date formatting (fr-FR)",
+          "window.showToast() - Toast notifications",
+          "window.copyToClipboard() - Clipboard management"
+        ],
+        "source": "config.js"
+      },
+      {
+        "category": "User Experience",
+        "items": [
+          "Cursor ring animation (multi-prefix)",
+          "Reveal-on-scroll animation (.rv class)",
+          "Smooth easing with cubic-bezier",
+          "Mobile menu / burger navigation"
+        ],
+        "source": "prime.js §0-§1"
+      },
+      {
+        "category": "UI Components",
+        "items": [
+          "Header with logo, nav, cart badge, user menu",
+          "Footer with newsletter, links, social",
+          "Glass morphism effect on scroll",
+          "Dark/light theme switching"
+        ],
+        "source": "header.js + footer.js"
+      }
+    ],
+    "conditionallyLoaded": [
+      {
+        "condition": "Commerce pages (index, catalogue, product, cart, boutique)",
+        "modules": [
+          "app.js - Cart, wishlist, products",
+          "categories.js - Product categories"
+        ]
+      },
+      {
+        "condition": "Chat-enabled pages (product, profile, seller, messages)",
+        "modules": [
+          "messaging.js - Real-time chat"
+        ]
+      },
+      {
+        "condition": "Seller pages (seller.html, seller-application.html)",
+        "modules": [
+          "admin.js - Dashboard, products, orders",
+          "categories.js - Product categories"
+        ]
+      },
+      {
+        "condition": "Delivery dashboard (delivery.html only)",
+        "modules": [
+          "delivery.js (inline) - Courier management"
+        ]
+      }
+    ]
+  },
+  "dataFlow": {
+    "localStorage": [
+      {
+        "key": "ac_cart",
+        "structure": "Array of {product, quantity, pid}",
+        "source": "app.js"
+      },
+      {
+        "key": "ac_wishlist",
+        "structure": "Array of product IDs",
+        "source": "app.js"
+      },
+      {
+        "key": "ac_currentUser",
+        "structure": "JSON {uid, email, name, role}",
+        "source": "config.js"
+      },
+      {
+        "key": "ac_data_version",
+        "structure": "Integer version number",
+        "source": "data.js"
+      },
+      {
+        "key": "ac_users|ac_shops|ac_products|ac_orders",
+        "structure": "JSON arrays",
+        "source": "data.js (dev only)"
+      }
+    ],
+    "firestore_collections": [
+      {
+        "name": "products",
+        "documents": "Product listings",
+        "relationships": "shopId → shops collection"
+      },
+      {
+        "name": "shops",
+        "documents": "Seller shop profiles",
+        "relationships": "ownerEmail → users collection"
+      },
+      {
+        "name": "users",
+        "documents": "User profiles",
+        "relationships": "role (client|seller|superadmin)"
+      },
+      {
+        "name": "orders",
+        "documents": "Purchase orders",
+        "relationships": "userEmail, items.[shopId]"
+      },
+      {
+        "name": "categories",
+        "documents": "Product categories",
+        "relationships": "Used by filters"
+      },
+      {
+        "name": "chats",
+        "documents": "Conversation threads",
+        "relationships": "buyerId, sellerId, shopId"
+      },
+      {
+        "name": "messages",
+        "documents": "Individual messages",
+        "relationships": "chatId, userId, timestamp"
+      },
+      {
+        "name": "invoices",
+        "documents": "Order invoices",
+        "relationships": "orderId"
+      }
+    ]
+  },
+  "cssArchitecture": {
+    "globalStyles": [
+      "assets/css/styles.css - Main design system",
+      "assets/css/aurum-light.css - Light theme overrides",
+      "assets/css/prime.css - Page-specific styles"
+    ],
+    "designTokens": {
+      "colors": {
+        "--ink": "#0B0A08",
+        "--ink2": "#1A1916",
+        "--ink3": "#2C2A27",
+        "--gold": "#C8A84B",
+        "--gold2": "#E2C56A",
+        "--gold3": "#F5DFA0",
+        "--sand": "#F2EDE4",
+        "--smoke": "#7A7570",
+        "--white": "#FEFCF8",
+        "--ok": "#4A9E72",
+        "--danger": "#D94F4F",
+        "--warn": "#C8813A"
+      },
+      "fonts": {
+        "primary": "Syne, sans-serif",
+        "accent": "Unbounded, sans-serif",
+        "serif": "Instrument Serif, serif"
+      }
+    },
+    "scopedNamespaces": [
+      {
+        "prefix": "bp-",
+        "page": "boutique.html",
+        "scope": "Shop profile cards and products"
+      },
+      {
+        "prefix": "ct-",
+        "page": "contact.html / cart.html",
+        "scope": "Contact/cart page styling"
+      },
+      {
+        "prefix": "lg-",
+        "page": "login.html",
+        "scope": "Login form styling"
+      },
+      {
+        "prefix": "rg-",
+        "page": "register.html",
+        "scope": "Registration form styling"
+      },
+      {
+        "prefix": "wl-",
+        "page": "wishlist.html",
+        "scope": "Wishlist grid styling"
+      },
+      {
+        "prefix": "sd-",
+        "page": "seller.html",
+        "scope": "Seller dashboard layout"
+      },
+      {
+        "prefix": "dv-",
+        "page": "delivery.html",
+        "scope": "Delivery dashboard layout"
+      },
+      {
+        "prefix": "pr-",
+        "page": "product.html",
+        "scope": "Product detail page"
+      },
+      {
+        "prefix": "ab-",
+        "page": "about.html",
+        "scope": "About page sections"
+      },
+      {
+        "prefix": "hl-",
+        "page": "A.html (help/legal)",
+        "scope": "FAQ and legal sections"
+      },
+      {
+        "prefix": "sa-",
+        "page": "seller-application.html",
+        "scope": "Seller application form"
+      }
+    ]
+  },
+  "recommendations": {
+    "modularizationOpportunities": [
+      {
+        "priority": "HIGH",
+        "target": "prime.js",
+        "issue": "2500+ lines, 20 page-specific sections mixed together",
+        "solution": "Split into pages/ subfolder with one file per section"
+      },
+      {
+        "priority": "HIGH",
+        "target": "admin.js",
+        "issue": "Handles both seller dashboard and general admin functions",
+        "solution": "Split into seller-dashboard.js and admin-panel.js"
+      },
+      {
+        "priority": "HIGH",
+        "target": "app.js",
+        "issue": "1200+ lines with overlapping cart logic from admin.js",
+        "solution": "Extract cart.js, wishlist.js, products.js modules"
+      },
+      {
+        "priority": "MEDIUM",
+        "target": "CSS Namespaces",
+        "issue": "12+ page-specific scoped namespaces duplicating core styles",
+        "solution": "Consolidate into component-based CSS modules"
+      },
+      {
+        "priority": "MEDIUM",
+        "target": "delivery.js + delivery.html",
+        "issue": "Complete module inlined in HTML",
+        "solution": "Move to assets/js/delivery.js, load externally"
+      },
+      {
+        "priority": "MEDIUM",
+        "target": "admin.html inline config",
+        "issue": "500+ lines of Firebase config + auth inlined",
+        "solution": "Extract to admin-config.js"
+      }
+    ],
+    "securityEnhancements": [
+      "Validate promo codes server-side (current: client-side only)",
+      "Implement CSRF tokens for form submissions",
+      "Rate-limit API calls (Firestore rules)",
+      "Add order validation before payment"
+    ],
+    "performanceOptimizations": [
+      "Lazy-load category images (currently pre-loaded)",
+      "Implement virtual scrolling for large product grids",
+      "Add compression for product images in admin",
+      "Reduce prime.js bundle with webpack/tree-shaking"
+    ]
+  }
+}

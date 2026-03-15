@@ -1,0 +1,101 @@
+﻿<!-- A supprimer-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CGU - Sanhia</title>
+  <meta name="description" content="Conditions Générales d'Utilisation de Sanhia." />
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <!-- Configuration & Utilities -->
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <!-- App Module -->
+  <script src="assets/js/app.js" defer></script>
+</head>
+
+<body>
+  <div id="header-placeholder"></div>
+
+
+  <main class="container" style="padding-top: calc(40px + var(--header-height, 72px)); padding-bottom:80px;">
+  <section class="section" style="background:white; border:1px solid rgba(0,0,0,0.06); border-radius:16px; padding:24px 28px; box-shadow:var(--shadow-sm);">
+    <h1 style="font-family:var(--font-serif); font-size:28px; margin-bottom:16px;">Conditions Générales d'Utilisation (CGU)</h1>
+    <div style="display:flex; flex-direction:column; gap:14px; color:#444;">
+    <p style="margin:0;">En utilisant Sanhia, vous acceptez nos règles de marketplace, la politique de confidentialité et les conditions de vente. Voir documentation pour les détails des rôles et processus.</p>
+    <h3 style="font-family:var(--font-serif); margin:12px 0 6px;">1. Acceptation</h3>
+    <p style="margin:0;">L'utilisation des services Sanhia implique l'acceptation pleine et entière des présentes conditions.</p>
+    <h3 style="font-family:var(--font-serif); margin:12px 0 6px;">2. Rôles et Responsabilités</h3>
+    <p style="margin:0;">Les vendeurs publient leurs offres, les acheteurs commandent, Sanhia assure la mise en relation et la sécurité des transactions.</p>
+    <h3 style="font-family:var(--font-serif); margin:12px 0 6px;">3. Paiements et Remboursements</h3>
+    <p style="margin:0;">Les paiements sont sécurisés. Les remboursements suivent la politique de retour décrite dans l'espace aide.</p>
+    <h3 style="font-family:var(--font-serif); margin:12px 0 6px;">4. Données Personnelles</h3>
+    <p style="margin:0;">Les données sont traitées conformément à notre politique de confidentialité. Vous pouvez exercer vos droits via la page contact.</p>
+    </div>
+  </section>
+  </main>
+
+  <script>
+    function setupHeaderMenu() {
+      const menuToggle = document.getElementById('menu-toggle');
+      const closeBtn = document.getElementById('close-btn');
+      const drawer = document.getElementById('mobile-drawer');
+      const overlay = document.getElementById('menu-overlay');
+
+      const toggleMenu = () => {
+        if (!drawer || !overlay) return;
+        drawer.classList.toggle('active');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = drawer.classList.contains('active') ? 'hidden' : '';
+      };
+
+      if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+      if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+      if (overlay) overlay.addEventListener('click', toggleMenu);
+
+      const cart = JSON.parse(localStorage.getItem('ac_cart') || '[]');
+      const badge = document.getElementById('cart-badge');
+      if (badge) {
+        const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
+        if (count > 0) {
+          badge.innerText = count;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setupHeaderMenu();
+        const yearSpan = document.getElementById('year');
+        if (yearSpan) {
+            yearSpan.innerText = new Date().getFullYear();
+        }
+
+        // Gestion de la déconnexion
+        const logoutBtn = document.getElementById('mobile-logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                firebase.auth().signOut().then(() => {
+                    window.location.href = "login.html";
+                });
+            });
+        }
+    });
+    </script>
+  <script src="assets/js/footer.js" defer></script>
+</body>
+</html>

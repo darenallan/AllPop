@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Produit - Sanhia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/messaging.js" defer></script>
+
+      <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/product.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+<body>
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+<div id="noise"></div>
+
+<!-- HEADER -->
+<div id="header-placeholder"></div>
+
+<main id="ax-root">
+  <div id="ax-loader">
+    <div class="ax-llogo">SANHIA</div>
+    <div class="ax-lbar"></div>
+  </div>
+</main>
+
+<div id="ax-toasts"></div>
+<div id="toast-container"></div>
+<script src="assets/js/app.js" defer></script>
+
+<div class="aurum-chat-modal" id="aurum-chat-modal" role="dialog" aria-modal="true" aria-label="Messagerie sécurisée">
+<div class="aurum-chat-modal" id="aurum-chat-modal" role="dialog" aria-modal="true" aria-label="Messagerie sécurisée">
+  <div class="aurum-chat-panel">
+    <div class="aurum-chat-header">
+      <div>
+        <p class="aurum-chat-kicker">Messagerie interne sécurisée</p>
+        <h3 data-chat-title>Conversation avec le vendeur</h3>
+      </div>
+      <button type="button" class="aurum-chat-close" data-close-chat aria-label="Fermer">X</button>
+    </div>
+    <div class="aurum-chat-messages" data-chat-messages>
+      <p class="aurum-chat-empty">Chargement de la conversation...</p>
+    </div>
+    <form class="aurum-chat-form" data-chat-form>
+      <textarea placeholder="écrivez votre message... (emails et numéros masqués automatiquement)" maxlength="1200"></textarea>
+      <div class="aurum-chat-actions">
+        <a class="aurum-chat-open-page" data-open-messages-page href="messages.html">Ouvrir la boîte complète</a>
+        <button type="submit" class="aurum-chat-send">Envoyer</button>
+      </div>
+    </form>
+  </div>
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/product.js" defer></script>
+<script src="assets/js/footer.js" defer></script>
+</body>
+</html>

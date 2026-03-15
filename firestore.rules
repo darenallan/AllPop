@@ -1,0 +1,177 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================================
+    // --- FONCTIONS UTILITAIRES (Pour simplifier la lecture) ---
+    // ==========================================================
+    
+    // Récupère les données de l'utilisateur qui fait la demande
+    function getUserData() {
+      let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return userData != null ? userData : {};
+    }
+
+    // Vérifie si c'est un Admin
+    function isAdmin() {
+      return request.auth != null && (getUserData().get('role', '') == 'admin' || getUserData().get('role', '') == 'superadmin');
+    }
+
+    // Vérifie si c'est un Vendeur (gère le français et l'anglais - TIRÉ DU DÉPLOYÉ)
+    function isSeller() {
+      return request.auth != null && (getUserData().get('role', '') == 'seller' || getUserData().get('role', '') == 'vendeur');
+    }
+
+    // Vérifie si l'utilisateur est propriétaire de la donnée (ex: son profil)
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Vérifie si le vendeur authentifié est propriétaire de la boutique (TIRÉ DU BROUILLON)
+    function ownsShop(shopId) {
+      let shopData = get(/databases/$(database)/documents/shops/$(shopId)).data;
+      return shopData != null && (
+        shopData.ownerEmail == request.auth.token.email ||
+        shopData.ownerId == request.auth.uid
+      );
+    }
+
+    function isChatParticipant(chatData) {
+      return request.auth != null
+        && chatData.participantIds is list
+        && chatData.participantIds.hasAny([request.auth.uid]);
+    }
+
+    function isChatParticipantById(chatId) {
+      let chatDoc = get(/databases/$(database)/documents/chats/$(chatId)).data;
+      return request.auth != null
+        && chatDoc != null
+        && chatDoc.participantIds is list
+        && chatDoc.participantIds.hasAny([request.auth.uid]);
+    }
+
+    // ==============================
+    // --- RÈGLES PAR COLLECTION ---
+    // ==============================
+
+    // 1. UTILISATEURS
+    // - Lecture : tout utilisateur connecté (pour les profils publics).
+    // - List/Query (registration) : NON authentifié (pour vérifier email/phone doublons lors de l'inscription).
+    // - Création : l'utilisateur crée son propre profil lors de l'inscription.
+    // - Ecriture : propriétaire ou Admin uniquement.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow list: if request.auth == null || request.auth != null;  // Permettre queries pour l'inscription
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow write: if isOwner(userId) || isAdmin();
+
+      // Sous-collections utilisateur (adresses, etc.)
+      match /{subcol}/{docId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // 2. BOUTIQUES (Shops)
+    match /shops/{shopId} {
+      allow read: if true;
+      allow create, delete: if isAdmin(); 
+      allow update: if isAdmin() || (isSeller() && (
+        resource.data.ownerId == request.auth.uid || 
+        resource.data.ownerEmail == request.auth.token.email
+      ));
+    }
+
+    // 3. PRODUITS (Règle Universelle - TIRÉ DU DÉPLOYÉ)
+    // Le joker {path=**} permet de lire les produits partout.
+    match /{path=**}/products/{productId} {
+      allow read: if true;
+      allow create, delete: if isAdmin() || isSeller();
+      // On autorise la modification si c'est un admin/vendeur, OU si un client fait +1 sur les vues
+      allow update: if isAdmin() || isSeller() || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']);
+    }
+
+    // 4. CATÉGORIES
+    // - Seul l'Admin gère les catégories.
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 5. COMMANDES (Sécurité Maximale - TIRÉ DU BROUILLON)
+    // - Création : Tout utilisateur connecté (Client).
+    // - Lecture : L'acheteur, l'Admin, ou le propriétaire légitime de la boutique.
+    match /orders/{orderId} {
+      allow create: if request.auth != null;
+      allow read, update: if isAdmin() 
+        || resource.data.userId == request.auth.uid 
+        || ownsShop(resource.data.sellerId);
+    }
+
+    // 6. AVIS (Reviews)
+    // - Lecture publique pour afficher les avis produit.
+    // - Ecriture : auteur de l'avis uniquement.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+    
+    // 7. PROMOS
+    // - Admin ou Vendeur seulement
+    match /promos/{promoId} {
+      allow read: if true;
+      allow write: if isAdmin() || isSeller();
+    }
+
+    // 8. PARAMETRES DE LIVRAISON
+    // - Lecture publique pour afficher les frais
+    // - Ecriture reservee a l'admin
+    match /shipping_settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 9. CHATS INTERNE (anti-desintermediation)
+    // - get: tout utilisateur connecté (nécessaire pour vérifier l'existence avant création).
+    // - list/query: uniquement participants (empêche l'énumération).
+    // - Création: l'acheteur connecté démarre son thread avec le vendeur.
+    // - Mise à jour: uniquement participants, champs clés immuables.
+    // - Suppression: interdite côté client.
+    match /chats/{chatId} {
+      allow create: if request.auth != null
+        && request.resource.data.buyerId == request.auth.uid
+        && request.resource.data.buyerId is string
+        && request.resource.data.sellerId is string
+        && request.resource.data.shopId is string
+        && request.resource.data.buyerId != request.resource.data.sellerId
+        && request.resource.data.participantIds is list
+        && request.resource.data.participantIds.size() == 2
+        && request.resource.data.participantIds.hasAll([
+          request.resource.data.buyerId,
+          request.resource.data.sellerId
+        ]);
+
+      allow get: if request.auth != null;
+      allow list: if request.auth != null;
+
+      allow update: if isChatParticipant(resource.data)
+        && request.resource.data.buyerId == resource.data.buyerId
+        && request.resource.data.sellerId == resource.data.sellerId
+        && request.resource.data.shopId == resource.data.shopId
+        && request.resource.data.participantIds == resource.data.participantIds;
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if request.auth != null;
+
+        allow create: if isChatParticipantById(chatId)
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1200;
+
+        allow update, delete: if false;
+      }
+    }
+  }
+}

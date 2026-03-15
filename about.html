@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head> 
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Notre Histoire — Sanhia</title>
+  <meta name="description" content="Sanhia: Marketplace premium, créée par des Burkinabè pour les Burkinabè. Qualité, Courtoisie, Efficacité." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/about.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+
+<body style="background:#0B0A08;margin:0;">
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+<div id="noise"></div>
+
+<div id="header-placeholder"></div>
+
+<div class="ab-mq" style="margin-top:72px">
+  <div class="ab-mqt">
+    <div class="ab-mqi"><strong>Sanhia</strong> Marketplace Premium</div>
+    <div class="ab-mqi"><strong>Ouagadougou</strong> Burkina Faso</div>
+    <div class="ab-mqi"><strong>Qualité</strong> Garantie & Sélectionnée</div>
+    <div class="ab-mqi"><strong>Courtoisie</strong> Service Attentif</div>
+    <div class="ab-mqi"><strong>Efficacité</strong> Livraison 24 à 48h</div>
+    <div class="ab-mqi"><strong>Local</strong> Par des Burkinabè</div>
+    <div class="ab-mqi"><strong>Sanhia</strong> Marketplace Premium</div>
+    <div class="ab-mqi"><strong>Ouagadougou</strong> Burkina Faso</div>
+    <div class="ab-mqi"><strong>Qualité</strong> Garantie & Sélectionnée</div>
+    <div class="ab-mqi"><strong>Courtoisie</strong> Service Attentif</div>
+    <div class="ab-mqi"><strong>Efficacité</strong> Livraison 24 à 48h</div>
+    <div class="ab-mqi"><strong>Local</strong> Par des Burkinabè</div>
+  </div>
+</div>
+
+<section class="ab-hero">
+  <div class="ab-vline"></div>
+  <div class="ab-orb"></div>
+
+  <p class="ab-hero-tagline rv rv1">Notre histoire — Since 2024</p>
+  <h1 class="ab-hero-title rv rv2">
+    L'excellence<br><em>à votre portée</em>
+  </h1>
+
+  <div class="ab-hero-foot rv rv3">
+    <p class="ab-hero-copy">
+      Née à Ouagadougou, Sanhia est une marketplace premium pensée par des Burkinabè pour des Burkinabè. Nous mettons en lumière des créateurs et commerçants locaux en garantissant une expérience d'achat moderne, fiable et élégante.
+    </p>
+    <div class="ab-hero-actions">
+      <a href="catalogue.html" class="ab-btn primary"><span>Découvrir la collection</span></a>
+      <a href="seller-onboarding.html" class="ab-btn ghost"><span>Devenir vendeur</span></a>
+    </div>
+  </div>
+
+  <div class="ab-scroll-hint">
+    <div class="ab-scroll-line"></div>
+    <span>Défiler</span>
+  </div>
+</section>
+
+<div class="ab-stats">
+  <div class="ab-stat rv">
+    <span class="ab-stat-num">
+      <span class="counter" id="stats-products" data-target="0" data-suffix="+">0</span>
+    </span>
+    <span class="ab-stat-label">Produits premium</span>
+  </div>
+  <div class="ab-stat rv rv1">
+    <span class="ab-stat-num">
+      <span class="counter" id="stats-shops" data-target="0" data-suffix="+">0</span>
+    </span>
+    <span class="ab-stat-label">Boutiques partenaires</span>
+  </div>
+  <div class="ab-stat rv rv2">
+    <span class="ab-stat-num">
+      <span class="counter" id="stats-rating" data-target="4.5" data-suffix="/5">0</span>
+    </span>
+    <span class="ab-stat-label">Satisfaction client</span>
+  </div>
+  <div class="ab-stat rv rv3">
+    <span class="ab-stat-num">
+      <span class="counter" data-target="48" data-suffix="h">0</span>
+    </span>
+    <span class="ab-stat-label">Livraison rapide</span>
+  </div>
+</div>
+
+<section class="ab-mission">
+  <div class="ab-mission-head">
+    <div>
+      <div class="ab-eyebrow rv">Nos engagements</div>
+      <h2 class="ab-display rv rv1">Notre<br><em>Mission</em></h2>
+    </div>
+    <p class="ab-story-body rv rv2" style="max-width:420px;font-size:17px;">
+      Créer la référence premium de l'e-commerce au Burkina Faso, en connectant les meilleurs talents locaux avec des acheteurs exigeants.
+    </p>
+  </div>
+
+  <div class="ab-cards">
+    <div class="ab-card rv rv1">
+      <span class="ab-card-num">01</span>
+      <div class="ab-card-icon"><i data-lucide="shield-check"></i></div>
+      <h3>Qualité garantie</h3>
+      <p>Sélection rigoureuse des vendeurs et contrôle qualité strict sur l'ensemble de nos produits. Chaque boutique est vérifiée avant mise en ligne.</p>
+    </div>
+    <div class="ab-card rv rv2">
+      <span class="ab-card-num">02</span>
+      <div class="ab-card-icon"><i data-lucide="heart-handshake"></i></div>
+      <h3>Courtoisie & Service</h3>
+      <p>Accompagnement client attentif, retours clairs et vendeurs responsabilisés à chaque étape. La relation humaine au cœur de tout.</p>
+    </div>
+    <div class="ab-card rv rv3">
+      <span class="ab-card-num">03</span>
+      <div class="ab-card-icon"><i data-lucide="zap"></i></div>
+      <h3>Efficacité absolue</h3>
+      <p>Livraisons rapides à Ouagadougou, expérience fluide et sécurisée sur tous vos écrans. Du clic à la porte, sans friction.</p>
+    </div>
+  </div>
+</section>
+
+<section class="ab-story">
+  <div class="ab-story-img rv">
+    <img
+      src="assets/img/placeholder-product-1.svg"
+      alt="L'histoire de Sanhia à Ouagadougou"
+      onerror="this.src='https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=2070&auto=format&fit=crop'"
+    >
+    <div class="ab-story-img-caption">
+      Ouagadougou,<br>berceau de Sanhia
+    </div>
+  </div>
+
+  <div class="ab-story-text">
+    <div class="ab-eyebrow rv" style="margin-bottom:28px">La genèse</div>
+    <h2 class="ab-display rv rv1" style="font-size:clamp(44px,6vw,88px);margin-bottom:48px;">
+      Pourquoi<br><em>Sanhia</em>
+    </h2>
+
+    <p class="ab-story-body rv rv2">
+      Sanhia est née de la conviction profonde que nos talents locaux méritent une vitrine à la hauteur de leur savoir-faire. Dans un marché où l'informel règne, nous avons choisi la voie de l'excellence.
+    </p>
+    <p class="ab-story-body rv rv3">
+      Notre approche s'inspire des standards internationaux tout en valorisant une identité burkinabè forte. Chaque détail — de la navigation à la livraison — est pensé pour offrir une expérience premium, accessible à tous.
+    </p>
+
+    <div style="margin-top:48px;" class="rv rv3">
+      <a href="catalogue.html" class="ab-btn ghost"><span>Explorer le catalogue</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="ab-values">
+  <div class="ab-values-head">
+    <div class="ab-values-eyebrow rv">Ce qui nous définit</div>
+    <h2 class="ab-values-title rv rv1">
+      Nos<br><em>Valeurs</em>
+    </h2>
+  </div>
+
+  <div class="ab-values-grid">
+    <div class="rv rv1">
+      <div class="ab-value-num">Q</div>
+      <div class="ab-value-line"></div>
+      <div class="ab-value-name">Qualité</div>
+      <p class="ab-value-desc">Nous ne faisons aucun compromis sur l'excellence. Chaque produit, chaque vendeur, chaque interaction est tenu à un standard élevé.</p>
+    </div>
+    <div class="rv rv2">
+      <div class="ab-value-num">C</div>
+      <div class="ab-value-line"></div>
+      <div class="ab-value-name">Courtoisie</div>
+      <p class="ab-value-desc">Le respect mutuel est notre fondement. Entre acheteurs, vendeurs et l'équipe Sanhia, la bienveillance guide chaque échange.</p>
+    </div>
+    <div class="rv rv3">
+      <div class="ab-value-num">E</div>
+      <div class="ab-value-line"></div>
+      <div class="ab-value-name">Efficacité</div>
+      <p class="ab-value-desc">Votre temps est précieux. Nous construisons des parcours fluides, des livraisons rapides et un service sans friction, du premier clic à la réception.</p>
+    </div>
+  </div>
+</section>
+
+<section class="ab-team-sec">
+  <div class="ab-team-head">
+    <div>
+      <div class="ab-eyebrow rv">Les fondateurs</div>
+      <h2 class="ab-display rv rv1" style="font-size:clamp(44px,6vw,88px);">
+        L'équipe<br><em>Sanhia</em>
+      </h2>
+    </div>
+    <p class="ab-team-sub rv rv2">Des passionnés qui croient au potentiel de l'économie burkinabè et s'engagent à le révéler au monde.</p>
+  </div>
+
+  <div class="ab-team-grid">
+    <div class="ab-member rv rv1">
+      <div class="ab-member-photo">
+        <div class="ab-member-photo-inner">D</div>
+      </div>
+      <div class="ab-member-info">
+        <h4>Daren Tiendrebeogo</h4>
+        <div class="ab-member-role">1er Responsable — Fondateur</div>
+      </div>
+    </div>
+    <div class="ab-member rv rv2">
+      <div class="ab-member-photo">
+        <div class="ab-member-photo-inner">O</div>
+      </div>
+      <div class="ab-member-info">
+        <h4>Opérations</h4>
+        <div class="ab-member-role">Logistique & Partenaires</div>
+      </div>
+    </div>
+    <div class="ab-member rv rv3">
+      <div class="ab-member-photo">
+        <div class="ab-member-photo-inner">S</div>
+      </div>
+      <div class="ab-member-info">
+        <h4>Support Client</h4>
+        <div class="ab-member-role">Courtoisie & Efficacité</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ab-location">
+  <iframe
+    class="ab-map-iframe"
+    src="https://www.google.com/maps?hl=fr&ll=12.3714,-1.5197&z=13&output=embed"
+    allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+  ></iframe>
+
+  <div class="ab-map-card rv">
+    <h4>Ouagadougou<br><em>Burkina Faso</em></h4>
+    <div class="ab-map-subtitle">Notre territoire — Notre cœur</div>
+    <p class="ab-map-copy">
+      Nous opérons depuis le cœur du pays des Hommes intègres pour vous garantir le meilleur service local.
+    </p>
+    <div class="ab-map-detail"><i data-lucide="map-pin"></i> Ouagadougou, Burkina Faso</div>
+    <div class="ab-map-detail"><i data-lucide="mail"></i> aurumcorporate.d@gmail.com</div>
+    <div style="margin-top:28px">
+      <a href="contact.html" class="ab-btn primary" style="width:100%;"><span>Nous contacter</span></a>
+    </div>
+  </div>
+</div>
+
+<section class="ab-cta">
+  <div class="ab-eyebrow rv" style="margin-bottom:24px">Rejoignez Sanhia</div>
+  <h2 class="ab-cta-title rv rv1">
+    Prêt à découvrir<br><em>l'excellence ?</em>
+  </h2>
+  <p class="ab-cta-copy rv rv2">
+    Que vous soyez acheteur ou vendeur, Sanhia est votre place. Rejoignez la première marketplace premium du Burkina Faso.
+  </p>
+  <div class="ab-cta-actions rv rv3">
+    <a href="catalogue.html" class="ab-btn primary"><span>Découvrir le catalogue</span></a>
+    <a href="seller-onboarding.html" class="ab-btn ghost"><span>Devenir vendeur</span></a>
+  </div>
+</section>
+
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/about.js" defer></script>
+<script src="assets/js/footer.js" defer></script>
+</body>
+</html>

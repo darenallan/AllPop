@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Créer un compte - Sanhia</title>
+  
+  <!-- Polices "Aurum Awwwards" -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700&display=swap" rel="stylesheet"/>
+  
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <script src="assets/js/app.js" defer></script>
+
+
+      <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/register.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+<body style="background:#0B0A08;margin:0;cursor:none">
+
+<!-- Cursor & Noise -->
+<div id="rg-ring"></div>
+<div id="rg-dot"></div>
+<div id="rg-noise"></div>
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Header -->
+<div id="header-placeholder"></div>
+
+<!-- SCOPED MAIN -->
+<main id="rg">
+  <div class="rg-card">
+    <div class="rg-icon">
+      <i data-lucide="user-plus" style="width: 32px; height: 32px;"></i>
+    </div>
+    <h1 class="rg-title">Inscription</h1>
+    <p class="rg-subtitle">Rejoignez le cercle privé Sanhia.</p>
+
+    <form id="register-container" class="rg-form" aria-label="Formulaire d'inscription">
+      
+      <div class="rg-input-group">
+        <label class="rg-label">Nom complet</label>
+        <input type="text" id="reg-name" class="rg-input" placeholder="Comment devons-nous vous appeler ?">
+      </div>
+
+      <div class="rg-input-group">
+        <label class="rg-label">Adresse Email</label>
+        <input type="email" id="reg-email" class="rg-input" placeholder="votre@email.com">
+      </div>
+
+      <div class="rg-input-group">
+        <label class="rg-label">Numéro de téléphone</label>
+        <input type="tel" id="reg-phone" class="rg-input" placeholder="+226 XX XXX XXX" pattern="[0-9+\-\s]{6,}">
+      </div>
+
+      <div class="rg-input-group">
+        <label class="rg-label">Mot de passe</label>
+        <input type="password" id="reg-pass" class="rg-input" placeholder="6 caractères minimum">
+      </div>
+
+      <div class="rg-input-group">
+        <label class="rg-label">Confirmer le mot de passe</label>
+        <input type="password" id="reg-pass-confirm" class="rg-input" placeholder="Répétez le mot de passe">
+      </div>
+
+      <button type="button" id="btn-register" class="rg-btn">
+        <span>Créer mon compte</span>
+      </button>
+
+    </form>
+
+    <div id="error-message" class="rg-error"></div>
+
+    <div class="rg-links">
+      <span style="color:var(--s); font-size:13px;">Déjà membre ? <a href="login.html" class="rg-link rg-link-gold">Se connecter</a></span>
+    </div>
+  </div>
+</main>
+
+<!-- Scripts -->
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/register.js" defer></script>
+<script src="assets/js/footer.js" defer></script>
+</body>
+</html>
+

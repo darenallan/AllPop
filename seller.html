@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Espace Vendeur - Sanhia</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/components/header.js"></script>
+    <script src="assets/js/data.js" defer></script>
+    <script src="assets/js/app.js" defer></script>
+    <script src="assets/js/messaging.js" defer></script>
+
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="stylesheet" href="assets/css/global.css" />
+    <link rel="stylesheet" href="assets/css/pages/seller.css" />
+    <link rel="stylesheet" href="assets/css/aurum-light.css" />
+  </head>
+  <body>
+    <!-- Cursor -->
+    <div id="sd-ring"></div>
+    <div id="sd-dot"></div>
+    <div id="sd-noise"></div>
+    <div id="sd-toasts"></div>
+
+    <div id="sd">
+      <!-- ------------ SIDEBAR ------------ -->
+      <aside class="sd-sidebar" id="sd-sidebar">
+        <div class="sd-brand">
+          <a href="index.html" class="sd-brand-logo">
+            <div class="sd-brand-box">A</div>
+            SANHIA
+          </a>
+          <div class="sd-shop-id">
+            <div class="sd-shop-avatar" id="sd-shop-avatar">
+              <img id="sd-shop-logo" src="" alt="" style="display: none" />
+              <span id="sd-shop-initial">A</span>
+            </div>
+            <div>
+              <div class="sd-shop-name" id="sd-shop-name">Ma Boutique</div>
+              <div class="sd-shop-role">Espace Vendeur</div>
+            </div>
+          </div>
+        </div>
+
+        <nav class="sd-nav">
+          <span class="sd-nav-section">Principal</span>
+
+          <a class="sd-nav-item on" data-tab="overview" href="#">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            Vue d'ensemble
+          </a>
+          <a class="sd-nav-item" data-tab="products" href="#">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"
+              />
+              <line x1="7" y1="7" x2="7.01" y2="7" />
+            </svg>
+            Mes Produits
+            <span
+              class="sd-badge"
+              id="sd-products-badge"
+              style="display: none"
+            ></span>
+          </a>
+          <a class="sd-nav-item" data-tab="add-product" href="#">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+            Ajouter un produit
+          </a>
+          <a class="sd-nav-item" data-tab="orders" href="#">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+            Commandes
+            <span
+              class="sd-badge"
+              id="sd-orders-badge"
+              style="display: none"
+            ></span>
+          </a>
+
+          <span class="sd-nav-section">Boutique</span>
+          <a class="sd-nav-item" data-tab="settings" href="#">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+              />
+            </svg>
+            Paramètres
+          </a>
+          <a class="sd-nav-item" data-tab="messages" href="#">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+              />
+            </svg>
+            Messagerie
+            <span
+              class="sd-badge"
+              id="sd-msg-badge"
+              style="display: none"
+            ></span>
+          </a>
+
+          <div class="sd-nav-bottom">
+            <a class="sd-nav-item" href="index.html">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              Retour à l'accueil
+            </a>
+            <a class="sd-nav-item danger" href="#" onclick="sdLogout()">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Déconnexion
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Mobile toggle -->
+      <button
+        class="sd-mob-toggle"
+        id="sd-mob-toggle"
+        onclick="document.getElementById('sd-sidebar').classList.toggle('open')"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      <!-- ------------ MAIN ------------ -->
+      <div class="sd-main">
+        <!-- Top bar -->
+        <div class="sd-topbar">
+          <div>
+            <div class="sd-topbar-crumb">
+              Sanhia <span> > </span>
+              <span id="sd-topbar-section">Vue d'ensemble</span>
+            </div>
+            <div class="sd-topbar-title" id="sd-topbar-shop">Ma Boutique</div>
+          </div>
+          <div class="sd-topbar-actions">
+            <a href="catalogue.html" class="sd-icon-btn" title="Catalogue">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </a>
+            <a href="cart.html" class="sd-icon-btn" title="Panier">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 01-8 0" />
+              </svg>
+            </a>
+            <a href="profile.html" class="sd-icon-btn" title="Profil">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="sd-content">
+          <!-- -- TAB: OVERVIEW -- -->
+          <div class="sd-tab on" id="sd-tab-overview">
+            <div class="sd-sec-head">
+              <div>
+                <div class="sd-sec-kicker">Tableau de bord</div>
+                <h1 class="sd-sec-title">Vue d'<em>ensemble</em></h1>
+              </div>
+              <div id="sd-shop-status-block"></div>
+            </div>
+
+            <!-- Stats -->
+            <div class="sd-stats" id="sd-stats">
+              <div class="sd-stat">
+                <span class="sd-stat-label">Produits en ligne</span>
+                <span class="sd-stat-val" id="sd-stat-products">--</span>
+                <span class="sd-stat-sub">dans votre boutique</span>
+                <div class="sd-stat-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1"
+                  >
+                    <path
+                      d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div class="sd-stat">
+                <span class="sd-stat-label">Ventes (FCFA)</span>
+                <span class="sd-stat-val" id="sd-stat-sales">--</span>
+                <span class="sd-stat-sub">total cumul</span>
+                <div class="sd-stat-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1"
+                  >
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                    <polyline points="17 6 23 6 23 12" />
+                  </svg>
+                </div>
+              </div>
+              <div class="sd-stat">
+                <span class="sd-stat-label">Vues totales</span>
+                <span class="sd-stat-val" id="sd-stat-views">--</span>
+                <span class="sd-stat-sub">visites boutique</span>
+                <div class="sd-stat-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1"
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shop info card -->
+            <div class="sd-card">
+              <div class="sd-card-title">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                état de la boutique
+              </div>
+              <div id="sd-shop-info-body">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <span style="font-size: 12px; color: var(--s)">Statut :</span>
+                  <span id="sd-shop-status-inline"></span>
+                </div>
+                <div
+                  style="
+                    font-size: 12px;
+                    color: var(--s);
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                  "
+                >
+                  <span>Catégorie :</span>
+                  <span id="sd-shop-category" style="color: var(--w)">--</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent orders preview -->
+            <div class="sd-card">
+              <div class="sd-card-title">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                </svg>
+                Commandes récentes
+              </div>
+              <div id="sd-recent-orders"></div>
+            </div>
+          </div>
+
+          <!-- -- TAB: PRODUCTS -- -->
+          <div class="sd-tab" id="sd-tab-products">
+            <div class="sd-sec-head">
+              <div>
+                <div class="sd-sec-kicker">Inventaire</div>
+                <h1 class="sd-sec-title">Mes <em>Produits</em></h1>
+              </div>
+              <button
+                class="sd-btn-primary"
+                onclick="sdSwitchTab('add-product')"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>Nouveau produit</span>
+              </button>
+            </div>
+            <div class="sd-card">
+              <div class="sd-table-wrap">
+                <table class="sd-table">
+                  <thead>
+                    <tr>
+                      <th>Produit</th>
+                      <th>Prix</th>
+                      <th>Stock</th>
+                      <th>Catégorie</th>
+                      <th>Statut</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="sd-products-tbody">
+                    <tr>
+                      <td colspan="6">
+                        <div class="sd-empty">
+                          <div class="sd-empty-icon">
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1"
+                            >
+                              <path
+                                d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"
+                              />
+                              <line x1="7" y1="7" x2="7.01" y2="7" />
+                            </svg>
+                          </div>
+                          <div class="sd-empty-title">Aucun produit</div>
+                          <div class="sd-empty-sub">Chargement...</div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- -- TAB: ADD PRODUCT -- -->
+          <div class="sd-tab" id="sd-tab-add-product">
+            <div class="sd-sec-head">
+              <div>
+                <div class="sd-sec-kicker">Inventaire</div>
+                <h1 class="sd-sec-title">Ajouter un <em>produit</em></h1>
+              </div>
+              <button class="sd-btn-outline" onclick="sdSwitchTab('products')">
+                ? Mes produits
+              </button>
+            </div>
+
+            <form id="sd-product-form">
+              <div class="sd-card">
+                <div class="sd-card-title">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  Informations générales
+                </div>
+                <div class="sd-form-grid">
+                  <div class="sd-form-group">
+                    <label class="sd-label">Nom du produit *</label>
+                    <input
+                      id="fp-name"
+                      class="sd-input"
+                      type="text"
+                      placeholder="ex: Téléphone Samsung Galaxy S24"
+                      required
+                    />
+                  </div>
+                  <div class="sd-form-group">
+                    <label class="sd-label">Catégorie *</label>
+                    <select id="fp-category" class="sd-input" required>
+                      <option value="">Sélectionner</option>
+                      <option>Électronique</option>
+                      <option>Mode & Vêtements</option>
+                      <option>Beauté & Cosmétiques</option>
+                      <option>Maison & Déco</option>
+                      <option>Alimentation</option>
+                      <option>Auto & Moto</option>
+                      <option>Sport</option>
+                      <option>Livres</option>
+                      <option>Autre</option>
+                    </select>
+                  </div>
+                  <div class="sd-form-group">
+                    <label class="sd-label">Prix (FCFA) *</label>
+                    <input
+                      id="fp-price"
+                      class="sd-input"
+                      type="number"
+                      min="0"
+                      placeholder="ex: 25000"
+                      required
+                    />
+                  </div>
+                  <div class="sd-form-group">
+                    <label class="sd-label">Prix original (si promo)</label>
+                    <input
+                      id="fp-original-price"
+                      class="sd-input"
+                      type="number"
+                      min="0"
+                      placeholder="ex: 35000"
+                    />
+                  </div>
+                  <div class="sd-form-group">
+                    <label class="sd-label">Stock disponible *</label>
+                    <input
+                      id="fp-stock"
+                      class="sd-input"
+                      type="number"
+                      min="0"
+                      placeholder="ex: 10"
+                      required
+                    />
+                  </div>
+                  <div class="sd-form-group">
+                    <label class="sd-label">SKU / Référence</label>
+                    <input
+                      id="fp-sku"
+                      class="sd-input"
+                      type="text"
+                      placeholder="ex: SKU-001"
+                    />
+                  </div>
+                  <div class="sd-form-group full">
+                    <label class="sd-label">Description *</label>
+                    <textarea
+                      id="fp-description"
+                      class="sd-input"
+                      placeholder="Décrivez votre produit en détail"
+                      rows="4"
+                      required
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sd-card">
+                <div class="sd-card-title">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  Images du produit
+                </div>
+                <div class="sd-img-upload" id="sd-img-upload-zone">
+                  <input type="file" id="fp-images" multiple accept="image/*" />
+                  <div class="sd-img-upload-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    >
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                  </div>
+                  <div class="sd-img-upload-txt">
+                    <strong>Glissez vos photos ici</strong>
+                    Formats acceptés : JPG, PNG, WEBP : Max 2 Mo chacune
+                  </div>
+                </div>
+                <div class="sd-img-preview-grid" id="sd-img-preview"></div>
+              </div>
+
+              <div class="sd-card">
+                <div class="sd-card-title">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <path
+                      d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
+                    />
+                  </svg>
+                  Variantes (optionnel)
+                </div>
+                <div class="sd-form-grid">
+                  <div class="sd-form-group">
+                    <label class="sd-label">Couleurs disponibles</label>
+                    <input
+                      id="fp-colors"
+                      class="sd-input"
+                      type="text"
+                      placeholder="ex: Rouge, Bleu, Noir (séparés par virgule)"
+                    />
+                  </div>
+                  <div class="sd-form-group">
+                    <label class="sd-label">Tailles disponibles</label>
+                    <input
+                      id="fp-sizes"
+                      class="sd-input"
+                      type="text"
+                      placeholder="ex: S, M, L, XL (séparés par virgule)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 14px; justify-content: flex-end">
+                <button
+                  type="button"
+                  class="sd-btn-outline"
+                  onclick="sdResetForm()"
+                >
+                  Annuler
+                </button>
+                <button type="submit" class="sd-btn-primary" id="sd-submit-btn">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    style="position: relative; z-index: 1"
+                  >
+                    <path
+                      d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                    />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
+                  </svg>
+                  <span>Publier le produit</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- -- TAB: ORDERS -- -->
+          <div class="sd-tab" id="sd-tab-orders">
+            <div class="sd-sec-head">
+              <div>
+                <div class="sd-sec-kicker">Gestion</div>
+                <h1 class="sd-sec-title">Mes <em>Commandes</em></h1>
+              </div>
+            </div>
+            <div class="sd-card">
+              <div id="sd-orders-list"></div>
+            </div>
+          </div>
+
+          <!-- -- TAB: SETTINGS -- -->
+          <div class="sd-tab" id="sd-tab-settings">
+            <div class="sd-sec-head">
+              <div>
+                <div class="sd-sec-kicker">Configuration</div>
+                <h1 class="sd-sec-title">Paramètres</h1>
+              </div>
+            </div>
+            <form id="sd-settings-form">
+              <div class="sd-card">
+                <div class="sd-card-title">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  </svg>
+                  Profil de la boutique
+                </div>
+                <div class="sd-form-grid">
+                  <div class="sd-form-group">
+                    <label class="sd-label">Nom de la boutique</label>
+                    <input
+                      id="sp-name"
+                      class="sd-input"
+                      type="text"
+                      placeholder="Nom de votre boutique"
+                    />
+                  </div>
+                  <div class="sd-form-group">
+                    <label class="sd-label">Catégorie principale</label>
+                    <select id="sp-category" class="sd-input">
+                      <option value="">Sélectionner</option>
+                      <option>Électronique</option>
+                      <option>Mode & Vêtements</option>
+                      <option>Beauté & Cosmétiques</option>
+                      <option>Maison & Déco</option>
+                      <option>Alimentation</option>
+                      <option>Auto & Moto</option>
+                      <option>Sport</option>
+                      <option>Livres</option>
+                      <option>Autre</option>
+                    </select>
+                  </div>
+                  <div class="sd-form-group">
+                    <label class="sd-label">Ville</label>
+                    <input
+                      id="sp-city"
+                      class="sd-input"
+                      type="text"
+                      placeholder="ex: Ouagadougou"
+                    />
+                  </div>
+                  <div class="sd-form-group">
+                    <label class="sd-label">Téléphone</label>
+                    <input
+                      id="sp-phone"
+                      class="sd-input"
+                      type="tel"
+                      placeholder="ex: +226 70 00 00 00"
+                    />
+                  </div>
+                  <div class="sd-form-group full">
+                    <label class="sd-label">Description de la boutique</label>
+                    <textarea
+                      id="sp-description"
+                      class="sd-input"
+                      placeholder="Décrivez votre boutique"
+                      rows="3"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sd-card">
+                <div class="sd-card-title">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  Bannière de la boutique
+                </div>
+                <div class="sd-img-upload" style="max-width: 340px">
+                  <input type="file" id="sp-banner-file" accept="image/*" />
+                  <div class="sd-img-upload-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    >
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                  </div>
+                  <div class="sd-img-upload-txt">
+                    <strong>Bannière boutique</strong>
+                    JPG, PNG, WEBP : Max 2 Mo chacune
+                  </div>
+                </div>
+                <div id="sp-banner-preview" style="margin-top: 14px"></div>
+              </div>
+
+              <div class="sd-card">
+                <div class="sd-card-title">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  Logo de la boutique
+                </div>
+                <div class="sd-img-upload" style="max-width: 340px">
+                  <input type="file" id="sp-logo-file" accept="image/*" />
+                  <div class="sd-img-upload-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    >
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                  </div>
+                  <div class="sd-img-upload-txt">
+                    <strong>Logo boutique</strong>
+                    JPG, PNG, WEBP : Max 2 Mo chacune
+                  </div>
+                </div>
+                <div id="sp-logo-preview" style="margin-top: 14px"></div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end">
+                <button type="submit" class="sd-btn-primary">
+                  <span>Enregistrer les modifications</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- -- TAB: MESSAGES -- -->
+          <div class="sd-tab" id="sd-tab-messages">
+            <div class="sd-sec-head">
+              <div>
+                <div class="sd-sec-kicker">Communication</div>
+                <h1 class="sd-sec-title">Messa<em>gerie</em></h1>
+              </div>
+            </div>
+            <div class="sd-card">
+              <div id="sd-messages-list"></div>
+            </div>
+          </div>
+        </div>
+        <!-- /sd-content -->
+      </div>
+      <!-- /sd-main -->
+    </div>
+    <!-- /#sd -->
+
+    <script src="assets/js/global.js" defer></script>
+    <script src="assets/js/pages/seller.js" defer></script>
+  </body>
+</html>

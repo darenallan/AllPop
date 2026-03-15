@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Candidature Vendeur - Sanhia</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/components/header.js"></script>
+    <script src="assets/js/app.js" defer></script>
+
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="stylesheet" href="assets/css/global.css" />
+    <link rel="stylesheet" href="assets/css/pages/seller-application.css" />
+    <link rel="stylesheet" href="assets/css/aurum-light.css" />
+  </head>
+  <body>
+    <div id="cur-ring"></div>
+    <div id="cur-dot"></div>
+    <div id="noise"></div>
+    <div id="sa-toasts"></div>
+    <div id="header-placeholder"></div>
+
+    <!-- MARQUEE -->
+    <div class="sa-mq">
+      <div class="sa-mqt">
+        <div class="sa-mqi"><strong>Candidature</strong> Vendeur Sanhia</div>
+        <div class="sa-mqi">
+          <strong>Rejoignez</strong> les meilleurs marchands
+        </div>
+        <div class="sa-mqi"><strong>Dossier</strong> en 4 étapes simples</div>
+        <div class="sa-mqi"><strong>Réponse</strong> sous 48 | 72h ouvrées</div>
+        <div class="sa-mqi">
+          <strong>Boutique</strong> visible des validation
+        </div>
+        <div class="sa-mqi"><strong>Candidature</strong> Vendeur Sanhia</div>
+        <div class="sa-mqi">
+          <strong>Rejoignez</strong> les meilleurs marchands
+        </div>
+        <div class="sa-mqi"><strong>Dossier</strong> en 4 étapes simples</div>
+        <div class="sa-mqi"><strong>Réponse</strong> sous 48 | 72h ouvrées</div>
+        <div class="sa-mqi">
+          <strong>Boutique</strong> visible des validation
+        </div>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <section class="sa-hero">
+      <div class="sa-hero-orb"></div>
+      <div class="sa-vline"></div>
+      <div class="sa-hero-inner">
+        <p class="sa-eyebrow rv">Partenariat à Sanhia</p>
+        <h1 class="sa-hero-title rv rv1">Ouvrez votre<br /><em>galerie</em></h1>
+        <div class="sa-hero-foot rv rv2">
+          <p class="sa-hero-copy">
+            Déposez votre candidature en 4 étapes. Notre comité d'approbation
+            examine chaque dossier avec soin pour garantir une curation de
+            qualité.
+          </p>
+          <div class="sa-hero-stat">
+            <span class="sa-hero-stat-num">4</span>
+            <div class="sa-hero-stat-lbl">étapes en ~10 min</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEPS NAV -->
+    <div class="sa-steps-wrap">
+      <div class="sa-steps" id="sa-steps">
+        <div class="sa-step active" data-step="1">
+          <div class="sa-step-num">01</div>
+          <span class="sa-step-lbl">Identité</span>
+        </div>
+        <div class="sa-step" data-step="2">
+          <div class="sa-step-num">02</div>
+          <span class="sa-step-lbl">Paiements</span>
+        </div>
+        <div class="sa-step" data-step="3">
+          <div class="sa-step-num">03</div>
+          <span class="sa-step-lbl">Image de marque</span>
+        </div>
+        <div class="sa-step" data-step="4">
+          <div class="sa-step-num">04</div>
+          <span class="sa-step-lbl">Documents</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="sa-form-wrap">
+      <div class="sa-form-inner">
+        <form id="sa-form">
+          <!-- STEP 1 : Identité -->
+          <div class="sa-section active" data-section="1">
+            <p class="sa-section-label">étape 1 / 4</p>
+            <h2 class="sa-section-title">
+              Identité de<br /><em>l'entreprise</em>
+            </h2>
+            <div class="sa-row">
+              <div class="sa-group">
+                <label class="sa-label"
+                  >Nom de la boutique<span class="sa-req">*</span></label
+                ><input
+                  type="text"
+                  name="shop_name"
+                  class="sa-input"
+                  required
+                  placeholder="Ex: La Maison du Luxe"
+                />
+                <div class="sa-input-line"></div>
+              </div>
+              <div class="sa-group">
+                <label class="sa-label"
+                  >Statut juridique<span class="sa-req">*</span></label
+                ><select name="legal_status" class="sa-input" required>
+                  <option value="">Sélectionnez...</option>
+                  <option value="ei">Entreprise individuelle</option>
+                  <option value="sarl">SARL</option>
+                  <option value="sa">SA</option>
+                  <option value="ae">Auto-entrepreneur</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+            </div>
+            <div class="sa-row">
+              <div class="sa-group">
+                <label class="sa-label">N° RCCM / Registre</label
+                ><input
+                  type="text"
+                  name="rccm"
+                  class="sa-input"
+                  placeholder="BF-OUA-01-2023-A12..."
+                />
+                <div class="sa-input-line"></div>
+              </div>
+              <div class="sa-group">
+                <label class="sa-label">IFU / N° Fiscal</label
+                ><input
+                  type="text"
+                  name="ifu"
+                  class="sa-input"
+                  placeholder="00000000A"
+                />
+                <div class="sa-input-line"></div>
+              </div>
+            </div>
+            <div class="sa-row">
+              <div class="sa-group">
+                <label class="sa-label"
+                  >Nom du responsable<span class="sa-req">*</span></label
+                ><input
+                  type="text"
+                  name="owner_name"
+                  class="sa-input"
+                  required
+                  placeholder="Ex: Jean OUDRAOGO"
+                />
+                <div class="sa-input-line"></div>
+              </div>
+              <div class="sa-group">
+                <label class="sa-label"
+                  >Fonction<span class="sa-req">*</span></label
+                ><input
+                  type="text"
+                  name="owner_role"
+                  class="sa-input"
+                  required
+                  placeholder="Ex: Gérant, Directeur"
+                />
+                <div class="sa-input-line"></div>
+              </div>
+            </div>
+            <div class="sa-row">
+              <div class="sa-group">
+                <label class="sa-label"
+                  >Téléphone pro<span class="sa-req">*</span></label
+                ><input
+                  type="tel"
+                  name="phone"
+                  class="sa-input"
+                  required
+                  placeholder="+226 XX XX XX XX"
+                />
+                <div class="sa-input-line"></div>
+              </div>
+              <div class="sa-group">
+                <label class="sa-label"
+                  >Email officiel<span class="sa-req">*</span></label
+                ><input
+                  type="email"
+                  name="email"
+                  class="sa-input"
+                  required
+                  placeholder="contact@maboutique.com"
+                />
+                <div class="sa-input-line"></div>
+              </div>
+            </div>
+            <div class="sa-group">
+              <label class="sa-label"
+                >Adresse complète<span class="sa-req">*</span></label
+              ><input
+                type="text"
+                name="address"
+                class="sa-input"
+                required
+                placeholder="Quartier, Secteur, Ville..."
+              />
+              <div class="sa-input-line"></div>
+            </div>
+            <div class="sa-nav">
+              <span></span>
+              <button type="button" class="sa-btn-next" onclick="saGoTo(2)">
+                <span>Paiements</span
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 2 : Paiements -->
+          <div class="sa-section" data-section="2">
+            <p class="sa-section-label">étape 2 / 4</p>
+            <h2 class="sa-section-title">
+              Paiements &<br /><em>facturation</em>
+            </h2>
+            <div class="sa-group">
+              <label class="sa-label"
+                >Coordonnées bancaires (IBAN / N� Compte)</label
+              ><input
+                type="text"
+                name="bank_account"
+                class="sa-input"
+                placeholder="BF00 0000 0000 0000..."
+              />
+              <div class="sa-input-line"></div>
+            </div>
+            <div class="sa-group">
+              <label class="sa-label"
+                >Moyens de paiement acceptés<span class="sa-req">*</span></label
+              >
+              <div class="sa-checks">
+                <label class="sa-ck" id="ck-mm"
+                  ><input
+                    type="checkbox"
+                    name="payment_mobile_money"
+                    value="Mobile Money"
+                    onchange="toggleCk(this)"
+                  />
+                  Mobile Money</label
+                >
+                <label class="sa-ck" id="ck-ca"
+                  ><input
+                    type="checkbox"
+                    name="payment_cash"
+                    value="Espèces"
+                    onchange="toggleCk(this)"
+                  />
+                  Espèces</label
+                >
+                <label class="sa-ck" id="ck-cb"
+                  ><input
+                    type="checkbox"
+                    name="payment_card"
+                    value="Carte bancaire"
+                    onchange="toggleCk(this)"
+                  />
+                  Carte bancaire</label
+                >
+                <label class="sa-ck" id="ck-vt"
+                  ><input
+                    type="checkbox"
+                    name="payment_transfer"
+                    value="Virement"
+                    onchange="toggleCk(this)"
+                  />
+                  Virement</label
+                >
+              </div>
+            </div>
+            <div class="sa-group">
+              <label class="sa-label">Adresse de facturation</label
+              ><input
+                type="text"
+                name="billing_address"
+                class="sa-input"
+                placeholder="Laissez vide si identique l'adresse principale"
+              />
+              <div class="sa-input-line"></div>
+            </div>
+            <div class="sa-nav">
+              <button type="button" class="sa-btn-back" onclick="saGoTo(1)">
+                ? Retour
+              </button>
+              <button type="button" class="sa-btn-next" onclick="saGoTo(3)">
+                <span>Image de marque</span
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 3 : Branding -->
+          <div class="sa-section" data-section="3">
+            <p class="sa-section-label">étape 3 / 4</p>
+            <h2 class="sa-section-title">Image de<br /><em>marque</em></h2>
+            <div class="sa-group">
+              <label class="sa-label"
+                >Domaine d'activit<span class="sa-req">*</span></label
+              ><input
+                type="text"
+                name="categories"
+                class="sa-input"
+                required
+                placeholder="Ex: Mode, Bijoux, Artisanat..."
+              />
+              <div class="sa-input-line"></div>
+            </div>
+            <div class="sa-group">
+              <label class="sa-label"
+                >Histoire de la marque<span class="sa-req">*</span></label
+              ><textarea
+                name="brand_story"
+                class="sa-input"
+                required
+                placeholder="Parlez-nous de l'ADN de votre entreprise, votre vision, ce qui vous rend unique "
+              ></textarea>
+            </div>
+            <div class="sa-row">
+              <div class="sa-group">
+                <label class="sa-label">Délai de livraison moyen</label
+                ><input
+                  type="text"
+                  name="delivery_time"
+                  class="sa-input"
+                  placeholder="Ex: 24h - 48h"
+                />
+                <div class="sa-input-line"></div>
+              </div>
+              <div class="sa-group">
+                <label class="sa-label">Politique de retours</label
+                ><input
+                  type="text"
+                  name="return_policy"
+                  class="sa-input"
+                  placeholder="Ex: échange sous 7 jours"
+                />
+                <div class="sa-input-line"></div>
+              </div>
+            </div>
+            <div class="sa-group">
+              <label class="sa-label">Instagram (Optionnel)</label
+              ><input
+                type="url"
+                name="social_instagram"
+                class="sa-input"
+                placeholder="https://instagram.com/..."
+              />
+              <div class="sa-input-line"></div>
+            </div>
+            <div class="sa-group">
+              <label class="sa-label">Site web officiel (Optionnel)</label
+              ><input
+                type="url"
+                name="social_website"
+                class="sa-input"
+                placeholder="https://..."
+              />
+              <div class="sa-input-line"></div>
+            </div>
+            <div class="sa-nav">
+              <button type="button" class="sa-btn-back" onclick="saGoTo(2)">
+                ? Retour
+              </button>
+              <button type="button" class="sa-btn-next" onclick="saGoTo(4)">
+                <span>Documents</span
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 4 : Documents -->
+          <div class="sa-section" data-section="4">
+            <p class="sa-section-label">étape 4 / 4</p>
+            <h2 class="sa-section-title">Documents<br /><em>officiels</em></h2>
+            <div class="sa-row">
+              <div class="sa-group">
+                <label class="sa-label"
+                  >Logo de la boutique<span class="sa-req">*</span></label
+                >
+                <div
+                  class="sa-upload"
+                  id="up-logo"
+                  onclick="document.getElementById('inp-logo').click()"
+                >
+                  <svg
+                    class="sa-upload-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  <span class="sa-upload-txt">PNG / JPG de max 5 Mo</span>
+                  <span class="sa-upload-name" id="lbl-logo"
+                    >Sélectionner le fichier</span
+                  >
+                </div>
+                <input
+                  type="file"
+                  id="inp-logo"
+                  accept="image/*"
+                  style="display: none"
+                  required
+                  onchange="saFile(this, 'up-logo', 'lbl-logo')"
+                />
+              </div>
+              <div class="sa-group">
+                <label class="sa-label">Pièce d'identité du gérant</label>
+                <div
+                  class="sa-upload"
+                  id="up-id"
+                  onclick="document.getElementById('inp-id').click()"
+                >
+                  <svg
+                    class="sa-upload-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                  </svg>
+                  <span class="sa-upload-txt">Recto-Verso - PDF / JPG</span>
+                  <span class="sa-upload-name" id="lbl-id">Facultatif</span>
+                </div>
+                <input
+                  type="file"
+                  id="inp-id"
+                  accept="image/*,application/pdf"
+                  style="display: none"
+                  onchange="saFile(this, 'up-id', 'lbl-id')"
+                />
+              </div>
+            </div>
+            <div class="sa-row">
+              <div class="sa-group">
+                <label class="sa-label">Extrait RCCM</label>
+                <div
+                  class="sa-upload"
+                  id="up-rccm"
+                  onclick="document.getElementById('inp-rccm').click()"
+                >
+                  <svg
+                    class="sa-upload-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                    />
+                    <polyline points="14 2 14 8 20 8" />
+                    <polyline points="9 15 12 18 15 15" />
+                    <line x1="12" y1="18" x2="12" y2="11" />
+                  </svg>
+                  <span class="sa-upload-txt">Document officiel - PDF</span>
+                  <span class="sa-upload-name" id="lbl-rccm">Facultatif</span>
+                </div>
+                <input
+                  type="file"
+                  id="inp-rccm"
+                  accept="image/*,application/pdf"
+                  style="display: none"
+                  onchange="saFile(this, 'up-rccm', 'lbl-rccm')"
+                />
+              </div>
+              <div class="sa-group">
+                <label class="sa-label">Attestation IFU</label>
+                <div
+                  class="sa-upload"
+                  id="up-ifu"
+                  onclick="document.getElementById('inp-ifu').click()"
+                >
+                  <svg
+                    class="sa-upload-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                    />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="9" y1="13" x2="15" y2="13" />
+                    <line x1="9" y1="17" x2="15" y2="17" />
+                  </svg>
+                  <span class="sa-upload-txt">Document fiscal - PDF</span>
+                  <span class="sa-upload-name" id="lbl-ifu">Facultatif</span>
+                </div>
+                <input
+                  type="file"
+                  id="inp-ifu"
+                  accept="image/*,application/pdf"
+                  style="display: none"
+                  onchange="saFile(this, 'up-ifu', 'lbl-ifu')"
+                />
+              </div>
+            </div>
+            <div class="sa-nav">
+              <button type="button" class="sa-btn-back" onclick="saGoTo(3)">
+                ? Retour
+              </button>
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: flex-end;
+                  gap: 16px;
+                "
+              >
+                <button type="submit" class="sa-btn-next" id="sa-submit">
+                  <span>Soumettre le dossier</span
+                  ><svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </button>
+                <div class="sa-progress-wrap" id="sa-prog">
+                  <div class="sa-progress-bar">
+                    <div class="sa-progress-fill" id="sa-prog-fill"></div>
+                  </div>
+                  <p class="sa-progress-lbl" id="sa-prog-txt">
+                    Transmission sécurisée...
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <!-- SUCCESS -->
+        <div class="sa-success" id="sa-success">
+          <svg
+            class="sa-success-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          <h3 class="sa-success-title">Dossier<br /><em>reu</em></h3>
+          <p class="sa-success-copy">
+            Nous vous remercions pour votre confiance. Notre comit d'approbation
+            examine actuellement votre candidature. Vous recevrez une rponse
+            dans les 48 ~ 72 heures ouvres.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/js/global.js" defer></script>
+    <script src="assets/js/pages/seller-application.js" defer></script>
+    <script src="assets/js/footer.js" defer></script>
+  </body>
+</html>

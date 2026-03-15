@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Les Boutiques - Sanhia</title>
+  <meta name="description" content="Découvrez les boutiques de la marketplace Sanhia et filtrez par catégorie." />
+ 
+  <!-- Polices "Aurum Awwwards" -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700&display=swap" rel="stylesheet"/>
+  
+  <!-- LE FAMEUX STYLES.CSS POUR LE HEADER/FOOTER -->
+    
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/boutique-list.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+<body style="background:#0B0A08;margin:0;cursor:none">
+
+<!-- Cursor & Noise -->
+<div id="bl-ring"></div>
+<div id="bl-dot"></div>
+<div id="bl-noise"></div>
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Header -->
+<div id="header-placeholder"></div>
+
+<main id="bl">
+  <div class="bl-spacer"></div>
+
+  <!-- Page Header -->
+  <div class="bl-pghead">
+    <div class="bl-kicker">Partenaires d'excellence</div>
+    <h1 class="bl-title">Les <em>Boutiques</em></h1>
+    <p class="bl-subtitle">Parcourez nos galeries et découvrez les artisans, créateurs et commerçants qui font la richesse de Sanhia.</p>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="bl-toolbar">
+    <div class="bl-toolbar-left">
+      <span class="bl-toolbar-label">Filtrer par domaine</span>
+      <select id="category-filter" class="bl-select">
+        <option value="">Toutes les galeries</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="bl-content">
+    <div id="shops-grid" class="bl-grid">
+      <!-- Loader par défaut -->
+      <div class="bl-loader" style="grid-column: 1 / -1; border:none; background:transparent;">
+        <span class="bl-loader-ring"></span>
+        <p class="bl-loader-txt">Chargement des boutiques</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+
+<!-- Scripts -->
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/boutique-list.js" defer></script>
+<script src="assets/js/footer.js" defer></script>
+</body>
+</html>
+

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Messages - Sanhia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+   
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/pages/messages.js"></script>
+  <script src="assets/js/components/header.js"></script>
+  <script src="assets/js/app.js" defer></script>
+
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/pages/messages.css" />
+  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+</head>
+<body>
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+<div id="noise"></div>
+<div id="toast-container"></div>
+<div id="header-placeholder"></div>
+
+<main class="inbox-shell">
+
+  <!-- -- SIDEBAR ----------------------------------------------- -->
+  <aside class="inbox-sidebar" id="inbox-sidebar">
+
+    <div class="inbox-sidebar-header">
+      <p class="inbox-sidebar-eyebrow">Messagerie</p>
+      <div class="inbox-sidebar-title-row">
+        <h1 class="inbox-sidebar-title">Mes<br>Messages</h1>
+        <span class="inbox-badge" id="inbox-count">0</span>
+      </div>
+      <div class="inbox-tabs">
+        <button class="inbox-tab active" data-tab="all">Tout</button>
+        <button class="inbox-tab" data-tab="buyer">Achats</button>
+        <button class="inbox-tab" data-tab="seller">Ventes</button>
+      </div>
+    </div>
+
+    <div class="inbox-search-wrap">
+      <div class="inbox-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input id="inbox-search" type="text" placeholder="Rechercher…" autocomplete="off"/>
+      </div>
+    </div>
+
+    <div class="inbox-conv-list" id="inbox-conv-list">
+      <!-- Skeletons -->
+      <div class="inbox-skel-item"><div class="inbox-skel-av skel"></div><div class="inbox-skel-lines"><div class="inbox-skel-l1 skel"></div><div class="inbox-skel-l2 skel"></div></div></div>
+      <div class="inbox-skel-item"><div class="inbox-skel-av skel"></div><div class="inbox-skel-lines"><div class="inbox-skel-l1 skel"></div><div class="inbox-skel-l2 skel"></div></div></div>
+      <div class="inbox-skel-item"><div class="inbox-skel-av skel"></div><div class="inbox-skel-lines"><div class="inbox-skel-l1 skel"></div><div class="inbox-skel-l2 skel"></div></div></div>
+    </div>
+
+  </aside>
+
+  <!-- -- THREAD ------------------------------------------------ -->
+  <section class="inbox-thread" id="inbox-thread">
+
+    <!-- Placeholder aucune conv sélectionnée -->
+    <div class="inbox-empty-state" id="inbox-empty-state">
+      <div class="inbox-empty-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+      </div>
+      <h2 class="inbox-empty-title">Vos conversations</h2>
+      <p class="inbox-empty-sub">Sélectionnez une conversation dans la liste pour afficher l'historique complet de vos échanges.</p>
+    </div>
+
+    <!-- Thread actif (cach jusqu' slection) -->
+    <div class="inbox-thread-inner" id="inbox-thread-inner" style="display:none">
+
+      <div class="inbox-thread-header">
+        <button class="inbox-back-btn" id="inbox-back-btn" type="button" aria-label="Retour">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="inbox-thread-avatar" id="inbox-thread-avatar">?</div>
+        <div class="inbox-thread-meta">
+          <strong class="inbox-thread-name" id="inbox-thread-name">�</strong>
+          <span class="inbox-thread-sub" id="inbox-thread-sub"></span>
+        </div>
+        <a class="inbox-thread-cta" id="inbox-shop-link" href="#" style="display:none">
+          Voir la boutique ?
+        </a>
+      </div>
+
+      <div class="inbox-messages-wrap" id="inbox-messages-wrap" role="log" aria-live="polite">
+        <div class="inbox-loading"><div class="inbox-spinner"></div></div>
+      </div>
+
+      <form class="inbox-compose" id="inbox-compose" autocomplete="off">
+        <textarea
+          class="inbox-compose-input"
+          id="inbox-input"
+          maxlength="1200"
+          placeholder="Votre message� (Entr�e pour envoyer � Maj+Entr�e pour saut de ligne)"
+          rows="2"
+          aria-label="Message"
+        ></textarea>
+        <div class="inbox-compose-footer">
+          <span class="inbox-compose-note">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            Coordonn�es masqu�es automatiquement
+          </span>
+          <div class="inbox-compose-actions">
+            <span class="inbox-char-count" id="inbox-char-count" aria-live="polite">0 / 1200</span>
+            <button type="submit" class="inbox-send-btn" id="inbox-send-btn">
+              <span>Envoyer</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </section>
+
+</main>
+
+<script src="assets/js/global.js" defer></script>
+<script src="assets/js/pages/messages.js" defer></script><script src="assets/js/footer.js" defer></script>
+</body>
+</html>
+
