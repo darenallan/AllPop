@@ -53,7 +53,7 @@ body {
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(254, 252, 248, 0.4);
+  color: rgba(254, 252, 248, 0.6);
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s;
@@ -102,7 +102,7 @@ body {
   font-family: 'Unbounded', sans-serif;
   font-weight: 900;
   font-size: clamp(180px, 22vw, 320px);
-  color: rgba(200, 168, 75, 0.04);
+  color: rgba(200, 168, 75, 0.15);
   line-height: 0.85;
   letter-spacing: -0.04em;
   position: absolute;
@@ -223,7 +223,7 @@ body {
   font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(254, 252, 248, 0.4);
+  color: rgba(254, 252, 248, 0.6);
   text-decoration: none;
   font-weight: 600;
   cursor: none;
@@ -301,7 +301,7 @@ body {
   font-family: 'Unbounded', sans-serif;
   font-weight: 900;
   font-size: 90px;
-  color: rgba(200, 168, 75, 0.07);
+  color: rgba(200, 168, 75, 0.25);
   letter-spacing: -0.04em;
   line-height: 1;
   display: block;
@@ -311,7 +311,7 @@ body {
   font-size: 9px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgba(200, 168, 75, 0.3);
+  color: rgba(200, 168, 75, 0.5);
   font-weight: 600;
   display: block;
   margin-top: 8px;
@@ -393,14 +393,14 @@ body {
 .link-item::before {
   content: '→';
   font-size: 12px;
-  opacity: 0.5;
+  opacity: 0.75;
 }
 
 .links-bar-label {
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(254, 252, 248, 0.15);
+  color: rgba(254, 252, 248, 0.35);
   font-weight: 700;
   margin-right: 8px;
 }

@@ -806,7 +806,7 @@ body.cur-h #cur-ring {
   font-family: "Unbounded", sans-serif;
   font-size: 220px;
   font-weight: 900;
-  color: rgba(11, 10, 8, 0.035);
+  color: rgba(11, 10, 8, 0.15);
   line-height: 1;
   pointer-events: none;
   letter-spacing: -0.02em;

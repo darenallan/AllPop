@@ -210,7 +210,7 @@ body.ct-h #ct-ring {
   outline: none !important;
 }
 .ct-input::placeholder {
-  color: rgba(254, 252, 248, 0.2);
+  color: rgba(254, 252, 248, 0.35);
   transition: opacity 0.3s;
 }
 .ct-input:focus {

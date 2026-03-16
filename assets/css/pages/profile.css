@@ -51,7 +51,7 @@ body.cur-h #cur-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   font-family:'Unbounded',sans-serif;font-weight:900;
   font-size:clamp(160px,30vw,420px);
-  color:rgba(200,168,75,.022);
+  color:rgba(200,168,75,.15);
   letter-spacing:-.04em;line-height:1;
   pointer-events:none;user-select:none;white-space:nowrap;
   transition:opacity .6s;
@@ -438,7 +438,7 @@ body.cur-h #cur-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
 }
 .pr-empty-icon{
   font-family:'Instrument Serif',serif;font-style:italic;
-  font-size:clamp(60px,10vw,100px);color:rgba(200,168,75,.08);line-height:1;
+  font-size:clamp(60px,10vw,100px);color:rgba(200,168,75,.18);line-height:1;
 }
 .pr-empty p{font-size:15px;color:var(--smoke)}
 .pr-empty a{color:var(--gold);text-decoration:none;font-size:12px;font-family:'Unbounded',sans-serif;letter-spacing:.1em;text-transform:uppercase}

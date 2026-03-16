@@ -52,9 +52,9 @@ body.lg-h #lg-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
 
 .lg-input-group { position: relative; }
 .lg-label { font-family: 'Unbounded', sans-serif; font-size: 8px; letter-spacing: .2em; text-transform: uppercase; color: var(--s); margin-bottom: 8px; display: block; }
-.lg-input { all: unset; width: 100%; box-sizing: border-box; padding: 16px 0; background: transparent !important; border-bottom: 1px solid rgba(254,252,248,.1); color: var(--w); font-family: 'Syne', sans-serif; font-size: 16px; cursor: none; transition: border-color .3s; }
-.lg-input::placeholder { color: rgba(254,252,248,.2); transition: opacity .3s; }
-.lg-input:focus { border-color: var(--g); }
+.lg-input { all: unset; width: 100%; box-sizing: border-box; padding: 12px 0; background: transparent !important; border: none !important; border-bottom: 1px solid rgba(255,255,255,.15) !important; color: var(--w); font-family: 'Syne', sans-serif; font-size: 15px; cursor: none; transition: border-color .35s ease; outline: none !important; }
+.lg-input::placeholder { color: rgba(254,252,248,.35); transition: opacity .3s; }
+.lg-input:focus { border-bottom-color: var(--g) !important; outline: none !important; box-shadow: none !important; }
 .lg-input:focus::placeholder { opacity: 0; }
 
 /* Bouton */

@@ -192,7 +192,7 @@ body.cur-h #cur-ring {
   font-family: "Unbounded", sans-serif;
   font-weight: 900;
   font-size: clamp(80px, 13vw, 200px);
-  color: rgba(200, 168, 75, 0.025);
+  color: rgba(200, 168, 75, 0.15);
   letter-spacing: -0.03em;
   line-height: 1;
   white-space: nowrap;
@@ -973,14 +973,14 @@ body.cur-h #cur-ring {
   font-family: "Instrument Serif", serif;
   font-style: italic;
   font-size: clamp(80px, 12vw, 140px);
-  color: rgba(200, 168, 75, 0.06);
+  color: rgba(200, 168, 75, 0.18);
   line-height: 1;
   margin-bottom: 16px;
 }
 .cat-empty-title {
   font-family: "Instrument Serif", serif;
   font-size: 28px;
-  color: rgba(254, 252, 248, 0.3);
+  color: rgba(254, 252, 248, 0.4);
   margin-bottom: 8px;
 }
 .cat-empty-sub {

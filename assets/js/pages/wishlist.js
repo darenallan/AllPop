@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
       card.className = 'wl-card';
       card.setAttribute('data-id', p.id);
       card.innerHTML =
-        '<a href="product.html?id='+p.id+'" class="wl-card-img-wrap">"
+        '<a href="product.html?id='+p.id+'" class="wl-card-img-wrap">'
           + '<img src="'+img+'" class="wl-card-img" alt="'+(p.name||'')+'" onerror="this.src=\'assets/img/placeholder-product-1.svg\'">'
           + (hasD ? '<div class="wl-card-badge sale">-'+Math.round((1-price/op)*100)+'%</div>' : '')
           + '<button class="wl-card-remove" onclick="wlRemove(\''+p.id+'\',event)" title="Retirer des favoris"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>'
@@ -108,15 +108,27 @@ document.addEventListener('DOMContentLoaded', function() {
       var products = [];
       var chunks   = [];
       for (var i=0; i<ids.length; i+=10) chunks.push(ids.slice(i,i+10));
+      
+      // Timeout de 8 secondes pour éviter le chargement infini
+      var timeoutId = setTimeout(function() {
+        console.warn('[wishlist] Timeout Firestore - affichage du fallback');
+        if (!allProducts.length) showEmpty();
+      }, 8000);
+      
       for (var chunk of chunks) {
         var snap = await db2.collection('products').where(firebase.firestore.FieldPath.documentId(),'in',chunk).get();
         snap.docs.forEach(function(d){ products.push(Object.assign({id:d.id},d.data())); });
       }
+      
+      clearTimeout(timeoutId);
       allProducts = ids.map(function(id){ return products.find(function(p){ return p.id===id; }); }).filter(Boolean);
       if (!allProducts.length) { showEmpty(); return; }
       buildFilters();
       renderWl();
-    } catch(e){ console.error('[wishlist]', e); showEmpty(); }
+    } catch(e){ 
+      console.error('[wishlist] Erreur Firebase:', e); 
+      showEmpty(); 
+    }
   }
 
   window.wlRemove = function(id, e) {

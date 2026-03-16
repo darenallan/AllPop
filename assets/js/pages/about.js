@@ -8,7 +8,7 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function() {
-  var page = document.getElementById('ab-hero') || document.querySelector('.ab-hero');
+  var page = document.querySelector('.ab-hero');
   if (!page) return;
 
   /* Compteurs animés depuis Firebase */
@@ -27,17 +27,22 @@ document.addEventListener('DOMContentLoaded', function() {
       prodsSnap.forEach(function (d) {
         if (d.data().rating) { totalRating += d.data().rating; rCount++; }
       });
-      var avg = rCount > 0 ? (totalRating / rCount).toFixed(1) : 4.5;
-      setTarget('stats-products', prodsSnap.size || 500);
-      setTarget('stats-shops',    shopsSnap.size || 25);
+      var avg = rCount > 0 ? (totalRating / rCount).toFixed(1) : 4.8;
+      setTarget('stats-products', prodsSnap.size || 1250);
+      setTarget('stats-shops',    shopsSnap.size || 47);
       setTarget('stats-rating',   avg);
-    }).catch(setFallback);
+      animateAllCounters();
+    }).catch(function(err) {
+      console.warn('Firebase error, using fallback:', err);
+      setFallback();
+      animateAllCounters();
+    });
   }
 
   function setFallback() {
-    setTarget('stats-products', 500);
-    setTarget('stats-shops',    25);
-    setTarget('stats-rating',   4.5);
+    setTarget('stats-products', 1250);
+    setTarget('stats-shops',    47);
+    setTarget('stats-rating',   4.8);
   }
   
   function setTarget(id, v) {
@@ -59,15 +64,11 @@ document.addEventListener('DOMContentLoaded', function() {
     })(start);
   }
 
-  loadAproposStats();
-  var cObs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) { animCounter(e.target); cObs.unobserve(e.target); }
+  function animateAllCounters() {
+    document.querySelectorAll('.counter').forEach(function (c) { 
+      animCounter(c);
     });
-  }, { threshold: 0.15 });
+  }
 
-  // Lance après chargement des stats
-  setTimeout(function () {
-    document.querySelectorAll('.counter').forEach(function (c) { cObs.observe(c); });
-  }, 400);
+  loadAproposStats();
 });

@@ -45,7 +45,7 @@ body.wl-h #wl-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
   font-family:'Unbounded',sans-serif;
   font-weight:900;
   font-size:clamp(80px,12vw,180px);
-  color:rgba(200,168,75,.03);
+  color:rgba(200,168,75,.15);
   right:-10px;top:50%;
   transform:translateY(-45%);
   letter-spacing:-.04em;

@@ -436,9 +436,9 @@ body.cur-h #cur-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
 }
 .exp-title{
   font-family:'Instrument Serif',serif;font-size:26px;
-  font-weight:400;line-height:1.1;margin-bottom:14px;
+  font-weight:400;line-height:1.1;margin-bottom:14px;color:var(--gold);
 }
-.exp-text{font-size:13px;color:var(--smoke);line-height:1.75;font-weight:400}
+.exp-text{font-size:13px;color:var(--white);line-height:1.75;font-weight:400}
 
 /* ══════════════════════════════════════════════
    SPLIT — COMMERÇANT

@@ -327,7 +327,7 @@ body.ch #cur-ring { width:68px; height:68px; background:rgba(200,168,75,.07); }
 .inbox-empty-state::before {
   content:'✉';
   position:absolute; font-family:'Instrument Serif', serif;
-  font-size:320px; color:rgba(200,168,75,.025);
+  font-size:320px; color:rgba(200,168,75,.15);
   pointer-events:none; user-select:none;
   top:50%; left:50%; transform:translate(-50%,-50%);
   line-height:1;
