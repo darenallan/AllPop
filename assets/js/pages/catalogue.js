@@ -228,9 +228,11 @@ document.addEventListener("DOMContentLoaded", function () {
           (Array.isArray(p.images) ? p.images[0] : null) ||
           p.image ||
           "assets/img/placeholder-product-1.svg";
+        // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+        var pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
         return (
-          '<div class="ac-item" onclick="location.href=\'product.html?id=' +
-          p.id +
+          '<div class="ac-item" onclick="location.href=\'' +
+          pUrl +
           "'\">" +
           '<img class="ac-img" src="' +
           img +
@@ -332,88 +334,44 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     var wishlist = JSON.parse(localStorage.getItem("ac_wishlist") || "[]");
     grid.innerHTML = products
-      .map(function (p, i) {
-        var img =
-          (Array.isArray(p.images) ? p.images[0] : null) ||
-          p.image ||
-          "assets/img/placeholder-product-1.svg";
-        var hasDisc = p.originalPrice && p.originalPrice > p.price;
-        var disc = hasDisc
-          ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100)
-          : 0;
-        var inWish = wishlist.some(function (w) {
-          return (w.id || w) === p.id;
-        });
-        var delay = 'style="animation-delay:' + (i % 6) * 0.06 + 's"';
-        var safeName = (p.name || "").replace(/'/g, "\\'");
-        return (
-          '<div class="prd-card rv" ' +
-          delay +
-          ">" +
-          '<a href="product.html?id=' +
-          p.id +
-          '">' +
-          '<div class="prd-img-wrap">' +
-          (hasDisc
-            ? '<span class="prd-disc-badge">-' + disc + "%</span>"
-            : "") +
-          '<img class="prd-img" src="' +
-          img +
-          '" alt="' +
-          (p.name || "") +
-          '" loading="lazy" onerror="this.src=\'assets/img/placeholder-product-1.svg\'">' +
-          '<div class="prd-overlay"><button class="prd-quick" onclick="event.preventDefault();event.stopPropagation();if(typeof window.quickAdd===\'function\')window.quickAdd(\'' +
-          p.id +
-          "','" +
-          safeName +
-          "'," +
-          (p.price || 0) +
-          ",'" +
-          img +
-          "','" +
-          p.shopId +
-          "')\"><span>+ Ajouter au panier</span></button></div>" +
-          '<button class="prd-wish' +
-          (inWish ? " on" : "") +
-          '" onclick="event.preventDefault();event.stopPropagation();toggleWish(\'' +
-          p.id +
-          "',this,'" +
-          safeName +
-          "'," +
-          (p.price || 0) +
-          ",'" +
-          img +
-          '\')" title="Favoris"><svg viewBox="0 0 24 24" fill="' +
-          (inWish ? "currentColor" : "none") +
-          '" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>' +
-          "</div></a>" +
-          '<div class="prd-body">' +
-          '<div class="prd-shop"><a class="prd-shop-name" href="boutique.html?id=' +
-          p.shopId +
-          '">' +
-          p.shopName +
-          "</a></div>" +
-          '<a href="product.html?id=' +
-          p.id +
-          '"><div class="prd-name">' +
-          (p.name || "Produit") +
-          "</div></a>" +
-          '<div class="prd-price-row"><span class="prd-price">' +
-          fmt(p.price || 0) +
-          "<span style=\"font-size:10px;font-family:'Syne';font-weight:400;margin-left:3px\">FCFA</span></span>" +
-          (hasDisc
-            ? '<span class="prd-price-orig">' +
-              fmt(p.originalPrice) +
-              " FCFA</span>"
-            : "") +
-          "</div>" +
-          (p.shopCity
-            ? '<div class="prd-city">📍 ' + p.shopCity + "</div>"
-            : "") +
-          "</div>" +
-          "</div>"
-        );
-      })
+     .map(function (p, i) {
+    var img = (Array.isArray(p.images) ? p.images[0] : null) || p.image || "assets/img/placeholder-product-1.svg";
+    var hasDisc = p.originalPrice && p.originalPrice > p.price;
+    var disc = hasDisc ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+    var inWish = wishlist.some(function (w) { return (w.id || w) === p.id; });
+    var delay = 'style="animation-delay:' + (i % 6) * 0.06 + 's"';
+    var safeName = (p.name || "").replace(/'/g, "\\'");
+
+    // --- LOGIQUE DU LIEN SEO ---
+    // Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+    var pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
+    // ---------------------------
+
+    return (
+        '<div class="prd-card rv" ' + delay + ">" +
+        // MODIFICATION ICI : On utilise pUrl
+        '<a href="' + pUrl + '">' +
+        '<div class="prd-img-wrap">' +
+        (hasDisc ? '<span class="prd-disc-badge">-' + disc + "%</span>" : "") +
+        '<img class="prd-img" src="' + img + '" alt="' + (p.name || "") + '" loading="lazy" onerror="this.src=\'assets/img/placeholder-product-1.svg\'">' +
+        '<div class="prd-overlay"><button class="prd-quick" onclick="event.preventDefault();event.stopPropagation();if(typeof window.quickAdd===\'function\')window.quickAdd(\'' +
+        p.id + '\',\'' + safeName + '\',' + (p.price || 0) + ',\'' + img + '\',\'' + p.shopId + '\')"><span>+ Ajouter au panier</span></button></div>' +
+        '<button class="prd-wish' + (inWish ? " on" : "") + '" onclick="event.preventDefault();event.stopPropagation();toggleWish(\'' +
+        p.id + "',this,'" + safeName + "'," + (p.price || 0) + ",'" + img + '\')" title="Favoris"><svg viewBox="0 0 24 24" fill="' +
+        (inWish ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>' +
+        "</div></a>" +
+        '<div class="prd-body">' +
+        '<div class="prd-shop"><a class="prd-shop-name" href="' + (p.shopSlug ? '/boutique/' + p.shopSlug : '/boutique?id=' + p.shopId) + '">' + p.shopName + "</a></div>" +
+        // MODIFICATION ICI AUSSI : On utilise pUrl pour le nom du produit
+        '<a href="' + pUrl + '"><div class="prd-name">' + (p.name || "Produit") + "</div></a>" +
+        '<div class="prd-price-row"><span class="prd-price">' + fmt(p.price || 0) + "<span style=\"font-size:10px;font-family:'Syne';font-weight:400;margin-left:3px\">FCFA</span></span>" +
+        (hasDisc ? '<span class="prd-price-orig">' + fmt(p.originalPrice) + " FCFA</span>" : "") +
+        "</div>" +
+        (p.shopCity ? '<div class="prd-city">📍 ' + p.shopCity + "</div>" : "") +
+        "</div>" +
+        "</div>"
+    );
+})
       .join("");
 
     requestAnimationFrame(function () {

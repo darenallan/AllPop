@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const btn=document.querySelector('.hero-search-btn');
   const go=()=>{
     const q=(input?.value||'').trim();
-    window.location.href=q?`catalogue.html?q=${encodeURIComponent(q)}`:'catalogue.html';
+    window.location.href=q?`/catalogue?q=${encodeURIComponent(q)}`:`/catalogue`;
   };
   btn?.addEventListener('click',go);
   input?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}});

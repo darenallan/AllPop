@@ -9,6 +9,18 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      {
+        "source": "/product/**",
+        "destination": "/product.html"
+      },
+      {
+        "source": "/boutique/**",
+        "destination": "/boutique.html"
+      }
     ]
   }
 }

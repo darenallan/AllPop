@@ -86,7 +86,7 @@ function navTo(tabId, btn) {
 // ── Logout ───────────────────────────────────────────────────────
 function doLogout() {
   auth.signOut().then(() => {
-    window.location.href = "index.html";
+    window.location.href = "/";
   });
 }
 

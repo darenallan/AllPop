@@ -31,13 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
               if (returnUrl) { window.location.href = returnUrl; return; }
               var ADMIN_MAIL = 'aurumcorporate.d@gmail.com';
               if (email === ADMIN_MAIL || role === 'superadmin' || role === 'admin' || role === 'maintainer') {
-                window.location.href = 'theking.html';
+                window.location.href = '/theking';
               } else if (role === 'seller') {
-                window.location.href = 'seller.html';
+                window.location.href = '/seller';
               } else if (role === 'livreur') {
-                window.location.href = 'delivery.html';
+                window.location.href = '/delivery';
               } else {
-                window.location.href = 'index.html';
+                window.location.href = '/';
               }
             };
 

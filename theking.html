@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Administration — Sanhia</title>
+  <title>Administration - Sanhia</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="assets/js/components/header.js"></script>
+  <script src="/assets/js/components/header.js"></script>
 
   <!-- Anti-FOUC -->
   <style>
@@ -30,10 +30,10 @@
   </style>
 
 <style>
-/* ═══════════════════════════════════════════════════════════════
-   SANHIA — theking.html  (Admin Dashboard)
+/* ---------------------------------------------------------------
+   SANHIA / theking.html  (Admin Dashboard)
    Design : dark luxury, sidebar + main, Awwwards system
-   ═══════════════════════════════════════════════════════════════ */
+   --------------------------------------------------------------- */
 :root {
   --ink :#0B0A08;--ink2:#1A1916;--ink3:#2C2A27;--ink4:#3D3A35;
   --gold:#C8A84B;--gold2:#E2C56A;
@@ -49,7 +49,7 @@ a{text-decoration:none;color:inherit}
 button{font-family:'Syne',sans-serif;cursor:pointer}
 input,select,textarea{font-family:'Syne',sans-serif}
 
-/* ── SIDEBAR ───────────────────────────────────────────────── */
+/* -- SIDEBAR ------------------------------------------------- */
 .tk-sidebar{
   width:var(--sb-w);flex-shrink:0;height:100vh;
   display:flex;flex-direction:column;
@@ -109,7 +109,7 @@ input,select,textarea{font-family:'Syne',sans-serif}
 }
 .tk-mobile-toggle svg{width:18px;height:18px}
 
-/* ── MAIN ──────────────────────────────────────────────────── */
+/* -- MAIN ---------------------------------------------------- */
 .tk-main{flex:1;overflow-y:auto;height:100vh;background:var(--ink);display:flex;flex-direction:column}
 .tk-main::-webkit-scrollbar{width:3px}
 .tk-main::-webkit-scrollbar-thumb{background:rgba(200,168,75,.12)}
@@ -137,7 +137,7 @@ input,select,textarea{font-family:'Syne',sans-serif}
 .tk-sec-title{font-family:'Instrument Serif',serif;font-size:clamp(28px,3.5vw,44px);font-weight:400;color:var(--white);line-height:.92;letter-spacing:-.01em}
 .tk-sec-title em{font-style:italic;color:var(--gold)}
 
-/* ── STAT CARDS ──────────────────────────────────────────────── */
+/* -- STAT CARDS ------------------------------------------------ */
 .tk-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;margin-bottom:28px}
 @media(max-width:1400px){.tk-stats{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:900px){.tk-stats{grid-template-columns:1fr 1fr}}
@@ -146,12 +146,12 @@ input,select,textarea{font-family:'Syne',sans-serif}
 .tk-stat-num{font-family:'Unbounded',sans-serif;font-weight:900;font-size:30px;color:var(--gold);letter-spacing:-.03em;line-height:1;display:block;margin-bottom:6px}
 .tk-stat-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--smoke);font-weight:600}
 
-/* ── CARDS ───────────────────────────────────────────────────── */
+/* -- CARDS ----------------------------------------------------- */
 .tk-card{background:var(--ink2);border:1px solid rgba(200,168,75,.08);padding:24px 28px;margin-bottom:16px}
 .tk-card-title{font-family:'Instrument Serif',serif;font-size:20px;color:var(--white);margin-bottom:16px;display:flex;align-items:center;gap:10px}
 .tk-card-title svg{width:18px;height:18px;color:var(--gold);opacity:.8}
 
-/* ── FORMS ───────────────────────────────────────────────────── */
+/* -- FORMS ----------------------------------------------------- */
 .tk-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
 @media(max-width:700px){.tk-form-grid{grid-template-columns:1fr}}
 .tk-field{position:relative;margin-bottom:24px}
@@ -200,7 +200,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
 .tk-btn-outline::before{background:rgba(200,168,75,.08)}
 .tk-btn-outline:hover{color:var(--gold)}
 
-/* ── TABLE ───────────────────────────────────────────────────── */
+/* -- TABLE ----------------------------------------------------- */
 .tk-table-wrap{overflow-x:auto}
 .tk-table{width:100%;border-collapse:collapse}
 .tk-table th{padding:10px 14px;text-align:left;font-family:'Unbounded',sans-serif;font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--smoke);font-weight:700;background:var(--ink3);border-bottom:1px solid rgba(200,168,75,.08)}
@@ -212,7 +212,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
 .tk-table-search input{flex:1;background:none;border:none;outline:none;font-family:'Syne',sans-serif;font-size:12px;color:var(--white);padding:9px 0}
 .tk-table-search input::placeholder{color:var(--ash)}
 
-/* ── CHIPS / BADGES ──────────────────────────────────────────── */
+/* -- CHIPS / BADGES -------------------------------------------- */
 .tk-chip{display:inline-block;padding:3px 10px;font-family:'Unbounded',sans-serif;font-size:7px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border:1px solid}
 .tk-chip.active,.tk-chip.ok{color:var(--ok);border-color:rgba(74,158,114,.3);background:rgba(74,158,114,.08)}
 .tk-chip.inactive,.tk-chip.danger{color:var(--danger);border-color:rgba(217,79,79,.3);background:rgba(217,79,79,.06)}
@@ -223,30 +223,30 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
 .tk-chip.superadmin{color:#EC4899;border-color:rgba(236,72,153,.3);background:rgba(236,72,153,.07)}
 .tk-chip.livreur{color:var(--warn);border-color:rgba(200,129,58,.3);background:rgba(200,129,58,.07)}
 
-/* ── INLINE ROW ACTIONS ──────────────────────────────────────── */
+/* -- INLINE ROW ACTIONS ---------------------------------------- */
 .tk-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 
-/* ── GRID 2 cols ─────────────────────────────────────────────── */
+/* -- GRID 2 cols ----------------------------------------------- */
 .tk-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:900px){.tk-grid-2{grid-template-columns:1fr}}
 
-/* ── EMPTY STATE ─────────────────────────────────────────────── */
+/* -- EMPTY STATE ----------------------------------------------- */
 .tk-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center}
 .tk-empty-icon{width:56px;height:56px;border:1px solid rgba(200,168,75,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:rgba(200,168,75,.3)}
 .tk-empty-title{font-family:'Instrument Serif',serif;font-size:20px;color:rgba(254,252,248,.2);margin-bottom:6px}
 .tk-empty-sub{font-size:12px;color:var(--smoke);line-height:1.5}
 
-/* ── SPINNER ─────────────────────────────────────────────────── */
+/* -- SPINNER --------------------------------------------------- */
 .tk-spinner{display:flex;align-items:center;justify-content:center;padding:48px}
 .tk-spin{width:22px;height:22px;border:1.5px solid rgba(200,168,75,.15);border-top-color:var(--gold);border-radius:50%;animation:tkspin .7s linear infinite}
 
-/* ── TOAST ───────────────────────────────────────────────────── */
+/* -- TOAST ----------------------------------------------------- */
 #tk-toasts{position:fixed;bottom:22px;right:22px;z-index:99995;display:flex;flex-direction:column;gap:8px}
 .tk-toast{min-width:260px;padding:12px 17px;background:var(--ink2);border-left:3px solid var(--gold);font-size:12px;font-weight:600;color:var(--white);animation:toastIn .32s cubic-bezier(.16,1,.3,1);box-shadow:0 14px 40px rgba(0,0,0,.6)}
 .tk-toast.ok{border-left-color:var(--ok)}.tk-toast.err{border-left-color:var(--danger)}.tk-toast.warn{border-left-color:var(--warn)}
 @keyframes toastIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
 
-/* ── MODAL ───────────────────────────────────────────────────── */
+/* -- MODAL ----------------------------------------------------- */
 .tk-overlay{position:fixed;inset:0;background:rgba(11,10,8,.88);z-index:9000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .tk-overlay.open{display:flex}
 .tk-modal{background:var(--ink2);border:1px solid rgba(200,168,75,.15);max-width:500px;width:90%;padding:36px;animation:modalIn .3s cubic-bezier(.16,1,.3,1)}
@@ -260,13 +260,13 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
 .tk-modal-cancel{flex:1;padding:12px;background:none;border:1px solid rgba(200,168,75,.2);font-family:'Unbounded',sans-serif;font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--smoke);transition:all .2s}
 .tk-modal-cancel:hover{color:var(--white);border-color:var(--smoke)}
 
-/* ── INFO BOX ────────────────────────────────────────────────── */
+/* -- INFO BOX -------------------------------------------------- */
 .tk-infobox{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:rgba(74,132,200,.06);border:1px solid rgba(74,132,200,.15);margin-bottom:20px}
 .tk-infobox svg{width:15px;height:15px;color:var(--info);flex-shrink:0;margin-top:2px}
 .tk-infobox-txt{font-size:12px;color:rgba(254,252,248,.6);line-height:1.6}
 .tk-infobox-txt strong{color:var(--white);font-weight:600}
 
-/* ── DASHBOARD ACTIVITY ──────────────────────────────────────── */
+/* -- DASHBOARD ACTIVITY ---------------------------------------- */
 .tk-activity{display:flex;flex-direction:column;gap:2px}
 .tk-activity-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.03);transition:background .2s}
 .tk-activity-item:hover{background:rgba(200,168,75,.03)}
@@ -276,7 +276,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
 .tk-activity-text strong{color:var(--white);font-weight:600}
 .tk-activity-time{font-size:10px;color:var(--ash);flex-shrink:0}
 
-/* ── RESPONSIVE ──────────────────────────────────────────────── */
+/* -- RESPONSIVE ------------------------------------------------ */
 @media(max-width:900px){
   body{flex-direction:column;overflow:auto}
   .tk-sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);transition:transform .32s cubic-bezier(.16,1,.3,1)}
@@ -294,7 +294,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
 <script>
 (function(){
   var w=document.createElement('div');w.id='tk-wall';
-  w.innerHTML='<div class="tk-wl">AUR<span>U</span>M</div><div class="tk-ws"></div><div class="tk-wsp"></div><div class="tk-wt" id="tk-wall-txt">Vérification en cours…</div>';
+  w.innerHTML='<div class="tk-wl">AUR<span>U</span>M</div><div class="tk-ws"></div><div class="tk-wsp"></div><div class="tk-wt" id="tk-wall-txt">Vérification en cours...</div>';
   document.body.insertBefore(w,document.body.firstChild);
 })();
 </script>
@@ -305,7 +305,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
 <div class="tk-overlay" id="modal-order">
   <div class="tk-modal">
     <h3 class="tk-modal-title">Détails de la<br><em>commande</em></h3>
-    <div class="tk-modal-body" id="modal-order-body">—</div>
+    <div class="tk-modal-body" id="modal-order-body">-</div>
     <div class="tk-modal-actions">
       <button class="tk-modal-cancel" onclick="closeModal('modal-order')">Fermer</button>
       <button class="tk-btn tk-btn-sm tk-btn-ok" id="modal-order-approve-btn" onclick="approveFromModal()">
@@ -332,7 +332,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
 </button>
 
-<!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
+<!-- -- SIDEBAR -------------------------------------------------- -->
 <aside class="tk-sidebar">
   <div class="tk-sb-brand">
     <div class="tk-sb-logo">AUR<span>U</span>M</div>
@@ -413,27 +413,27 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
   </div>
 </aside>
 
-<!-- ══ MAIN ══════════════════════════════════════════════════════ -->
+<!-- -- MAIN ------------------------------------------------------ -->
 <main class="tk-main">
 
   <div class="tk-topbar">
     <div class="tk-topbar-title" id="topbar-title">Tableau de <em>bord</em></div>
-    <span class="tk-topbar-date" id="topbar-date">—</span>
+    <span class="tk-topbar-date" id="topbar-date">-</span>
   </div>
 
-  <!-- ── DASHBOARD ─────────────────────────────────────────────── -->
+  <!-- -- DASHBOARD ----------------------------------------------- -->
   <section class="tk-section active" id="sec-dashboard">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Vue d'ensemble</div>
       <h2 class="tk-sec-title">Tableau de<br><em>bord</em></h2>
     </div>
     <div class="tk-stats" id="tk-stats">
-      <div class="tk-stat"><span class="tk-stat-num" id="s-shops">—</span><span class="tk-stat-lbl">Boutiques</span></div>
-      <div class="tk-stat"><span class="tk-stat-num" id="s-users">—</span><span class="tk-stat-lbl">Utilisateurs</span></div>
-      <div class="tk-stat"><span class="tk-stat-num" id="s-products">—</span><span class="tk-stat-lbl">Produits</span></div>
-      <div class="tk-stat"><span class="tk-stat-num" id="s-orders">—</span><span class="tk-stat-lbl">Commandes</span></div>
-      <div class="tk-stat"><span class="tk-stat-num" id="s-amount" style="font-size:18px">—</span><span class="tk-stat-lbl">Chiffre d'affaires</span></div>
-      <div class="tk-stat"><span class="tk-stat-num" id="s-promos">—</span><span class="tk-stat-lbl">Codes promo</span></div>
+      <div class="tk-stat"><span class="tk-stat-num" id="s-shops">0</span><span class="tk-stat-lbl">Boutiques</span></div>
+      <div class="tk-stat"><span class="tk-stat-num" id="s-users">0</span><span class="tk-stat-lbl">Utilisateurs</span></div>
+      <div class="tk-stat"><span class="tk-stat-num" id="s-products">0</span><span class="tk-stat-lbl">Produits</span></div>
+      <div class="tk-stat"><span class="tk-stat-num" id="s-orders">0</span><span class="tk-stat-lbl">Commandes</span></div>
+      <div class="tk-stat"><span class="tk-stat-num" id="s-amount" style="font-size:18px">0</span><span class="tk-stat-lbl">Chiffre d'affaires</span></div>
+      <div class="tk-stat"><span class="tk-stat-num" id="s-promos">0</span><span class="tk-stat-lbl">Codes promo</span></div>
     </div>
     <div class="tk-grid-2">
       <div class="tk-card">
@@ -457,7 +457,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
   </section>
 
-  <!-- ── COMMANDES ──────────────────────────────────────────────── -->
+  <!-- -- COMMANDES ------------------------------------------------ -->
   <section class="tk-section" id="sec-orders">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Validation admin</div>
@@ -466,7 +466,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     <div class="tk-card">
       <div class="tk-table-search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="orders-search" type="text" placeholder="Rechercher une commande…"/>
+        <input id="orders-search" type="text" placeholder="Rechercher une commande"/>
       </div>
       <div class="tk-table-wrap">
         <table class="tk-table">
@@ -480,12 +480,12 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
       <div id="orders-empty" class="tk-empty" style="display:none">
         <div class="tk-empty-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
         <div class="tk-empty-title">Aucune commande en attente</div>
-        <div class="tk-empty-sub">Les nouvelles commandes apparaîtront ici dès réception.</div>
+        <div class="tk-empty-sub">Les nouvelles commandes apparaétront ici dés réception.</div>
       </div>
     </div>
   </section>
 
-  <!-- ── CANDIDATURES ───────────────────────────────────────────── -->
+  <!-- -- CANDIDATURES --------------------------------------------- -->
   <section class="tk-section" id="sec-applications">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Partenariat vendeur</div>
@@ -496,7 +496,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
   </section>
 
-  <!-- ── CRÉER VENDEUR ─────────────────────────────────────────── -->
+  <!-- -- CRéER VENDEUR ------------------------------------------- -->
   <section class="tk-section" id="sec-sellers">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Gestion vendeurs</div>
@@ -507,7 +507,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
         <div class="tk-form-grid">
           <div class="tk-field">
             <label class="tk-label">Nom complet<span class="tk-req">*</span></label>
-            <input id="sel-name" class="tk-input" required placeholder="Ex: Jean OUÉDRAOGO"/>
+            <input id="sel-name" class="tk-input" required placeholder="Ex: Jean OUéDRAOGO"/>
             <div class="tk-input-line"></div>
           </div>
           <div class="tk-field">
@@ -521,8 +521,8 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
             <div class="tk-input-line"></div>
           </div>
           <div class="tk-field">
-            <label class="tk-label">Mot de passe<span class="tk-req">*</span></label>
-            <input id="sel-pass" class="tk-input" type="password" required placeholder="••••••••"/>
+            <label class="tk-label">mot de passe<span class="tk-req">*</span></label>
+            <input id="sel-pass" class="tk-input" type="password" required placeholder="Mot de passe"/>
             <div class="tk-input-line"></div>
           </div>
         </div>
@@ -534,7 +534,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
   </section>
 
-  <!-- ── CERTIFIER LIVREUR ─────────────────────────────────────── -->
+  <!-- -- CERTIFIER LIVREUR --------------------------------------- -->
   <section class="tk-section" id="sec-delivery">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Certification livreur</div>
@@ -551,10 +551,10 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
             <label class="tk-label">Email du client<span class="tk-req">*</span></label>
             <input id="del-email" class="tk-input" type="email" required placeholder="client@example.com"/>
             <div class="tk-input-line"></div>
-            <span class="tk-small">Le compte doit déjà exister dans Firebase</span>
+            <span class="tk-small">Le compte doit déjé exister dans Firebase</span>
           </div>
           <div class="tk-field">
-            <label class="tk-label">Mot de passe du client<span class="tk-req">*</span></label>
+            <label class="tk-label">mot de passe du client<span class="tk-req">*</span></label>
             <input id="del-password" class="tk-input" type="password" required placeholder="Pour vérifier l'identité"/>
             <div class="tk-input-line"></div>
           </div>
@@ -581,7 +581,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
   </section>
 
-  <!-- ── BOUTIQUES ─────────────────────────────────────────────── -->
+  <!-- -- BOUTIQUES ----------------------------------------------- -->
   <section class="tk-section" id="sec-shops">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Gestion boutiques</div>
@@ -604,7 +604,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
           <div class="tk-field">
             <label class="tk-label">Catégorie<span class="tk-req">*</span></label>
             <select id="shop-cat-select" class="tk-input" required>
-              <option value="">Choisir une catégorie…</option>
+              <option value="">Choisir une catégorieé</option>
             </select>
             <div class="tk-input-line"></div>
           </div>
@@ -637,7 +637,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
   </section>
 
-  <!-- ── PRODUITS ──────────────────────────────────────────────── -->
+  <!-- -- PRODUITS ------------------------------------------------ -->
   <section class="tk-section" id="sec-products">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Gestion catalogue</div>
@@ -645,10 +645,10 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
     <div class="tk-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap">
-        <span id="products-count" style="font-size:11px;color:var(--smoke);letter-spacing:.08em">— produits</span>
+        <span id="products-count" style="font-size:11px;color:var(--smoke);letter-spacing:.08em">0 produits</span>
         <div class="tk-table-search" style="flex:1;max-width:320px">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input id="products-search" type="text" placeholder="Rechercher…"/>
+          <input id="products-search" type="text" placeholder="Rechercheré"/>
         </div>
       </div>
       <div class="tk-table-wrap">
@@ -667,7 +667,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
   </section>
 
-  <!-- ── CATÉGORIES ─────────────────────────────────────────────── -->
+  <!-- -- CATéGORIES ----------------------------------------------- -->
   <section class="tk-section" id="sec-categories">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Taxonomie</div>
@@ -692,16 +692,16 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
   </section>
 
-  <!-- ── COMPTES ────────────────────────────────────────────────── -->
+  <!-- -- COMPTES -------------------------------------------------- -->
   <section class="tk-section" id="sec-users">
     <div class="tk-sec-head">
-      <div class="tk-sec-eyebrow">Gestion des accès</div>
+      <div class="tk-sec-eyebrow">Gestion des accés</div>
       <h2 class="tk-sec-title">Comptes<br><em>utilisateurs</em></h2>
     </div>
     <div class="tk-card">
       <div class="tk-table-search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="users-search" type="text" placeholder="Rechercher un utilisateur…"/>
+        <input id="users-search" type="text" placeholder="Rechercher un utilisateuré"/>
       </div>
       <div id="users-list">
         <div class="tk-spinner"><div class="tk-spin"></div></div>
@@ -709,7 +709,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
   </section>
 
-  <!-- ── PROMOS ─────────────────────────────────────────────────── -->
+  <!-- -- PROMOS --------------------------------------------------- -->
   <section class="tk-section" id="sec-promos">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Marketing</div>
@@ -746,7 +746,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
   </section>
 
-  <!-- ── NEWSLETTER ─────────────────────────────────────────────── -->
+  <!-- -- NEWSLETTER ----------------------------------------------- -->
   <section class="tk-section" id="sec-newsletter">
     <div class="tk-sec-head">
       <div class="tk-sec-eyebrow">Base d'emails</div>
@@ -754,7 +754,7 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
     </div>
     <div class="tk-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px">
-        <span id="newsletter-count" style="font-size:11px;color:var(--smoke)">— inscrits</span>
+        <span id="newsletter-count" style="font-size:11px;color:var(--smoke)">0 inscrits</span>
         <button class="tk-btn tk-btn-sm tk-btn-outline" onclick="exportNewsletterCSV()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span>Exporter CSV</span>
@@ -774,12 +774,12 @@ textarea.tk-input{resize:vertical;min-height:90px;line-height:1.55;padding:11px 
 
 </main>
 <script>
-/* ═══════════════════════════════════════════════════════════════
-   SANHIA — theking.html  (Admin logic)
-   Logique métier complète + design Sanhia
-   ═══════════════════════════════════════════════════════════════ */
+/* ---------------------------------------------------------------
+   SANHIA – theking.html  (Admin logic)
+   Logique métier compléte + design Sanhia
+   --------------------------------------------------------------- */
 
-// ── Firebase ─────────────────────────────────────────────────────
+// -- Firebase -----------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyBGmPM4OXEonp7qL78x20NC2DXvQW0lavU",
   authDomain: "aurum-bf.firebaseapp.com",
@@ -794,7 +794,7 @@ const auth = firebase.auth();
 window.db = db; window.auth = auth;
 const ADMIN_EMAIL = 'aurumcorporate.d@gmail.com';
 
-// ── Wall helpers ─────────────────────────────────────────────────
+// -- Wall helpers -------------------------------------------------
 function wallStatus(t) { const el=document.getElementById('tk-wall-txt'); if(el) el.textContent=t; }
 function wallReveal() {
   document.body.classList.remove('tk-guarded');
@@ -803,7 +803,7 @@ function wallReveal() {
   if(w){w.classList.add('hiding');setTimeout(()=>w.remove(),400);}
 }
 function wallDeny(opts={}) {
-  wallStatus('Accès refusé');
+  wallStatus('Accés refusé');
   setTimeout(()=>{
     document.getElementById('tk-wall').remove();
     document.body.classList.remove('tk-guarded');
@@ -813,7 +813,7 @@ function wallDeny(opts={}) {
         <div style="width:68px;height:68px;border:1px solid rgba(217,79,79,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;color:rgba(217,79,79,.5)">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         </div>
-        <h2 style="font-family:'Instrument Serif',serif;font-size:40px;color:rgba(254,252,248,.2);margin-bottom:12px">Accès Refusé</h2>
+        <h2 style="font-family:'Instrument Serif',serif;font-size:40px;color:rgba(254,252,248,.2);margin-bottom:12px">Accés Refusé</h2>
         <p style="font-size:13px;color:#7A7570;max-width:360px;line-height:1.6;margin-bottom:28px">${opts.reason||'Zone réservée aux administrateurs Sanhia.'}</p>
         <a href="${opts.redirectUrl||'index.html'}" style="display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:#C8A84B;color:#0B0A08;font-family:'Unbounded',sans-serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;text-decoration:none">
           ${opts.redirectLabel||"Retour à l'accueil"}
@@ -822,7 +822,7 @@ function wallDeny(opts={}) {
   },400);
 }
 
-// ── Toast ─────────────────────────────────────────────────────────
+// -- Toast ---------------------------------------------------------
 function toast(msg,type='') {
   const z=document.getElementById('tk-toasts');
   const el=document.createElement('div');
@@ -832,12 +832,12 @@ function toast(msg,type='') {
 }
 window.showToast=(m,t)=>toast(m,t==='success'?'ok':t==='error'?'err':t||'');
 
-// ── Modal helpers ─────────────────────────────────────────────────
+// -- Modal helpers -------------------------------------------------
 function openModal(id){document.getElementById(id).classList.add('open')}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 window.closeModal=closeModal;
 
-// ── Nav ───────────────────────────────────────────────────────────
+// -- Nav -----------------------------------------------------------
 const TITLES={
   dashboard:'Tableau de <em>bord</em>',
   orders:'Commandes en <em>attente</em>',
@@ -861,32 +861,32 @@ window.nav = function(sec,btn) {
   document.querySelector('.tk-sidebar').classList.remove('open');
 };
 
-// ── Date ─────────────────────────────────────────────────────────
+// -- Date ---------------------------------------------------------
 (function(){
   const el=document.getElementById('topbar-date');
   if(el) el.textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 })();
 
-// ── Logout ───────────────────────────────────────────────────────
+// -- Logout -------------------------------------------------------
 window.doLogout=function(){
   if(confirm('Confirmer la déconnexion ?'))
-    auth.signOut().then(()=>window.location.href='index.html');
+    auth.signOut().then(()=>window.location.href='/');
 };
 
-// ── Format helpers ────────────────────────────────────────────────
+// -- Format helpers ------------------------------------------------
 function fmtMoney(v){ return new Intl.NumberFormat('fr-FR').format(v||0)+' FCFA'; }
 function fmtDate(ts,opts={day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}){
-  if(!ts) return '—';
+  if(!ts) return '-';
   const d=ts.toDate?ts.toDate():(ts.seconds?new Date(ts.seconds*1000):new Date(ts));
   return d.toLocaleDateString('fr-FR',opts);
 }
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function ordRef(o){return o.reference||('AUR-'+o.id.slice(-6).toUpperCase());}
 
-// ── Store ─────────────────────────────────────────────────────────
+// -- Store ---------------------------------------------------------
 const Store={shops:[],users:[],promos:[],categories:[],products:[],orders:[],newsletter:[],applications:[]};
 
-// ── STATS ─────────────────────────────────────────────────────────
+// -- STATS ---------------------------------------------------------
 function updateStats(){
   const total=Store.orders.reduce((a,o)=>{
     if(o.amount) return a+(parseFloat(o.amount)||0);
@@ -910,7 +910,7 @@ function updateStats(){
   if(badgeA){badgeA.textContent=apps;badgeA.classList.toggle('show',apps>0);}
 }
 
-// ── DASHBOARD URGENTES ────────────────────────────────────────────
+// -- DASHBOARD URGENTES --------------------------------------------
 function renderDashUrgent(){
   const el=document.getElementById('dash-urgent');
   if(!el) return;
@@ -920,7 +920,7 @@ function renderDashUrgent(){
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)">
       <div>
         <div style="font-size:12px;font-weight:600;color:var(--white)">${ordRef(o)}</div>
-        <div style="font-size:11px;color:var(--smoke)">${o.userEmail||'—'} · ${fmtDate(o.createdAt)}</div>
+        <div style="font-size:11px;color:var(--smoke)">${o.userEmail||''} • ${fmtDate(o.createdAt)}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-family:'Unbounded',sans-serif;font-size:11px;color:var(--gold);font-weight:900">${fmtMoney(o.total)}</span>
@@ -929,7 +929,7 @@ function renderDashUrgent(){
     </div>`).join('');
 }
 
-// ── DASHBOARD ACTIVITY ────────────────────────────────────────────
+// -- DASHBOARD ACTIVITY --------------------------------------------
 function renderDashActivity(){
   const el=document.getElementById('dash-activity');
   if(!el) return;
@@ -949,7 +949,7 @@ function renderDashActivity(){
     </div>`).join('');
 }
 
-// ── COMMANDES ────────────────────────────────────────────────────
+// -- COMMANDES ----------------------------------------------------
 function renderOrders(){
   const tbody=document.getElementById('orders-tbody');
   const empty=document.getElementById('orders-empty');
@@ -960,8 +960,8 @@ function renderOrders(){
   tbody.innerHTML=pending.map(o=>`
     <tr>
       <td><strong style="color:var(--gold)">${ordRef(o)}</strong></td>
-      <td>AUR-${o.invoiceNumber||'—'}</td>
-      <td style="font-size:12px">${escHtml(o.userEmail||'—')}</td>
+      <td>AUR-${o.invoiceNumber||''}</td>
+      <td style="font-size:12px">${escHtml(o.userEmail||'')}</td>
       <td><span style="font-family:'Unbounded',sans-serif;font-size:11px;color:var(--gold)">${fmtMoney(o.total)}</span></td>
       <td style="font-size:11px;color:var(--smoke)">${fmtDate(o.createdAt)}</td>
       <td><span class="tk-chip pending">En attente</span></td>
@@ -984,7 +984,7 @@ window.approveOrder=async function(id){
   if(!o) return;
   document.getElementById('modal-order-body').innerHTML=`
     <strong>Référence</strong>${ordRef(o)}<br>
-    <strong style="margin-top:8px;display:block">Client</strong>${escHtml(o.userEmail||'—')}<br>
+    <strong style="margin-top:8px;display:block">Client</strong>${escHtml(o.userEmail||'Client Sanhia')}<br>
     <strong style="margin-top:8px;display:block">Total</strong>${fmtMoney(o.total)}<br>
     <strong style="margin-top:8px;display:block">Date</strong>${fmtDate(o.createdAt)}`;
   openModal('modal-order');
@@ -1000,7 +1000,7 @@ window.approveFromModal=async function(){
       approvedAt:firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
     });
-    toast('Commande approuvée et transférée au vendeur ✓','ok');
+    toast('Commande approuvée et transférée au vendeur ?','ok');
     closeModal('modal-order');
     _currentOrderId=null;
   }catch(err){toast(err.message,'err');}
@@ -1010,12 +1010,12 @@ window.viewOrderDetails=function(id){
   _currentOrderId=null;
   const o=Store.orders.find(x=>x.id===id);
   if(!o) return;
-  const items=(o.items||[]).map(i=>`${i.qty||1}× ${escHtml(i.name)} — ${fmtMoney((i.price||0)*(i.qty||1))}`).join('<br>');
+  const items=(o.items||[]).map(i=>`${i.qty||1}× ${escHtml(i.name)} – ${fmtMoney((i.price||0)*(i.qty||1))}`).join('<br>');
   const addr=o.deliveryAddress?Object.values(o.deliveryAddress).filter(Boolean).join(', '):'Non spécifiée';
   document.getElementById('modal-order-body').innerHTML=`
     <strong>Référence</strong>${ordRef(o)}<br>
-    <strong style="margin-top:8px;display:block">Client</strong>${escHtml(o.userEmail||'—')}<br>
-    <strong style="margin-top:8px;display:block">Articles</strong>${items||'—'}<br>
+    <strong style="margin-top:8px;display:block">Client</strong>${escHtml(o.userEmail||'Client Sanhia')}<br>
+    <strong style="margin-top:8px;display:block">Articles</strong>${items||''}<br>
     <strong style="margin-top:8px;display:block">Livraison</strong>${fmtMoney(o.shippingFee||0)}<br>
     <strong style="margin-top:8px;display:block">Total</strong>${fmtMoney(o.total)}<br>
     <strong style="margin-top:8px;display:block">Adresse</strong>${escHtml(addr)}`;
@@ -1023,22 +1023,22 @@ window.viewOrderDetails=function(id){
   openModal('modal-order');
 };
 
-// ── CANDIDATURES ─────────────────────────────────────────────────
+// -- CANDIDATURES -------------------------------------------------
 function renderApplications(){
   const el=document.getElementById('applications-list');
   if(!el) return;
   const pending=Store.applications.filter(a=>a.status==='pending');
   if(!pending.length){
-    el.innerHTML='<div class="tk-empty"><div class="tk-empty-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="tk-empty-title">Aucune candidature en attente</div><div class="tk-empty-sub">Les nouvelles candidatures vendeurs apparaîtront ici.</div></div>';
+    el.innerHTML='<div class="tk-empty"><div class="tk-empty-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="tk-empty-title">Aucune candidature en attente</div><div class="tk-empty-sub">Les nouvelles candidatures vendeurs apparaétront ici.</div></div>';
     return;
   }
   el.innerHTML=pending.map(a=>`
     <div style="padding:16px 20px;background:var(--ink3);border:1px solid rgba(200,168,75,.08);margin-bottom:2px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
       <div style="flex:1;min-width:200px">
-        <div style="font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px">${escHtml(a.shop_name||'—')}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px">${escHtml(a.shop_name||'')}</div>
         <div style="font-size:11px;color:var(--smoke);line-height:1.5">
-          ${escHtml(a.owner_name||'—')} · ${escHtml(a.email||'—')}<br>
-          ${escHtml(a.phone||'—')} · ${escHtml(a.categories||'—')}<br>
+          ${escHtml(a.owner_name||'')} • ${escHtml(a.email||'')}<br>
+          ${escHtml(a.phone||'')} • ${escHtml(a.categories||'')}<br>
           <span style="color:var(--ash)">${fmtDate(a.createdAt)}</span>
         </div>
       </div>
@@ -1057,7 +1057,7 @@ window.approveApplication=async function(id,shopName,ownerName,email){
       approvedAt:firebase.firestore.FieldValue.serverTimestamp(),
       approvedBy:auth.currentUser.uid,
     });
-    toast(`Candidature de "${shopName}" approuvée ✓`,'ok');
+    toast(`Candidature de "${shopName}" approuvée ?`,'ok');
   }catch(err){toast(err.message,'err');}
 };
 window.rejectApplication=async function(id){
@@ -1071,7 +1071,7 @@ window.rejectApplication=async function(id){
   }catch(err){toast(err.message,'err');}
 };
 
-// ── BOUTIQUES ─────────────────────────────────────────────────────
+// -- BOUTIQUES -----------------------------------------------------
 function renderShops(){
   const el=document.getElementById('shops-list');
   if(!el) return;
@@ -1081,7 +1081,7 @@ function renderShops(){
     return `<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:12px">
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px">${escHtml(s.name)}</div>
-        <div style="font-size:11px;color:var(--smoke);line-height:1.4">${escHtml(s.category||'—')} · ${escHtml(s.ownerEmail||'—')}</div>
+        <div style="font-size:11px;color:var(--smoke);line-height:1.4">${escHtml(s.category||'')} • ${escHtml(s.ownerEmail||'')}</div>
       </div>
       <div class="tk-actions" style="flex-shrink:0">
         <span class="tk-chip ${active?'ok':'danger'}">${active?'Active':'Inactive'}</span>
@@ -1102,7 +1102,7 @@ window.deleteShop=async function(id,name){
   }catch(err){toast(err.message,'err');}
 };
 
-// ── PRODUITS ──────────────────────────────────────────────────────
+// -- PRODUITS ------------------------------------------------------
 function renderProducts(){
   const tbody=document.getElementById('products-tbody');
   const empty=document.getElementById('products-empty');
@@ -1117,11 +1117,11 @@ function renderProducts(){
     const stockChip=stock>10?'ok':stock>0?'warn':'danger';
     return `<tr>
       <td><img src="${escHtml(img)}" style="width:48px;height:48px;object-fit:cover;background:var(--ink3)" onerror="this.style.background='var(--ink3)';this.src=''"></td>
-      <td><div style="font-weight:600;color:var(--white);font-size:13px">${escHtml(p.name||'—')}</div><div style="font-size:10px;color:var(--ash)">SKU: ${escHtml(p.sku||'—')}</div></td>
-      <td><span class="tk-chip gold">${escHtml(p.category||'—')}</span></td>
+      <td><div style="font-weight:600;color:var(--white);font-size:13px">${escHtml(p.name||'')}</div><div style="font-size:10px;color:var(--ash)">SKU: ${escHtml(p.sku||'')}</div></td>
+      <td><span class="tk-chip gold">${escHtml(p.category||'')}</span></td>
       <td style="font-family:'Unbounded',sans-serif;font-size:11px;color:var(--gold)">${fmtMoney(p.price)}</td>
       <td><span class="tk-chip ${stockChip}">${stock} unités</span></td>
-      <td style="font-size:12px;color:var(--smoke)">${escHtml(p.shopName||'—')}</td>
+      <td style="font-size:12px;color:var(--smoke)">${escHtml(p.shopName||'')}</td>
       <td style="text-align:center"><button class="tk-btn tk-btn-sm tk-btn-danger" onclick="deleteProduct('${p.id}','${escHtml(p.name||'')}')"><span>Supprimer</span></button></td>
     </tr>`;
   }).join('');
@@ -1135,13 +1135,13 @@ window.deleteProduct=function(id,name){
   });
 };
 
-// ── CATÉGORIES ────────────────────────────────────────────────────
+// -- CATéGORIES ----------------------------------------------------
 function renderCategories(){
   const el=document.getElementById('categories-list');
   const sel=document.getElementById('shop-cat-select');
   if(!el) return;
   if(sel){
-    sel.innerHTML='<option value="">Choisir une catégorie…</option>'+
+    sel.innerHTML='<option value="">Choisir une catégorieé</option>'+
       Store.categories.map(c=>`<option value="${escHtml(c.name)}">${escHtml(c.name)}</option>`).join('');
   }
   if(!Store.categories.length){el.innerHTML='<div class="tk-empty"><div class="tk-empty-title">Aucune catégorie</div></div>';return;}
@@ -1155,7 +1155,7 @@ window.deleteItem=function(col,id){
   confirmDelete('Supprimer cet élément ?',()=>db.collection(col).doc(id).delete().then(()=>toast('Supprimé','ok')));
 };
 
-// ── UTILISATEURS ─────────────────────────────────────────────────
+// -- UTILISATEURS -------------------------------------------------
 function renderUsers(){
   const el=document.getElementById('users-list');
   if(!el) return;
@@ -1166,11 +1166,11 @@ function renderUsers(){
     const chip=roleChip[u.role]||'gold';
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:12px;flex-wrap:wrap">
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px">${escHtml(u.name||u.email||'—')}</div>
-        <div style="font-size:11px;color:var(--smoke)">${escHtml(u.email||'—')}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px">${escHtml(u.name||u.email||'')}</div>
+        <div style="font-size:11px;color:var(--smoke)">${escHtml(u.email||'')}</div>
       </div>
       <div class="tk-actions">
-        <span class="tk-chip ${chip}">${escHtml(u.role||'—')}</span>
+        <span class="tk-chip ${chip}">${escHtml(u.role||'')}</span>
         ${isAdmin
           ?'<span style="font-size:10px;color:var(--ash);padding:4px 8px;border:1px solid rgba(255,255,255,.05)">Protégé</span>'
           :`<button class="tk-btn tk-btn-sm tk-btn-danger" onclick="deleteUser('${u.id}','${escHtml(u.name||u.email||'')}','${escHtml(u.email||'')}')"><span>Supprimer</span></button>`
@@ -1189,7 +1189,7 @@ window.deleteUser=async function(id,name,email){
   });
 };
 
-// ── LIVREURS ─────────────────────────────────────────────────────
+// -- LIVREURS -----------------------------------------------------
 function renderDelivery(){
   const el=document.getElementById('delivery-list');
   if(!el) return;
@@ -1199,8 +1199,8 @@ function renderDelivery(){
     const active=d.status==='active';
     return `<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:12px;flex-wrap:wrap">
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px">${escHtml(d.name||'—')}</div>
-        <div style="font-size:11px;color:var(--smoke);line-height:1.5">${escHtml(d.email||'—')}<br>${d.zone?'Zone: '+escHtml(d.zone):'—'}<br>Certifié le ${fmtDate(d.certifiedAt,{day:'2-digit',month:'2-digit',year:'numeric'})}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px">${escHtml(d.name||'')}</div>
+        <div style="font-size:11px;color:var(--smoke);line-height:1.5">${escHtml(d.email||'')}<br>${d.zone?'Zone: '+escHtml(d.zone):'-'}<br>Certifié le ${fmtDate(d.certifiedAt,{day:'2-digit',month:'2-digit',year:'numeric'})}</div>
       </div>
       <div class="tk-actions">
         <span class="tk-chip ${active?'ok':'danger'}">${active?'Actif':'Inactif'}</span>
@@ -1215,7 +1215,7 @@ window.toggleDelivery=async function(id,current){
   catch(err){toast(err.message,'err');}
 };
 
-// ── PROMOS ───────────────────────────────────────────────────────
+// -- PROMOS -------------------------------------------------------
 function renderPromos(){
   const el=document.getElementById('promos-list');
   if(!el) return;
@@ -1225,7 +1225,7 @@ function renderPromos(){
     const expired=p.expires&&p.expires<today;
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04);gap:12px;${expired?'opacity:.5':''}">
       <div>
-        <div style="font-family:'Unbounded',sans-serif;font-size:12px;color:var(--gold);font-weight:700;${expired?'text-decoration:line-through':''}">-${p.percent}% · ${escHtml(p.code)}</div>
+        <div style="font-family:'Unbounded',sans-serif;font-size:12px;color:var(--gold);font-weight:700;${expired?'text-decoration:line-through':'?'}">-${p.percent}% – ${escHtml(p.code)}</div>
         <div style="font-size:10px;color:var(--smoke);margin-top:3px">${p.expires?'Expire: '+p.expires:'Sans date'}</div>
       </div>
       <div class="tk-actions">
@@ -1236,7 +1236,7 @@ function renderPromos(){
   }).join('');
 }
 
-// ── NEWSLETTER ───────────────────────────────────────────────────
+// -- NEWSLETTER ---------------------------------------------------
 function renderNewsletter(){
   const tbody=document.getElementById('newsletter-tbody');
   const empty=document.getElementById('newsletter-empty');
@@ -1247,7 +1247,7 @@ function renderNewsletter(){
   if(empty) empty.style.display='none';
   tbody.innerHTML=Store.newsletter.map(e=>`
     <tr>
-      <td>${escHtml(e.email||'—')}</td>
+      <td>${escHtml(e.email||'')}</td>
       <td style="font-size:11px;color:var(--smoke)">${fmtDate(e.subscribedAt,{day:'2-digit',month:'2-digit',year:'numeric'})}</td>
     </tr>`).join('');
 }
@@ -1261,10 +1261,10 @@ window.exportNewsletterCSV=function(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download='aurum_newsletter.csv';a.click();
   URL.revokeObjectURL(url);
-  toast('Export CSV téléchargé ✓','ok');
+  toast('Export CSV téléchargé ?','ok');
 };
 
-// ── SEARCH helpers ───────────────────────────────────────────────
+// -- SEARCH helpers -----------------------------------------------
 function filterTable(tbodyId,q){
   q=q.toLowerCase();
   document.querySelectorAll('#'+tbodyId+' tr').forEach(r=>{
@@ -1280,7 +1280,7 @@ function filterDiv(containerId,q){
   });
 }
 
-// ── Confirm modal ─────────────────────────────────────────────────
+// -- Confirm modal -------------------------------------------------
 let _confirmCb=null;
 function confirmDelete(msg,cb){
   _confirmCb=cb;
@@ -1292,7 +1292,7 @@ function confirmDelete(msg,cb){
   openModal('modal-confirm');
 }
 
-// ── FORMS ────────────────────────────────────────────────────────
+// -- FORMS --------------------------------------------------------
 document.getElementById('form-seller').onsubmit=async(e)=>{
   e.preventDefault();
   const btn=document.getElementById('btn-seller');
@@ -1306,7 +1306,7 @@ document.getElementById('form-seller').onsubmit=async(e)=>{
       email,phone:document.getElementById('sel-phone').value.trim(),
       role:'seller',createdAt:firebase.firestore.FieldValue.serverTimestamp(),
     });
-    toast(`Vendeur "${document.getElementById('sel-name').value}" créé ✓`,'ok');
+    toast(`Vendeur "${document.getElementById('sel-name').value}" créé ?`,'ok');
     e.target.reset();
   }catch(err){toast(err.message,'err');}
   finally{btn.disabled=false;}
@@ -1327,7 +1327,7 @@ document.getElementById('form-shop').onsubmit=async(e)=>{
     status:'Active',createdAt:new Date(),expiresAt:exp,durationDays:dur,
     itemLimit:Number(document.getElementById('shop-limit').value)||50,
   });
-  toast('Boutique créée ✓','ok');
+  toast('Boutique créée ?','ok');
   e.target.reset();
 };
 
@@ -1336,7 +1336,7 @@ document.getElementById('form-cat').onsubmit=(e)=>{
   const name=document.getElementById('cat-name').value.trim();
   if(!name) return;
   db.collection('categories').add({name,icon:'tag'});
-  toast('Catégorie ajoutée ✓','ok');
+  toast('Catégorie ajoutée ?','ok');
   e.target.reset();
 };
 
@@ -1347,7 +1347,7 @@ document.getElementById('form-promo').onsubmit=(e)=>{
   const exp=document.getElementById('promo-expires').value||null;
   if(!code||!pct){toast('Code et pourcentage requis','warn');return;}
   db.collection('promos').add({code,percent:pct,expires:exp,createdAt:new Date(),status:'active'});
-  toast(`Code "${code}" créé ✓`,'ok');
+  toast(`Code "${code}" créé ?`,'ok');
   e.target.reset();
 };
 
@@ -1355,7 +1355,7 @@ document.getElementById('form-delivery').onsubmit=async(e)=>{
   e.preventDefault();
   const btn=document.getElementById('btn-delivery');
   btn.disabled=true;
-  btn.querySelector('span').textContent='Vérification…';
+  btn.querySelector('span').textContent='Vérificationé';
   const email=document.getElementById('del-email').value.trim();
   const pwd=document.getElementById('del-password').value;
   const zone=document.getElementById('del-zone').value.trim();
@@ -1366,9 +1366,9 @@ document.getElementById('form-delivery').onsubmit=async(e)=>{
     if(!snap.exists) throw new Error('Compte Firestore introuvable pour cet email.');
     const userData=snap.data();
     const role=userData.role||'client';
-    if(role==='livreur') throw new Error('Ce compte est déjà livreur certifié.');
-    if(['seller','admin','superadmin'].includes(role)) throw new Error(`Impossible (rôle actuel : ${role}). Seuls les clients peuvent devenir livreurs.`);
-    btn.querySelector('span').textContent='Certification…';
+    if(role==='livreur') throw new Error('Ce compte est déjé livreur certifié.');
+    if(['seller','admin','superadmin'].includes(role)) throw new Error(`Impossible (réle actuel : ${role}). Seuls les clients peuvent devenir livreurs.`);
+    btn.querySelector('span').textContent='Certificationé';
     await db.collection('users').doc(uid).update({
       role:'livreur',zone,status:'active',
       certifiedAt:firebase.firestore.FieldValue.serverTimestamp(),
@@ -1376,13 +1376,13 @@ document.getElementById('form-delivery').onsubmit=async(e)=>{
       previousRole:role,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
     });
     await auth.signOut();
-    toast(`"${userData.name||email}" certifié livreur ✓`,'ok');
+    toast(`"${userData.name||email}" certifié livreur ?`,'ok');
     e.target.reset();
     window.location.reload();
   }catch(err){
     const msgs={
       'auth/user-not-found':'Aucun compte Firebase pour cet email.',
-      'auth/wrong-password':'Mot de passe incorrect.',
+      'auth/wrong-password':'mot de passe incorrect.',
       'auth/invalid-email':'Format email invalide.',
       'auth/too-many-requests':'Trop de tentatives. Réessayez plus tard.',
     };
@@ -1393,7 +1393,7 @@ document.getElementById('form-delivery').onsubmit=async(e)=>{
   }
 };
 
-// ── Nettoyage promos expirées (1h) ────────────────────────────────
+// -- Nettoyage promos expirées (1h) --------------------------------
 setInterval(()=>{
   const today=new Date().toISOString().slice(0,10);
   Store.promos.forEach(p=>{
@@ -1401,20 +1401,20 @@ setInterval(()=>{
   });
 },3600000);
 
-// ── AUTH + SYNC ───────────────────────────────────────────────────
+// -- AUTH + SYNC ---------------------------------------------------
 document.addEventListener('DOMContentLoaded',()=>{
-  wallStatus('Connexion Firebase…');
+  wallStatus('Connexion Firebaseé');
 
   auth.onAuthStateChanged(user=>{
     if(!user){
-      wallDeny({redirectUrl:'login.html',redirectLabel:'Se connecter',reason:'Vous devez être connecté pour accéder à cette section.'});
+      wallDeny({redirectUrl:'login.html',redirectLabel:'Se connecter',reason:'Vous devez être connecté pour accéder à  cette section.'});
       return;
     }
     if(user.email!==ADMIN_EMAIL){
       wallDeny({email:user.email,reason:'Cette section est réservée aux administrateurs Sanhia.'});
       return;
     }
-    wallStatus('Synchronisation des données…');
+    wallStatus('Synchronisation des donnéesé');
     document.getElementById('sb-admin-email').textContent=user.email;
 
     // Real-time listeners

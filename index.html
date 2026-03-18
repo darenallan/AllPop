@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head> 
      <!---clauder-->
@@ -16,16 +16,15 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/components/header.js"></script>
-  <script src="assets/js/data.js" defer></script>
-  <script src="assets/js/app.js" defer></script>
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/components/header.js"></script>
+  <script src="/assets/js/data.js" defer></script>
+  <script src="/assets/js/app.js" defer></script>
 
-
-  <link rel="stylesheet" href="assets/css/styles.css" />
-  <link rel="stylesheet" href="assets/css/global.css" />
-  <link rel="stylesheet" href="assets/css/pages/index.css" />
-  <link rel="stylesheet" href="assets/css/aurum-light.css" />
+  <link rel="stylesheet" href="/assets/css/pages/index.css" />
+  
+  <link rel="stylesheet" href="/assets/css/global.css" />
+  <link rel="stylesheet" href="/assets/css/aurum-light.css" />
 </head>
 
 <body>
@@ -60,7 +59,7 @@
       </div>
 
       <div class="hero-pills">
-        <a href="catalogue.html" class="hero-pill">
+        <a href="/catalogue" class="hero-pill">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           Catalogue
         </a>
@@ -139,7 +138,7 @@
           Nos <em>Nouveautés</em>
         </h2>
       </div>
-      <a href="catalogue.html" class="see-all">Voir tout le catalogue</a>
+      <a href="/catalogue" class="see-all">Voir tout le catalogue</a>
     </div>
 
     <!-- Skeleton shown until data.js injects cards -->
@@ -152,7 +151,7 @@
     <div id="products-container" class="grid grid-4" style="display:none"></div>
   </section>
 
-  <!-- -- EXP�RIENCE ----------------------------- -->
+  <!-- -- EXPéRIENCE ----------------------------- -->
   <section class="experience">
     <div class="section-head rv">
       <div>
@@ -197,12 +196,12 @@
       </h2>
       <p class="split-text">Ne laissez pas votre stock dormir. Rejoignez Sanhia et touchez des milliers de clients premium ds aujourd'hui. Une boutique en ligne cl en main, sans frais cachs.</p>
       <div class="split-btns">
-        <a href="seller-onboarding.html" class="btn-aurum-secondary"><span>Créer ma boutique</span></a>
-        <a href="contact.html" class="btn-ghost">En savoir plus</a>
+        <a href="/seller-onboarding" class="btn-aurum-secondary"><span>Créer ma boutique</span></a>
+        <a href="/contact" class="btn-ghost">En savoir plus</a>
       </div>
     </div>
     <div class="split-right">
-      <img src="assets/img/hero.png" alt="Marketplace Sanhia" class="split-visual rv rv2">
+      <img src="/assets/img/hero.png" alt="Marketplace Sanhia" class="split-visual rv rv2">
     </div>
   </section>
 
@@ -263,9 +262,10 @@
 
 <div class="toast-container" id="toast-container"></div>
 
-<script src="assets/js/global.js" defer></script>
-<script src="assets/js/pages/index.js" defer></script>
-<script src="assets/js/footer.js" defer></script>
+<script src="/assets/js/global.js" defer></script>
+<script src="/assets/js/pages/index.js" defer></script>
+<script src="/assets/js/footer.js" defer></script>
 </body>
 </html>
+
 

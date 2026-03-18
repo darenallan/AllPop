@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(checkoutBtn){
     checkoutBtn.addEventListener('click',async()=>{
       const user=(auth&&auth.currentUser)||(firebase.auth&&firebase.auth().currentUser)||null;
-      if(!user){alert('Veuillez vous connecter pour continuer.');window.location.href='login.html?redirect=invoice.html';return;}
+      if(!user){alert('Veuillez vous connecter pour continuer.');window.location.href='/login';return;}
       try{
         checkoutBtn.disabled=true;
         checkoutBtn.querySelector('.btn-txt').textContent='Traitement…';
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         }
         localStorage.setItem('ac_cart_checkout',JSON.stringify({orderId:createdOrderIds[0],mainOrderRef,items:cartProductsData,invoiceNumber,reference:mainOrderRef}));
         localStorage.removeItem('ac_cart');
-        window.location.href='invoice.html?orderId='+createdOrderIds[0];
+        window.location.href='/invoice?orderId='+createdOrderIds[0];
       }catch(err){
         ctToast('Erreur lors de la commande. Réessayez.','error');
         checkoutBtn.disabled=false;
@@ -203,14 +203,16 @@ document.addEventListener('DOMContentLoaded',()=>{
       div.setAttribute('data-product-id',p.id);
       div.setAttribute('data-price',price);
       div.setAttribute('data-stock',maxStock);
+      // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+      const pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
 
       div.innerHTML=`
-        <a href="product.html?id=${p.id}" class="ct-item-img-wrap">
+        <a href="${pUrl}" class="ct-item-img-wrap">
           <img src="${img}" class="ct-item-img" alt="${p.name||''}" onerror="this.src='assets/img/placeholder-product-1.svg'">
         </a>
         <div class="ct-item-body">
           ${p.category?`<span class="ct-item-cat">${p.category}</span>`:''}
-          <a href="product.html?id=${p.id}" class="ct-item-name">${p.name||'Produit sans nom'}</a>
+          <a href="${pUrl}" class="ct-item-name">${p.name||'Produit sans nom'}</a>
           ${p.shopName?`<span class="ct-item-shop"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>${p.shopName}</span>`:''}
           <span class="ct-item-unit">${new Intl.NumberFormat('fr-FR').format(price)} FCFA / unité</span>
         </div>

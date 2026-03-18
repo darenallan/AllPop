@@ -5,6 +5,9 @@
    ═══════════════════════════════════════════════════════════════ */
 (function AurumInbox() {
 
+  /* ── Guard: Exit if inbox elements don't exist ── */
+  if (!document.getElementById('inbox-sidebar')) return;
+
   /* ── DOM refs ── */
   var sidebar      = document.getElementById('inbox-sidebar');
   var convListEl   = document.getElementById('inbox-conv-list');
@@ -52,7 +55,7 @@
 
   /* ── Helpers ── */
   function goLogin() {
-    location.href = 'login.html?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+    location.href = '/login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
   }
   function avatarLetters(name) {
     return String(name || '?').trim().split(' ').map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,2);
@@ -151,7 +154,7 @@
       : ('Client · ' + (chat.buyerEmail || ''));
 
     if (chat.shopId && isBuyer) {
-      shopLink.href         = 'boutique.html?id=' + chat.shopId;
+      shopLink.href         = chat.shopSlug ? '/boutique/' + chat.shopSlug : '/boutique?id=' + chat.shopId;
       shopLink.style.display = '';
     } else {
       shopLink.style.display = 'none';
@@ -232,39 +235,52 @@
   }
 
   /* ── Send ── */
-  compose.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    if (!activeChat) { toast('Sélectionnez une conversation.', ''); return; }
+  // On récupère le formulaire ou le bouton d'envoi
+var compose = document.getElementById('chat-form'); // ou l'ID de ton formulaire
+var inputEl = document.getElementById('chat-input');
+var sendBtn = document.getElementById('chat-submit');
 
-    var raw = inputEl.value.trim();
-    if (!raw) return;
+// SÉCURITÉ : On ne lance le code que si le formulaire existe sur la page
+if (compose) {
+    compose.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!activeChat) { 
+            if(window.toast) toast('Sélectionnez une conversation.', ''); 
+            return; 
+        }
 
-    sendBtn.disabled = true;
-    try {
-      if (activeChat._stub) {
-        /* Nouvelle conv : créer + envoyer */
-        var chatId = await window.sendMessage(activeChat.shopId, raw, {
-          sellerId:   activeChat.sellerId   || '',
-          shopName:   activeChat.shopName   || '',
-          sellerName: activeChat.sellerName || '',
-          productId:  activeChat.productId  || '',
-        });
-        activeChat._stub  = false;
-        activeChat.id     = chatId;
-        listenMessages(chatId);
-      } else {
-        await window.sendReply(activeChat.id, raw);
-      }
-      inputEl.value         = '';
-      charCount.textContent = '0 / 1200';
-      inputEl.style.height  = 'auto';
-      inputEl.focus();
-    } catch (err) {
-      toast(err.message || 'Envoi impossible.', 'danger');
-    } finally {
-      sendBtn.disabled = false;
-    }
-  });
+        var raw = inputEl.value.trim();
+        if (!raw) return;
+
+        sendBtn.disabled = true;
+        try {
+            if (activeChat._stub) {
+                /* Nouvelle conv : créer + envoyer */
+                var chatId = await window.sendMessage(activeChat.shopId, raw, {
+                    sellerId:   activeChat.sellerId   || '',
+                    shopName:   activeChat.shopName   || '',
+                    sellerName: activeChat.sellerName || '',
+                    productId:  activeChat.productId  || '',
+                });
+                activeChat._stub  = false;
+                activeChat.id     = chatId;
+                if(typeof listenMessages === 'function') listenMessages(chatId);
+            } else {
+                await window.sendReply(activeChat.id, raw);
+            }
+            
+            inputEl.value         = '';
+            if(window.charCount) charCount.textContent = '0 / 1200';
+            inputEl.style.height  = 'auto';
+            inputEl.focus();
+        } catch (err) {
+            if(window.toast) toast(err.message || 'Envoi impossible.', 'danger');
+        } finally {
+            sendBtn.disabled = false;
+        }
+    });
+}
 
   /* ── Char counter + auto-grow ── */
   inputEl.addEventListener('input', function() {
@@ -1484,7 +1500,7 @@
     let user;
     try { user = currentUser(); } catch (_) {
       sessionStorage.setItem('ac_redirect_after_login', window.location.href);
-      window.location.href = 'login.html';
+      window.location.href = '/login';
       return;
     }
 

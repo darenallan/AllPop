@@ -224,7 +224,7 @@
             <!-- Colonne Marque -->
             <div class="footer-brand-col">
               <div class="footer-logo-wrap">
-                <img class="footer-logo-img" src="assets/img/Logo.png" alt="Sanhia" onerror="this.style.display='none'/>
+                <img class="footer-logo-img" src="/assets/img/Logo.png" alt="Sanhia" onerror="this.style.display='none'/>
                 <span class="footer-logo-name">SAN<span>H</span>IA</span>
               </div>
               <span class="footer-tagline">La première marketplace premium du Burkina Faso</span>
@@ -249,11 +249,11 @@
             <div>
               <h4 class="footer-col-title">Navigation</h4>
               <ul class="footer-links">
-                <li><a href="index.html">Accueil</a></li>
-                <li><a href="catalogue.html">Catalogue</a></li>
-                <li><a href="boutique-list.html">Nos Boutiques</a></li>
-                <li><a href="seller-onboarding.html">Devenir Vendeur</a></li>
-                <li><a href="about.html">À propos</a></li>
+                <li><a href="/">Accueil</a></li>
+                <li><a href="/catalogue">Catalogue</a></li>
+                <li><a href="/boutique-list">Nos Boutiques</a></li>
+                <li><a href="/seller-onboarding">Devenir Vendeur</a></li>
+                <li><a href="/about">À propos</a></li>
               </ul>
             </div>
 
@@ -261,10 +261,10 @@
             <div>
               <h4 class="footer-col-title">Informations</h4>
               <ul class="footer-links">
-                <li><a href="A.html">CGU & FAQ</a></li>
-                <li><a href="A.html">Mentions légales</a></li>
-                <li><a href="A.html">Confidentialité</a></li>
-                <li><a href="contact.html">Nous contacter</a></li>
+                <li><a href="/a">CGU & FAQ</a></li>
+                <li><a href="/a">Mentions légales</a></li>
+                <li><a href="/a">Confidentialité</a></li>
+                <li><a href="/contact">Nous contacter</a></li>
               </ul>
             </div>
 
@@ -299,10 +299,10 @@
               &copy; <span id="footer-year"></span> Sanhia Marketplace — Ouagadougou, Burkina Faso
             </span>
             <div class="footer-bottom-links">
-              <a href="aide.html">CGU</a>
-              <a href="aide.html#confidentialite">Confidentialité</a>
-              <a href="aide.html#mentions">Mentions légales</a>
-              <a href="contact.html">Contact</a>
+              <a href="/a">CGU</a>
+              <a href="/a#confidentialite">Confidentialité</a>
+              <a href="/a#mentions">Mentions légales</a>
+              <a href="/contact">Contact</a>
             </div>
           </div>
 

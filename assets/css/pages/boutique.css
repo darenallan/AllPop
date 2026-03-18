@@ -1,4 +1,386 @@
-﻿/* boutique.css - Page-specific styles from AurumCorp Design System */
+﻿/* ═══════════════════════════════════════════════════════════════════════════
+   BOUTIQUE.CSS - AUTONOMOUS STYLESHEET FOR SHOP PROFILE PAGE
+   Includes: Global reset, header styles, and shop-specific styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=Playfair+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. BASE RESET & GLOBAL STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+html { margin: 0; padding: 0; }
+
+body {
+  background: #0B0A08;
+  color: #FEFCF8;
+  font-family: 'Syne', sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. HEADER STYLES (From styles.css)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.aurum-glass-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 5%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aurum-glass-header.scrolled {
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.header-logo {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.header-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-brand-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #000;
+  font-family: 'Playfair Display', serif;
+}
+
+.header-tagline {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-family: 'Inter', sans-serif;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 35px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.header-link {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  text-decoration: none;
+  position: relative;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+  letter-spacing: 0.2px;
+}
+
+.header-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #D4AF37, #F4E4C1);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header-link:hover {
+  color: #D4AF37;
+}
+
+.header-link:hover::after {
+  width: 100%;
+}
+
+.header-link.active {
+  color: #D4AF37;
+  font-weight: 600;
+}
+
+.header-link.active::after {
+  width: 100%;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.header-icon-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.header-icon-btn i {
+  width: 22px;
+  height: 22px;
+  color: #1a1a1a;
+  transition: all 0.3s ease;
+}
+
+.header-icon-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+  transform: scale(1.1);
+}
+
+.header-icon-btn:hover i {
+  color: #D4AF37;
+}
+
+.header-icon-btn:active {
+  transform: scale(0.95);
+}
+
+.header-cart-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 5px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+.mobile-burger {
+  width: 40px;
+  height: 40px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mobile-burger i {
+  width: 24px;
+  height: 24px;
+  color: #1a1a1a;
+  transition: all 0.3s ease;
+}
+
+.mobile-burger:hover {
+  background: rgba(212, 175, 55, 0.1);
+  transform: scale(1.1);
+}
+
+.mobile-burger:hover i {
+  color: #D4AF37;
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 85vw;
+  background: #ffffff;
+  z-index: 2000;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.mobile-drawer.active {
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), transparent);
+}
+
+.drawer-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: 0.5px;
+}
+
+.drawer-close-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.drawer-close-btn i {
+  width: 24px;
+  height: 24px;
+  color: #000;
+  transition: all 0.3s ease;
+}
+
+.drawer-close-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+  transform: rotate(90deg);
+}
+
+.drawer-close-btn:hover i {
+  color: #D4AF37;
+}
+
+.drawer-nav {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 12px;
+  text-decoration: none;
+  color: #333;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+}
+
+.drawer-link i {
+  color: #D4AF37;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.drawer-link:hover {
+  background: rgba(212, 175, 55, 0.08);
+  color: #000;
+  padding-left: 18px;
+}
+
+.drawer-link:hover i {
+  transform: scale(1.15);
+}
+
+.mobile-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1500;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.mobile-drawer-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 1024px) {
+  .header-center { gap: 25px; }
+}
+
+@media (max-width: 768px) {
+  .aurum-glass-header { padding: 12px 4%; }
+  .header-center { display: none; }
+  .mobile-burger { display: flex; }
+}
+
+@media (max-width: 600px) {
+  .aurum-glass-header { padding: 12px 3%; }
+  .header-brand-name { font-size: 18px; }
+  .header-icon-btn { width: 36px; height: 36px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. SHOP PAGE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
 /* Page Header */
 #bl .bl-pghead {
   padding: 40px 0 30px;
@@ -259,3 +641,153 @@ body.bp-h #bp-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
   .bp-grid { grid-template-columns: 1fr !important; }
 }
 
+.aurum-chat-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 10, 4, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 12000;
+  padding: 16px;
+}
+
+.aurum-chat-modal.active {
+  display: flex;
+}
+.aurum-chat-panel {
+  width: min(760px, 100%);
+  max-height: 90vh;
+  background: linear-gradient(180deg, #fbf4e8 0%, #f6ecdd 100%);
+  border: 1px solid #d9cab0;
+  border-radius: 18px;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.28);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  animation: slideUp 0.25s ease;
+}
+
+.aurum-chat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(90, 67, 23, 0.2);
+}
+
+.aurum-chat-kicker {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #876523;
+  font-weight: 700;
+}
+
+.aurum-chat-header h3 {
+  margin: 6px 0 0;
+  color: #19130a;
+  font-size: 20px;
+  font-family: "Playfair Display", serif;
+}
+
+.aurum-chat-close {
+  border: none;
+  background: #fff7eb;
+  color: #3c3021;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.aurum-chat-messages {
+  overflow-y: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.aurum-chat-bubble {
+  max-width: 82%;
+  padding: 11px 13px;
+  border-radius: 14px;
+  line-height: 1.45;
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.aurum-chat-bubble p {
+  margin: 0;
+}
+
+.aurum-chat-bubble.mine {
+  align-self: flex-end;
+  background: #0d0d0f;
+  color: #f2e9d8;
+  border-bottom-right-radius: 4px;
+}
+
+.aurum-chat-bubble.theirs {
+  align-self: flex-start;
+  background: #ded8cc;
+  color: #161310;
+  border-bottom-left-radius: 4px;
+}
+
+.aurum-chat-empty {
+  margin: auto;
+  color: #6d614d;
+  font-size: 14px;
+}
+
+.aurum-chat-form {
+  border-top: 1px solid rgba(90, 67, 23, 0.2);
+  padding: 12px 14px 14px;
+  background: rgba(255, 252, 245, 0.86);
+}
+
+.aurum-chat-form textarea {
+  width: 100%;
+  min-height: 88px;
+  max-height: 140px;
+  border-radius: 12px;
+  border: 1px solid #d6c7af;
+  resize: vertical;
+  padding: 10px 12px;
+  background: #fffdf8;
+}
+
+.aurum-chat-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.aurum-chat-open-page {
+  color: #1e1a12;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.aurum-chat-send {
+  border: none;
+  background: #101012;
+  color: #f7edd8;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.aurum-chat-send:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

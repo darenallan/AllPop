@@ -1,16 +1,16 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8" /> 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Sanhia Admin - Dashboard</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <link rel="stylesheet" href="assets/css/styles.css" />
-    <link rel="stylesheet" href="assets/css/admin.css" />
-    <link rel="stylesheet" href="assets/css/aurum-light.css" />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link rel="stylesheet" href="/assets/css/admin.css" />
+    <link rel="stylesheet" href="/assets/css/aurum-light.css" />
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -39,12 +39,12 @@
     window.db = db;
     window.auth = auth;
 
-    // --- 1. LES DONNÉES DE BASE ---
+    // --- 1. LES DONNéES DE BASE ---
     const INITIAL_DATA = {
         shops: [
             { name: 'Luxe Motors', category: 'Auto & Moto', ownerEmail: 'vente.lll@gmail.com', status: 'active', itemLimit: 50, createdAt: new Date() },
-            { name: 'Boutique Faso', category: 'Mode & Vêtements', ownerEmail: 'client.add@gmail.com', status: 'active', itemLimit: 100, createdAt: new Date() },
-            { name: 'Electro World', category: 'Électronique', ownerEmail: 'tech@store.bf', status: 'active', itemLimit: 200, createdAt: new Date() }
+            { name: 'Boutique Faso', category: 'Mode & Vétements', ownerEmail: 'client.add@gmail.com', status: 'active', itemLimit: 100, createdAt: new Date() },
+            { name: 'Electro World', category: 'électronique', ownerEmail: 'tech@store.bf', status: 'active', itemLimit: 200, createdAt: new Date() }
         ],
         users: [
             { name: "Super Admin", email: "aurumcorporate.d@gmail.com", role: "superadmin", phone: "+226 00 00 00 00" },
@@ -68,34 +68,34 @@
         newsletter: []
     };
 
-    // --- 2. DÉMARRAGE ---
+    // --- 2. DéMARRAGE ---
     const ADMIN_EMAIL = 'aurumcorporate.d@gmail.com';
 
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('✅ DOM Chargé, initialisation admin...');
+        console.log('? DOM Chargé, initialisation admin...');
         
         window.auth.onAuthStateChanged((user) => {
-            console.log('🔐 Auth state changed:', user?.email || 'Non connecté');
+            console.log('?? Auth state changed:', user?.email || 'Non connecté');
             
             if (!user) {
                 // Non connecté
-                console.log("⚠️ Utilisateur non connecté -> Redirection");
+                console.log("?? Utilisateur non connecté -> Redirection");
                 window.location.href = 'login.html';
                 return;
             }
             
             if (user.email !== ADMIN_EMAIL) {
                 // Connecté mais pas admin
-                console.log("❌ Accès refusé - Email non autorisé:", user.email);
+                console.log("? Accés refusé - Email non autorisé:", user.email);
                 window.showAccessDenied({
                     email:  user.email,
-                    reason: 'Accès réservé à l\'équipe administrative Sanhia.'
+                    reason: 'Accés réservé à l\'équipe administrative Sanhia.'
                 });
                 return;
             }
             
-            // Accès autorisé
-            console.log("✅ Accès administrateur autorisé");
+            // Accés autorisé
+            console.log("? Accés administrateur autorisé");
             startRealTimeSync();
             setupNavigation();
         });
@@ -106,19 +106,19 @@
         const snapshot = await db.collection('shops').limit(1).get();
         
         if (snapshot.empty) {
-            console.log("⚡ Base de données vide -> Injection des données de démo...");
+            console.log("? Base de données vide -> Injection des données de démo...");
             INITIAL_DATA.shops.forEach(shop => db.collection('shops').add(shop));
             INITIAL_DATA.users.forEach(user => db.collection('users').add(user));
             INITIAL_DATA.promos.forEach(promo => db.collection('promos').add(promo));
-            alert("🎉 Base de données initialisée !");
+            alert("?? Base de données initialisée !");
         } else {
-            console.log("👍 Base de données déjà remplie.");
+            console.log("?? Base de données déjé remplie.");
         }
     }
 
     // --- 4. SYNCHRONISATION (Lecture Firebase) ---
     function startRealTimeSync() {
-        console.log('📡 Démarrage sync temps réel...');
+        console.log('?? Démarrage sync temps réel...');
         
         // Masquer le loader et afficher le contenu immédiatement
         setTimeout(() => {
@@ -126,100 +126,100 @@
             const content = document.getElementById('dashboard-content');
             if(loader) loader.style.display = 'none';
             if(content) content.classList.remove('hidden');
-            console.log('✅ Interface affichée');
+            console.log('? Interface affichée');
         }, 500);
         
-        // Écoute Boutiques
+        // écoute Boutiques
         db.collection('shops').onSnapshot(snap => {
-            console.log('📦 Boutiques:', snap.size);
+            console.log('?? Boutiques:', snap.size);
             Store.shops = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderShops();
             renderStats();
-        }, err => console.error('❌ Erreur shops:', err));
+        }, err => console.error('? Erreur shops:', err));
 
-        // Écoute Users
+        // écoute Users
         db.collection('users').onSnapshot(snap => {
-            console.log('👥 Utilisateurs:', snap.size);
+            console.log('?? Utilisateurs:', snap.size);
             Store.users = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderUsers();
             renderDeliveryPersons(); // Afficher aussi les livreurs
             renderStats();
-        }, err => console.error('❌ Erreur users:', err));
+        }, err => console.error('? Erreur users:', err));
 
-        // Écoute Promos
+        // écoute Promos
         db.collection('promos').onSnapshot(snap => {
-            console.log('🎁 Promos:', snap.size);
+            console.log('?? Promos:', snap.size);
             Store.promos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderPromos();
             renderStats();
-        }, err => console.error('❌ Erreur promos:', err));
+        }, err => console.error('? Erreur promos:', err));
 
-        // Écoute Catégories
+        // écoute Catégories
         db.collection('categories').onSnapshot(snap => {
-            console.log('🏷️ Catégories:', snap.size);
+            console.log('??? Catégories:', snap.size);
             Store.categories = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderCategories();
-        }, err => console.error('❌ Erreur categories:', err));
+        }, err => console.error('? Erreur categories:', err));
 
         // Nettoyage automatique des codes promo expirés (une fois par heure)
         setInterval(() => {
             const today = new Date().toISOString().split('T')[0];
             Store.promos.forEach(promo => {
                 if(promo.expires && promo.expires < today) {
-                    console.log('🗑️ Suppression promo expiré:', promo.code);
+                    console.log('??? Suppression promo expiré:', promo.code);
                     db.collection('promos').doc(promo.id).delete();
                 }
             });
         }, 3600000); // 1 heure
 
-        // Écoute Produits
+        // écoute Produits
         try {
             db.collection('products').onSnapshot(snap => {
-                console.log('🛍️ Produits:', snap.size);
+                console.log('??? Produits:', snap.size);
                 Store.products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderStats();
                 renderProducts(); // Afficher les produits dans l'onglet admin
             }, err => {
-                console.warn('⚠️ Produits indisponible:', err.message);
+                console.warn('?? Produits indisponible:', err.message);
                 Store.products = [];
                 renderProducts();
             });
         } catch (e) {
-            console.warn('⚠️ Collection products non trouvée');
+            console.warn('?? Collection products non trouvée');
             Store.products = [];
         }
 
-        // Écoute Commandes
+        // écoute Commandes
         try {
             db.collection('orders').onSnapshot(snap => {
-                console.log('💰 Commandes:', snap.size);
+                console.log('?? Commandes:', snap.size);
                 Store.orders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderStats();
                 renderPendingOrders(); // Nouvelle fonction pour afficher les commandes en attente
             }, err => {
-                console.warn('⚠️ Orders indisponible:', err.message);
+                console.warn('?? Orders indisponible:', err.message);
                 Store.orders = [];
             });
         } catch (e) {
-            console.warn('⚠️ Collection orders non trouvée');
+            console.warn('?? Collection orders non trouvée');
         }
 
-        // Écoute Newsletter
+        // écoute Newsletter
         try {
             db.collection('newsletter').onSnapshot(snap => {
-                console.log('📧 Newsletter:', snap.size);
+                console.log('?? Newsletter:', snap.size);
                 Store.newsletter = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderNewsletter();
             }, err => {
-                console.warn('⚠️ Newsletter indisponible:', err.message);
+                console.warn('?? Newsletter indisponible:', err.message);
                 Store.newsletter = [];
                 renderNewsletter();
             });
         } catch (e) {
-            console.warn('⚠️ Collection newsletter non trouvée');
+            console.warn('?? Collection newsletter non trouvée');
         }
 
-        // Icônes
+        // Icénes
         if(typeof lucide !== 'undefined') lucide.createIcons();
     }
 
@@ -311,7 +311,7 @@
                 `;
             }).join('');
         
-        // Réinitialiser les icônes Lucide
+        // Réinitialiser les icénes Lucide
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
@@ -363,7 +363,7 @@
                 `;
             }).join('');
         
-        // Réinitialiser les icônes Lucide
+        // Réinitialiser les icénes Lucide
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
@@ -394,8 +394,8 @@
                     <div style="flex:1;">
                         <strong style="font-size:16px;">${d.name}</strong>
                         <div  style="font-size:13px; color:#666; margin-top:4px;">
-                            📧 ${d.email} • 📱 ${d.phone || 'N/A'}
-                            ${d.zone ? `<br>📍  Zone: ${d.zone}` : ''}
+                            • ${d.email} • ${d.phone || 'N/A'}
+                            ${d.zone ? `<br>??  Zone: ${d.zone}` : ''}
                             <br><span style="font-size:12px; color:#999;">Certifié le ${certDate}</span>
                         </div>
                     </div>
@@ -418,9 +418,9 @@
         const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
         try {
             await db.collection('users').doc(deliveryId).update({ status: newStatus });
-            console.log('✅ Statut livreur mis à jour');
+            console.log('? Statut livreur mis à jour');
         } catch (error) {
-            console.error('❌ Erreur:', error);
+            console.error('? Erreur:', error);
             alert('Erreur lors de la mise à jour du statut');
         }
     };
@@ -436,7 +436,7 @@
             : Store.promos.map(p => {
                 const isExpired = p.expires && p.expires < today;
                 const statusColor = isExpired ? '#999' : '#1a7f4a';
-                const statusText = isExpired ? 'EXPIRÉ' : 'ACTIF';
+                const statusText = isExpired ? 'EXPIRé' : 'ACTIF';
                 
                 return `
                     <div class="admin-card" style="padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; ${isExpired ? 'opacity:0.6;' : ''}">
@@ -448,7 +448,7 @@
                                 <span style="color:${statusColor}; font-weight:bold; margin-left:10px;">${statusText}</span>
                             </div>
                         </div>
-                        <button onclick="deleteItem('promos', '${p.id}')" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">✖ Supprimer</button>
+                        <button onclick="deleteItem('promos', '${p.id}')" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">? Supprimer</button>
                     </div>
                 `;
             }).join('');
@@ -623,7 +623,7 @@
                 `;
             }).join('');
 
-            // Réinitialiser les icônes Lucide
+            // Réinitialiser les icénes Lucide
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
@@ -659,14 +659,14 @@
 
     // --- SUPPRESSION D'UN PRODUIT ---
     window.deleteProduct = function(productId, productName) {
-        if (confirm(`⚠️ Êtes-vous sûr de vouloir supprimer le produit "${productName}" ?\n\nCette action est irréversible.`)) {
+        if (confirm(`?? êtes-vous sér de vouloir supprimer le produit "${productName}" ?\n\nCette action est irréversible.`)) {
             db.collection('products').doc(productId).delete()
                 .then(() => {
-                    console.log('✅ Produit supprimé:', productName);
+                    console.log('? Produit supprimé:', productName);
                     // Ne pas appeler renderProducts() car onSnapshot le fera automatiquement
                 })
                 .catch(err => {
-                    console.error('❌ Erreur suppression produit:', err);
+                    console.error('? Erreur suppression produit:', err);
                     alert('Erreur lors de la suppression du produit: ' + err.message);
                 });
         }
@@ -674,7 +674,7 @@
 
     // --- 6. NAVIGATION ---
     function setupNavigation() {
-        console.log('🔗 Configuration navigation...');
+        console.log('?? Configuration navigation...');
     }
 
     // --- 7. GESTION DES COMMANDES EN ATTENTE ---
@@ -742,7 +742,7 @@
                         <td style="padding:12px;">
                             <button onclick="approveOrder('${order.id}')" 
                                 style="background:#28a745; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500;">
-                                ✓ Approuver
+                                ? Approuver
                             </button>
                             <button onclick="viewOrderDetails('${order.id}')" 
                                 style="background:#007bff; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; margin-left:8px; font-weight:500;">
@@ -754,11 +754,11 @@
             }).join('');
         }
 
-        // Rafraîchir les icônes Lucide
+        // Rafraéchir les icénes Lucide
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-    // Fonction pour approuver une commande (pending_admin → pending_seller)
+    // Fonction pour approuver une commande (pending_admin ? pending_seller)
     window.approveOrder = async function(orderId) {
         if (!confirm('Approuver cette commande ? Elle sera transférée au vendeur.')) {
             return;
@@ -772,11 +772,11 @@
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            console.log('✅ Commande approuvée:', orderId);
-            alert('Commande approuvée avec succès !');
+            console.log('? Commande approuvée:', orderId);
+            alert('Commande approuvée avec succés !');
 
         } catch (error) {
-            console.error('❌ Erreur approbation commande:', error);
+            console.error('? Erreur approbation commande:', error);
             alert('Erreur lors de l\'approbation. Veuillez réessayer.');
         }
     };
@@ -817,7 +817,7 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
 
     // Fonction globale de navigation (appelée par onclick)
     window.nav = function(sectionId, clickedBtn) {
-        console.log('📍 Navigation vers:', sectionId);
+        console.log('?? Navigation vers:', sectionId);
         
         // Masquer toutes les sections
         document.querySelectorAll('.admin-section').forEach(section => {
@@ -856,7 +856,7 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
 
     // --- LOGOUT ---
     window.logout = function() {
-        if(confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
+        if(confirm("êtes-vous sér de vouloir vous déconnecter ?")) {
             firebase.auth().signOut().then(function() {
                 window.location.href = 'index.html';
             }).catch(function(error) {
@@ -866,7 +866,7 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
         }
     };
 
-    console.log('✅ Script theking.html chargé');
+    console.log('? Script theking.html chargé');
     </script>
 </head>
 <body class="admin-layout">
@@ -932,7 +932,7 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                     </div>
                 <div class="admin-card">
                     <h3>Activité Récente</h3>
-                    <p style="color:#666;">Système synchronisé avec la base de données.</p>
+                    <p style="color:#666;">Systéme synchronisé avec la base de données.</p>
                 </div>
             </section>
 
@@ -978,7 +978,7 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                         <input class="input" id="sel-email" type="email" required placeholder="email@vendeur.com">
                         <label>Téléphone</label>
                         <input class="input" id="sel-phone" required placeholder="+226 XX XX XX XX">
-                        <label>Mot de passe</label>
+                        <label>mot de passe</label>
                         <input class="input" id="sel-pass" required placeholder="******">
                         <button class="btn-gold">Créer le compte</button>
                     </form>
@@ -997,11 +997,11 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                         <label>Email du Client</label>
                         <input class="input" id="del-email" type="email" required placeholder="client@example.com">
                         <small style="color:#666; font-size:12px; display:block; margin-top:-8px; margin-bottom:12px;">
-                            Le compte client doit déjà exister dans le système
+                            Le compte client doit déjé exister dans le systéme
                         </small>
                         
-                        <label>Mot de passe du Client</label>
-                        <input class="input" id="del-password" type="password" required placeholder="Mot de passe actuel du client">
+                        <label>mot de passe du Client</label>
+                        <input class="input" id="del-password" type="password" required placeholder="mot de passe actuel du client">
                         <small style="color:#666; font-size:12px; display:block; margin-top:-8px; margin-bottom:12px;">
                             Pour vérifier l'identité du client avant certification
                         </small>
@@ -1029,7 +1029,7 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                 <div class="admin-card">
                     <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #D4AF37;">
                         <p style="margin: 0; color: #666; font-size: 14px;">
-                            <strong>💡 Info:</strong> Vous pouvez supprimer tous les produits de la plateforme. 
+                            <strong>?? Info:</strong> Vous pouvez supprimer tous les produits de la plateforme. 
                             Les vendeurs pourront en ajouter de nouveaux depuis leur espace vendeur.
                         </p>
                     </div>
@@ -1041,13 +1041,13 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                     <div id="products-content" class="hidden">
                         <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <h3 style="margin: 0; color: #333;">Liste complète des produits</h3>
+                                <h3 style="margin: 0; color: #333;">Liste compléte des produits</h3>
                                 <p style="margin: 5px 0 0 0; color: #999; font-size: 13px;" id="products-count-text">0 produit(s) au total</p>
                             </div>
                             <input 
                                 type="text" 
                                 id="products-search" 
-                                placeholder="🔍 Rechercher un produit..." 
+                                placeholder="?? Rechercher un produit..." 
                                 style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; width: 300px; font-size: 14px;"
                             />
                         </div>
@@ -1219,7 +1219,7 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
             }).catch(err => alert("Erreur: " + err.message));
         };
 
-        // === PARTIE 1: FORMULAIRE LIVREUR (CERTIFICATION CLIENT → LIVREUR) ===
+        // === PARTIE 1: FORMULAIRE LIVREUR (CERTIFICATION CLIENT ? LIVREUR) ===
         document.getElementById('form-delivery').onsubmit = async (e) => {
             e.preventDefault();
             
@@ -1232,12 +1232,12 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
             btn.innerHTML = '<i data-lucide="loader" class="spin"></i> Vérification...';
             
             try {
-                // ÉTAPE 1 : Vérifier l'identité du client en le connectant
-                console.log('🔐 Vérification identité client:', email);
+                // éTAPE 1 : Vérifier l'identité du client en le connectant
+                console.log('?? Vérification identité client:', email);
                 const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
                 const clientUid = userCredential.user.uid;
                 
-                // ÉTAPE 2 : Récupérer le document utilisateur
+                // éTAPE 2 : Récupérer le document utilisateur
                 const userDoc = await db.collection('users').doc(clientUid).get();
                 
                 if (!userDoc.exists) {
@@ -1247,13 +1247,13 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                 const userData = userDoc.data();
                 const currentRole = userData.role || 'client';
                 
-                // ÉTAPE 3 : Vérifier que c'est bien un client (pas déjà vendeur/admin)
+                // éTAPE 3 : Vérifier que c'est bien un client (pas déjé vendeur/admin)
                 if (currentRole === 'livreur') {
-                    throw new Error('Ce compte est déjà certifié comme livreur.');
+                    throw new Error('Ce compte est déjé certifié comme livreur.');
                 }
                 
                 if (currentRole === 'seller' || currentRole === 'admin' || currentRole === 'superadmin') {
-                    throw new Error(`Impossible de certifier ce compte (rôle actuel: ${currentRole}). Seuls les clients peuvent devenir livreurs.`);
+                    throw new Error(`Impossible de certifier ce compte (réle actuel: ${currentRole}). Seuls les clients peuvent devenir livreurs.`);
                 }
                 
                 // ÉTAPE 4 : Mettre à jour le rôle à "livreur"
@@ -1269,26 +1269,26 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
-                console.log('✅ Client certifié comme livreur:', clientUid);
+                console.log('? Client certifié comme livreur:', clientUid);
                 
-                // ÉTAPE 5 : Déconnecter le client et reconnecter l'admin
+                // éTAPE 5 : Déconnecter le client et reconnecter l'admin
                 await window.auth.signOut();
                 
-                alert(`✅ Certification réussie !\n\nEmail: ${email}\nNom: ${userData.name || 'N/A'}\nZone: ${zone}\n\nLe client peut maintenant accéder à l'espace livreur (delivery.html).`);
+                alert(`? Certification réussie !\n\nEmail: ${email}\nNom: ${userData.name || 'N/A'}\nZone: ${zone}\n\nLe client peut maintenant accéder à l'espace livreur (delivery.html).`);
                 e.target.reset();
                 
-                // Rafraîchir la page pour que l'admin se reconnecte
+                // Rafraéchir la page pour que l'admin se reconnecte
                 window.location.reload();
                 
             } catch (error) {
-                console.error('❌ Erreur certification livreur:', error);
+                console.error('? Erreur certification livreur:', error);
                 
                 let errorMsg = 'Erreur lors de la certification.';
                 
                 if (error.code === 'auth/user-not-found') {
                     errorMsg = 'Aucun compte Firebase trouvé pour cet email.';
                 } else if (error.code === 'auth/wrong-password') {
-                    errorMsg = 'Mot de passe incorrect. Vérifiez avec le client.';
+                    errorMsg = 'mot de passe incorrect. Vérifiez avec le client.';
                 } else if (error.code === 'auth/invalid-email') {
                     errorMsg = 'Format d\'email invalide.';
                 } else if (error.code === 'auth/too-many-requests') {
@@ -1297,7 +1297,7 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                     errorMsg = error.message;
                 }
                 
-                alert('❌ ' + errorMsg);
+                alert('? ' + errorMsg);
                 
                 btn.disabled = false;
                 btn.innerHTML = '<i data-lucide="user-check"></i> Certifier comme Livreur';
@@ -1325,12 +1325,12 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                 status: 'active'
             });
             e.target.reset();
-            alert('✅ Code promo créé!');
+            alert('? Code promo créé!');
         };
 
         // Delete Shop with associated products
         window.deleteShop = async function(shopId, shopName) {
-            if (!confirm(`⚠️ Supprimer la boutique "${shopName}" ?\n\nTous les produits de cette boutique seront également supprimés.`)) {
+            if (!confirm(`?? Supprimer la boutique "${shopName}" ?\n\nTous les produits de cette boutique seront également supprimés.`)) {
                 return;
             }
 
@@ -1351,10 +1351,10 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                 // 3. Exécuter la suppression
                 await batch.commit();
                 
-                alert(`✅ Boutique "${shopName}" et ${productsSnapshot.size} produit(s) supprimé(s)!`);
+                alert(`? Boutique "${shopName}" et ${productsSnapshot.size} produit(s) supprimé(s)!`);
             } catch (error) {
                 console.error('Erreur suppression boutique:', error);
-                alert('❌ Erreur lors de la suppression: ' + error.message);
+                alert('? Erreur lors de la suppression: ' + error.message);
             }
         };
 
@@ -1362,20 +1362,20 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
         window.deleteUser = async function(userId, userName, userEmail) {
             // Protection superadmin
             if (userEmail === 'aurumcorporate.d@gmail.com') {
-                alert('🔒 Impossible de supprimer le compte superadmin');
+                alert('?? Impossible de supprimer le compte superadmin');
                 return;
             }
 
-            if (!confirm(`⚠️ Supprimer l'utilisateur "${userName}" (${userEmail}) ?`)) {
+            if (!confirm(`?? Supprimer l'utilisateur "${userName}" (${userEmail}) ?`)) {
                 return;
             }
 
             try {
                 await db.collection('users').doc(userId).delete();
-                alert(`✅ Utilisateur "${userName}" supprimé!`);
+                alert(`? Utilisateur "${userName}" supprimé!`);
             } catch (error) {
                 console.error('Erreur suppression utilisateur:', error);
-                alert('❌ Erreur lors de la suppression: ' + error.message);
+                alert('? Erreur lors de la suppression: ' + error.message);
             }
         };
 

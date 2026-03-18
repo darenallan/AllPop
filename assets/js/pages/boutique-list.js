@@ -63,7 +63,7 @@
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             firebase.auth().signOut().then(() => {
-                window.location.href = "login.html";
+                window.location.href = "/login";
             });
         });
     }
@@ -116,8 +116,9 @@
         const logo = shop.logo || shop.image || 'assets/img/placeholder-urban.svg';
         const banner = shop.banner || 'assets/img/hero.png';
         const hasLogo = Boolean(shop.logo || shop.image);
+        const shopUrl = shop.slug ? `/boutique/${shop.slug}` : `/boutique?id=${shop.id}`;
         return `
-          <a href="boutique.html?id=${shop.id}" class="bl-card" style="transition-delay: ${idx * 0.05}s;">
+          <a href="${shopUrl}" class="bl-card" style="transition-delay: ${idx * 0.05}s;">
             <div class="bl-card-banner" style="background-image: url('${banner}'); background-size: cover; background-position: center;"></div>
             <div class="bl-card-avatar">
               ${hasLogo 

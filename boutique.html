@@ -1,126 +1,166 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Boutique - Sanhia</title>
-  
-  <!-- Polices "Aurum Awwwards" -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700&display=swap" rel="stylesheet"/>
-  
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Boutique - Sanhia</title>
+
+    <!-- Polices "Aurum Awwwards" -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/components/header.js"></script>
-  <script src="assets/js/data.js" defer></script>
-  <script src="assets/js/app.js" defer></script>
-  <script src="assets/js/pages/messages.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/components/header.js"></script>
+    <script src="/assets/js/data.js" defer></script>
+    <script src="/assets/js/app.js" defer></script>
+    <script src="/assets/js/pages/boutique.js" defer></script>
+    <script src="/assets/js/pages/messages.js" defer></script>
+    
+     <link rel="stylesheet" href="/assets/css/pages/boutique.css" />
+ 
+  </head>
 
-      <link rel="stylesheet" href="assets/css/styles.css" />
-  <link rel="stylesheet" href="assets/css/global.css" />
-  <link rel="stylesheet" href="assets/css/pages/boutique.css" />
-  <link rel="stylesheet" href="assets/css/aurum-light.css" />
-</head>
+  <body class="shop-page" style="background: #0b0a08; margin: 0; cursor: none">
+    <!-- Cursor & Noise -->
+    <div id="bp-ring"></div>
+    <div id="bp-dot"></div>
+    <div id="bp-noise"></div>
+    <div class="toast-container" id="toast-container"></div>
 
-<body class="shop-page" style="background:#0B0A08;margin:0;cursor:none">
+    <!-- Header -->
+    <div id="header-placeholder"></div>
 
-<!-- Cursor & Noise -->
-<div id="bp-ring"></div>
-<div id="bp-dot"></div>
-<div id="bp-noise"></div>
-<div class="toast-container" id="toast-container"></div>
-
-<!-- Header -->
-<div id="header-placeholder"></div>
-
-<!-- SCOPED MAIN -->
-<main id="bp">
-  
-  <!-- Hero / Profile -->
-  <section class="bp-hero">
-      <div class="bp-banner-wrap">
-          <img id="shop-banner" class="bp-banner-img" src="assets/img/placeholder-banner.jpg" alt="Cover" onerror="this.src='https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2564&auto=format&fit=crop'">
+    <!-- SCOPED MAIN -->
+    <main id="bp">
+      <!-- Hero / Profile -->
+      <section class="bp-hero">
+        <div class="bp-banner-wrap">
+          <img
+            id="shop-banner"
+            class="bp-banner-img"
+            src="/assets/img/placeholder-banner.jpg"
+            alt="Cover"
+            onerror="
+              this.src =
+                'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2564&auto=format&fit=crop'
+            "
+          />
           <div class="bp-banner-overlay"></div>
-      </div>
-      
-      <div class="bp-profile">
+        </div>
+
+        <div class="bp-profile">
           <div class="bp-logo-wrap">
-              <img id="shop-logo" src="assets/img/placeholder.png" alt="Logo" class="bp-logo-img" onerror="this.src='assets/img/placeholder-urban.svg'">
+            <img
+              id="shop-logo"
+              src="/assets/img/placeholder.png"
+              alt="Logo"
+              class="bp-logo-img"
+              onerror="this.src = 'assets/img/placeholder-urban.svg'"
+            />
           </div>
-          
+
           <h1 class="bp-shop-name" id="shop-name">Chargement...</h1>
           <p class="bp-shop-slogan" id="shop-slogan"></p>
-          
+
           <div class="bp-badges">
-              <span class="bp-badge verified" id="badge-verified" style="display:none;">
-                  <i data-lucide="badge-check"></i> Vérifié
-              </span>
-              <span class="bp-badge">
-                  <i data-lucide="star" style="color:var(--g); fill:var(--g);"></i>
-                  <span id="shop-rating" style="margin-left:4px;">5.0</span>/5
-              </span>
+            <span
+              class="bp-badge verified"
+              id="badge-verified"
+              style="display: none"
+            >
+              <i data-lucide="badge-check"></i> Vérifié
+            </span>
+            <span class="bp-badge">
+              <i data-lucide="star" style="color: var(--g); fill: var(--g)"></i>
+              <span id="shop-rating" style="margin-left: 4px">5.0</span>/5
+            </span>
           </div>
-          
+
           <p class="bp-shop-desc" id="shop-desc">...</p>
-          
+
           <button class="bp-btn" id="contact-btn">
-              <i data-lucide="message-circle" style="width:16px;"></i>
-              <span>Contacter le vendeur</span>
+            <i data-lucide="message-circle" style="width: 16px"></i>
+            <span>Contacter le vendeur</span>
           </button>
-      </div>
-  </section>
+        </div>
+      </section>
 
-  <!-- Toolbar & Search -->
-  <section class="bp-toolbar">
-      <h2 class="bp-toolbar-title">La Collection</h2>
-      <div class="bp-search-wrap">
+      <!-- Toolbar & Search -->
+      <section class="bp-toolbar">
+        <h2 class="bp-toolbar-title">La Collection</h2>
+        <div class="bp-search-wrap">
           <i data-lucide="search"></i>
-          <input id="shop-search-input" class="bp-search-input" type="text" placeholder="Rechercher une pièce...">
-      </div>
-  </section>
+          <input
+            id="shop-search-input"
+            class="bp-search-input"
+            type="text"
+            placeholder="Rechercher une pièce..."
+          />
+        </div>
+      </section>
 
-  <!-- Products Grid -->
-  <section class="bp-content">
-    <div id="shop-products-grid" class="bp-grid">
-        <p class="bp-msg">Chargement des produits...</p>
-    </div>
-  </section>
+      <!-- Products Grid -->
+      <section class="bp-content">
+        <div id="shop-products-grid" class="bp-grid">
+          <p class="bp-msg">Chargement des produits...</p>
+        </div>
+      </section>
+    </main>
 
-</main>
-
-<!-- Chat Modal (Laissé en dehors du scope #bp pour ne pas casser le JS global) -->
-<div class="aurum-chat-modal" id="aurum-chat-modal" role="dialog" aria-modal="true" aria-label="Messagerie securisee">
-    <div class="aurum-chat-panel">
+    <!-- Chat Modal (Laissé en dehors du scope #bp pour ne pas casser le JS global) -->
+    <div
+      class="aurum-chat-modal"
+      id="aurum-chat-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Messagerie securisee"
+    >
+      <div class="aurum-chat-panel">
         <div class="aurum-chat-header">
-            <div>
-                <p class="aurum-chat-kicker">Messagerie interne sécurisée</p>
-                <h3 data-chat-title>Conversation avec le vendeur</h3>
-            </div>
-            <button type="button" class="aurum-chat-close" data-close-chat aria-label="Fermer"></button>
+          <div>
+            <p class="aurum-chat-kicker">Messagerie interne sécurisée</p>
+            <h3 data-chat-title>Conversation avec le vendeur</h3>
+          </div>
+          <button
+            type="button"
+            class="aurum-chat-close"
+            data-close-chat
+            aria-label="Fermer"
+          ></button>
         </div>
         <div class="aurum-chat-messages" data-chat-messages>
-            <p class="aurum-chat-empty">Chargement de la conversation...</p>
+          <p class="aurum-chat-empty">Chargement de la conversation...</p>
         </div>
         <form class="aurum-chat-form" data-chat-form>
-            <textarea placeholder="écrivez votre message... (emails et numéros masqués automatiquement)" maxlength="1200"></textarea>
-            <div class="aurum-chat-actions">
-                <a class="aurum-chat-open-page" data-open-messages-page href="messages.html">Ouvrir la boite complète</a>
-                <button type="submit" class="aurum-chat-send">Envoyer</button>
-            </div>
+          <textarea
+            placeholder="écrivez votre message... (emails et numéros masqués automatiquement)"
+            maxlength="1200"
+          ></textarea>
+          <div class="aurum-chat-actions">
+            <a
+              class="aurum-chat-open-page"
+              data-open-messages-page
+              href="/messages"
+              >Ouvrir la boite complète</a
+            >
+            <button type="submit" class="aurum-chat-send">Envoyer</button>
+          </div>
         </form>
+      </div>
     </div>
-</div>
 
-<script src="assets/js/global.js" defer></script>
-<script src="assets/js/pages/boutique.js" defer></script>
-<script src="assets/js/footer.js" defer></script>
-</body>
+    <script src="/assets/js/global.js" defer></script>
+    <script src="/assets/js/pages/boutique.js" defer></script>
+    <script src="/assets/js/footer.js" defer></script>
+  </body>
 </html>
-

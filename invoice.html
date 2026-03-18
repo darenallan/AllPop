@@ -9,9 +9,9 @@
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/css/styles.css" />
-    <link rel="stylesheet" href="assets/css/aurum-light.css" />
-    <link rel="stylesheet" href="assets/css/prime.css" />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link rel="stylesheet" href="/assets/css/aurum-light.css" />
+    <link rel="stylesheet" href="/assets/css/prime.css" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -22,12 +22,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <!-- Configuration & Utilities -->
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/components/header.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/components/header.js"></script>
     <!-- Data Store -->
-    <script src="assets/js/data.js" defer></script>
+    <script src="/assets/js/data.js" defer></script>
     <!-- App Module -->
-    <script src="assets/js/app.js" defer></script>
+    <script src="/assets/js/app.js" defer></script>
   </head>
 
   <body>
@@ -108,7 +108,7 @@
                   margin-bottom: 5px;
                 "
               >
-                Facture N°
+                Facture Né
               </div>
               <div style="font-size: 20px; font-weight: 700" id="inv-ref">
                 ...
@@ -163,7 +163,7 @@
                 </div>
                 <div class="invoice-row">
                   <span class="invoice-label">Livraison</span>
-                  <span class="invoice-val">À calculer</span>
+                  <span class="invoice-val">à calculer</span>
                 </div>
                 <div style="border-top: 1px solid #ddd; margin: 10px 0"></div>
                 <div class="invoice-row" style="margin-bottom: 0">
@@ -318,7 +318,7 @@
 
           // Vérifier que jsPDF est disponible
           if (!window.jspdf || !window.jspdf.jsPDF) {
-            throw new Error("Bibliothèque jsPDF non chargée");
+            throw new Error("Bibliothéque jsPDF non chargée");
           }
 
           // Vérifier que Firebase est disponible
@@ -342,7 +342,7 @@
 
           auth.onAuthStateChanged(async (user) => {
             if (!user) {
-              showError("Vous devez être connecté pour voir votre facture.");
+              showError("Vous devez étre connecté pour voir votre facture.");
               setTimeout(() => (window.location.href = "login.html"), 2000);
               return;
             }
@@ -453,7 +453,7 @@
 
                 let message = "Erreur lors du chargement de la commande.";
                 if (err.code === "permission-denied") {
-                  message = "Vérifiez vos permissions d'accès.";
+                  message = "Vérifiez vos permissions d'accés.";
                 } else if (err.code === "unavailable") {
                   message =
                     "Service temporairement indisponible. Veuillez réessayer.";
@@ -469,7 +469,7 @@
               const content = document.getElementById("invoice-content");
 
               if (!loading || !content) {
-                throw new Error("Éléments DOM manquants");
+                throw new Error("éléments DOM manquants");
               }
 
               loading.style.display = "none";
@@ -504,7 +504,7 @@
                 !phoneElement ||
                 !emailElement
               ) {
-                throw new Error("Éléments de formulaire manquants");
+                throw new Error("éléments de formulaire manquants");
               }
 
               const invoiceRef = order.invoiceNumber
@@ -519,7 +519,7 @@
               // Items
               const tbody = document.getElementById("invoice-items");
               if (!tbody) {
-                throw new Error("Élément tbody manquant");
+                throw new Error("élément tbody manquant");
               }
 
               tbody.innerHTML = "";
@@ -571,7 +571,7 @@
               const totalElement = document.getElementById("inv-total");
 
               if (!subtotalElement || !totalElement) {
-                throw new Error("Éléments total manquants");
+                throw new Error("éléments total manquants");
               }
 
               subtotalElement.innerText = formattedTotal;
@@ -598,7 +598,7 @@
                 try {
                   const content = document.getElementById("invoice-document");
                   if (!content) {
-                    showError("Élément facture non trouvé");
+                    showError("élément facture non trouvé");
                     return;
                   }
 
@@ -670,7 +670,8 @@
         }
       });
     </script>
-    <script src="assets/js/prime-new.js" defer></script>
-    <script src="assets/js/footer.js" defer></script>
+    <script src="/assets/js/prime-new.js" defer></script>
+    <script src="/assets/js/footer.js" defer></script>
   </body>
 </html>
+

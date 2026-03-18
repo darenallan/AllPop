@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   /* ─── AUTH GUARD ─── */
   auth.onAuthStateChanged(async user=>{
-    if(!user){window.location.href='login.html';return}
+    if(!user){window.location.href='/login';return}
     await loadProfile(user);
     await loadOrders(user.uid);
     await loadAddresses(user.uid);
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   /* ─── DÉCONNEXION ─── */
   document.getElementById('pr-logout-btn').addEventListener('click',async()=>{
     if(confirm('Se déconnecter ?')){
-      await auth.signOut();window.location.href='login.html';
+      await auth.signOut();window.location.href='/login';
     }
   });
 

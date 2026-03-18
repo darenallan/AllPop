@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
         name:name, email:email, phone:phone, role:'client', createdAt:new Date(),
       });
 
-      var finish = function(){ if(window.showToast) window.showToast('Compte créé avec succès !','success'); setTimeout(function(){ window.location.href='index.html'; },1000); };
+      var finish = function(){ if(window.showToast) window.showToast('Compte créé avec succès !','success'); setTimeout(function(){ window.location.href='/'; },1000); };
       if (typeof window.syncCurrentUser === 'function') window.syncCurrentUser(cred.user).then(finish).catch(finish);
       else finish();
     } catch(error) {

@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   var db     = firebase.firestore();
-  var params = new URLSearchParams(window.location.search);
-  var shopId = params.get('id');
+  const path = window.location.pathname;
+  const shopSlug = path.split('/').filter(Boolean).pop();
 
   var els = {
     banner:     document.getElementById('shop-banner'),
@@ -32,20 +32,23 @@ document.addEventListener('DOMContentLoaded', function() {
     search:     document.getElementById('shop-search-input'),
   };
 
-  if (!shopId) {
+  if (!shopSlug) {
     if (els.name) els.name.innerText = 'Boutique introuvable';
     return;
   }
 
   var allShopProducts = [];
   var currentShopData = {};
+  var shopId = null;
 
-  // Infos boutique
-  db.collection('shops').doc(shopId).get().then(function (doc) {
-    if (!doc.exists) {
+  // Infos boutique (search by slug)
+  db.collection('shops').where('slug', '==', shopSlug).limit(1).get().then(function (snap) {
+    if (snap.empty) {
       if (els.name) els.name.innerText = 'Boutique fermée ou inexistante';
       return;
     }
+    var doc = snap.docs[0];
+    shopId = doc.id;
     var data = doc.data();
     currentShopData = data || {};
     if (els.name)     els.name.innerText    = data.name || 'Boutique';
@@ -72,10 +75,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
     }
+
+    // Produits (after shopId is fetched)
+    db.collection('products').where('shopId', '==', shopId).get().then(loadProducts);
   });
 
-  // Produits
-  db.collection('products').where('shopId', '==', shopId).get().then(function (snap) {
+  function loadProducts(snap) {
     if (!els.grid) return;
     els.grid.innerHTML = '';
     if (snap.empty) {
@@ -88,16 +93,18 @@ document.addEventListener('DOMContentLoaded', function() {
       renderBoutiqueCard(p, els.grid);
     });
     if (window.lucide) lucide.createIcons();
-  });
+  }
 
   function renderBoutiqueCard(p, container) {
     var price    = new Intl.NumberFormat('fr-FR').format(p.price);
     var img      = p.imageURL || p.image || (p.images && p.images[0]) || 'assets/img/placeholder-product-1.svg';
     var shopName = p.shopName || 'Aurum';
     var isFav    = typeof isInWishlist === 'function' ? isInWishlist(p.id) : false;
+    // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+    var pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
     var div = document.createElement('div');
     div.innerHTML =
-      '<a href="product.html?id=' + p.id + '" class="bp-card">'
+      '<a href="' + pUrl + '" class="bp-card">'
       + '<div class="bp-card-img-wrap">'
         + '<button class="bp-card-wishlist' + (isFav ? ' active' : '') + '" type="button" onclick="event.stopPropagation();event.preventDefault();if(typeof toggleWishlist===\'function\')toggleWishlist(event,\'' + p.id + '\');return false;">'
           + '<i data-lucide="heart" style="width:16px;height:16px;fill:' + (isFav ? 'currentColor' : 'none') + '"></i>'

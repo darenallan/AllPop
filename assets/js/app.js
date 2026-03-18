@@ -32,9 +32,13 @@ function getCartItems() {
       .filter(item => item && item.product && item.product.id)
       .map(item => ({
         product:  item.product,
-        quantity: parseInt(item.quantity || item.qty || 1, 10),
+        quantity: Math.max(1, parseInt(item.quantity || item.qty || 1, 10)),
+        pid: item.pid || safeProductId(item.product.id),
       }));
-  } catch { return []; }
+  } catch (e) { 
+    console.error('[getCartItems] Error:', e);
+    return []; 
+  }
 }
 
 function addToCart(productIdOrObj, qty = 1, productObj = null) {
@@ -75,10 +79,25 @@ function addToCart(productIdOrObj, qty = 1, productObj = null) {
     existing.quantity = (existing.quantity || existing.qty || 0) + qty;
     existing.qty      = existing.quantity;
   } else {
-    cart.push({ pid, product: prod, quantity: qty, qty });
+    // S'assurer que prod a ALL les champs importants
+    const fullProd = {
+      id: prod.id,
+      name: prod.name || 'Produit sans nom',
+      price: prod.price || 0,
+      image: prod.image || (Array.isArray(prod.images) && prod.images[0]) || null,
+      images: prod.images || [],
+      shopId: prod.shopId || null,
+      sellerId: prod.sellerId || null,
+      shopName: prod.shopName || 'Boutique',
+      stock: prod.stock || 999,
+      slug: prod.slug || null,
+      category: prod.category || null,
+    };
+    cart.push({ pid, product: fullProd, quantity: qty, qty });
   }
   localStorage.setItem('ac_cart', JSON.stringify(cart));
   window.updateCartBadge?.();
+  window.showToast(`"${prod.name}" ajouté au panier`, 'success');
 }
 
 function updateCartQty(productId, newQty) {
@@ -159,8 +178,10 @@ async function loadProducts() {
       window.allProducts.push(p);
       const img  = p.image || (Array.isArray(p.images) && p.images[0]) || 'assets/img/placeholder.png';
       const inWl = isInWishlist(doc.id);
+      // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+      const pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
       html += `
-        <div class="product-card-glass" onclick="window.location.href='product.html?id=${doc.id}'">
+        <div class="product-card-glass" onclick="window.location.href='${pUrl}'">
           <div class="card-image-header">
             <button class="wishlist-btn${inWl ? ' active' : ''}" type="button"
               onclick="event.stopPropagation();toggleWishlist(event,'${doc.id}');return false;">
@@ -355,7 +376,7 @@ function initWishlist() {
               <div class="title">${p.name}</div>
               <div class="meta">${window.formatFCFA(p.price)}</div>
               <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-                <a href="product.html?id=${encodeURIComponent(p.id)}" class="btn">Voir</a>
+                ${(() => { const pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id; return `<a href="${pUrl}" class="btn">Voir</a>`; })()}
                 <button data-add="${pid}" class="btn btn-dark">Ajouter au panier</button>
                 <button data-rm="${pid}" class="btn">Retirer</button>
               </div>

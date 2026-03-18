@@ -379,9 +379,9 @@
     return `
       <header class="aurum-glass-header" id="aurum-header">
 
-        <a href="index.html" class="header-brand">
+        <a href="/index.html" class="header-brand">
           <div class="header-logo">
-            <img src="assets/img/Logo.png" alt="Sanhia" onerror="this.style.display='none'"/>
+            <img src="/assets/img/Logo.png" alt="Sanhia" onerror="this.style.display='none'"/>
           </div>
           <div class="header-brand-text">
             <span class="header-brand-name">SANHIA</span>
@@ -390,34 +390,34 @@
         </a>
 
         <nav class="header-center" aria-label="Navigation principale">
-          <a href="index.html"           class="header-link" data-page="index">Accueil</a>
-          <a href="catalogue.html"       class="header-link" data-page="catalogue">Catalogue</a>
-          <a href="boutique-list.html"   class="header-link" data-page="boutique-list">Boutiques</a>
-          <a href="seller-onboarding.html" class="header-link" data-page="seller-onboarding">Vendre</a>
-          <a href="about.html"         class="header-link" data-page="about">À propos</a>
+          <a href="/index.html"           class="header-link" data-page="index">Accueil</a>
+          <a href="/catalogue.html"       class="header-link" data-page="catalogue">Catalogue</a>
+          <a href="/boutique-list.html"   class="header-link" data-page="boutique-list">Boutiques</a>
+          <a href="/seller-onboarding.html" class="header-link" data-page="seller-onboarding">Vendre</a>
+          <a href="/about.html"         class="header-link" data-page="about">À propos</a>
         </nav>
 
         <div class="header-right">
 
-          <a href="catalogue.html" class="header-icon-btn" aria-label="Rechercher">
+          <a href="/catalogue" class="header-icon-btn" aria-label="Rechercher">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </a>
 
-          <a href="messages.html" class="header-icon-btn" id="header-msg-btn" aria-label="Messages">
+          <a href="/messages" class="header-icon-btn" id="header-msg-btn" aria-label="Messages">
             <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             <span class="header-msg-badge" id="header-msg-badge"></span>
           </a>
 
-          <a href="wishlist.html" class="header-icon-btn" aria-label="Favoris">
+          <a href="/wishlist" class="header-icon-btn" aria-label="Favoris">
             <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
           </a>
 
-          <a href="cart.html" class="header-icon-btn" aria-label="Panier">
+          <a href="/cart" class="header-icon-btn" aria-label="Panier">
             <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
             <span class="header-cart-badge" id="cart-count"></span>
           </a>
 
-          <a href="profile.html" class="header-icon-btn" id="header-profile-btn" aria-label="Mon profil">
+          <a href="/profile" class="header-icon-btn" id="header-profile-btn" aria-label="Mon profil">
             <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </a>
 
@@ -443,19 +443,19 @@
 
         <nav class="drawer-nav" aria-label="Navigation mobile">
           <div class="drawer-section-label">Navigation</div>
-          <a href="index.html" class="drawer-link" data-page="index">
+          <a href="/" class="drawer-link" data-page="index">
             <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Accueil
           </a>
-          <a href="catalogue.html" class="drawer-link" data-page="catalogue">
+          <a href="/catalogue" class="drawer-link" data-page="catalogue">
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             Catalogue
           </a>
-          <a href="boutique-list.html" class="drawer-link" data-page="boutique-list">
+          <a href="/boutique-list" class="drawer-link" data-page="boutique-list">
             <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
             Boutiques
           </a>
-          <a href="apropos.html" class="drawer-link" data-page="apropos">
+          <a href="/about" class="drawer-link" data-page="about">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             À propos
           </a>
@@ -463,19 +463,19 @@
           <div class="drawer-divider"></div>
           <div class="drawer-section-label">Mon compte</div>
 
-          <a href="wishlist.html" class="drawer-link">
+          <a href="/wishlist" class="drawer-link">
             <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
             Mes favoris
           </a>
-          <a href="cart.html" class="drawer-link">
+          <a href="/cart" class="drawer-link">
             <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
             Panier
           </a>
-          <a href="messages.html" class="drawer-link">
+          <a href="/messages" class="drawer-link">
             <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             Messages
           </a>
-          <a href="profile.html" class="drawer-link" id="drawer-profile-link">
+          <a href="/profile" class="drawer-link" id="drawer-profile-link">
             <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             Mon profil
           </a>
@@ -483,18 +483,18 @@
           <div class="drawer-divider"></div>
           <div class="drawer-section-label">Vendeur</div>
 
-          <a href="seller-onboarding.html" class="drawer-link drawer-link-gold">
+          <a href="/seller-onboarding" class="drawer-link drawer-link-gold">
             <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
             Devenir vendeur
           </a>
-          <a href="seller.html" class="drawer-link">
+          <a href="/seller" class="drawer-link">
             <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             Espace vendeur
           </a>
 
           <div class="drawer-divider"></div>
 
-          <a href="login.html" id="drawer-login-link" class="drawer-link" style="display:none">
+          <a href="/login" id="drawer-login-link" class="drawer-link" style="display:none">
             <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
             Connexion
           </a>
@@ -511,7 +511,7 @@
 
   /* ── Active link ─────────────────────────────────────────────── */
   function setActiveLinks() {
-    const page = window.location.pathname.split('/').pop().replace('.html','') || 'index';
+    const page = window.location.pathname.split('/').filter(Boolean)[0] || 'index';
     document.querySelectorAll('[data-page]').forEach(el => {
       el.classList.toggle('active', el.dataset.page === page);
     });
@@ -600,7 +600,7 @@
       logoutLink.addEventListener('click', e => {
         e.preventDefault();
         if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-          firebase.auth().signOut().then(() => { window.location.href = 'index.html'; });
+          firebase.auth().signOut().then(() => { window.location.href = '/'; });
         }
       });
     }

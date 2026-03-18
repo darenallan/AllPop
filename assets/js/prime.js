@@ -326,7 +326,8 @@
       var banner = [shop.cover, shop.coverUrl, shop.banner, shop.bannerUrl, 'assets/img/cover.png']
                      .find(function (v) { return typeof v === 'string' && v.trim().length > 0; });
       var hasLogo = !!(shop.logo || shop.image);
-      return '<a href="boutique.html?id=' + shop.id + '" class="bl-card" style="transition-delay:' + (idx * 0.05) + 's">'
+      const shopUrl = shop.slug ? '/boutique/' + shop.slug : '/boutique?id=' + shop.id;
+      return '<a href="' + shopUrl + '" class="bl-card" style="transition-delay:' + (idx * 0.05) + 's">'
         + '<div class="bl-card-banner" style="background-image:linear-gradient(135deg,rgba(11,10,8,.18),rgba(11,10,8,.42)),url(\'' + banner + '\');background-size:cover;background-position:center"></div>'
         + '<div class="bl-card-avatar">'
           + (hasLogo ? '<img src="' + logo + '" alt="' + (shop.name||'Boutique') + '" onerror="this.style.display=\'none\'">'
@@ -390,7 +391,7 @@
   if (logoutBtn) {
     logoutBtn.addEventListener('click', function (e) {
       e.preventDefault();
-      firebase.auth().signOut().then(function () { window.location.href = 'login.html'; });
+      firebase.auth().signOut().then(function () { window.location.href = '/login'; });
     });
   }
 })();
@@ -487,9 +488,11 @@
     var img      = p.imageURL || p.image || (p.images && p.images[0]) || 'assets/img/placeholder-product-1.svg';
     var shopName = p.shopName || 'Aurum';
     var isFav    = typeof isInWishlist === 'function' ? isInWishlist(p.id) : false;
+    // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+    var pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
     var div = document.createElement('div');
     div.innerHTML =
-      '<a href="product.html?id=' + p.id + '" class="bp-card">'
+      '<a href="' + pUrl + '" class="bp-card">'
       + '<div class="bp-card-img-wrap">'
         + '<button class="bp-card-wishlist' + (isFav ? ' active' : '') + '" type="button" onclick="event.stopPropagation();event.preventDefault();if(typeof toggleWishlist===\'function\')toggleWishlist(event,\'' + p.id + '\');return false;">'
           + '<i data-lucide="heart" style="width:16px;height:16px;fill:' + (isFav ? 'currentColor' : 'none') + '"></i>'
@@ -652,13 +655,15 @@
       div.setAttribute('data-product-id', p.id);
       div.setAttribute('data-price',      price);
       div.setAttribute('data-stock',      maxStock);
+      // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+      var pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
       div.innerHTML =
-        '<a href="product.html?id=' + p.id + '" class="ct-item-img-wrap">'
+        '<a href="' + pUrl + '" class="ct-item-img-wrap">'
           + '<img src="' + img + '" class="ct-item-img" alt="' + (p.name||'') + '" onerror="this.src=\'assets/img/placeholder-product-1.svg\'">'
         + '</a>'
         + '<div class="ct-item-body">'
           + (p.category ? '<span class="ct-item-cat">' + p.category + '</span>' : '')
-          + '<a href="product.html?id=' + p.id + '" class="ct-item-name">' + (p.name||'Produit sans nom') + '</a>'
+          + '<a href="' + pUrl + '" class="ct-item-name">' + (p.name||'Produit sans nom') + '</a>'
           + (p.shopName ? '<span class="ct-item-shop">' + p.shopName + '</span>' : '')
           + '<span class="ct-item-unit">' + new Intl.NumberFormat('fr-FR').format(price) + ' FCFA / unité</span>'
         + '</div>'
@@ -808,7 +813,7 @@
   if (checkoutBtn) {
     checkoutBtn.addEventListener('click', async function () {
       var user = auth.currentUser || (firebase.auth && firebase.auth().currentUser) || null;
-      if (!user) { alert('Veuillez vous connecter pour continuer.'); window.location.href = 'login.html?redirect=cart.html'; return; }
+      if (!user) { alert('Veuillez vous connecter pour continuer.'); window.location.href = '/login'; return; }
       try {
         checkoutBtn.disabled = true;
         var btnTxt = checkoutBtn.querySelector('.btn-txt');
@@ -857,7 +862,7 @@
           items: cartProductsData, invoiceNumber: invoiceNumber, reference: mainOrderRef,
         }));
         localStorage.removeItem('ac_cart');
-        window.location.href = 'invoice.html?orderId=' + createdOrderIds[0];
+        window.location.href = '/invoice?orderId=' + createdOrderIds[0];
       } catch (err) {
         if (window.showToast) window.showToast('Erreur lors de la commande. Réessayez.', 'danger');
         checkoutBtn.disabled = false;
@@ -1020,7 +1025,9 @@
     if (!matches.length) { searchAuto.innerHTML = '<div class="ac-empty">Aucun résultat pour «\u00a0' + term + '\u00a0»</div>'; searchAuto.classList.add('show'); return; }
     searchAuto.innerHTML = matches.map(function (p) {
       var img = (Array.isArray(p.images) ? p.images[0] : null) || p.image || 'assets/img/placeholder-product-1.svg';
-      return '<div class="ac-item" onclick="location.href=\'product.html?id=' + p.id + '\'"'
+      // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+      var pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
+      return '<div class="ac-item" onclick="location.href=\'' + pUrl + '\'"'
         + '<img class="ac-img" src="' + img + '" alt="" onerror="this.src=\'assets/img/placeholder-product-1.svg\'"/>'
         + '<div><div class="ac-name">' + (p.name||'') + '</div><div class="ac-price">' + fmt(p.price||0) + ' FCFA</div>'
         + (p.category ? '<div class="ac-cat">' + p.category + '</div>' : '') + '</div></div>';
@@ -1073,8 +1080,10 @@
       var inWish = wishlist.some(function (w) { return (w.id||w) === p.id; });
       var delay  = 'style="animation-delay:' + (i%6)*0.06 + 's"';
       var safeName = (p.name||'').replace(/'/g, "\\'");
+      // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+      var pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
       return '<div class="prd-card rv" ' + delay + '>'
-        + '<a href="product.html?id=' + p.id + '">'
+        + '<a href="' + pUrl + '">'
           + '<div class="prd-img-wrap">'
             + (hasDisc ? '<span class="prd-disc-badge">-' + disc + '%</span>' : '')
             + '<img class="prd-img" src="' + img + '" alt="' + (p.name||'') + '" loading="lazy" onerror="this.src=\'assets/img/placeholder-product-1.svg\'">'
@@ -1082,8 +1091,8 @@
             + '<button class="prd-wish' + (inWish ? ' on' : '') + '" onclick="event.preventDefault();event.stopPropagation();toggleWish(\'' + p.id + '\',this,\'' + safeName + '\',' + (p.price||0) + ',\'' + img + '\')" title="Favoris"><svg viewBox="0 0 24 24" fill="' + (inWish ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>'
           + '</div></a>'
           + '<div class="prd-body">'
-            + '<div class="prd-shop"><a class="prd-shop-name" href="boutique.html?id=' + p.shopId + '">' + p.shopName + '</a></div>'
-            + '<a href="product.html?id=' + p.id + '"><div class="prd-name">' + (p.name||'Produit') + '</div></a>'
+            + '<div class="prd-shop"><a class="prd-shop-name" href="' + (p.shopSlug ? '/boutique/' + p.shopSlug : '/boutique?id=' + p.shopId) + '">' + p.shopName + '</a></div>'
+            + '<a href="' + pUrl + '"><div class="prd-name">' + (p.name||'Produit') + '</div></a>'
             + '<div class="prd-price-row"><span class="prd-price">' + fmt(p.price||0) + '<span style="font-size:10px;font-family:\'Syne\';font-weight:400;margin-left:3px">FCFA</span></span>'
               + (hasDisc ? '<span class="prd-price-orig">' + fmt(p.originalPrice) + ' FCFA</span>' : '') + '</div>'
             + (p.shopCity ? '<div class="prd-city">📍 ' + p.shopCity + '</div>' : '')
@@ -1237,7 +1246,7 @@
   };
 
   window.doLogout = function () {
-    auth.signOut().then(function () { window.location.href = 'index.html'; });
+    auth.signOut().then(function () { window.location.href = '/'; });
   };
 
   /* — Modal confirm — */
@@ -1336,13 +1345,13 @@
 
   /* — Bootstrap auth — */
   auth.onAuthStateChanged(async function (user) {
-    if (!user) { if (window.AuthWall) window.AuthWall.deny({ redirectUrl: 'login.html', redirectLabel: 'Se connecter', reason: 'Connexion requise.' }); else window.location.href = 'login.html'; return; }
+    if (!user) { if (window.AuthWall) window.AuthWall.deny({ redirectUrl: '/login', redirectLabel: 'Se connecter', reason: 'Connexion requise.' }); else window.location.href = '/login'; return; }
     try {
       var userDoc  = await db.collection('users').doc(user.uid).get();
       var userData = userDoc.exists ? userDoc.data() : {};
       if (userData.role !== 'livreur') {
         if (window.AuthWall) window.AuthWall.deny({ email: user.email, role: userData.role||'client', reason: 'Espace réservé aux livreurs certifiés Aurum.' });
-        else window.location.href = 'index.html';
+        else window.location.href = '/';
         return;
       }
 
@@ -1387,7 +1396,7 @@
   var btn   = document.querySelector('.hero-search-btn');
   function goSearch() {
     var q = (input ? input.value : '').trim();
-    window.location.href = q ? 'catalogue.html?q=' + encodeURIComponent(q) : 'catalogue.html';
+    window.location.href = q ? '/catalogue?q=' + encodeURIComponent(q) : '/catalogue';
   }
   if (btn)   btn.addEventListener('click', goSearch);
   if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); goSearch(); } });
@@ -1457,13 +1466,13 @@
               if (returnUrl) { window.location.href = returnUrl; return; }
               var ADMIN_MAIL = 'aurumcorporate.d@gmail.com';
               if (email === ADMIN_MAIL || role === 'superadmin' || role === 'admin' || role === 'maintainer') {
-                window.location.href = 'theking.html';
+                window.location.href = '/theking';
               } else if (role === 'seller') {
-                window.location.href = 'seller.html';
+                window.location.href = '/seller';
               } else if (role === 'livreur') {
-                window.location.href = 'delivery.html';
+                window.location.href = '/delivery';
               } else {
-                window.location.href = 'index.html'; // ✅ les clients vont sur l'accueil
+                window.location.href = '/'; // ✅ les clients vont sur l'accueil
               }
             };
 
@@ -1606,7 +1615,7 @@
     if (threadAvatar) threadAvatar.textContent = avatarLetters(partner);
     if (threadName)   threadName.textContent   = partner;
     if (threadSub)    threadSub.textContent    = isBuyer ? 'Boutique Sanhia' : 'Client · ' + (chat.buyerEmail||'');
-    if (shopLink) { if (chat.shopId && isBuyer) { shopLink.href = 'boutique.html?id=' + chat.shopId; shopLink.style.display = ''; } else { shopLink.style.display = 'none'; } }
+    if (shopLink) { if (chat.shopId && isBuyer) { shopLink.href = chat.shopSlug ? '/boutique/' + chat.shopSlug : '/boutique?id=' + chat.shopId; shopLink.style.display = ''; } else { shopLink.style.display = 'none'; } }
 
     var url = new URL(window.location.href);
     url.searchParams.set('chatId', chat.id);
@@ -1729,7 +1738,7 @@
   }
 
   firebase.auth().onAuthStateChanged(async function (user) {
-    if (!user) { window.location.href = 'login.html?returnUrl=' + encodeURIComponent(location.pathname + location.search); return; }
+    if (!user) { window.location.href = '/login?returnUrl=' + encodeURIComponent(location.pathname + location.search); return; }
     currentUser = user;
     if (unsubChats) { unsubChats(); unsubChats = null; }
     unsubChats = window.subscribeUserChats(currentUser.uid, function (chats) {
@@ -1872,7 +1881,7 @@
             + '<button class="ax-bwish" id="ax-wish" onclick="axWish()"><span style="font-family:\'Unbounded\',sans-serif; font-weight:700; font-size:11px; letter-spacing:.15em; text-transform:uppercase;">FAV</span></button>'
           + '</div>'
           + '<div class="ax-seller rv"><div class="ax-sava">' + savaHTML + '</div><div><div class="ax-sname">Vendu par ' + (shopData.name||'Boutique Sanhia') + '</div><div class="ax-ssub"><span style="color:var(--gold)">' + starH(shopData.rating||0) + '</span><span>📍 '+(shopData.city||shopData.address||'Ouagadougou')+'</span><span>🚚 Livraison 48–72h</span></div></div>'
-            + '<button class="ax-bvisit" onclick="location.href=\'boutique.html?id='+shopId+'\'">Voir la boutique →</button>'
+            + '<button class="ax-bvisit" onclick="location.href=\'' + (shopData.slug ? '/boutique/' + shopData.slug : '/boutique?id=' + shopId) + '\'>Voir la boutique →</button>'
             + '<button class="ax-bvisit" style="margin-top:6px;border-color:rgba(200,168,75,.1);color:rgba(200,168,75,.7)" onclick="axContactSeller()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:6px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contacter le vendeur</button>'
           + '</div>'
           + '<div class="ax-trust rv"><div class="ax-titem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Paiement sécurisé</div><div class="ax-titem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Retour 7 jours</div><div class="ax-titem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg> Support client</div></div>'
@@ -2016,7 +2025,9 @@
         var img2 = (Array.isArray(p2.images)?p2.images[0]:null)||p2.image||'assets/img/placeholder-product-1.svg';
         var hd2  = p2.originalPrice && p2.originalPrice>p2.price;
         var d2   = hd2 ? Math.round(((p2.originalPrice-p2.price)/p2.originalPrice)*100) : 0;
-        return '<div class="ax-rcard2 rv" onclick="location.href=\'product.html?id='+p2.id+'\'" data-h>'
+        // On définit l'URL SEO : Slug si dispo, sinon l'ancien format ID
+        var pUrl = p2.slug ? '/product/' + p2.slug + '-' + p2.id : '/product/' + (p2.name ? p2.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '-' + p2.id;
+        return '<div class="ax-rcard2 rv" onclick="location.href=\'' + pUrl + '\'" data-h>'
           + '<div class="ax-rimgbox">'+(hd2?'<div class="ax-rdisc">−'+d2+'%</div>':'')+'<img src="'+img2+'" alt="'+p2.name+'" onerror="this.src=\'assets/img/placeholder-product-1.svg\'"><div class="ax-roverlay"><button class="ax-rquick" onclick="event.stopPropagation();axQuick(\''+p2.id+'\')">+ Ajouter au panier</button></div></div>'
           + '<div class="ax-rbody"><p class="ax-rcat">'+(p2.category||'Produit')+'</p><p class="ax-rname">'+p2.name+'</p><div class="ax-rfoot"><span class="ax-rprice">'+fmt(p2.price)+' <small>FCFA</small></span><span class="ax-rstars">'+starH(p2.rating||0)+'</span></div></div>'
         + '</div>';
@@ -2057,7 +2068,7 @@
 
   /* ── Auth guard ── */
   auth.onAuthStateChanged(async function(user){
-    if (!user) { window.location.href = 'login.html'; return; }
+    if (!user) { window.location.href = '/login'; return; }
     await loadProfile(user);
     await loadOrders(user.uid);
     await loadAddresses(user.uid);
@@ -2151,7 +2162,7 @@
   var logoutBtn = document.getElementById('pr-logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async function(){
-      if (confirm('Se déconnecter ?')) { await auth.signOut(); window.location.href = 'login.html'; }
+      if (confirm('Se déconnecter ?')) { await auth.signOut(); window.location.href = '/login'; }
     });
   }
 
@@ -2317,7 +2328,7 @@
             });
           })
           .then(function(){
-            var finish = function(){ if(window.showToast) window.showToast('Compte créé avec succès !','success'); setTimeout(function(){ window.location.href='index.html'; },1000); };
+            var finish = function(){ if(window.showToast) window.showToast('Compte créé avec succès !','success'); setTimeout(function(){ window.location.href='/'; },1000); };
             if (typeof window.syncCurrentUser === 'function') window.syncCurrentUser(cred.user).then(finish).catch(finish);
             else finish();
           });
@@ -2531,7 +2542,7 @@
 
   window.sdLogout = function() {
     if (!confirm('Se déconnecter ?')) return;
-    firebase.auth().signOut().then(function(){ window.location.href='login.html'; });
+    firebase.auth().signOut().then(function(){ window.location.href='/login'; });
   };
 
   // Delegated event listener for nav items (more reliable)
@@ -2587,7 +2598,7 @@
   var currentShopId = null, currentShopData = null;
 
   auth.onAuthStateChanged(async function(user){
-    if (!user) { window.location.href='login.html'; return; }
+    if (!user) { window.location.href='/login'; return; }
     try {
       var snap = await db2.collection('shops').where('ownerEmail','==',user.email).limit(1).get();
       if (snap.empty) { if(window.showToast) window.showToast('Aucune boutique trouvée.','danger'); return; }
@@ -2826,8 +2837,10 @@
       var card = document.createElement('div');
       card.className = 'wl-card';
       card.setAttribute('data-id', p.id);
+      // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+      var pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
       card.innerHTML =
-        '<a href="product.html?id='+p.id+'" class="wl-card-img-wrap">'
+        '<a href="' + pUrl + '" class="wl-card-img-wrap">'
           + '<img src="'+img+'" class="wl-card-img" alt="'+(p.name||'')+'" onerror="this.src=\'assets/img/placeholder-product-1.svg\'">'
           + (hasD ? '<div class="wl-card-badge sale">-'+Math.round((1-price/op)*100)+'%</div>' : '')
           + '<button class="wl-card-remove" onclick="wlRemove(\''+p.id+'\',event)" title="Retirer des favoris"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>'
@@ -2835,7 +2848,7 @@
         + '</a>'
         + '<div class="wl-card-body">'
           + (p.category?'<span class="wl-card-cat">'+p.category+'</span>':'')
-          + '<a href="product.html?id='+p.id+'" class="wl-card-name">'+(p.name||'Produit sans nom')+'</a>'
+          + '<a href="' + pUrl + '" class="wl-card-name">'+(p.name||'Produit sans nom')+'</a>'
           + (p.shopName?'<span class="wl-card-shop">'+p.shopName+'</span>':'')
           + '<div class="wl-card-footer"><div><div class="wl-card-price">'+wlFmt(price)+'</div>'+(hasD?'<div class="wl-card-original">'+wlFmt(op)+'</div>':'')+'</div><span class="wl-card-stock '+stCls+'">'+stLbl+'</span></div>'
         + '</div>';

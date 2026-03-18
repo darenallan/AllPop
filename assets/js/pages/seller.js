@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.sdLogout = function() {
     if (!confirm('Se déconnecter ?')) return;
-    firebase.auth().signOut().then(function(){ window.location.href='login.html'; });
+    firebase.auth().signOut().then(function(){ window.location.href='/login'; });
   };
 
   var sdFmt     = function(n){ return new Intl.NumberFormat('fr-FR').format(n); };
@@ -81,19 +81,19 @@ document.addEventListener('DOMContentLoaded', function() {
   var currentShopId = null, currentShopData = null;
 
   auth.onAuthStateChanged(async function(user) {
-    if (!user) { window.location.href='login.html'; return; }
+    if (!user) { window.location.href='/login'; return; }
     try {
       var snap = await db2.collection('shops').where('ownerEmail','==',user.email).limit(1).get();
       if (snap.empty) { 
         console.warn('[Seller Auth] Aucune boutique trouvée pour:', user.email);
-        window.location.href='403.html'; 
+        window.location.href='/403'; 
         return; 
       }
       var doc = snap.docs[0];
       var shopData = Object.assign({ id:doc.id }, doc.data());
       if (shopData.status === 'blocked' || shopData.status === 'suspended') {
         console.warn('[Seller Auth] Boutique bloquée/suspendue:', shopData.id);
-        window.location.href='403.html?reason=blocked';
+        window.location.href='/403?reason=blocked';
         return;
       }
       currentShopId   = doc.id;
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
       initSdDashboard(user, currentShopData);
     } catch(e){ 
       console.error('[Seller Auth] Erreur chargement boutique:', e); 
-      window.location.href='403.html?reason=error'; 
+      window.location.href='/403?reason=error'; 
     }
   });
 
@@ -155,7 +155,146 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch(e){ console.error('[sd] sdLoadProducts:', e); }
   }
 
-  async function sdLoadOrders() {
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * SYSTÈME DE SÉCURISATION DES STATUTS DE COMMANDE
+   * Hiérarchie stricte, confirmations, et verrouillage
+   * ═══════════════════════════════════════════════════════════════
+   */
+
+  // HIÉRARCHIE STRICTE DES STATUTS (ordre immuable)
+  var STATUS_HIERARCHY = ['pending_admin', 'pending_seller', 'ready_for_delivery', 'delivered'];
+  var LOCKED_STATUSES  = ['ready_for_delivery', 'delivered', 'cancelled']; // Selects désactivés
+  var STATUS_LABELS    = {
+    'pending_admin':        'En attente',
+    'pending_seller':       'En préparation',
+    'ready_for_delivery':   'En livraison',
+    'delivered':            'Livré',
+    'cancelled':            'Annulé'
+  };
+
+  // Stockage des anciennes valeurs de select pour l'annulation
+  window.sdOrderStatusCache = {};
+
+  // Calcule la position d'un statut dans la hiérarchie
+  function getStatusIndex(status) {
+    var idx = STATUS_HIERARCHY.indexOf(status);
+    return idx >= 0 ? idx : -1;
+  }
+
+  // Valide si le passage d'un ancien statut à un nouveau est légal
+  function isValidStatusTransition(oldStatus, newStatus) {
+    // Les statuts "annulé" et "livré" ne peuvent pas revenir en arrière
+    if (['cancelled', 'delivered'].includes(oldStatus)) return false;
+    
+    var oldIdx = getStatusIndex(oldStatus);
+    var newIdx = getStatusIndex(newStatus);
+    
+    // Si c'est une annulation, c'est toujours valide
+    if (newStatus === 'cancelled') return true;
+    
+    // Pour les autres, nouveau doit être > ancien dans la hiérarchie
+    return newIdx > oldIdx;
+  }
+
+  // Fonction améliorée pour mettre à jour le statut des commandes
+  window.sdUpdateOrderStatus = async function(orderId, newStatus) {
+    try {
+      // Récupère la commande actuelle pour son statut
+      var orderSnap = await db2.collection('orders').doc(orderId).get();
+      if (!orderSnap.exists) {
+        if (window.showToast) window.showToast('Commande introuvable', 'danger');
+        resetOrderSelect(orderId);
+        return;
+      }
+
+      var currentOrder = orderSnap.data();
+      var oldStatus    = currentOrder.status || 'pending_admin';
+
+      // Validation 1: Vérifier si la transition est valide
+      if (!isValidStatusTransition(oldStatus, newStatus)) {
+        if (window.showToast) {
+          window.showToast('Action impossible : vous ne pouvez pas revenir à un statut précédent.', 'danger');
+        }
+        resetOrderSelect(orderId);
+        return;
+      }
+
+      // Validation 2: Demander confirmation irréversible
+      var oldLabel = STATUS_LABELS[oldStatus] || oldStatus;
+      var newLabel = STATUS_LABELS[newStatus] || newStatus;
+      var confirmMsg = 'Êtes-vous sûr de vouloir passer cette commande en ' + newLabel + ' ? Cette action est définitive et vous ne pourrez plus revenir en arrière.';
+
+      if (!confirm(confirmMsg)) {
+        resetOrderSelect(orderId);
+        return;
+      }
+
+      // Mise à jour Firestore
+      await db2.collection('orders').doc(orderId).update({
+        status: newStatus,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      if (window.showToast) window.showToast('Statut mis à jour en ' + newLabel, 'success');
+
+      // Recharger les commandes pour refléter les changements (notamment le verrouillage)
+      await sdLoadOrders();
+
+    } catch(e) {
+      console.error('[sdUpdateOrderStatus] Erreur:', e);
+      if (window.showToast) window.showToast('Erreur lors de la mise à jour', 'danger');
+      resetOrderSelect(orderId);
+    }
+  };
+
+  // Réinitialise un select de statut à sa valeur précédente
+  function resetOrderSelect(orderId) {
+    var select = document.querySelector('select[data-order-id="' + orderId + '"]');
+    if (select && window.sdOrderStatusCache[orderId]) {
+      select.value = window.sdOrderStatusCache[orderId];
+    }
+  }
+
+  // Sauvegarde la valeur actuelle du select quand il est focus
+  document.addEventListener('focus', function(e) {
+    if (e.target && e.target.tagName === 'SELECT' && e.target.hasAttribute('data-order-id')) {
+      var orderId = e.target.getAttribute('data-order-id');
+      window.sdOrderStatusCache[orderId] = e.target.value;
+    }
+  }, true);
+
+  // Ajoute des listeners aux selects après le rendu
+  function attachOrderStatusListeners() {
+    document.querySelectorAll('select[data-order-id]').forEach(function(select) {
+      var orderId = select.getAttribute('data-order-id');
+      var status  = select.getAttribute('data-current-status');
+
+      // Sauvegarde la valeur initiale pour cette commande
+      window.sdOrderStatusCache[orderId] = status;
+
+      // Désactiver le select si le statut actuel est "verrouillé"
+      if (LOCKED_STATUSES.includes(status)) {
+        select.disabled = true;
+        select.title = 'Cette commande ne peut plus être modifiée.';
+        select.style.opacity = '0.5';
+        select.style.cursor = 'not-allowed';
+      } else {
+        select.disabled = false;
+        select.title = '';
+        select.style.opacity = '1';
+        select.style.cursor = 'pointer';
+      }
+
+      // Listener pour sauvegarder la valeur avant changement
+      select.addEventListener('focus', function() {
+        window.sdOrderStatusCache[orderId] = this.value;
+      });
+    });
+  }
+
+  // Alias pour backward compatibility
+  async function sdLoadOrders_Original() {
     try {
       var snap = await db2.collection('orders').where('sellerId','==',currentShopId).orderBy('createdAt','desc').limit(20).get()
         .catch(function(){ return db2.collection('orders').where('sellerId','==',currentShopId).limit(20).get(); });
@@ -164,10 +303,18 @@ document.addEventListener('DOMContentLoaded', function() {
       var pending = orders.filter(function(o){ return !['delivered','cancelled'].includes((o.status||'').toLowerCase()); }).length;
       if (badge) { badge.textContent=pending; badge.style.display=pending?'flex':'none'; }
       var c = document.getElementById('sd-orders-list'); if(c) c.innerHTML = orders.length
-        ? orders.map(function(o){ var st=sdStatus(o.status); return '<div class="sd-order-row"><div><div class="sd-order-ref">#'+(o.reference||o.id.substring(0,8).toUpperCase())+'</div><div class="sd-order-meta">'+sdFmtDate(o.createdAt)+'</div></div><div><span class="sd-status-badge '+st.cls+'">'+st.label+'</span></div><div style="font-family:\'Unbounded\',sans-serif;font-size:13px;color:var(--g);font-weight:700">'+sdFmt(o.total||0)+' FCFA</div><div><select class="sd-input" style="padding:6px 28px 6px 10px;font-size:11px;background:var(--i3)" onchange="window.sdUpdateOrderStatus(\''+o.id+'\',this.value)" ><option value="pending_admin"'+(o.status==='pending_admin'?' selected':'')+'>En attente</option><option value="pending_seller"'+(o.status==='pending_seller'?' selected':'')+'>En préparation</option><option value="ready_for_delivery"'+(o.status==='ready_for_delivery'?' selected':'')+'>En livraison</option><option value="delivered"'+(o.status==='delivered'?' selected':'')+'>Livré</option><option value="cancelled"'+(o.status==='cancelled'?' selected':'')+'>Annulé</option></select></div><div></div></div>'; }).join('')
+        ? orders.map(function(o){ var st=sdStatus(o.status); var locked = LOCKED_STATUSES.includes(o.status); return '<div class="sd-order-row"><div><div class="sd-order-ref">#'+(o.reference||o.id.substring(0,8).toUpperCase())+'</div><div class="sd-order-meta">'+sdFmtDate(o.createdAt)+'</div></div><div><span class="sd-status-badge '+st.cls+'">'+st.label+'</span></div><div style="font-family:\'Unbounded\',sans-serif;font-size:13px;color:var(--g);font-weight:700">'+sdFmt(o.total||0)+' FCFA</div><div><select class="sd-input" data-order-id="'+o.id+'" data-current-status="'+o.status+'" '+(locked?'disabled':'')+' style="padding:6px 28px 6px 10px;font-size:11px;background:var(--i3)'+(locked?';opacity:0.5;cursor:not-allowed':'')+'" onchange="window.sdUpdateOrderStatus(\''+o.id+'\',this.value)" ><option value="pending_admin"'+(o.status==='pending_admin'?' selected':'')+'>En attente</option><option value="pending_seller"'+(o.status==='pending_seller'?' selected':'')+'>En préparation</option><option value="ready_for_delivery"'+(o.status==='ready_for_delivery'?' selected':'')+'>En livraison</option><option value="delivered"'+(o.status==='delivered'?' selected':'')+'>Livré</option><option value="cancelled"'+(o.status==='cancelled'?' selected':'')+'>Annulé</option></select></div><div></div></div>'; }).join('')
         : '<div class="sd-empty"><div class="sd-empty-title">Aucune commande</div></div>';
       var cr = document.getElementById('sd-recent-orders'); if(cr) cr.innerHTML = orders.slice(0,5).map(function(o){ var st=sdStatus(o.status); return '<div class="sd-order-row"><div><div class="sd-order-ref">#'+(o.reference||o.id.substring(0,8).toUpperCase())+'</div><div class="sd-order-meta">'+sdFmtDate(o.createdAt)+'</div></div><div><span class="sd-status-badge '+st.cls+'">'+st.label+'</span></div><div style="font-family:\'Unbounded\',sans-serif;font-size:13px;color:var(--g);font-weight:700">'+sdFmt(o.total||0)+' FCFA</div><div></div><div></div></div>'; }).join('');
+      
+      // Attacher les listeners de sécurité une fois le HTML rendu
+      setTimeout(attachOrderStatusListeners, 0);
     } catch(e){ console.error('[sd] sdLoadOrders:', e); }
+  }
+
+  // Wrapper pour appeler la fonction originale
+  async function sdLoadOrders() {
+    await sdLoadOrders_Original();
   }
 
   async function sdLoadStats() {
@@ -202,30 +349,77 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var sdProductForm = document.getElementById('sd-product-form');
   if (sdProductForm) {
-    sdProductForm.addEventListener('submit', async function(e) {
+   sdProductForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      var btn = document.getElementById('sd-submit-btn'); if(btn) { btn.disabled=true; var sp=btn.querySelector('span'); if(sp) sp.textContent='Publication…'; }
+      var btn = document.getElementById('sd-submit-btn'); 
+      if(btn) { btn.disabled=true; var sp=btn.querySelector('span'); if(sp) sp.textContent='Publication…'; }
+      
       try {
         var editId = e.target.dataset.editId;
         var g = function(id){ return document.getElementById(id)?.value||''; };
+        
+        // --- 1. GÉNÉRATION DU SLUG ---
+        var productName = g('fp-name');
+        var slug = productName
+          .toLowerCase()
+          .trim()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Enlève les accents
+          .replace(/[^\w ]+/g, '') // Enlève les caractères spéciaux
+          .replace(/ +/g, '-')     // Remplace les espaces par des tirets
+          + '-' + Math.random().toString(36).substring(2, 6); // Petit code unique
+
         var data = {
-          name:g('fp-name'), category:g('fp-category'), price:Number(g('fp-price'))||0,
-          stock:Number(g('fp-stock'))||0, sku:g('fp-sku'), description:g('fp-description'),
-          colors:g('fp-colors').split(',').map(function(c){return c.trim();}).filter(Boolean),
+          name: productName,
+          slug: slug, // <--- AJOUT DU SLUG ICI
+          category: g('fp-category'),
+          price: Number(g('fp-price'))||0,
+          stock: Number(g('fp-stock'))||0,
+          sku: g('fp-sku'),
+          description: g('fp-description'),
+          colors: g('fp-colors').split(',').map(function(c){return c.trim();}).filter(Boolean),
           sizes: g('fp-sizes').split(',').map(function(s){return s.trim();}).filter(Boolean),
-          shopId:currentShopId, shopName:currentShopData?.name||'',
-          updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
+          shopId: currentShopId,
+          shopName: currentShopData?.name||'',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         };
+
+        // --- 2. GESTION DES IMAGES ET ENVOI ---
         var op = Number(g('fp-original-price'))||0; if(op) data.originalPrice=op;
         var fileInput = document.getElementById('fp-images');
+        
         if (fileInput && fileInput.files.length > 0 && storage) {
-          var urls=[]; for(var file of fileInput.files){ var ref2=storage.ref('products/'+currentShopId+'/'+Date.now()+'_'+file.name); var sn=await ref2.put(file); urls.push(await sn.ref.getDownloadURL()); } data.images=urls; data.image=urls[0];
+          var urls=[]; 
+          for(var file of fileInput.files){ 
+            var ref2=storage.ref('products/'+currentShopId+'/'+Date.now()+'_'+file.name); 
+            var sn=await ref2.put(file); 
+            urls.push(await sn.ref.getDownloadURL()); 
+          } 
+          data.images=urls; data.image=urls[0];
         }
-        if (editId) { await db2.collection('products').doc(editId).update(data); delete e.target.dataset.editId; if(window.showToast) window.showToast('Produit mis à jour','success'); }
-        else { data.createdAt=firebase.firestore.FieldValue.serverTimestamp(); await db2.collection('products').add(data); if(window.showToast) window.showToast('Produit publié avec succès','success'); }
-        e.target.reset(); var prev=document.getElementById('sd-img-preview'); if(prev) prev.innerHTML=''; window.sdSwitchTab('products'); sdLoadProducts();
-      } catch(err){ if(window.showToast) window.showToast('Erreur : '+err.message,'danger'); console.error(err); }
-      finally { if(btn){ btn.disabled=false; var sp=btn.querySelector('span'); if(sp) sp.textContent='Publier le produit'; } }
+
+        if (editId) { 
+          // Si on modifie, on ne change pas forcément le slug pour ne pas casser le SEO déjà indexé
+          // Mais on peut choisir de le mettre à jour si tu préfères
+          await db2.collection('products').doc(editId).update(data); 
+          delete e.target.dataset.editId; 
+          if(window.showToast) window.showToast('Produit mis à jour','success'); 
+        } else { 
+          data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); 
+          await db2.collection('products').add(data); 
+          if(window.showToast) window.showToast('Produit publié avec succès','success'); 
+        }
+
+        e.target.reset(); 
+        var prev = document.getElementById('sd-img-preview'); 
+        if(prev) prev.innerHTML=''; 
+        window.sdSwitchTab('products'); 
+        sdLoadProducts();
+      } catch(err){ 
+        if(window.showToast) window.showToast('Erreur : '+err.message,'danger'); 
+        console.error(err); 
+      } finally { 
+        if(btn){ btn.disabled=false; var sp=btn.querySelector('span'); if(sp) sp.textContent='Publier le produit'; } 
+      }
     });
   }
 

@@ -76,8 +76,10 @@ document.addEventListener('DOMContentLoaded', function() {
       var card = document.createElement('div');
       card.className = 'wl-card';
       card.setAttribute('data-id', p.id);
+      // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
+      var pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
       card.innerHTML =
-        '<a href="product.html?id='+p.id+'" class="wl-card-img-wrap">'
+        '<a href="' + pUrl + '" class="wl-card-img-wrap">'
           + '<img src="'+img+'" class="wl-card-img" alt="'+(p.name||'')+'" onerror="this.src=\'assets/img/placeholder-product-1.svg\'">'
           + (hasD ? '<div class="wl-card-badge sale">-'+Math.round((1-price/op)*100)+'%</div>' : '')
           + '<button class="wl-card-remove" onclick="wlRemove(\''+p.id+'\',event)" title="Retirer des favoris"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>'
@@ -85,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
         + '</a>'
         + '<div class="wl-card-body">'
           + (p.category?'<span class="wl-card-cat">'+p.category+'</span>':'')
-          + '<a href="product.html?id='+p.id+'" class="wl-card-name">'+(p.name||'Produit sans nom')+'</a>'
+          + '<a href="' + pUrl + '" class="wl-card-name">'+(p.name||'Produit sans nom')+'</a>'
           + (p.shopName?'<span class="wl-card-shop">'+p.shopName+'</span>':'')
           + '<div class="wl-card-footer"><div><div class="wl-card-price">'+wlFmt(price)+'</div>'+(hasD?'<div class="wl-card-original">'+wlFmt(op)+'</div>':'')+'</div><span class="wl-card-stock '+stCls+'">'+stLbl+'</span></div>'
         + '</div>';

@@ -601,8 +601,8 @@ function initSellerDashboard() {
   window.auth.onAuthStateChanged(async user => {
     if (!user) {
       clearTimeout(safetyTimer);
-      if (window.AuthWall) window.AuthWall.deny({ redirectUrl: 'login.html', redirectLabel: 'Se connecter', reason: 'Connexion requise.' });
-      else window.location.href = 'login.html';
+      if (window.AuthWall) window.AuthWall.deny({ redirectUrl: '/login', redirectLabel: 'Se connecter', reason: 'Connexion requise.' });
+      else window.location.href = '/login';
       return;
     }
 
@@ -625,7 +625,7 @@ function initSellerDashboard() {
     if (!isSellerOrAdmin(role) && !hasShop) {
       clearTimeout(safetyTimer);
       if (window.AuthWall) window.AuthWall.deny({ email: user.email, role: role || 'client', reason: 'Accès réservé aux vendeurs certifiés.' });
-      else window.location.href = 'index.html';
+      else window.location.href = '/';
       return;
     }
 
@@ -684,7 +684,7 @@ function initSellerDashboard() {
 
 // ── LOGOUT ────────────────────────────────────────────────────────
 window.logout = function () {
-  window.auth.signOut().then(() => window.location.href = 'login.html');
+  window.auth.signOut().then(() => window.location.href = '/login');
 };
 
 // ── ROUTING ───────────────────────────────────────────────────────

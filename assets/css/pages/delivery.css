@@ -1,7 +1,4 @@
-﻿/* delivery.css - Page-specific styles from AurumCorp Design System */
-/* delivery.html styles */
-
-
+﻿
     body.dv-guarded { visibility:hidden !important; }
     #dv-wall {
       position:fixed; inset:0; z-index:99999;
@@ -19,9 +16,9 @@
     @keyframes spin { to { transform:rotate(360deg); } }
     body.dv-revealed { visibility:visible !important; }
   
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   AURUM â€” delivery.html  v2  (Awwwards design system)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════════════
+   AURUM — delivery.html  v2  (Awwwards design system)
+   ═══════════════════════════════════════════════════════════════ */
 
 :root {
   --ink  :#0B0A08; --ink2 :#1A1916; --ink3 :#2C2A27; --ink4:#3D3A35;
@@ -42,7 +39,7 @@ body {
 }
 ::selection { background:var(--gold); color:var(--ink); }
 
-/* â”€â”€ SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── SIDEBAR ─────────────────────────────────────────────────── */
 .dv-sidebar {
   width:var(--sb-w);
   flex-shrink:0;
@@ -149,7 +146,7 @@ body {
 }
 .dv-mobile-toggle svg { width:18px; height:18px; }
 
-/* â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── MAIN ─────────────────────────────────────────────────────── */
 .dv-main {
   flex:1; overflow-y:auto; height:100vh;
   background:var(--ink);
@@ -157,7 +154,7 @@ body {
 .dv-main::-webkit-scrollbar { width:3px; }
 .dv-main::-webkit-scrollbar-thumb { background:rgba(200,168,75,.15); }
 
-/* â”€â”€ TOP BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── TOP BAR ──────────────────────────────────────────────────── */
 .dv-topbar {
   display:flex; align-items:center; justify-content:space-between;
   padding:20px 40px;
@@ -177,12 +174,12 @@ body {
   color:var(--smoke);
 }
 
-/* â”€â”€ SECTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── SECTIONS ─────────────────────────────────────────────────── */
 .dv-section { display:none; padding:32px 40px 60px; }
 .dv-section.active { display:block; animation:secIn .4s cubic-bezier(.16,1,.3,1); }
 @keyframes secIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
-/* â”€â”€ SECTION HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── SECTION HEADER ───────────────────────────────────────────── */
 .dv-sec-head { margin-bottom:28px; }
 .dv-sec-eyebrow {
   font-family:'Unbounded', sans-serif; font-size:8px;
@@ -198,7 +195,7 @@ body {
 }
 .dv-sec-title em { font-style:italic; color:var(--gold); }
 
-/* â”€â”€ STAT BAND â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── STAT BAND ────────────────────────────────────────────────── */
 .dv-stats {
   display:grid; grid-template-columns:repeat(3,1fr);
   background:var(--ink2);
@@ -222,7 +219,7 @@ body {
   color:var(--smoke); font-weight:600;
 }
 
-/* â”€â”€ ORDER CARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── ORDER CARD ───────────────────────────────────────────────── */
 .dv-order-card {
   background:var(--ink2);
   border:1px solid rgba(200,168,75,.08);
@@ -266,6 +263,8 @@ body {
 }
 .dv-chip.ready { background:rgba(200,168,75,.12); color:var(--gold); border:1px solid rgba(200,168,75,.25); }
 .dv-chip.delivered { background:rgba(74,158,114,.1); color:var(--ok); border:1px solid rgba(74,158,114,.2); }
+.dv-chip.marketplace { background:rgba(224,142,69,.12); color:#E08E45; border:1px solid rgba(224,142,69,.25); }
+.dv-chip.in-transit { background:rgba(74,158,114,.12); color:var(--ok); border:1px solid rgba(74,158,114,.25); }
 
 .dv-order-body {
   padding:0 24px 20px 32px;
@@ -303,7 +302,7 @@ body {
 .dv-confirm-btn {
   display:flex; align-items:center; justify-content:center; gap:10px;
   width:100%; padding:16px;
-  background:var(--gold); color:var(--ink);
+  background:var(--ok); color:var(--white);
   border:none; font-family:'Unbounded', sans-serif;
   font-size:9px; letter-spacing:.22em; text-transform:uppercase;
   font-weight:800; position:relative; overflow:hidden;
@@ -319,6 +318,27 @@ body {
 .dv-confirm-btn span, .dv-confirm-btn svg { position:relative; z-index:1; }
 .dv-confirm-btn svg { width:14px; height:14px; }
 .dv-confirm-btn:disabled { opacity:.45; pointer-events:none; }
+
+/* Accept button (Marketplace) */
+.dv-accept-btn {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  width:100%; padding:16px;
+  background:#E08E45; color:var(--white);
+  border:none; font-family:'Unbounded', sans-serif;
+  font-size:9px; letter-spacing:.22em; text-transform:uppercase;
+  font-weight:800; position:relative; overflow:hidden;
+  transition:color .3s;
+}
+.dv-accept-btn::before {
+  content:''; position:absolute; inset:0;
+  background:var(--white); transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .4s cubic-bezier(.16,1,.3,1);
+}
+.dv-accept-btn:hover::before { transform:scaleX(1); }
+.dv-accept-btn span, .dv-accept-btn svg { position:relative; z-index:1; }
+.dv-accept-btn svg { width:14px; height:14px; }
+.dv-accept-btn:disabled { opacity:.45; pointer-events:none; }
 
 /* Empty state */
 .dv-empty {
@@ -347,7 +367,7 @@ body {
   animation:spin .7s linear infinite;
 }
 
-/* â”€â”€ PROFIL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── PROFIL ─────────────────────────────────────────────────────── */
 .dv-profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; }
 .dv-profile-block {
   background:var(--ink2);
@@ -364,7 +384,7 @@ body {
 .dv-profile-value { font-size:15px; color:var(--white); font-weight:500; line-height:1.4; }
 .dv-profile-value.gold { color:var(--gold); font-family:'Unbounded', sans-serif; font-size:11px; }
 
-/* â”€â”€ HISTORIQUE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── HISTORIQUE ──────────────────────────────────────────────── */
 .dv-history-item {
   display:flex; align-items:center; justify-content:space-between;
   padding:16px 20px;
@@ -377,7 +397,7 @@ body {
 .dv-history-date { font-size:11px; color:var(--smoke); margin-top:4px; }
 .dv-history-total { font-family:'Unbounded', sans-serif; font-size:12px; font-weight:700; color:var(--ok); }
 
-/* â”€â”€ ACCESS DENIED â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── ACCESS DENIED ───────────────────────────────────────────── */
 .dv-denied {
   position:fixed; inset:0; background:var(--ink);
   display:flex; flex-direction:column;
@@ -405,7 +425,7 @@ body {
 }
 .dv-denied-btn:hover { background:var(--gold2); }
 
-/* â”€â”€ TOAST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── TOAST ───────────────────────────────────────────────────── */
 #dv-toasts {
   position:fixed; bottom:24px; right:24px;
   z-index:99995; display:flex; flex-direction:column; gap:8px;
@@ -421,7 +441,7 @@ body {
 .dv-toast.err { border-left-color:var(--danger); }
 @keyframes toastIn { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
 
-/* â”€â”€ CONFIRM MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── CONFIRM MODAL ───────────────────────────────────────────── */
 .dv-modal-overlay {
   position:fixed; inset:0; background:rgba(11,10,8,.85);
   z-index:9000; display:none;
@@ -474,7 +494,7 @@ body {
 .dv-modal-ok:hover { color:var(--ok); }
 .dv-modal-ok span { position:relative; z-index:1; }
 
-/* â”€â”€ RESPONSIVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── RESPONSIVE ──────────────────────────────────────────────── */
 @media(max-width:900px) {
   body { flex-direction:column; overflow:auto; }
   .dv-sidebar {
@@ -493,4 +513,3 @@ body {
   .dv-order-head { flex-direction:column; gap:12px; }
   .dv-order-right { text-align:left; }
 }
-

@@ -69,7 +69,7 @@ window.Auth = {
       .catch(err => ({ success: false, message: err.message }));
   },
   logout() {
-    window.auth.signOut().then(() => (window.location.href = 'login.html'));
+    window.auth.signOut().then(() => (window.location.href = '/login'));
   },
 };
 
@@ -251,7 +251,7 @@ window.setupAuthUI = function () {
     logoutBtn.addEventListener('click', e => {
       e.preventDefault();
       localStorage.removeItem('ac_currentUser');
-      location.href = 'index.html';
+      location.href = '/';
     });
   }
 };
@@ -281,7 +281,7 @@ window.AuthWall = (function () {
 
 window.showAccessDenied = function ({
   email = '', role = '',
-  redirectUrl = 'index.html', redirectLabel = "Retourner à l'accueil",
+  redirectUrl = '/', redirectLabel = "Retourner à l'accueil",
   reason = '',
 } = {}) {
   const meta   = [email, role ? 'Rôle : ' + role : ''].filter(Boolean).join(' · ');
@@ -372,6 +372,45 @@ if (document.readyState === 'loading') {
 } else {
   if (typeof lucide !== 'undefined') lucide.createIcons();
   window.fixLucideIcons();
+}
+
+// ── 13. SHOP URL HELPER ──── Convertir shopId → URL avec slug ──
+window.shopSlugs = {}; // Cache des shopId → slug
+
+window.getShopUrl = async function (shopId) {
+  if (!shopId) return '/';
+  
+  // Vérifier le cache en premier
+  if (window.shopSlugs[shopId]) {
+    return '/boutique/' + window.shopSlugs[shopId];
+  }
+  
+  // Si pas en cache, chercher dans Firestore
+  try {
+    const snap = await window.db.collection('shops').doc(shopId).get();
+    if (snap.exists) {
+      const slug = snap.data().slug || snap.data().name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || shopId;
+      window.shopSlugs[shopId] = slug;
+      return '/boutique/' + slug;
+    }
+  } catch (err) {
+    console.error('getShopUrl error:', err);
+  }
+  
+  // Fallback: utiliser l'ID
+  return `/boutique?id=${shopId}`;
+};
+
+// Faire un pré-chargement des boutiques actuelles pour les mettre en cache
+if (window.db) {
+  window.db.collection('shops').limit(100).get()
+    .then(snap => {
+      snap.forEach(doc => {
+        const slug = doc.data().slug;
+        if (slug) window.shopSlugs[doc.id] = slug;
+      });
+    })
+    .catch(err => console.error('Pre-cache shops error:', err));
 }
 
 console.log("✅ config.js v3 chargé");

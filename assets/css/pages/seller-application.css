@@ -1,7 +1,34 @@
 ﻿/* seller-application.css - Page-specific styles from AurumCorp Design System */
 /* seller-application.html */
 
-:root{--ink:#0B0A08;--ink2:#1A1916;--ink3:#2C2A27;--gold:#C8A84B;--gold2:#E2C56A;--smoke:#7A7570;--white:#FEFCF8;--danger:#D94F4F;--ok:#4A9E72}
+:root{
+  --ink:#0B0A08;--ink2:#1A1916;--ink3:#2C2A27;--gold:#C8A84B;--gold2:#E2C56A;--smoke:#7A7570;--white:#FEFCF8;--danger:#D94F4F;--ok:#4A9E72;
+  
+  /* INK1 — Localized Strings for Enterprise Form */
+  --ink1-title: "l'entreprise";
+  --ink1-shopName: "NOM DE LA BOUTIQUE";
+  --ink1-legalStatus: "STATUT JURIDIQUE";
+  --ink1-rcgmNumber: "N° RCGM / REGISTRE";
+  --ink1-ifuNumber: "IFU / N° FISCAL";
+  --ink1-responsableName: "NOM DU RESPONSABLE";
+  --ink1-fonction: "FONCTION";
+  --ink1-phoneNumber: "TÉLÉPHONE PRO";
+  --ink1-emailOfficial: "EMAIL OFFICIEL";
+  --ink1-addressComplete: "ADRESSE COMPLÈTE";
+  
+  /* Placeholders */
+  --ink1-ph-shopName: "nnn,sn,qns,q,qnsng,snq,sn";
+  --ink1-ph-rcgmNumber: "BF-OUA-01-2023-A12";
+  --ink1-ph-ifuNumber: "00000000004";
+  --ink1-ph-responsableName: "Ex. Jean DUPONT";
+  --ink1-ph-fonction: "Ex. Gérant / Directeur";
+  --ink1-ph-phoneNumber: "+226 XX XX XX XX";
+  --ink1-ph-emailOfficial: "contact@macommerce.com";
+  --ink1-ph-addressComplete: "Quartier, Secteur, Ville";
+  
+  /* Select Options */
+  --ink1-select-legalStatus: "Sélectionnez...";
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;overflow-x:hidden}
 body{font-family:'Syne',sans-serif;background:var(--ink);color:var(--white);cursor:none;overflow-x:hidden}
@@ -144,14 +171,79 @@ body.ch #cur-ring{width:68px;height:68px;background:rgba(200,168,75,.07)}
 .sa-group{position:relative;padding-bottom:24px}
 .sa-label{font-family:'Unbounded',sans-serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--smoke);margin-bottom:12px;display:block;font-weight:700}
 .sa-req{color:var(--danger);margin-left:3px}
-.sa-input{width:100%;box-sizing:border-box;padding:16px 14px !important;background:rgba(255,255,255,0.18) !important;border:none !important;border-bottom:1.2px solid rgba(11,10,8,0.3) !important;border-radius:8px 8px 0 0 !important;color:var(--ink) !important;font-family:'Syne',sans-serif;font-size:15px;outline:none;transition:all 0.3s ease;-webkit-appearance:none}
-.sa-input::placeholder{color:rgba(11,10,8,0.35) !important;font-style:italic;opacity:1}
-.sa-input:hover{background:rgba(255,255,255,0.28) !important;border-bottom-color:rgba(11,10,8,0.45) !important}
-.sa-input:focus{background:rgba(255,255,255,0.35) !important;border-bottom-color:var(--gold) !important;outline:none;box-shadow:0 0 0 2px rgba(200,168,75,.1) !important}
-.sa-input:focus::placeholder{color:rgba(11,10,8,0.5) !important}
+.sa-input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 16px 14px !important;
+  background: rgba(255,255,255,0.18) !important;
+  border: none !important;
+  border-bottom: 1.2px solid rgba(11,10,8,0.3) !important;
+  border-radius: 8px 8px 0 0 !important;
+  color: #FEFCF8 !important;
+  font-family: 'Syne', sans-serif !important;
+  font-size: 15px !important;
+  outline: none !important;
+  transition: all 0.3s ease !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  caret-color: #C8A84B !important;
+}
+.sa-input::placeholder {
+  color: #FEFCF8 !important;
+  opacity: 0.6 !important;
+  font-style: italic !important;
+}
+.sa-input:hover {
+  background: rgba(255,255,255,0.28) !important;
+  border-bottom-color: rgba(200,168,75,0.45) !important;
+}
+.sa-input:active,
+.sa-input:focus {
+  background: rgba(255,255,255,0.35) !important;
+  border-bottom-color: var(--gold) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(200,168,75,.1) !important;
+  color: #FEFCF8 !important;
+}
+.sa-input:focus::placeholder {
+  color: #FEFCF8 !important;
+  opacity: 1 !important;
+}
+
+/* Autofill overrides */
+.sa-input:-webkit-autofill,
+.sa-input:-webkit-autofill:hover,
+.sa-input:-webkit-autofill:focus,
+.sa-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px rgba(255,255,255,0.18) inset !important;
+  box-shadow: 0 0 0 30px rgba(255,255,255,0.18) inset !important;
+  -webkit-text-fill-color: #FEFCF8 !important;
+  color: #FEFCF8 !important;
+  caret-color: #C8A84B !important;
+}
+.sa-input:-webkit-autofill::first-line {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 15px !important;
+  color: #FEFCF8 !important;
+}
 textarea.sa-input{resize:vertical;min-height:110px;line-height:1.6;padding:16px 14px !important}
-select.sa-input{padding-right:42px !important;background:rgba(255,255,255,0.18) !important;-webkit-appearance:none !important;-moz-appearance:none !important;appearance:none !important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 6 5-6' fill='none' stroke='%230B0A08' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;background-repeat:no-repeat !important;background-position:right 14px center !important;background-size:14px !important}
-select.sa-input option{background:var(--ink2);color:var(--white)}
+select.sa-input {
+  padding-right: 42px !important;
+  background: rgba(255,255,255,0.18) !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 6 5-6' fill='none' stroke='%23C8A84B' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 14px !important;
+  color: #FEFCF8 !important;
+}
+select.sa-input option {
+  background: var(--ink2) !important;
+  color: var(--white) !important;
+}
 .sa-input-line{display:none}
 
 /* CHECKBOXES */

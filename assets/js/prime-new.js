@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const btn = document.querySelector('.hero-search-btn');
       const go = () => {
         const q = (input?.value || '').trim();
-        window.location.href = q ? `catalogue.html?q=${encodeURIComponent(q)}` : 'catalogue.html';
+        window.location.href = q ? `/catalogue?q=${encodeURIComponent(q)}` : '/catalogue';
       };
       if (btn) btn.addEventListener('click', go);
       if (input) {
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
       logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
         firebase.auth().signOut().then(() => {
-          window.location.href = 'login.html';
+          window.location.href = '/login';
         });
       });
     }

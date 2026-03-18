@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   window.doLogout = function () {
-    auth.signOut().then(function () { window.location.href = 'index.html'; });
+    auth.signOut().then(function () { window.location.href = '/'; });
   };
 
   var _pendingOrderId = null;
@@ -136,13 +136,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   auth.onAuthStateChanged(async function (user) {
-    if (!user) { if (window.AuthWall) window.AuthWall.deny({ redirectUrl: 'login.html', redirectLabel: 'Se connecter', reason: 'Connexion requise.' }); else window.location.href = 'login.html'; return; }
+    if (!user) { if (window.AuthWall) window.AuthWall.deny({ redirectUrl: '/login', redirectLabel: 'Se connecter', reason: 'Connexion requise.' }); else window.location.href = '/login'; return; }
     try {
       var userDoc  = await db.collection('users').doc(user.uid).get();
       var userData = userDoc.exists ? userDoc.data() : {};
       if (userData.role !== 'livreur') {
         if (window.AuthWall) window.AuthWall.deny({ email: user.email, role: userData.role||'client', reason: 'Espace réservé aux livreurs certifiés Aurum.' });
-        else window.location.href = 'index.html';
+        else window.location.href = '/';
         return;
       }
 
