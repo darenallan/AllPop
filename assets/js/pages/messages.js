@@ -126,7 +126,7 @@
           '</div>' +
           '<div style="margin-bottom:2px">' +
             '<span class="inbox-conv-role-tag ' + (isBuyer?'buyer':'seller') + '">' + (isBuyer?'Achat':'Vente') + '</span>' +
-            '<span style="font-size:11px;color:#4A4540">' + esc(isBuyer ? (chat.shopName||'') : (chat.buyerName||'')) + '</span>' +
+            '<span style="font-size:11px;color:#4A4540">' + esc(isBuyer ? (chat.shopName || chat.sellerName || 'Boutique') : (chat.buyerName || 'Client')) + '</span>' +
           '</div>' +
           '<p class="inbox-conv-preview">' + esc(preview) + '</p>' +
         '</div></button>';
@@ -142,7 +142,9 @@
 
   /* ── Open thread ── */
   function openThread(chat) {
+    console.log('🔓 [OPENTHREAD] Opening chat:', chat.id, '| shopId:', chat.shopId, '| buyerId:', chat.buyerId);
     activeChat = chat;
+    console.log('✅ [OPENTHREAD] activeChat set to:', activeChat);
 
     var isBuyer = chat.buyerId === currentUser.uid;
     var partner = isBuyer ? (chat.shopName || 'Boutique') : (chat.buyerName || 'Client');
@@ -173,19 +175,31 @@
     threadInner.style.display   = 'flex';
 
     renderList(); /* Rafraîchit le highlight actif */
+    console.log('👂 [OPENTHREAD] Calling listenMessages with chatId:', chat.id);
     listenMessages(chat.id);
     inputEl.focus();
+    console.log('🎯 [OPENTHREAD] Thread opened and focused');
   }
 
   /* ── Subscribe messages ── */
   function listenMessages(chatId) {
-    if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+    console.log('📡 [LISTENMESSAGES] Starting listener for chatId:', chatId);
+    if (unsubMessages) { 
+      console.log('🔌 [LISTENMESSAGES] Unsubscribing from previous listener');
+      unsubMessages(); 
+      unsubMessages = null; 
+    }
     messagesWrap.innerHTML = '<div class="inbox-loading"><div class="inbox-spinner"></div></div>';
 
+    console.log('🔗 [LISTENMESSAGES] window.subscribeMessages exists?', typeof window.subscribeMessages === 'function');
     unsubMessages = window.subscribeMessages(
       chatId,
-      function(msgs) { renderMessages(msgs); },
+      function(msgs) { 
+        console.log('📨 [LISTENMESSAGES] Received', msgs.length, 'messages from Firestore');
+        renderMessages(msgs); 
+      },
       function(err)  {
+        console.error('❌ [LISTENMESSAGES] Error subscribing to messages:', err);
         messagesWrap.innerHTML = '<p class="inbox-msg-error">Impossible de charger les messages.</p>';
         console.error('[Inbox] listenMessages:', err);
       }
@@ -193,6 +207,7 @@
 
     /* Marquer comme lu */
     if (window._aurumMsg && window._aurumMsg.markConversationRead) {
+      console.log('🔖 [LISTENMESSAGES] Marking conversation as read');
       window._aurumMsg.markConversationRead(chatId);
     }
   }
@@ -236,69 +251,163 @@
 
   /* ── Send ── */
   // On récupère le formulaire ou le bouton d'envoi
-var compose = document.getElementById('chat-form'); // ou l'ID de ton formulaire
-var inputEl = document.getElementById('chat-input');
-var sendBtn = document.getElementById('chat-submit');
+  // NOTE: Ces IDs peuvent être différents de inbox-compose/inbox-input/inbox-send-btn
+  var composeAlt = document.getElementById('chat-form'); // ou l'ID de ton formulaire
+  var inputElAlt = document.getElementById('chat-input');
+  var sendBtnAlt = document.getElementById('chat-submit');
 
-// SÉCURITÉ : On ne lance le code que si le formulaire existe sur la page
-if (compose) {
-    compose.addEventListener('submit', async function(e) {
-        e.preventDefault();
+  // SÉCURITÉ : On ne lance le code que si le formulaire existe sur la page
+  if (composeAlt && inputElAlt && sendBtnAlt) {
+    composeAlt.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!activeChat) { 
+        if(window.toast) toast('Sélectionnez une conversation.', ''); 
+        return; 
+      }
+
+      var raw = inputElAlt.value.trim();
+      if (!raw) return;
+
+      sendBtnAlt.disabled = true;
+      try {
+        if (activeChat._stub) {
+          /* Nouvelle conv : créer + envoyer */
+          var chatId = await window.sendMessage(activeChat.shopId, raw, {
+            sellerId:   activeChat.sellerId   || '',
+            shopName:   activeChat.shopName   || '',
+            sellerName: activeChat.sellerName || '',
+            productId:  activeChat.productId  || '',
+          });
+          activeChat._stub  = false;
+          activeChat.id     = chatId;
+          if(typeof listenMessages === 'function') listenMessages(chatId);
+        } else {
+          await window.sendReply(activeChat.id, raw);
+        }
         
-        if (!activeChat) { 
-            if(window.toast) toast('Sélectionnez une conversation.', ''); 
-            return; 
-        }
-
-        var raw = inputEl.value.trim();
-        if (!raw) return;
-
-        sendBtn.disabled = true;
-        try {
-            if (activeChat._stub) {
-                /* Nouvelle conv : créer + envoyer */
-                var chatId = await window.sendMessage(activeChat.shopId, raw, {
-                    sellerId:   activeChat.sellerId   || '',
-                    shopName:   activeChat.shopName   || '',
-                    sellerName: activeChat.sellerName || '',
-                    productId:  activeChat.productId  || '',
-                });
-                activeChat._stub  = false;
-                activeChat.id     = chatId;
-                if(typeof listenMessages === 'function') listenMessages(chatId);
-            } else {
-                await window.sendReply(activeChat.id, raw);
-            }
-            
-            inputEl.value         = '';
-            if(window.charCount) charCount.textContent = '0 / 1200';
-            inputEl.style.height  = 'auto';
-            inputEl.focus();
-        } catch (err) {
-            if(window.toast) toast(err.message || 'Envoi impossible.', 'danger');
-        } finally {
-            sendBtn.disabled = false;
-        }
+        inputElAlt.value         = '';
+        if(window.charCount) charCount.textContent = '0 / 1200';
+        inputElAlt.style.height  = 'auto';
+        inputElAlt.focus();
+      } catch (err) {
+        if(window.toast) toast(err.message || 'Envoi impossible.', 'danger');
+      } finally {
+        sendBtnAlt.disabled = false;
+      }
     });
-}
+  }
+
+  /* ── FORMULAIRE PRINCIPAL (Inbox) ── */
+  if (compose && inputEl && sendBtn) {
+    console.log('🔧 [INBOX] Form listener attached to #inbox-compose');
+    compose.addEventListener('submit', async function(e) {
+      console.log('🚀 [SUBMIT] Form submit event fired!');
+      e.preventDefault();
+      console.log('✅ [SUBMIT] preventDefault() called');
+      
+      console.log('📋 [SUBMIT] activeChat state:', activeChat);
+      if (!activeChat) {
+        console.warn('⚠️ [SUBMIT] No active chat selected');
+        if(window.toast) toast('Sélectionnez une conversation.', '');
+        return;
+      }
+
+      var raw = inputEl.value.trim();
+      console.log('📝 [SUBMIT] Message text length:', raw.length, '| Raw text:', raw.substring(0, 50));
+      if (!raw) {
+        console.warn('⚠️ [SUBMIT] Message is empty, skipping');
+        return;
+      }
+
+      console.log('🔒 [SUBMIT] Disabling send button');
+      sendBtn.disabled = true;
+      
+      try {
+        console.log('🔍 [SUBMIT] Checking if stub conversation:', activeChat._stub);
+        if (activeChat._stub) {
+          /* Nouvelle conversation : créer + envoyer */
+          console.log('📤 [SUBMIT] Creating new conversation with shopId:', activeChat.shopId);
+          console.log('🔗 [SUBMIT] window.sendMessage exists?', typeof window.sendMessage === 'function');
+          
+          var messageResult = await window.sendMessage(activeChat.shopId, raw, {
+            sellerId:   activeChat.sellerId   || '',
+            shopName:   activeChat.shopName   || '',
+            sellerName: activeChat.sellerName || '',
+            productId:  activeChat.productId  || '',
+          });
+          
+          console.log('📨 [SUBMIT] sendMessage returned:', messageResult);
+          
+          // Handle both return formats (object or string)
+          var chatId = typeof messageResult === 'object' ? messageResult.chatId : messageResult;
+          console.log('💾 [SUBMIT] Extracted chatId:', chatId);
+          
+          activeChat._stub  = false;
+          activeChat.id     = chatId;
+          console.log('✅ [SUBMIT] Updated activeChat.id to:', chatId);
+          
+          if(typeof listenMessages === 'function') {
+            console.log('👂 [SUBMIT] Calling listenMessages with chatId:', chatId);
+            listenMessages(chatId);
+          } else {
+            console.error('❌ [SUBMIT] listenMessages is NOT a function');
+          }
+        } else {
+          console.log('💬 [SUBMIT] Sending reply to existing chat:', activeChat.id);
+          console.log('🔗 [SUBMIT] window.sendReply exists?', typeof window.sendReply === 'function');
+          await window.sendReply(activeChat.id, raw);
+          console.log('✅ [SUBMIT] Reply sent successfully');
+        }
+        
+        console.log('🧹 [SUBMIT] Clearing input field');
+        inputEl.value = '';
+        if(charCount) charCount.textContent = '0 / 1200';
+        inputEl.style.height = 'auto';
+        inputEl.focus();
+        console.log('✨ [SUBMIT] Form cleared and focused');
+      } catch (err) {
+        console.error('❌ [SUBMIT] Error caught:', err);
+        console.error('   Message:', err.message);
+        console.error('   Stack:', err.stack);
+        if(window.toast) toast(err.message || 'Envoi impossible.', 'danger');
+      } finally {
+        console.log('🔓 [SUBMIT] Re-enabling send button');
+        sendBtn.disabled = false;
+      }
+    });
+  } else {
+    console.error('❌ [INBOX] Form elements NOT FOUND: compose=', !!compose, 'inputEl=', !!inputEl, 'sendBtn=', !!sendBtn);
+  }
 
   /* ── Char counter + auto-grow ── */
-  inputEl.addEventListener('input', function() {
-    var len = inputEl.value.length;
-    charCount.textContent = len + ' / 1200';
-    if (len > 1100) charCount.style.color = '#D94F4F';
-    else            charCount.style.color = '';
-    inputEl.style.height = 'auto';
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
-  });
+  if (inputEl && charCount) {
+    inputEl.addEventListener('input', function() {
+      var len = inputEl.value.length;
+      charCount.textContent = len + ' / 1200';
+      if (len > 1100) charCount.style.color = '#D94F4F';
+      else            charCount.style.color = '';
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+    });
+  }
 
   /* ── Enter = send ── */
-  inputEl.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      compose.dispatchEvent(new Event('submit'));
-    }
-  });
+  if (inputEl && compose) {
+    console.log('🔧 [KEYBOARD] Keydown listener attached to #inbox-input (Enter to send)');
+    inputEl.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        console.log('⌨️  [KEYBOARD] Enter key pressed (no Shift)');
+        e.preventDefault();
+        console.log('📤 [KEYBOARD] Dispatching submit event on form');
+        compose.dispatchEvent(new Event('submit'));
+      } else if (e.key === 'Enter' && e.shiftKey) {
+        console.log('📝 [KEYBOARD] Shift+Enter detected - allowing newline');
+      }
+    });
+  } else {
+    console.error('❌ [KEYBOARD] Cannot attach Enter listener: inputEl=', !!inputEl, 'compose=', !!compose);
+  }
 
   /* ── Tabs ── */
   document.querySelectorAll('.inbox-tab').forEach(function(tab) {
@@ -311,42 +420,67 @@ if (compose) {
   });
 
   /* ── Search ── */
-  document.getElementById('inbox-search').addEventListener('input', function(e) {
-    searchTerm = e.target.value.trim();
-    renderList();
-  });
+  var searchEl = document.getElementById('inbox-search');
+  if (searchEl) {
+    searchEl.addEventListener('input', function(e) {
+      searchTerm = e.target.value.trim();
+      renderList();
+    });
+  }
 
   /* ── Back (mobile) ── */
-  backBtn.addEventListener('click', function() {
-    sidebar.classList.remove('mobile-hidden');
-    threadPanel.classList.remove('mobile-show');
-    emptyState.style.display    = '';
-    threadInner.style.display   = 'none';
-    activeChat = null;
-    if (unsubMessages) { unsubMessages(); unsubMessages = null; }
-    renderList();
-  });
+  if (backBtn && sidebar && threadPanel && emptyState && threadInner) {
+    backBtn.addEventListener('click', function() {
+      sidebar.classList.remove('mobile-hidden');
+      threadPanel.classList.remove('mobile-show');
+      emptyState.style.display    = '';
+      threadInner.style.display   = 'none';
+      activeChat = null;
+      if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+      renderList();
+    });
+  }
 
   /* ── Bootstrap depuis URL params ── */
   async function bootstrapFromUrl() {
-    if (!initChatId && !initShopId) return;
+    console.log('🚀 [BOOTSTRAP] Starting URL bootstrap check...');
+    console.log('   initChatId:', initChatId, '| initShopId:', initShopId);
+    if (!initChatId && !initShopId) {
+      console.log('⏭️  [BOOTSTRAP] No URL params, skipping bootstrap');
+      return;
+    }
 
     /* 1 — Essayer de trouver dans le cache */
     if (initChatId) {
+      console.log('🔍 [BOOTSTRAP] Looking for chatId in cache...');
       var found = chatsCache.find(function(c){ return c.id === initChatId; });
-      if (found) { openThread(found); return; }
+      if (found) { 
+        console.log('✅ [BOOTSTRAP] Found in cache! Opening thread...');
+        openThread(found); 
+        return; 
+      }
+      console.log('⚠️  [BOOTSTRAP] Not found in cache');
     }
 
     /* 2 — Essayer de charger depuis Firestore */
     if (initChatId) {
       try {
-        var snap = await firebase.firestore().collection('conversations').doc(initChatId).get();
-        if (snap.exists) { openThread(Object.assign({ id: snap.id }, snap.data())); return; }
-      } catch (_) {}
+        console.log('📥 [BOOTSTRAP] Loading from Firestore collection "chats"...');
+        var snap = await firebase.firestore().collection('chats').doc(initChatId).get();
+        if (snap.exists) { 
+          console.log('✅ [BOOTSTRAP] Found in Firestore! Opening thread...');
+          openThread(Object.assign({ id: snap.id }, snap.data())); 
+          return; 
+        }
+        console.log('⚠️  [BOOTSTRAP] Document does not exist in Firestore');
+      } catch (err) {
+        console.error('❌ [BOOTSTRAP] Error loading from Firestore:', err);
+      }
     }
 
     /* 3 — Stub nouvelle conversation */
     if (initShopId) {
+      console.log('🔧 [BOOTSTRAP] Creating stub for new conversation with shopId:', initShopId);
       var stub = {
         id:         initChatId || window.buildChatId(currentUser.uid, initShopId),
         shopId:     initShopId,
@@ -361,48 +495,72 @@ if (compose) {
       };
       /* Récupérer le nom de la boutique */
       try {
+        console.log('🏪 [BOOTSTRAP] Fetching shop details for shopId:', initShopId);
         var shopSnap = await firebase.firestore().collection('shops').doc(initShopId).get();
         if (shopSnap.exists) {
           stub.shopName   = shopSnap.data().name   || '';
           stub.sellerName = shopSnap.data().ownerName || stub.sellerName;
           stub.sellerId   = stub.sellerId || shopSnap.data().ownerId || shopSnap.data().ownerUid || '';
+          console.log('✅ [BOOTSTRAP] Shop details loaded:', stub.shopName);
         }
-      } catch (_) {}
+      } catch (err) {
+        console.error('⚠️  [BOOTSTRAP] Could not fetch shop details:', err);
+      }
       chatsCache = [stub].concat(chatsCache.filter(function(c){ return c.id !== stub.id; }));
       renderList();
+      console.log('🎯 [BOOTSTRAP] Opening stub thread');
       openThread(stub);
     }
   }
 
   /* ── Auth listener ── */
+  console.log('🔐 [INIT] Checking Firebase availability...');
   if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
+    console.error('❌ [INIT] Firebase not configured!');
     convListEl.innerHTML = '<div class="inbox-conv-empty"><p>Firebase non configuré. Vérifiez config.js.</p></div>';
     return;
   }
+  console.log('✅ [INIT] Firebase is available');
 
   firebase.auth().onAuthStateChanged(async function(user) {
-    if (!user) { goLogin(); return; }
+    if (!user) { 
+      console.error('❌ [AUTH] No user logged in, redirecting to login');
+      goLogin(); 
+      return; 
+    }
+    console.log('✅ [AUTH] User logged in:', user.uid, '|', user.email);
     currentUser = user;
 
-    if (unsubChats) { unsubChats(); unsubChats = null; }
+    if (unsubChats) { 
+      console.log('🔌 [AUTH] Unsubscribing from previous chats listener');
+      unsubChats(); 
+      unsubChats = null; 
+    }
 
+    console.log('📡 [AUTH] Subscribing to user chats for uid:', currentUser.uid);
     unsubChats = window.subscribeUserChats(
       currentUser.uid,
       function(chats) {
+        console.log('📬 [CHATS] Received', chats.length, 'conversations from Firestore');
         chatsCache = chats;
         /* Sync activeChat si mis à jour côté Firestore */
         if (activeChat && !activeChat._stub) {
           var updated = chats.find(function(c){ return c.id === activeChat.id; });
-          if (updated) activeChat = Object.assign({}, activeChat, updated);
+          if (updated) {
+            console.log('🔄 [CHATS] Updated activeChat from Firestore');
+            activeChat = Object.assign({}, activeChat, updated);
+          }
         }
         renderList();
       },
       function(err) {
+        console.error('❌ [CHATS] Error loading conversations:', err);
         convListEl.innerHTML = '<div class="inbox-conv-empty"><p>Impossible de charger les conversations.<br>' + err.message + '</p></div>';
       }
     );
 
     /* Attendre le premier batch onSnapshot avant de bootstrapper */
+    console.log('⏳ [INIT] Waiting 450ms before bootstrapping from URL params...');
     setTimeout(bootstrapFromUrl, 450);
   });
 
@@ -601,13 +759,27 @@ if (compose) {
 
   async function ensureChat(payload) {
     const { db } = ensureFirebaseReady();
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SÉCURITÉ STRICTE: Convertir et valider TOUS les paramètres
+    // ═══════════════════════════════════════════════════════════════════════════
     const buyerId = String(payload.buyerId || "").trim();
     const sellerId = String(payload.sellerId || "").trim();
     const shopId = String(payload.shopId || "").trim();
     const productId = String(payload.productId || "").trim();
 
-    if (!buyerId || !sellerId || !shopId) {
-      throw new Error("Informations de conversation invalides.");
+    // Vérifications strictes AVANT d'envoyer à Firestore
+    if (!buyerId) {
+      throw new Error("[Security] buyerId invalide ou vide.");
+    }
+    if (!sellerId) {
+      throw new Error("[Security] sellerId invalide ou vide.");
+    }
+    if (!shopId) {
+      throw new Error("[Security] shopId invalide ou vide.");
+    }
+    if (buyerId === sellerId) {
+      throw new Error("[Security] buyerId et sellerId ne peuvent pas être identiques.");
     }
 
     const chatId = buildChatId(buyerId, sellerId, shopId);
@@ -617,26 +789,38 @@ if (compose) {
     try {
       const chatSnap = await chatRef.get();
       exists = chatSnap.exists;
-    } catch (_) {
-      // Read may fail if chat doesn't exist yet — proceed to create.
+    } catch (err) {
+      // Ignorer "Permission denied" - l'utilisateur n'est peut-être pas encore dans les participants.
+      if (err.code !== 'permission-denied') {
+        throw err;
+      }
+      console.warn('[Messaging] Permission denied on ensureChat.get() - will create', err);
     }
 
     if (!exists) {
       try {
+        // CRÉATION SÉCURISÉE avec validation stricte des types
         await chatRef.set({
-          buyerId,
-          sellerId,
-          shopId,
+          buyerId,                                    // String, non-vide
+          sellerId,                                  // String, non-vide
+          shopId,                                    // String, non-vide
           productId: productId || null,
-          participantIds: [buyerId, sellerId],
+          participantIds: [buyerId, sellerId],      // Array de taille 2 (OBLIGATOIRE)
           createdBy: buyerId,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
           lastMessage: "",
           lastMessageAt: null
         });
+        
+        console.log("[Messaging] ensureChat créé avec sécurité:", { buyerId, sellerId, shopId, chatId });
       } catch (createErr) {
-        console.warn("[Messaging] ensureChat create:", createErr.message);
+        console.error("[Messaging] ensureChat create error:", {
+          code: createErr.code,
+          message: createErr.message,
+          params: { buyerId, sellerId, shopId }
+        });
+        throw createErr;
       }
     }
 
@@ -729,124 +913,7 @@ if (compose) {
       );
   }
 
-  function subscribeUserChats(userId, onData, onError) {
-    const { db } = ensureFirebaseReady();
-    return db
-      .collection("chats")
-      .where("participantIds", "array-contains", userId)
-      .orderBy("updatedAt", "desc")
-      .onSnapshot(
-        (snapshot) => {
-          const chats = [];
-          snapshot.forEach((doc) => {
-            chats.push({ id: doc.id, ...doc.data() });
-          });
-          onData(chats);
-        },
-        (error) => {
-          if (typeof onError === "function") onError(error);
-        }
-      );
-  }
 
-  async function openSellerChat(options = {}) {
-    const user = requireAuthUser();
-
-    let shopId = String(options.shopId || "").trim();
-    const productId = String(options.productId || "").trim();
-
-    let sellerId = String(options.sellerId || "").trim();
-    let shopName = String(options.shopName || "").trim();
-    let sellerName = String(options.sellerName || "").trim();
-
-    // Resolve from product first (most reliable on PDP), then fallback to shop document.
-    if ((!shopId || shopId === "unknown" || !sellerId) && productId) {
-      try {
-        const { db } = ensureFirebaseReady();
-        const productSnap = await db.collection("products").doc(productId).get();
-        if (productSnap.exists) {
-          const p = productSnap.data() || {};
-          if (!shopId || shopId === "unknown") {
-            shopId = String(p.shopId || p.shop || "").trim();
-          }
-          if (!sellerId) {
-            sellerId = String(
-              p.sellerId || p.ownerId || p.ownerUid || p.userId || p.uid || p.seller || ""
-            ).trim();
-          }
-          if (!shopName) {
-            shopName = String(p.shopName || "").trim();
-          }
-          if (!sellerName) {
-            sellerName = String(p.sellerName || "").trim();
-          }
-        }
-      } catch (err) {
-        console.warn("[Messaging] Résolution produit échouée:", err.message || err);
-      }
-    }
-
-    if (!shopId || shopId === "unknown") {
-      throw new Error("Boutique introuvable pour ce produit.");
-    }
-
-    if (!sellerId) {
-      const resolved = await resolveSellerIdFromShop(shopId);
-      sellerId = resolved.sellerId;
-      shopName = shopName || resolved.shopName;
-      sellerName = sellerName || resolved.sellerName;
-    }
-
-    if (sellerId === user.uid) {
-      if (typeof window.showToast === "function") {
-        window.showToast("Cette boutique vous appartient deja.", "warning");
-      }
-      return;
-    }
-
-    const chatId = buildChatId(user.uid, sellerId, shopId);
-    const modal = document.getElementById("aurum-chat-modal");
-    if (!modal) return;
-
-    modal.dataset.shopId = shopId;
-    modal.dataset.sellerId = sellerId;
-    modal.dataset.chatId = chatId;
-    modal.dataset.productId = String(options.productId || "");
-
-    const title = modal.querySelector("[data-chat-title]");
-    if (title) {
-      title.textContent = shopName || sellerName || "Conversation avec le vendeur";
-    }
-
-    const openPageBtn = modal.querySelector("[data-open-messages-page]");
-    if (openPageBtn) {
-      const params = new URLSearchParams({
-        chatId,
-        shopId,
-        sellerId
-      });
-      if (options.productId) params.set("productId", String(options.productId));
-      openPageBtn.setAttribute("href", `messages.html?${params.toString()}`);
-    }
-
-    modal.classList.add("active");
-    document.body.style.overflow = "hidden";
-
-    // Create the chat document BEFORE subscribing to messages,
-    // so Firestore rules (participant check) can evaluate.
-    try {
-      await ensureChat({
-        buyerId: user.uid,
-        sellerId,
-        shopId,
-        productId
-      });
-    } catch (chatErr) {
-      console.warn("[Messaging] Pre-subscribe ensureChat:", chatErr.message);
-    }
-
-    initModalRealtimeThread(modal, user.uid);
-  }
 
   function renderModalMessages(listEl, messages, currentUserId) {
     if (!listEl) return;
@@ -1012,9 +1079,9 @@ if (compose) {
   window.sendMessage = sendMessage;
   window.sendReply   = sendReply;
   window.subscribeMessages = subscribeMessages;
-  window.subscribeUserChats = subscribeUserChats;
+  // NOTE: subscribeUserChats est exporté plus bas dans la 2ème IIFE (ligne 1660)
   window.resolveSellerIdFromShop = resolveSellerIdFromShop;
-  window.openSellerChat = openSellerChat;
+  // NOTE: openSellerChat est assigné DIRECTEMENT en bas du fichier (version débogage extérieur)
   window.closeSellerChatModal = closeSellerChatModal;
   window.initChatModalBindings = initChatModalBindings;
   window.AURUM_CHAT_MASK = MASK_TEXT;
@@ -1125,7 +1192,7 @@ if (compose) {
   if (window.__aurumMessagingLoaded) return;
   window.__aurumMessagingLoaded = true;
 
-  const COLL = 'conversations';
+  const COLL = 'chats';  // ← IMPORTANT: Collection 'chats' (avec règles Firestore strictes)
   const MSGS = 'messages';
 
   // ── PRIVATE HELPERS ───────────────────────────────────────────
@@ -1208,32 +1275,59 @@ if (compose) {
       .replace(/\n/g, '<br>');
   }
 
-  // ── buildChatId ───────────────────────────────────────────────
-
-  /**
-   * ID déterministe : un acheteur = une seule conv par boutique.
-   * Toujours le même chatId même si on recharge la page.
-   */
-  function buildChatId(buyerId, shopId) {
-    return `${buyerId.slice(0, 20)}_${shopId.slice(0, 20)}`;
-  }
-
   // ── getOrCreateConversation ───────────────────────────────────
 
+  /**
+   * Crée ou récupère une conversation existante.
+   * IMPORTANT: Utilise la collection 'chats' (conforme aux règles Firestore).
+   */
   async function getOrCreateConversation({ shopId, sellerId, shopName, sellerName, productId }) {
     const user = currentUser();
     const db   = getDb();
-    const chatId = buildChatId(user.uid, shopId);
-    const ref    = db.collection(COLL).doc(chatId);
 
-    const snap = await ref.get();
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SÉCURITÉ STRICTE: Valider TOUS les paramètres AVANT de les utiliser
+    // ═══════════════════════════════════════════════════════════════════════════
+    const safeUid = String(user.uid || "").trim();
+    const safeSellerId = String(sellerId || "").trim();
+    const safeShopId = String(shopId || "").trim();
+    const safeProductId = String(productId || "").trim();
+
+    // Vérifications strictes
+    if (!safeUid) {
+      throw new Error("[Security] UID acheteur invalide ou vide.");
+    }
+    if (!safeSellerId) {
+      throw new Error("[Security] UID vendeur introuvable pour cette boutique.");
+    }
+    if (!safeShopId) {
+      throw new Error("[Security] Identifiant boutique invalide ou vide.");
+    }
+
+    const chatId = buildChatId(safeUid, safeSellerId, safeShopId);
+    const ref    = db.collection('chats').doc(chatId);  // ← Use 'chats', not 'conversations'
+
+    // Ignorer les erreurs de permission lors du .get()
+    let snap = null;
+    try {
+      snap = await ref.get();
+    } catch (err) {
+      // Permission denied = conversation n'existe pas ou acheteur n'est pas dans participants
+      if (err.code === 'permission-denied') {
+        console.warn('[Messaging] Permission denied on getOrCreateConversation.get() - will create', err);
+        snap = { exists: false };
+      } else {
+        throw err;
+      }
+    }
+
     if (snap.exists) return chatId;
 
     // Récupérer le nom de l'acheteur depuis Firestore/users si dispo
     let buyerName  = user.displayName || user.email?.split('@')[0] || 'Client';
     let buyerEmail = user.email || '';
     try {
-      const uSnap = await db.collection('users').doc(user.uid).get();
+      const uSnap = await db.collection('users').doc(safeUid).get();
       if (uSnap.exists) {
         const ud = uSnap.data();
         buyerName  = ud.name || ud.displayName || ud.firstName || buyerName;
@@ -1241,25 +1335,42 @@ if (compose) {
       }
     } catch (_) { /* silencieux */ }
 
-    await ref.set({
-      buyerId:      user.uid,
-      buyerName,
-      buyerEmail,
-      sellerId:     sellerId || '',
-      shopId,
-      shopName:     shopName || 'Boutique',
-      sellerName:   sellerName || shopName || 'Vendeur',
-      productId:    productId || '',
-      lastMessage:  '',
-      lastMessageAt: null,
-      lastSenderId: '',
-      unreadBuyer:  0,
-      unreadSeller: 0,
-      participants: [user.uid, sellerId || shopId].filter(Boolean),
-      archived:     false,
-      createdAt:    tsNow(),
-      updatedAt:    tsNow(),
-    });
+    // ← IMPORTANT: participantIds DOIT contenir l'acheteur ET le vendeur (ordre importe pas)
+    // Les règles Firestore exigent:
+    // - participantIds.size() == 2
+    // - participantIds.hasAll([buyerId, sellerId])
+    const participantIds = [safeUid, safeSellerId];  // Ordre: acheteur, vendeur
+
+    try {
+      await ref.set({
+        buyerId:       safeUid,           // String, non-vide
+        buyerName:     buyerName || 'Acheteur',
+        buyerEmail:    buyerEmail || '',
+        sellerId:      safeSellerId,      // String, non-vide
+        shopId:        safeShopId,        // String, non-vide
+        shopName:      String(shopName || 'Boutique'),
+        sellerName:    String(sellerName || shopName || 'Vendeur'),
+        productId:     safeProductId || null,
+        lastMessage:   '',
+        lastMessageAt: null,
+        lastSenderId:  '',
+        unreadBuyer:   0,
+        unreadSeller:  0,
+        participantIds: participantIds,   // Array de taille 2 (OBLIGATOIRE)
+        archived:      false,
+        createdAt:     tsNow(),
+        updatedAt:     tsNow(),
+      });
+
+      console.log("[Messaging] getOrCreateConversation created:", { buyerId: safeUid, sellerId: safeSellerId, shopId: safeShopId, chatId });
+    } catch (createErr) {
+      console.error("[Messaging] getOrCreateConversation create error:", {
+        code: createErr.code,
+        message: createErr.message,
+        params: { buyerId: safeUid, sellerId: safeSellerId, shopId: safeShopId }
+      });
+      throw createErr;
+    }
 
     return chatId;
   }
@@ -1267,28 +1378,48 @@ if (compose) {
   // ── sendReply (conv existante) ────────────────────────────────
 
   async function sendReply(chatId, rawText) {
+    console.log('💬 [SENDREPLY] Starting sendReply');
+    console.log('   chatId:', chatId);
+    console.log('   Raw text length:', rawText.length);
+    
     const user = currentUser();
     const db   = getDb();
+    console.log('   User:', user ? user.uid : 'NO USER');
 
     const { text, hasMaskedContent } = sanitizeText(rawText);
-    if (!text) throw new Error('Message vide.');
+    console.log('   Sanitized text length:', text.length, '| hasMaskedContent:', hasMaskedContent);
+    
+    if (!text) {
+      console.error('❌ [SENDREPLY] Text is empty after sanitization');
+      throw new Error('Message vide.');
+    }
 
+    console.log('📥 [SENDREPLY] Getting conversation document...');
     const convSnap = await db.collection(COLL).doc(chatId).get();
-    if (!convSnap.exists) throw new Error('Conversation introuvable.');
+    if (!convSnap.exists) {
+      console.error('❌ [SENDREPLY] Conversation does not exist:', chatId);
+      throw new Error('Conversation introuvable.');
+    }
     const conv = convSnap.data();
+    console.log('✅ [SENDREPLY] Conv found. buyerId:', conv.buyerId, '| current user:', user.uid);
 
     const isBuyer    = conv.buyerId === user.uid;
-    const senderName = isBuyer ? conv.buyerName : (conv.sellerName || conv.shopName || 'Vendeur');
+    const senderName = String(isBuyer 
+      ? (conv.buyerName || user.displayName || user.email || 'Acheteur')
+      : (conv.sellerName || conv.shopName || user.displayName || 'Vendeur')
+    );
     const preview    = text.length > 80 ? text.slice(0, 80) + '…' : text;
+    console.log('   Is buyer:', isBuyer, '| Sender name:', senderName);
 
     const batch   = db.batch();
     const msgRef  = db.collection(COLL).doc(chatId).collection(MSGS).doc();
+    console.log('   Creating message doc with ID:', msgRef.id);
 
     batch.set(msgRef, {
       senderId:         user.uid,
-      senderName,
-      text,
-      hasMaskedContent,
+      senderName:       senderName || 'Utilisateur',
+      text:             text || '',
+      hasMaskedContent: Boolean(hasMaskedContent),
       type:             'text',
       ref:              null,
       read:             false,
@@ -1308,21 +1439,42 @@ if (compose) {
     }
 
     batch.update(db.collection(COLL).doc(chatId), convUpdate);
-    await batch.commit();
+    console.log('📤 [SENDREPLY] Committing batch to Firestore...');
+    
+    try {
+      await batch.commit();
+      console.log('✅ [SENDREPLY] Batch committed successfully!');
+    } catch (err) {
+      console.error('❌ [SENDREPLY] Batch commit failed:', err);
+      throw err;
+    }
   }
 
   // ── sendMessage (crée la conv si besoin) ─────────────────────
 
   async function sendMessage(shopId, rawText, opts = {}) {
-    const chatId = await getOrCreateConversation({
-      shopId,
-      sellerId:   opts.sellerId   || '',
-      shopName:   opts.shopName   || '',
-      sellerName: opts.sellerName || '',
-      productId:  opts.productId  || '',
-    });
-    await sendReply(chatId, rawText);
-    return chatId;
+    console.log('📤 [SENDMESSAGE] Starting sendMessage');
+    console.log('   shopId:', shopId);
+    console.log('   Text length:', rawText.length);
+    console.log('   opts:', opts);
+    
+    try {
+      const chatId = await getOrCreateConversation({
+        shopId,
+        sellerId:   opts.sellerId   || '',
+        shopName:   opts.shopName   || '',
+        sellerName: opts.sellerName || '',
+        productId:  opts.productId  || '',
+      });
+      console.log('✅ [SENDMESSAGE] Created/got chatId:', chatId);
+      
+      await sendReply(chatId, rawText);
+      console.log('✅ [SENDMESSAGE] Reply sent, returning chatId:', chatId);
+      return chatId;
+    } catch (err) {
+      console.error('❌ [SENDMESSAGE] Error:', err);
+      throw err;
+    }
   }
 
   // ── markConversationRead ──────────────────────────────────────
@@ -1344,8 +1496,7 @@ if (compose) {
   function subscribeUserChats(uid, onData, onError) {
     const db = getDb();
     return db.collection(COLL)
-      .where('participants', 'array-contains', uid)
-      .where('archived', '==', false)
+      .where('participantIds', 'array-contains', uid)  // ← CORRIGÉ : 'participantIds' (pas 'participants')
       .orderBy('updatedAt', 'desc')
       .limit(60)
       .onSnapshot(
@@ -1360,7 +1511,6 @@ if (compose) {
     const db = getDb();
     return db.collection(COLL)
       .where('shopId', '==', shopId)
-      .where('archived', '==', false)
       .orderBy('updatedAt', 'desc')
       .limit(100)
       .onSnapshot(
@@ -1388,8 +1538,7 @@ if (compose) {
     try {
       const db   = getDb();
       const snap = await db.collection(COLL)
-        .where('participants', 'array-contains', uid)
-        .where('archived', '==', false)
+        .where('participantIds', 'array-contains', uid)
         .get();
       const field = role === 'seller' ? 'unreadSeller' : 'unreadBuyer';
       return snap.docs.reduce((acc, d) => acc + (d.data()[field] || 0), 0);
@@ -1493,89 +1642,186 @@ if (compose) {
   let _floatUnsub     = null;
   let _floatChatId    = null;
 
-  async function openSellerChat({ shopId, sellerId, shopName, sellerName, productId }) {
-    const modal = document.getElementById('aurum-chat-modal');
-    if (!modal) throw new Error('Chat modal (#aurum-chat-modal) introuvable dans le DOM.');
+  window.openSellerChat = async function(sellerIdArg, shopIdArg) {
+    console.log("🚀 [DEBUG] Lancement openSellerChat avec :", sellerIdArg, shopIdArg);
 
-    let user;
-    try { user = currentUser(); } catch (_) {
-      sessionStorage.setItem('ac_redirect_after_login', window.location.href);
-      window.location.href = '/login';
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CORRECTIF ANTI-[object Object] : Extraction sûre des paramètres
+    // Gère le cas où on reçoit un objet entier au lieu de deux chaînes
+    // ═══════════════════════════════════════════════════════════════════════════
+    let realSellerId = sellerIdArg;
+    let realShopId = shopIdArg;
+
+    if (typeof sellerIdArg === 'object' && sellerIdArg !== null) {
+      console.warn("[DEBUG] ⚠️  DÉTECTÉ : Premier paramètre est un OBJET, extraction en cours...");
+      console.warn("[DEBUG] Objet reçu:", sellerIdArg);
+      
+      // On extrait les vraies valeurs depuis l'objet
+      realSellerId = sellerIdArg.sellerId || sellerIdArg.ownerId || sellerIdArg.uid || sellerIdArg.userId;
+      realShopId = sellerIdArg.shopId || sellerIdArg.id || shopIdArg;
+      
+      console.log("[DEBUG] ✓ Extraction complétée: realSellerId=" + realSellerId + ", realShopId=" + realShopId);
+    }
+
+    const currentUser = firebase.auth().currentUser;
+    if (!currentUser) {
+      alert("Veuillez vous connecter pour contacter le vendeur.");
       return;
     }
 
-    modal.classList.add('open');
+    const db = firebase.firestore();
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // FORMATAGE STRICT POUR FIRESTORE RULES
+    // ═══════════════════════════════════════════════════════════════════════════
+    const uid = String(currentUser.uid || "").trim();
+    const safeSellerId = String(realSellerId || "").trim();
+    const safeShopId = String(realShopId || "shop_inconnu").trim();
 
-    const titleEl    = modal.querySelector('[data-chat-title]');
-    const pageLink   = modal.querySelector('[data-open-messages-page]');
-    const msgEl      = modal.querySelector('[data-chat-messages]');
-    const formEl     = modal.querySelector('[data-chat-form]');
-    const closeBtnEl = modal.querySelector('[data-close-chat]');
+    console.log("[DEBUG] Paramètres formatés - uid:", uid, "safeSellerId:", safeSellerId, "safeShopId:", safeShopId);
 
-    if (titleEl) titleEl.textContent = shopName || sellerName || 'Vendeur';
+    // Validation basique
+    if (uid === safeSellerId) {
+      if (typeof window.showToast === "function") {
+        window.showToast("❌ Vous ne pouvez pas démarrer une conversation avec vous-même.", "warning");
+      }
+      console.warn("[DEBUG] Tentative d'auto-conversation bloquée");
+      return;
+    }
 
+    if (!uid) {
+      alert("Erreur: L'UID acheteur est invalide ou vide.");
+      return;
+    }
+    if (!safeSellerId) {
+      alert("Erreur: L'identifiant du vendeur est introuvable.");
+      return;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PHASE 1: TEST DE LECTURE (Query) - BLOC SÉPARÉ
+    // ═══════════════════════════════════════════════════════════════════════════
+    let existingChatId = null;
     try {
-      const chatId = await getOrCreateConversation({ shopId, sellerId, shopName, sellerName, productId });
-      _floatChatId = chatId;
+      console.log("[DEBUG] ✓ PHASE 1 - Recherche d'une conversation existante...");
+      console.log("[DEBUG]   Collection: 'chats'");
+      console.log("[DEBUG]   Query: where('participantIds', 'array-contains', '" + uid + "')");
 
-      if (pageLink) pageLink.href = `messages.html?chatId=${chatId}`;
+      const chatQuery = await db.collection('chats')
+        .where('participantIds', 'array-contains', uid)
+        .get();
 
-      if (_floatUnsub) { _floatUnsub(); _floatUnsub = null; }
+      console.log("[DEBUG] ✓ Query réussie, documents trouvés:", chatQuery.size);
 
-      _floatUnsub = subscribeMessages(chatId, msgs => {
-        if (!msgs.length) {
-          msgEl.innerHTML = '<p class="aurum-chat-empty">Commencez votre conversation.</p>';
-          return;
+      chatQuery.forEach(doc => {
+        const data = doc.data();
+        console.log("[DEBUG]   - Doc ID:", doc.id, "| sellerId:", data.sellerId, "| shopId:", data.shopId);
+        if (data.sellerId === safeSellerId && data.shopId === safeShopId) {
+          existingChatId = doc.id;
+          console.log("[DEBUG] ✓ MATCH trouvé:", existingChatId);
         }
-        let html = '';
-        msgs.forEach(msg => {
-          const isMine = msg.senderId === user.uid;
-          html += `<div class="aurum-chat-bubble ${isMine ? 'mine' : 'theirs'}">
-            <span>${escapeHtml(msg.text)}</span>
-            <small>${formatChatTime(msg.createdAt)}</small>
-          </div>`;
-        });
-        msgEl.innerHTML = html;
-        requestAnimationFrame(() => { msgEl.scrollTop = msgEl.scrollHeight; });
       });
 
-      markConversationRead(chatId);
-
-      if (formEl && !formEl.dataset.bound) {
-        formEl.dataset.bound = '1';
-        formEl.addEventListener('submit', async e => {
-          e.preventDefault();
-          const ta  = formEl.querySelector('textarea');
-          const raw = ta.value.trim();
-          if (!raw || !_floatChatId) return;
-          try {
-            await sendReply(_floatChatId, raw);
-            ta.value = '';
-          } catch (err) {
-            if (window.showToast) window.showToast(err.message, 'error');
-          }
-        });
-        const ta = formEl.querySelector('textarea');
-        if (ta) {
-          ta.addEventListener('keydown', ev => {
-            if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); formEl.dispatchEvent(new Event('submit')); }
-          });
-        }
+      console.log("[DEBUG] ✓ READ successful!");
+    } catch (error) {
+      console.error("❌ ERREUR DE LECTURE (PHASE 1):", {
+        code: error.code,
+        message: error.message,
+        fullError: error
+      });
+      if (typeof window.showToast === "function") {
+        window.showToast(
+          "❌ Erreur de permission lors de la vérification de la messagerie.\n" +
+          "Code: " + (error.code || "unknown"),
+          "danger"
+        );
       }
-
-      if (closeBtnEl && !closeBtnEl.dataset.bound) {
-        closeBtnEl.dataset.bound = '1';
-        closeBtnEl.addEventListener('click', () => {
-          modal.classList.remove('open');
-          if (_floatUnsub) { _floatUnsub(); _floatUnsub = null; }
-        });
-      }
-    } catch (err) {
-      console.error('[messaging] openSellerChat:', err);
-      if (msgEl) msgEl.innerHTML = `<p class="aurum-chat-empty" style="color:#D94F4F">${escapeHtml(err.message)}</p>`;
-      throw err;
+      return;
     }
-  }
+
+    if (existingChatId) {
+      console.log("[DEBUG] ✓ Conversation existante trouvée, redirection vers:", existingChatId);
+      window.location.href = `/messages.html?chat=${existingChatId}`;
+      return;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PHASE 2: TEST D'ÉCRITURE (Création) - BLOC SÉPARÉ
+    // ═══════════════════════════════════════════════════════════════════════════
+    try {
+      console.log("[DEBUG] ✓ PHASE 2 - Création d'une nouvelle conversation...");
+
+      // 1. GÉNÉRER L'ID DÉTERMINISTE (Crucial pour éviter les doublons) 
+      const chatId = window.buildChatId(uid, safeSellerId, safeShopId);
+      console.log("[DEBUG]   Génération ID déterministe:", chatId);
+
+      // 2. Récupérer les infos boutique depuis Firebase
+      let shopName = '';
+      let sellerName = '';
+      let buyerName = currentUser.displayName || currentUser.email || 'Client';
+      try {
+        const shopSnap = await db.collection('shops').doc(safeShopId).get();
+        if (shopSnap.exists) {
+          const shopData = shopSnap.data();
+          shopName = shopData.name || '';
+          sellerName = shopData.ownerName || '';
+        }
+        console.log("[DEBUG]   Shop infos loaded: name=" + shopName + ", owner=" + sellerName);
+      } catch (e) {
+        console.warn("[DEBUG]   Shop lookup optional, continuing without shop data");
+      }
+
+      const newChatData = {
+        buyerId: uid,                           // ← String, non-vide
+        buyerName: buyerName,
+        sellerId: safeSellerId,                // ← String, non-vide
+        sellerName: sellerName || 'Vendeur',  // ← Fallback obligatoire
+        shopId: safeShopId,                    // ← String, non-vide
+        shopName: shopName || 'Boutique',      // ← Fallback obligatoire
+        participantIds: [uid, safeSellerId], // ← Array de taille 2 (OBLIGATOIRE!)
+        createdBy: uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastMessage: "",
+        lastMessageAt: null,
+        unreadBuyer: 0,
+        unreadSeller: 0
+      };
+
+      console.log("[DEBUG]   Data à créer:", newChatData);
+      console.log("[DEBUG]   Vérification Firestore Rules:");
+      console.log("[DEBUG]     ✓ buyerId is string:", typeof newChatData.buyerId === 'string');
+      console.log("[DEBUG]     ✓ sellerId is string:", typeof newChatData.sellerId === 'string');
+      console.log("[DEBUG]     ✓ shopId is string:", typeof newChatData.shopId === 'string');
+      console.log("[DEBUG]     ✓ buyerId != sellerId:", newChatData.buyerId !== newChatData.sellerId);
+      console.log("[DEBUG]     ✓ participantIds is list:", Array.isArray(newChatData.participantIds));
+      console.log("[DEBUG]     ✓ participantIds.size == 2:", newChatData.participantIds.length === 2);
+      console.log("[DEBUG]     ✓ participantIds.hasAll([buyerId, sellerId]):", 
+        newChatData.participantIds.includes(newChatData.buyerId) && 
+        newChatData.participantIds.includes(newChatData.sellerId));
+
+      // UTILISER .set() AU LIEU DE .add() POUR ID DÉTERMINISTE
+      await db.collection('chats').doc(chatId).set(newChatData);
+
+      console.log("[DEBUG] ✓ Conversation créée avec succès!");
+      console.log("[DEBUG]   ID Déterministe:", chatId);
+      console.log("[DEBUG] ═══════════════════════════════════════════════════════════");
+      window.location.href = `/messages.html?chat=${chatId}`;
+    } catch (error) {
+      console.error("❌ ERREUR D'ÉCRITURE (PHASE 2):", {
+        code: error.code,
+        message: error.message,
+        fullError: error
+      });
+      if (typeof window.showToast === "function") {
+        window.showToast(
+          "❌ Erreur de permission lors de la création de la conversation.\n" +
+          "Code: " + (error.code || "unknown"),
+          "danger"
+        );
+      }
+    }
+  };
 
   // ── inject styles pour openConversation ──────────────────────
 
@@ -1622,7 +1868,7 @@ if (compose) {
 
   // ── EXPORTS ───────────────────────────────────────────────────
 
-  window.openSellerChat          = openSellerChat;
+  // NOTE: openSellerChat is exported DIRECTLY as a simple async function BELOW this IIFE
   window.subscribeUserChats      = subscribeUserChats;
   window.subscribeShopChats      = subscribeShopChats;
   window.subscribeMessages       = subscribeMessages;

@@ -91,7 +91,20 @@ document.addEventListener('DOMContentLoaded', function() {
         var file = document.getElementById(fi.id).files[0];
         var ext  = file.name.split('.').pop();
         var ref  = storage.ref(folder+'/'+fi.name+'.'+ext);
-        var task = ref.put(file);
+        
+        // Compresser si c'est une image
+        var fileToUpload = file;
+        if (file.type.startsWith('image/')) {
+          try {
+            fileToUpload = await window.compressImage(file);
+            ext = 'webp';
+            ref = storage.ref(folder+'/'+fi.name+'.webp');
+          } catch(e) {
+            console.warn('Compression échouée, upload du fichier original:', e);
+          }
+        }
+        
+        var task = ref.put(fileToUpload);
         await new Promise(function(res,rej){ task.on('state_changed', function(snap){ if(fill) fill.style.width=((done+snap.bytesTransferred/snap.totalBytes)/active.length*100)+'%'; }, rej, async function(){ data[fi.field]=await task.snapshot.ref.getDownloadURL(); done++; res(); }); });
       }
       if (txt)  txt.textContent = 'Finalisation…';

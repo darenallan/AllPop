@@ -224,7 +224,7 @@
             <!-- Colonne Marque -->
             <div class="footer-brand-col">
               <div class="footer-logo-wrap">
-                <img class="footer-logo-img" src="/assets/img/Logo.png" alt="Sanhia" onerror="this.style.display='none'/>
+                <img class="footer-logo-img" src="/assets/img/Logo.png" loading="lazy" alt="Sanhia" onerror="this.style.display='none'/>
                 <span class="footer-logo-name">SAN<span>H</span>IA</span>
               </div>
               <span class="footer-tagline">La première marketplace premium du Burkina Faso</span>
@@ -335,7 +335,7 @@
 
         if (!db) throw new Error('Firestore non disponible');
 
-        const existing = await db.collection('newsletter').where('email', '==', email).get();
+        const existing = await db.collection('newsletter').where('email', '==', email).limit(1).get();
         if (!existing.empty) {
           _toast('Vous êtes déjà inscrit(e) !', 'warn');
           return;

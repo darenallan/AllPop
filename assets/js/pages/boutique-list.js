@@ -122,7 +122,7 @@
             <div class="bl-card-banner" style="background-image: url('${banner}'); background-size: cover; background-position: center;"></div>
             <div class="bl-card-avatar">
               ${hasLogo 
-                ? `<img src="${logo}" alt="${shop.name || 'Boutique'}" onerror="this.style.display='none';">`
+                ? `<img src="${logo}" alt="${shop.name || 'Boutique'}" loading="lazy" onerror="this.style.display='none';">`
                 : `<i data-lucide="store"></i>`}
             </div>
             <div class="bl-card-body">
@@ -170,7 +170,7 @@
       try {
         let ref = db.collection('shops');
         if(filterCat) ref = ref.where('category','==',filterCat);
-        const snap = await ref.get();
+        const snap = await ref.limit(20).get();
         const shops = [];
         snap.forEach(doc => shops.push({ id: doc.id, ...doc.data() }));
         renderShops(shops.length ? shops : (filterCat ? [] : fallbackShops));

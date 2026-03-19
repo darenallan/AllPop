@@ -157,53 +157,147 @@ function clearWishlist() {
   localStorage.removeItem('ac_wishlist');
 }
 
+// ── STANDARDIZED SKELETON GENERATOR ──
+function generateSkeletonCard() {
+  return `
+    <div class="skel-card">
+      <div class="skel-img"></div>
+      <div class="skel-body">
+        <div class="skel-line w60"></div>
+        <div class="skel-line w100"></div>
+        <div class="skel-line w70"></div>
+        <div class="skel-line w40"></div>
+      </div>
+    </div>`;
+}
+
+function renderSkeletons(container, count = 8) {
+  if (!container) return;
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    html += generateSkeletonCard();
+  }
+  container.innerHTML = '<div class="skel-grid">' + html + '</div>';
+}
+
 // ── LOAD PRODUCTS (page d'accueil) ────────────────────────────────
 
 async function loadProducts() {
-  const container = document.getElementById('products-container');
-  if (!container || !window.db) return;
-
-  container.innerHTML = '<p style="padding:40px;text-align:center;color:#7A7570">Chargement…</p>';
+  const skelContainer = document.getElementById('skel-products');
+  const prodContainer = document.getElementById('products-container');
+  
+  console.log('[loadProducts] Starting... skel=', !!skelContainer, 'prod=', !!prodContainer);
+  
+  if (!prodContainer) {
+    console.warn('[loadProducts] Missing container');
+    return;
+  }
 
   try {
-    const snap = await window.db.collection('products')
-      .orderBy('createdAt', 'desc').limit(8).get();
+    // Essayer Firebase en premier
+    if (window.db) {
+      console.log('[loadProducts] Fetching from Firebase...');
+      const snap = await window.db.collection('products')
+        .orderBy('createdAt', 'desc').limit(8).get();
 
-    if (snap.empty) { container.innerHTML = '<p style="padding:40px;text-align:center">Aucun produit disponible.</p>'; return; }
+      console.log('[loadProducts] Received', snap.size, 'products from Firebase');
 
-    window.allProducts = [];
-    let html = '';
-    snap.forEach(doc => {
-      const p = { id: doc.id, ...doc.data() };
-      window.allProducts.push(p);
-      const img  = p.image || (Array.isArray(p.images) && p.images[0]) || 'assets/img/placeholder.png';
-      const inWl = isInWishlist(doc.id);
-      // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
-      const pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
-      html += `
-        <div class="product-card-glass" onclick="window.location.href='${pUrl}'">
-          <div class="card-image-header">
-            <button class="wishlist-btn${inWl ? ' active' : ''}" type="button"
-              onclick="event.stopPropagation();toggleWishlist(event,'${doc.id}');return false;">
-              <i data-lucide="heart"></i>
-            </button>
-            <img src="${img}" alt="${p.name || 'Produit Sanhia'}" loading="lazy">
-          </div>
-          <div class="card-content">
-            <small class="brand">${p.shopName || 'Boutique'}</small>
-            <h3 class="title">${p.name || 'Produit Sanhia'}</h3>
-            <div class="card-footer">
-              <span class="price">${window.formatFCFA(p.price)}</span>
-            </div>
-          </div>
-        </div>`;
-    });
-    container.innerHTML = html;
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+      if (!snap.empty) {
+        renderProducts(snap.docs, skelContainer, prodContainer);
+        return;
+      }
+    }
+    
+    // Fallback: charger du localStorage (data.js)
+    console.log('[loadProducts] Firebase empty or unavailable, loading from localStorage...');
+    const storedProducts = JSON.parse(localStorage.getItem('ac_products') || '[]');
+    
+    if (storedProducts.length > 0) {
+      console.log('[loadProducts] ✓ Loaded', storedProducts.length, 'products from localStorage');
+      // Convertir le format localStorage en format Firestore-like
+      const mockDocs = storedProducts.slice(0, 8).map((p, idx) => ({
+        id: p.id || ('P' + (idx + 1)),
+        data: () => ({
+          name: p.name,
+          price: p.price,
+          image: p.images?.[0] || 'assets/img/placeholder.png',
+          images: p.images,
+          shopId: p.shopId,
+          shopName: p.shopName,
+          vendeurId: p.vendeurId,
+          slug: p.slug,
+        })
+      }));
+      renderProducts(mockDocs, skelContainer, prodContainer);
+      return;
+    }
+    
+    // Aucun produit trouvé
+    console.log('[loadProducts] ⚠ No products found');
+    prodContainer.innerHTML = '<p style="padding:40px;text-align:center;grid-column:1/-1">Aucun produit disponible.</p>';
+    prodContainer.classList.add('active');
+    if (skelContainer) skelContainer.style.display = 'none';
+    
   } catch (err) {
-    console.error('[app.js] loadProducts:', err);
-    container.innerHTML = '<p style="padding:40px;text-align:center;color:#D94F4F">Erreur de chargement.</p>';
+    console.error('[loadProducts] ERROR:', err);
+    
+    // Dernier fallback: essayer le localStorage même en cas d'erreur
+    try {
+      const storedProducts = JSON.parse(localStorage.getItem('ac_products') || '[]');
+      if (storedProducts.length > 0) {
+        console.log('[loadProducts] Using localStorage as final fallback');
+        const mockDocs = storedProducts.slice(0, 8).map((p, idx) => ({
+          id: p.id || ('P' + (idx + 1)),
+          data: () => ({
+            name: p.name,
+            price: p.price,
+            image: p.images?.[0] || 'assets/img/placeholder.png',
+            images: p.images,
+            shopId: p.shopId,
+            shopName: p.shopName,
+            vendeurId: p.vendeurId,
+            slug: p.slug,
+          })
+        }));
+        renderProducts(mockDocs, skelContainer, prodContainer);
+        return;
+      }
+    } catch (fallbackErr) {
+      console.error('[loadProducts] Fallback failed:', fallbackErr);
+    }
+    
+    prodContainer.innerHTML = '<p style="padding:40px;text-align:center;color:#D94F4F;grid-column:1/-1">Erreur: ' + err.message + '</p>';
+    prodContainer.classList.add('active');
+    if (skelContainer) skelContainer.style.display = 'none';
   }
+}
+
+// Helper function to render products
+function renderProducts(docs, skelContainer, prodContainer) {
+  window.allProducts = [];
+  let html = '';
+  
+  docs.forEach(doc => {
+    const docData = doc.data ? doc.data() : doc;
+    const p = { id: doc.id, ...docData };
+    window.allProducts.push(p);
+    
+    const img  = p.image || (Array.isArray(p.images) && p.images[0]) || 'assets/img/placeholder.png';
+    const inWl = isInWishlist(doc.id);
+    const pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
+    
+    html += `<div class="product-card-glass" onclick="window.location.href='${pUrl}'"><div class="card-image-header"><button class="wishlist-btn${inWl ? ' active' : ''}" type="button" onclick="event.stopPropagation();toggleWishlist(event,'${doc.id}');return false;"><i data-lucide="heart"></i></button><img src="${img}" alt="${p.name || 'Produit Sanhia'}" loading="lazy"></div><div class="card-content"><p class="brand" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='/boutique?id=${p.shopId || p.vendeurId || ''}';">${p.shopName || 'Boutique'}</p><h3 class="title">${p.name || 'Produit Sanhia'}</h3><div class="card-footer"><span class="price">${window.formatFCFA(p.price)}</span></div></div></div>`;
+  });
+  
+  console.log('[renderProducts] Rendering', window.allProducts.length, 'products');
+  prodContainer.innerHTML = html;
+  prodContainer.classList.add('active');
+  
+  if (skelContainer) {
+    skelContainer.style.display = 'none';
+  }
+  
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // ── PANIER PAGE ────────────────────────────────────────────────────
@@ -247,7 +341,7 @@ function initCart() {
     const items = getCartItems();
     if (!items.length) {
       itemsEl.innerHTML = `<div class="card"><p style="padding:20px">
-        Votre panier est vide. <a href="catalogue.html">Voir le catalogue</a>
+        Votre panier est vide. <a href="/catalogue">Voir le catalogue</a>
       </p></div>`;
     } else {
       itemsEl.innerHTML = items.map(it => {
@@ -345,7 +439,7 @@ function initWishlist() {
     try { ids = JSON.parse(localStorage.getItem('ac_wishlist') || '[]'); } catch { ids = []; }
     if (!ids.length) {
       itemsEl.innerHTML = `<div class="card"><p style="padding:20px">
-        Votre wishlist est vide. <a href="catalogue.html">Voir le catalogue</a>
+        Votre wishlist est vide. <a href="/catalogue">Voir le catalogue</a>
       </p></div>`;
       return;
     }
@@ -360,7 +454,7 @@ function initWishlist() {
 
     if (!items.length) {
       itemsEl.innerHTML = `<p style="padding:20px;color:#7A7570">
-        Produits introuvables dans le catalogue local. <a href="catalogue.html">Catalogue</a>
+        Produits introuvables dans le catalogue local. <a href="/catalogue">Catalogue</a>
       </p>`;
       return;
     }

@@ -79,6 +79,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // ── ACCEPTER UNE LIVRAISON (ready_for_delivery → in_transit) ──────
+  window.acceptDelivery = async function (orderId) {
+    if (!confirm('Accepter cette livraison ? Vous deviendrez responsable du colis.')) return;
+    
+    try {
+      var courier = auth.currentUser;
+      if (!courier) {
+        if (window.showToast) window.showToast('Vous devez être connecté', 'danger');
+        return;
+      }
+      
+      console.log('📦 [COURIER] Accepting delivery:', orderId, '| courierId:', courier.uid);
+      
+      await db.collection('orders').doc(orderId).update({
+        status:         'in_transit',
+        courierId:      courier.uid,
+        courierName:    courier.displayName || 'Livreur',
+        courierEmail:   courier.email,
+        acceptedAt:     firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt:      firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      
+      console.log('✅ [COURIER] Delivery accepted, status changed to in_transit');
+      if (window.showToast) window.showToast('Livraison acceptée ✓ Le client est notifié.', 'success');
+    } catch (err) {
+      console.error('❌ [COURIER] Accept error:', err);
+      if (window.showToast) window.showToast('Erreur : ' + err.message, 'danger');
+    }
+  };
+
   function renderPending(orders) {
     var el    = document.getElementById('pending-list');
     var badge = document.getElementById('badge-pending');
@@ -98,7 +128,13 @@ document.addEventListener('DOMContentLoaded', function() {
         + '<div class="dv-order-right"><div class="dv-order-total">' + fmtMoney(o.total) + '</div><span class="dv-chip ready">Prêt</span></div></div>'\
         + '<div class="dv-order-body"><div class="dv-address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg><div class="dv-address-text"><strong>Adresse de livraison</strong>' + addr + '</div></div>'\
         + (items ? '<ul class="dv-items-list">' + items + '</ul>' : '')\
-        + '<button class="dv-confirm-btn" onclick="window.openModal(\'' + o.id + '\',\'' + ordRef(o) + '\')" ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg><span>Confirmer la livraison</span></button></div></div>';
+        + (o.status === 'ready_for_delivery' 
+          ? '<button class="dv-accept-btn" onclick="window.acceptDelivery(\'' + o.id + '\')" style="background:#4A84C8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14"><polyline points="20 6 9 17 4 12"/></svg><span>Accepter la livraison</span></button>'
+          : '')
+        + (o.status === 'in_transit' 
+          ? '<button class="dv-confirm-btn" onclick="window.openModal(\'' + o.id + '\',\'' + ordRef(o) + '\')" style="background:#C8A84B"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14"><polyline points="20 6 9 17 4 12"/></svg><span>Confirmer livré</span></button>' 
+          : '')
+        + '</div></div>';
     }).join('');
   }
 
@@ -151,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (sbName)  sbName.textContent  = userData.name || user.displayName || '—';
       if (sbEmail) sbEmail.textContent = user.email || '—';
 
-      db.collection('orders').where('status', '==', 'ready_for_delivery')\
+      db.collection('orders').where('status', '==', 'ready_for_delivery').limit(50)\
         .onSnapshot(function (snap) { renderPending(snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); })); },\
           function (err) { console.error('[delivery] pending:', err.message); });
 
@@ -172,3 +208,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+
+// NOUVEAU: Accepter une commande (Livreur passe de ready_for_delivery à in_transit)
+window.acceptDelivery = async function(orderId) {
+  if (!confirm('Accepter cette livraison ? Vous deviendrez responsable du colis.')) return;
+  
+  try {
+    const courier = auth.currentUser;
+    if (!courier) { 
+      if(window.showToast) window.showToast('Vous devez être connecté', 'danger');
+      return; 
+    }
+    
+    console.log('📦 [COURIER] Accepting delivery:', orderId, '| courierId:', courier.uid);
+    
+    await db.collection('orders').doc(orderId).update({
+      status:         'in_transit',           // ← Nouveau statut
+      courierId:      courier.uid,            // ← Attacher le livreur
+      courierName:    courier.displayName || 'Livreur',
+      courierEmail:   courier.email,
+      acceptedAt:     firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt:      firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    
+    console.log('✅ [COURIER] Delivery accepted, status changed to in_transit');
+    if(window.showToast) window.showToast('Livraison acceptée ✓ Le client est notifié.', 'success');
+    
+    // L'onSnapshot du client sera notifié automatiquement
+  } catch (err) {
+    console.error('❌ [COURIER] Accept error:', err);
+    if(window.showToast) window.showToast('Erreur : ' + err.message, 'danger');
+  }
+};

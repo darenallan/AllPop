@@ -14879,6 +14879,16 @@ main .search-container {
   letter-spacing: 1px;
   font-size: 0.8rem;
   color: #8a8a8a;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.product-card-glass .brand:hover {
+  color: var(--gold, #C8A84B);
+  text-decoration: underline;
 }
 
 .product-card-glass .title {
@@ -14908,9 +14918,10 @@ main .search-container {
 }
 
 .product-card-glass .price {
-  font-size: 1.1rem;
+  font-size: clamp(11px, 3.5vw, 15px);
   font-weight: 700;
   color: var(--gold-primary);
+  line-height: 1.2;
 }
 
 .product-card-glass .add-to-cart-btn {

@@ -37,7 +37,7 @@ function wallDeny(reason) {
     if (w) w.remove();
     document.body.classList.remove("dv-guarded");
     document.body.classList.add("dv-revealed");
-    document.body.innerHTML = `<div class="dv-denied"><div class="dv-denied-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h2 class="dv-denied-title">Accès Refusé</h2><p class="dv-denied-sub">${reason || "Cet espace est réservé aux livreurs certifiés Aurum."}</p><a href="index.html" class="dv-denied-btn" style="display:inline-flex;align-items:center;gap:10px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Retour à l'accueil</a></div>`;
+    document.body.innerHTML = `<div class="dv-denied"><div class="dv-denied-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h2 class="dv-denied-title">Accès Refusé</h2><p class="dv-denied-sub">${reason || "Cet espace est réservé aux livreurs certifiés Aurum."}</p><a href="/" class="dv-denied-btn" style="display:inline-flex;align-items:center;gap:10px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Retour à l'accueil</a></div>`;
   }, 400);
 }
 

@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
       root.innerHTML =
         '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px;text-align:center"><p style="font-family:\'Instrument Serif\',serif;font-size:88px;color:rgba(200,168,75,.1)">!</p><h2 style="font-family:\'Instrument Serif\',serif;font-size:30px;color:rgba(254,252,248,.55)">' +
         m +
-        '</h2><a href="catalogue.html" style="margin-top:10px;padding:13px 30px;border:1px solid rgba(200,168,75,.28);color:#C8A84B;text-decoration:none;font-size:9px;letter-spacing:.22em;text-transform:uppercase;font-family:\'Unbounded\',sans-serif;font-weight:800">← Catalogue</a></div>';
+        '</h2><a href="/catalogue" style="margin-top:10px;padding:13px 30px;border:1px solid rgba(200,168,75,.28);color:#C8A84B;text-decoration:none;font-size:9px;letter-spacing:.22em;text-transform:uppercase;font-family:\'Unbounded\',sans-serif;font-weight:800">← Catalogue</a></div>';
   }
 
   if (!db) {
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (slug.includes("--")) {
           slugOnly = slug.split("--")[0];
         }
-        
+
         var querySnapshot = await db
           .collection("products")
           .where("slug", "==", slugOnly)
@@ -198,11 +198,24 @@ document.addEventListener("DOMContentLoaded", function () {
     // 2. Meta Description pour Google
     let metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-        metaDesc.setAttribute("content", "Découvrez " + product.name + " au prix de " + fmt(product.price) + " FCFA sur Sanhia. Livraison rapide à Ouagadougou.");
+      metaDesc.setAttribute(
+        "content",
+        "Découvrez " +
+          product.name +
+          " au prix de " +
+          fmt(product.price) +
+          " FCFA sur Sanhia. Livraison rapide à Ouagadougou.",
+      );
     }
-    
+
     // 3. Injection des données structurées (JSON-LD)
-    var avg = reviews.length ? (reviews.reduce(function(s,r){return s+(r.rating||0);},0)/reviews.length).toFixed(1) : product.rating || 0;
+    var avg = reviews.length
+      ? (
+          reviews.reduce(function (s, r) {
+            return s + (r.rating || 0);
+          }, 0) / reviews.length
+        ).toFixed(1)
+      : product.rating || 0;
     injectSchema(product, avg, reviews.length);
     var imgs = window.currentImages;
     var hd = product.originalPrice && product.originalPrice > product.price;
@@ -323,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function () {
         : "";
     var savaHTML =
       shopData && shopData.logo
-        ? '<img src="' + shopData.logo + '" alt="">'
+        ? '<img src="' + shopData.logo + '" alt="' + (shopData.name || 'Boutique') + ' - Logo">'
         : (shopData.name || "B").charAt(0).toUpperCase();
 
     var root = document.getElementById("ax-root");
@@ -337,7 +350,7 @@ document.addEventListener("DOMContentLoaded", function () {
       imgs[0] +
       '" alt="' +
       product.name +
-      '" class="ax-gal-img" id="ax-main-img" onerror="this.src=\'assets/img/placeholder-product-1.svg\'" onload="document.getElementById(\'ax-gal\').classList.add(\'ld\')">' +
+      ' - Achat en ligne Ouagadougou Sanhia" class="ax-gal-img" id="ax-main-img" onerror="this.src=\'assets/img/placeholder-product-1.svg\'" onload="document.getElementById(\'ax-gal\').classList.add(\'ld\')">+
       (imgs.length > 1
         ? '<div class="ax-thumbs">' +
           imgs
@@ -349,6 +362,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 i +
                 ')"><img src="' +
                 img +
+                '" alt="' +
+                product.name +
+                ' - Image ' +
+                (i + 1) +
                 '" onerror="this.src=\'assets/img/placeholder-product-1.svg\'"></div>'
               );
             })
@@ -409,9 +426,9 @@ document.addEventListener("DOMContentLoaded", function () {
       "</span><span>📍 " +
       (shopData.city || shopData.address || "Ouagadougou") +
       "</span><span>🚚 Livraison 48–72h</span></div></div>" +
-      '<button class="ax-bvisit" onclick="location.href=\'' + (shopSlug ? '/boutique/' + shopSlug : '/boutique?id=' +
+      '<button class="ax-bvisit" onclick="location.href=\'/boutique?id=' +
       shopId +
-      "'\">Voir la boutique →</button>" +
+      "'\" >Voir la boutique →</button>" +
       '<button class="ax-bvisit" style="margin-top:6px;border-color:rgba(200,168,75,.1);color:rgba(200,168,75,.7)" onclick="axContactSeller()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:6px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contacter le vendeur</button>' +
       "</div>" +
       '<div class="ax-trust rv"><div class="ax-titem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Paiement sécurisé</div><div class="ax-titem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Retour 7 jours</div><div class="ax-titem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg> Support client</div></div>' +
@@ -438,7 +455,7 @@ document.addEventListener("DOMContentLoaded", function () {
       '</div><div class="ax-avgcnt">' +
       reviews.length +
       " avis</div></div>" +
-      '<div class="rv rv1"><div class="ax-rform"><h3 class="ax-rftitle">Partagez votre expérience</h3><div class="ax-authwarn" id="ax-authwarn">⚠ Vous devez être <a href="login.html">connecté</a> pour laisser un avis.</div><div class="ax-rffield"><label class="ax-rflabel">Votre nom</label><input type="text" id="ax-rname" class="ax-rfinput" placeholder="Nom complet"></div><div class="ax-rffield"><label class="ax-rflabel">Note</label><div class="ax-spick" id="ax-spick"><span onmouseover="axHS(1)" onclick="axSS(1)">★</span><span onmouseover="axHS(2)" onclick="axSS(2)">★</span><span onmouseover="axHS(3)" onclick="axSS(3)">★</span><span onmouseover="axHS(4)" onclick="axSS(4)">★</span><span onmouseover="axHS(5)" onclick="axSS(5)">★</span></div><input type="hidden" id="ax-rrating" value="5"></div><div class="ax-rffield"><label class="ax-rflabel">Votre avis</label><textarea id="ax-rcomment" class="ax-rfarea" placeholder="Décrivez votre expérience…"></textarea></div><button class="ax-rfsubmit" onclick="axReview(event)"><span>Soumettre mon avis</span></button></div>' +
+      '<div class="rv rv1"><div class="ax-rform"><h3 class="ax-rftitle">Partagez votre expérience</h3><div class="ax-authwarn" id="ax-authwarn">⚠ Vous devez être <a href="/login">connecté</a> pour laisser un avis.</div><div class="ax-rffield"><label class="ax-rflabel">Votre nom</label><input type="text" id="ax-rname" class="ax-rfinput" placeholder="Nom complet"></div><div class="ax-rffield"><label class="ax-rflabel">Note</label><div class="ax-spick" id="ax-spick"><span onmouseover="axHS(1)" onclick="axSS(1)">★</span><span onmouseover="axHS(2)" onclick="axSS(2)">★</span><span onmouseover="axHS(3)" onclick="axSS(3)">★</span><span onmouseover="axHS(4)" onclick="axSS(4)">★</span><span onmouseover="axHS(5)" onclick="axSS(5)">★</span></div><input type="hidden" id="ax-rrating" value="5"></div><div class="ax-rffield"><label class="ax-rflabel">Votre avis</label><textarea id="ax-rcomment" class="ax-rfarea" placeholder="Décrivez votre expérience…"></textarea></div><button class="ax-rfsubmit" onclick="axReview(event)"><span>Soumettre mon avis</span></button></div>' +
       (reviews.length
         ? reviews
             .map(function (r) {
@@ -464,14 +481,14 @@ document.addEventListener("DOMContentLoaded", function () {
         : '<div class="ax-norev"><div class="ax-nrevbig">✦</div><p>Soyez le premier à partager votre expérience.</p></div>') +
       "</div></div></div>" +
       "</div></section>" +
-      '<section class="ax-rel"><div class="ax-relhead rv"><h2 class="ax-sectitle">Vous aimerez<br><em>aussi</em></h2><a href="catalogue.html' +
+      '<section class="ax-rel"><div class="ax-relhead rv"><h2 class="ax-sectitle">Vous aimerez<br><em>aussi</em></h2><a href="/catalogue' +
       (product.category
         ? "?category=" + encodeURIComponent(product.category)
         : "") +
       '" class="ax-seeall">Voir tout →</a></div><div class="ax-relgrid" id="ax-relgrid">' +
       [1, 2, 3, 4]
         .map(function () {
-          return '<div class="ax-rcard2"><div class="ax-rimgbox ax-sk" style="height:290px"></div><div class="ax-rbody"><div class="ax-sk" style="height:9px;width:48%;margin-bottom:10px"></div><div class="ax-sk" style="height:19px;width:72%;margin-bottom:12px"></div></div></div>';
+          return '<div class="skel-card"><div class="skel-img" style="height:240px"></div><div class="skel-body"><div class="skel-line w60"></div><div class="skel-line w100"></div><div class="skel-line w70"></div><div class="skel-line w40"></div></div></div>';
         })
         .join("") +
       "</div></section>";
@@ -500,6 +517,30 @@ document.addEventListener("DOMContentLoaded", function () {
         io.observe(el);
       });
     loadRelated(product, shopId);
+    // --- MISE À JOUR SEO DYNAMIQUE ---
+    document.title = product.name + " | Sanhia";
+
+    // Mise à jour des balises Open Graph pour WhatsApp/Facebook
+    document
+      .querySelector('meta[property="og:title"]')
+      .setAttribute("content", product.name);
+    document
+      .querySelector('meta[property="og:description"]')
+      .setAttribute(
+        "content",
+        "Achetez " +
+          product.name +
+          " pour " +
+          fmt(product.price) +
+          " FCFA sur Sanhia.",
+      );
+    document
+      .querySelector('meta[property="og:image"]')
+      .setAttribute("content", window.currentImages[0]);
+    document
+      .querySelector('meta[name="twitter:title"]')
+      .setAttribute("content", product.name);
+    // ---------------------------------
   }
 
   /* — Interactions globales — */
@@ -756,7 +797,15 @@ document.addEventListener("DOMContentLoaded", function () {
           // Calcul du lien SEO (Slug-ID pour SEO + facilité de récupération, avec -- comme séparateur)
           var link = p2.slug
             ? "/product/" + p2.slug + "--" + p2.id
-            : "/product/" + (p2.name ? p2.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") : "produit") + "--" + p2.id;
+            : "/product/" +
+              (p2.name
+                ? p2.name
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")
+                    .replace(/[^a-z0-9-]/g, "")
+                : "produit") +
+              "--" +
+              p2.id;
 
           return (
             '<div class="ax-rcard2 rv" onclick="location.href=\'' +
@@ -809,28 +858,39 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   // --- SEO: Injection de données structurées (JSON-LD) ---
   function injectSchema(product, avgRating, reviewsCount) {
-    const schema = {
+    // Création dynamique des données structurées pour Google
+    const jsonLd = {
       "@context": "https://schema.org/",
       "@type": "Product",
       "name": product.name,
-      "image": Array.isArray(product.images) ? product.images : [product.image],
-      "description": product.description || "Produit disponible sur Sanhia",
+      "image": product.images || [product.image],
+      "description": product.description || "Achetez sur Sanhia au Burkina Faso",
+      "brand": {
+        "@type": "Brand",
+        "name": product.shopName || "Sanhia"
+      },
       "offers": {
         "@type": "Offer",
         "priceCurrency": "XOF",
         "price": product.price,
+        "itemCondition": "https://schema.org/NewCondition",
         "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        "seller": {
+          "@type": "Organization",
+          "name": product.shopName || "Boutique Sanhia"
+        },
         "url": window.location.href
       },
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": avgRating,
-        "reviewCount": reviewsCount || 1
-      }
+        "reviewCount": reviewsCount || 0
+      },
+      "areaServed": "Ouagadougou, Burkina Faso"
     };
     const script = document.createElement('script');
     script.type = "application/ld+json";
-    script.innerHTML = JSON.stringify(schema);
+    script.innerHTML = JSON.stringify(jsonLd);
     document.head.appendChild(script);
   }
 });

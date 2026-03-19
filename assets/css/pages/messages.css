@@ -539,18 +539,112 @@ body.ch #cur-ring { width:68px; height:68px; background:rgba(200,168,75,.07); }
 @media (max-width: 768px) {
   :root { --sb-w:100%; }
 
-  .inbox-sidebar {
-    position:fixed; left:0; top:var(--hdr-h); bottom:0; z-index:100;
-    transform:translateX(0);
+  /* Sur mobile: le shell ne fait rien, c'est les enfants qui contrôlent */
+  .inbox-shell {
+    display: block;
+    padding-top: 0;
   }
-  .inbox-sidebar.mobile-hidden { transform:translateX(-100%); }
+
+  /* Sidebar occupe tout l'écran par défaut */
+  .inbox-sidebar {
+    position: fixed;
+    top: var(--hdr-h);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: calc(100vh - var(--hdr-h));
+    z-index: 99;
+    border-right: none;
+  }
+
+  /* Quand .mobile-hidden: cacher le sidebar complètement */
+  .inbox-sidebar.mobile-hidden {
+    display: none;
+  }
+
+  /* Thread: overlay sur tout l'écran mobile, caché par défaut */
+  .inbox-thread {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--hdr-h);
+    bottom: 0;
+    z-index: 100;
+    width: 100%;
+    height: calc(100vh - var(--hdr-h));
+    display: none;
+  }
+
+  /* Quand on sélectionne un chat: montrer le thread */
+  .inbox-thread.mobile-show {
+    display: flex;
+  }
+
+  /* Bouton retour visible uniquement sur mobile quand thread est actif */
+  .inbox-back-btn {
+    display: inline-flex;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE STRICT OVERRIDE (768px and below)
+   Forcer le comportement single-column avec !important
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* 1. Par défaut: afficher sidebar, cacher thread */
+  .inbox-shell {
+    display: block !important;
+    flex-direction: column !important;
+  }
+
+  .inbox-sidebar {
+    display: flex !important;
+    width: 100% !important;
+    position: fixed !important;
+    top: var(--hdr-h) !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 99 !important;
+    height: calc(100vh - var(--hdr-h)) !important;
+  }
 
   .inbox-thread {
-    position:fixed; left:0; right:0;
-    top:var(--hdr-h); bottom:0; z-index:99;
-    display:none;
+    display: none !important;
+    width: 100% !important;
+    position: fixed !important;
+    top: var(--hdr-h) !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 100 !important;
+    height: calc(100vh - var(--hdr-h)) !important;
   }
-  .inbox-thread.mobile-show { display:flex; }
 
-  .inbox-back-btn { display:inline-flex; }
+  /* 2. Quand sidebar est hidden: le cacher vraiment */
+  .inbox-sidebar.mobile-hidden {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* 3. Quand thread est shown: l'afficher */
+  .inbox-thread.mobile-show {
+    display: flex !important;
+  }
+
+  /* 4. S'assurer que le back button est visible */
+  .inbox-back-btn {
+    display: inline-flex !important;
+  }
+
+  /* 5. Alternative: support pour body.is-chat-open state (si JS l'ajoute) */
+  body.is-chat-open .inbox-sidebar {
+    display: none !important;
+  }
+
+  body.is-chat-open .inbox-thread {
+    display: flex !important;
+  }
 }

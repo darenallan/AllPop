@@ -379,9 +379,9 @@
     return `
       <header class="aurum-glass-header" id="aurum-header">
 
-        <a href="/index.html" class="header-brand">
+        <a href="/" class="header-brand">
           <div class="header-logo">
-            <img src="/assets/img/Logo.png" alt="Sanhia" onerror="this.style.display='none'"/>
+            <img src="/assets/img/Logo.png" loading="lazy" alt="Sanhia" onerror="this.style.display='none'"/>
           </div>
           <div class="header-brand-text">
             <span class="header-brand-name">SANHIA</span>
@@ -390,11 +390,11 @@
         </a>
 
         <nav class="header-center" aria-label="Navigation principale">
-          <a href="/index.html"           class="header-link" data-page="index">Accueil</a>
-          <a href="/catalogue.html"       class="header-link" data-page="catalogue">Catalogue</a>
-          <a href="/boutique-list.html"   class="header-link" data-page="boutique-list">Boutiques</a>
-          <a href="/seller-onboarding.html" class="header-link" data-page="seller-onboarding">Vendre</a>
-          <a href="/about.html"         class="header-link" data-page="about">À propos</a>
+          <a href="/"           class="header-link" data-page="index">Accueil</a>
+          <a href="/catalogue"       class="header-link" data-page="catalogue">Catalogue</a>
+          <a href="/boutique-list"   class="header-link" data-page="boutique-list">Boutiques</a>
+          <a href="/seller-onboarding" class="header-link" data-page="seller-onboarding">Vendre</a>
+          <a href="/about"         class="header-link" data-page="about">À propos</a>
         </nav>
 
         <div class="header-right">
@@ -550,6 +550,7 @@
         .collection('conversations')
         .where('participants', 'array-contains', uid)
         .where('archived', '==', false)
+        .limit(100)
         .onSnapshot(snap => {
           const unread = snap.docs.reduce((acc, d) => {
             const data = d.data();

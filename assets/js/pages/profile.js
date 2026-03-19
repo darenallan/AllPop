@@ -122,8 +122,9 @@ document.addEventListener('DOMContentLoaded',()=>{
       const btn=document.getElementById('pr-upload-btn');
       btn.style.opacity='.4';btn.style.pointerEvents='none';
       try{
+        const compressedBlob=await window.compressImage(file);
         const ref=storage.ref(`users/${user.uid}/profile.jpg`);
-        const snap=await ref.put(file);
+        const snap=await ref.put(compressedBlob);
         const url=await snap.ref.getDownloadURL();
         await user.updateProfile({photoURL:url});
         await db.collection('users').doc(user.uid).update({photoURL:url});
@@ -304,7 +305,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         const isBuyer=ch.buyerId===uid;
         const partner=isBuyer?(ch.shopName||'Vendeur'):(ch.buyerName||'Client');
         const init=partner.slice(0,2).toUpperCase();
-        return `<a href="messages.html?chatId=${ch.id}" class="pr-msg-item">
+        return `<a href="/messages.html?chatId=${ch.id}" class="pr-msg-item">
           <div class="pr-msg-av">${init}</div>
           <div class="pr-msg-body">
             <div class="pr-msg-shop">${partner}</div>

@@ -66,8 +66,8 @@ document.addEventListener("DOMContentLoaded", function () {
   async function init() {
     try {
       var results = await Promise.all([
-        db.collection("shops").get(),
-        db.collection("products").get(),
+        db.collection("shops").limit(20).get(),
+        db.collection("products").limit(100).get(),
       ]);
       var shopsSnap = results[0],
         productsSnap = results[1];

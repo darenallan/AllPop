@@ -390,8 +390,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (fileInput && fileInput.files.length > 0 && storage) {
           var urls=[]; 
           for(var file of fileInput.files){ 
-            var ref2=storage.ref('products/'+currentShopId+'/'+Date.now()+'_'+file.name); 
-            var sn=await ref2.put(file); 
+            var compressedBlob=await window.compressImage(file);
+            var ref2=storage.ref('products/'+currentShopId+'/'+Date.now()+'.webp'); 
+            var sn=await ref2.put(compressedBlob); 
             urls.push(await sn.ref.getDownloadURL()); 
           } 
           data.images=urls; data.image=urls[0];
@@ -431,9 +432,19 @@ document.addEventListener('DOMContentLoaded', function() {
         var g = function(id){ return document.getElementById(id)?.value||''; };
         var updates = { name:g('sp-name'), category:g('sp-category'), city:g('sp-city'), phone:g('sp-phone'), description:g('sp-description'), updatedAt:firebase.firestore.FieldValue.serverTimestamp() };
         var logoFile = document.getElementById('sp-logo-file')?.files[0];
-        if (logoFile && storage) { var ref3=storage.ref('shops/'+currentShopId+'/logo_'+Date.now()+'.jpg'); var sn2=await ref3.put(logoFile); updates.logo=await sn2.ref.getDownloadURL(); }
+        if (logoFile && storage) { 
+          var compressedBlobLogo=await window.compressImage(logoFile);
+          var ref3=storage.ref('shops/'+currentShopId+'/logo_'+Date.now()+'.webp'); 
+          var sn2=await ref3.put(compressedBlobLogo); 
+          updates.logo=await sn2.ref.getDownloadURL(); 
+        }
         var bannerFile = document.getElementById('sp-banner-file')?.files[0];
-        if (bannerFile && storage) { var refB=storage.ref('shops/'+currentShopId+'/banner_'+Date.now()+'.jpg'); var snB=await refB.put(bannerFile); updates.banner=await snB.ref.getDownloadURL(); }
+        if (bannerFile && storage) { 
+          var compressedBlobBanner=await window.compressImage(bannerFile);
+          var refB=storage.ref('shops/'+currentShopId+'/banner_'+Date.now()+'.webp'); 
+          var snB=await refB.put(compressedBlobBanner); 
+          updates.banner=await snB.ref.getDownloadURL(); 
+        }
         await db2.collection('shops').doc(currentShopId).update(updates);
         if(window.showToast) window.showToast('Boutique mise à jour','success');
         ['sd-shop-name','sd-topbar-shop'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=updates.name; });
@@ -472,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var time    = chat.lastMessageAt||chat.updatedAt;
         if (time) { var d=time.toDate?time.toDate():new Date(time.seconds?time.seconds*1000:time); var diff=Math.floor((Date.now()-d)/1000); time = diff<60?'À l\'instant':diff<3600?Math.floor(diff/60)+'min':diff<86400?Math.floor(diff/3600)+'h':d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'}); } else time='';
         var p = new URLSearchParams({ chatId:chat.id, shopId:chat.shopId||'', sellerId:chat.sellerId||'' });
-        return '<a href="messages.html?'+p.toString()+'" class="sd-disc-item"><div class="sd-disc-avatar">'+initials+'</div><div style="flex:1;min-width:0"><div class="sd-disc-name">'+buyer+'</div><div class="sd-disc-preview">'+preview+'</div></div><div class="sd-disc-time">'+time+'</div></a>';
+        return '<a href="/messages.html?'+p.toString()+'" class="sd-disc-item"><div class="sd-disc-avatar">'+initials+'</div><div style="flex:1;min-width:0"><div class="sd-disc-name">'+buyer+'</div><div class="sd-disc-preview">'+preview+'</div></div><div class="sd-disc-time">'+time+'</div></a>';
       }).join('');
     }, function(){ container.innerHTML='<div class="sd-empty"><div class="sd-empty-sub">Impossible de charger les discussions.</div></div>'; });
   }

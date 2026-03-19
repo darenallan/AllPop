@@ -34,6 +34,11 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 window.auth = firebase.auth();
 window.db   = firebase.firestore();
 
+// ── FIRESTORE PERSISTENCE (Cache local, multi-onglets) ──
+firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(function(err) { 
+  if(err.code !== 'failed-precondition') console.warn("[Firestore] Persistence error:", err.code); 
+});
+
 // ── 2. STORE GLOBAL (remplacé par Firestore, garde pour compat) ──
 // window.Store est hydraté par data.js si présent.
 // Les modules app.js / admin.js doivent privilégier window.db.
@@ -318,7 +323,7 @@ window.showAccessDenied = function ({
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         ${redirectLabel}
       </a>
-      <div class="aurum-denied-footer"><a href="index.html">SANHIA</a></div>
+      <div class="aurum-denied-footer"><a href="/">SANHIA</a></div>
     </div>`;
 };
 
@@ -412,5 +417,78 @@ if (window.db) {
     })
     .catch(err => console.error('Pre-cache shops error:', err));
 }
+
+// ── IMAGE COMPRESSION (Canvas HTML5 + WebP) ─────────────────────
+/**
+ * Compresse une image en WebP 80% avec Canvas HTML5
+ * Retourne un Blob compressé (max 1000px de large)
+ */
+window.compressImage = async function(file) {
+  return new Promise((resolve, reject) => {
+    if (!file?.type?.startsWith('image/')) {
+      reject(new Error('Fichier invalide (image requise).'));
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onerror = () => reject(new Error('Lecture du fichier échouée.'));
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onerror = () => reject(new Error('Image invalide.'));
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1000;
+          let width = img.width;
+          let height = img.height;
+
+          // Calcul du ratio pour ne pas déformer l'image
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            reject(new Error('Canvas non supporté.'));
+            return;
+          }
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Conversion en WebP avec qualité 80%
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Compression échouée.'));
+              return;
+            }
+            resolve(blob);
+          }, 'image/webp', 0.8);
+        } catch (err) {
+          reject(err);
+        }
+      };
+    };
+  });
+};
+
+/**
+ * Convertit un Blob en Base64 (pour stockage Firestore)
+ */
+window.blobToBase64 = async function(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Conversion Base64 échouée.'));
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+};
 
 console.log("✅ config.js v3 chargé");

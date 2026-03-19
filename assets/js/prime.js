@@ -771,7 +771,7 @@
       addressSelectEl.innerHTML = '<option value="">Aucune adresse enregistrée</option>';
       addressSelectEl.disabled = true;
       currentAddress = null; updateShipUI();
-      if (shippingNoteEl) shippingNoteEl.innerHTML = '<a href="profile.html">+ Ajouter une adresse</a>';
+      if (shippingNoteEl) shippingNoteEl.innerHTML = '<a href="/profile">+ Ajouter une adresse</a>';
       return;
     }
     addresses.forEach(function (a) { addressById.set(String(a.id), a); });
@@ -1579,7 +1579,7 @@
 
     if (!chats.length) {
       convListEl.innerHTML = '<div class="inbox-conv-empty"><p>' + (searchTerm ? 'Aucun résultat.' : 'Aucune conversation.') + '</p>'
-        + (!searchTerm ? '<a href="catalogue.html">Explorer la marketplace →</a>' : '') + '</div>';
+        + (!searchTerm ? '<a href="/catalogue">Explorer la marketplace →</a>' : '') + '</div>';
       return;
     }
 
@@ -1892,7 +1892,7 @@
         + '<div class="ax-tnav rv"><button class="ax-tbtn on" onclick="axTab(\'desc\',this)">Description</button><button class="ax-tbtn" onclick="axTab(\'rev\',this)">Avis clients ('+reviews.length+')</button></div>'
         + '<div class="ax-tpanel on" id="ax-p-desc"><div class="ax-desc-grid rv"><p class="ax-dtxt">'+(product.description||'<em style="opacity:.4">Aucune description.</em>').replace(/\n/g,'<br>')+'</p>'+(dspecs?'<div class="ax-dspecs">'+dspecs+'</div>':'')+'</div></div>'
         + '<div class="ax-tpanel" id="ax-p-rev"><div class="ax-rl"><div class="ax-rs rv"><div class="ax-avghuge">'+avg+'</div><div class="ax-avgstars">'+starH(avg)+'</div><div class="ax-avgcnt">'+reviews.length+' avis</div></div>'
-          + '<div class="rv rv1"><div class="ax-rform"><h3 class="ax-rftitle">Partagez votre expérience</h3><div class="ax-authwarn" id="ax-authwarn">⚠ Vous devez être <a href="login.html">connecté</a> pour laisser un avis.</div><div class="ax-rffield"><label class="ax-rflabel">Votre nom</label><input type="text" id="ax-rname" class="ax-rfinput" placeholder="Nom complet"></div><div class="ax-rffield"><label class="ax-rflabel">Note</label><div class="ax-spick" id="ax-spick"><span onmouseover="axHS(1)" onclick="axSS(1)">★</span><span onmouseover="axHS(2)" onclick="axSS(2)">★</span><span onmouseover="axHS(3)" onclick="axSS(3)">★</span><span onmouseover="axHS(4)" onclick="axSS(4)">★</span><span onmouseover="axHS(5)" onclick="axSS(5)">★</span></div><input type="hidden" id="ax-rrating" value="5"></div><div class="ax-rffield"><label class="ax-rflabel">Votre avis</label><textarea id="ax-rcomment" class="ax-rfarea" placeholder="Décrivez votre expérience…"></textarea></div><button class="ax-rfsubmit" onclick="axReview(event)"><span>Soumettre mon avis</span></button></div>'
+          + '<div class="rv rv1"><div class="ax-rform"><h3 class="ax-rftitle">Partagez votre expérience</h3><div class="ax-authwarn" id="ax-authwarn">⚠ Vous devez être <a href="/login">connecté</a> pour laisser un avis.</div><div class="ax-rffield"><label class="ax-rflabel">Votre nom</label><input type="text" id="ax-rname" class="ax-rfinput" placeholder="Nom complet"></div><div class="ax-rffield"><label class="ax-rflabel">Note</label><div class="ax-spick" id="ax-spick"><span onmouseover="axHS(1)" onclick="axSS(1)">★</span><span onmouseover="axHS(2)" onclick="axSS(2)">★</span><span onmouseover="axHS(3)" onclick="axSS(3)">★</span><span onmouseover="axHS(4)" onclick="axSS(4)">★</span><span onmouseover="axHS(5)" onclick="axSS(5)">★</span></div><input type="hidden" id="ax-rrating" value="5"></div><div class="ax-rffield"><label class="ax-rflabel">Votre avis</label><textarea id="ax-rcomment" class="ax-rfarea" placeholder="Décrivez votre expérience…"></textarea></div><button class="ax-rfsubmit" onclick="axReview(event)"><span>Soumettre mon avis</span></button></div>'
           + (reviews.length ? reviews.map(function(r){return '<div class="ax-rcard"><div class="ax-rchead"><div class="ax-rcwho"><div class="ax-rcava">'+(r.userName||'A').charAt(0).toUpperCase()+'</div><div><div class="ax-rcname">'+(r.userName||'Anonyme')+'</div><div class="ax-rcdate">'+(r.createdAt?new Date(r.createdAt.seconds*1000).toLocaleDateString('fr-FR'):'')+'</div></div></div><div class="ax-rcstars">'+starH(r.rating||5)+'</div></div><p class="ax-rctxt">'+(r.comment||'')+'</p></div>';}).join('') : '<div class="ax-norev"><div class="ax-nrevbig">✦</div><p>Soyez le premier à partager votre expérience.</p></div>')
         + '</div></div></div>'
       + '</div></section>'
@@ -2143,8 +2143,9 @@
       if (file.size > 2*1024*1024)               { if(window.showToast) window.showToast('Image trop lourde (max 2 Mo).','danger'); return; }
       uploadBtn.style.opacity = '.4'; uploadBtn.style.pointerEvents = 'none';
       try {
+        var compressedBlob = await window.compressImage(file);
         var ref  = storage.ref('users/' + user.uid + '/profile.jpg');
-        var snap = await ref.put(file);
+        var snap = await ref.put(compressedBlob);
         var url  = await snap.ref.getDownloadURL();
         await user.updateProfile({ photoURL:url });
         await db.collection('users').doc(user.uid).update({ photoURL:url });
@@ -2216,7 +2217,7 @@
   }
   function renderOrders(orders) {
     var c = document.getElementById('pr-orders-list'); if(!c) return;
-    if (!orders.length) { c.innerHTML='<div class="pr-empty"><div class="pr-empty-icon">∅</div><p>Aucune commande.</p><a href="catalogue.html">Découvrir le catalogue →</a></div>'; if(typeof lucide!=='undefined')lucide.createIcons(); return; }
+    if (!orders.length) { c.innerHTML='<div class="pr-empty"><div class="pr-empty-icon">∅</div><p>Aucune commande.</p><a href="/catalogue">Découvrir le catalogue →</a></div>'; if(typeof lucide!=='undefined')lucide.createIcons(); return; }
     c.innerHTML = orders.map(function(o){
       var date  = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}) : '—';
       var total = new Intl.NumberFormat('fr-FR').format(o.total||0);
@@ -2288,7 +2289,7 @@
         var isBuyer = ch.buyerId === uid;
         var partner = isBuyer ? ch.shopName||'Vendeur' : ch.buyerName||'Client';
         var init    = partner.slice(0,2).toUpperCase();
-        return '<a href="messages.html?chatId='+ch.id+'" class="pr-msg-item"><div class="pr-msg-av">'+init+'</div><div class="pr-msg-body"><div class="pr-msg-shop">'+partner+'</div><div class="pr-msg-last">'+(ch.lastMessage||'…')+'</div></div><div class="pr-msg-arrow"><i data-lucide="arrow-right"></i></div></a>';
+        return '<a href="/messages?chatId='+ch.id+'" class="pr-msg-item"><div class="pr-msg-av">'+init+'</div><div class="pr-msg-body"><div class="pr-msg-shop">'+partner+'</div><div class="pr-msg-last">'+(ch.lastMessage||'…')+'</div></div><div class="pr-msg-arrow"><i data-lucide="arrow-right"></i></div></a>';
       }).join('');
       if(typeof lucide!=='undefined')lucide.createIcons();
     }, function(err){ console.warn('[profil] messages:', err); });
@@ -2704,10 +2705,15 @@
           updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
         };
         var op = Number(g('fp-original-price'))||0; if(op) data.originalPrice=op;
-        // Upload images si présentes
+        // Upload images si présentes (avec compression Canvas)
         var fileInput = document.getElementById('fp-images');
         if (fileInput && fileInput.files.length > 0 && storage) {
-          var urls=[]; for(var file of fileInput.files){ var ref2=storage.ref('products/'+currentShopId+'/'+Date.now()+'_'+file.name); var sn=await ref2.put(file); urls.push(await sn.ref.getDownloadURL()); } data.images=urls; data.image=urls[0];
+          var urls=[]; for(var file of fileInput.files){ 
+            var compressedBlob=await window.compressImage(file);
+            var ref2=storage.ref('products/'+currentShopId+'/'+Date.now()+'.webp'); 
+            var sn=await ref2.put(compressedBlob); 
+            urls.push(await sn.ref.getDownloadURL()); 
+          } data.images=urls; data.image=urls[0];
         }
         if (editId) { await db2.collection('products').doc(editId).update(data); delete e.target.dataset.editId; if(window.showToast) window.showToast('Produit mis à jour','success'); }
         else { data.createdAt=firebase.firestore.FieldValue.serverTimestamp(); await db2.collection('products').add(data); if(window.showToast) window.showToast('Produit publié avec succès','success'); }
@@ -2725,7 +2731,12 @@
         var g = function(id){ return document.getElementById(id)?.value||''; };
         var updates = { name:g('sp-name'), category:g('sp-category'), city:g('sp-city'), phone:g('sp-phone'), description:g('sp-description'), updatedAt:firebase.firestore.FieldValue.serverTimestamp() };
         var logoFile = document.getElementById('sp-logo-file')?.files[0];
-        if (logoFile && storage) { var ref3=storage.ref('shops/'+currentShopId+'/logo_'+Date.now()+'.jpg'); var sn2=await ref3.put(logoFile); updates.logo=await sn2.ref.getDownloadURL(); }
+        if (logoFile && storage) { 
+          var compressedBlobLogo=await window.compressImage(logoFile);
+          var ref3=storage.ref('shops/'+currentShopId+'/logo_'+Date.now()+'.webp'); 
+          var sn2=await ref3.put(compressedBlobLogo); 
+          updates.logo=await sn2.ref.getDownloadURL(); 
+        }
         await db2.collection('shops').doc(currentShopId).update(updates);
         if(window.showToast) window.showToast('Boutique mise à jour','success');
         ['sd-shop-name','sd-topbar-shop'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=updates.name; });
@@ -2756,7 +2767,7 @@
         var time    = chat.lastMessageAt||chat.updatedAt;
         if (time) { var d=time.toDate?time.toDate():new Date(time.seconds?time.seconds*1000:time); var diff=Math.floor((Date.now()-d)/1000); time = diff<60?'À l\'instant':diff<3600?Math.floor(diff/60)+'min':diff<86400?Math.floor(diff/3600)+'h':d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'}); } else time='';
         var p = new URLSearchParams({ chatId:chat.id, shopId:chat.shopId||'', sellerId:chat.sellerId||'' });
-        return '<a href="messages.html?'+p.toString()+'" class="sd-disc-item"><div class="sd-disc-avatar">'+initials+'</div><div style="flex:1;min-width:0"><div class="sd-disc-name">'+buyer+'</div><div class="sd-disc-preview">'+preview+'</div></div><div class="sd-disc-time">'+time+'</div></a>';
+        return '<a href="/messages?'+p.toString()+'" class="sd-disc-item"><div class="sd-disc-avatar">'+initials+'</div><div style="flex:1;min-width:0"><div class="sd-disc-name">'+buyer+'</div><div class="sd-disc-preview">'+preview+'</div></div><div class="sd-disc-time">'+time+'</div></a>';
       }).join('');
     }, function(){ container.innerHTML='<div class="sd-empty"><div class="sd-empty-sub">Impossible de charger les discussions.</div></div>'; });
   }

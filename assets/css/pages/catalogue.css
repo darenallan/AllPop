@@ -936,14 +936,15 @@ body.cur-h #cur-ring {
 .prd-skeleton .prd-img-wrap {
   background: linear-gradient(
     90deg,
-    var(--ink2) 25%,
-    var(--ink3) 50%,
-    var(--ink2) 75%
+    var(--ink3) 25%,
+    var(--ink4, rgba(200,168,75,.08)) 50%,
+    var(--ink3) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: skel-shimmer 2s infinite;
 }
-@keyframes shimmer {
+
+@keyframes skel-shimmer {
   0% {
     background-position: 200% 0;
   }
@@ -951,19 +952,27 @@ body.cur-h #cur-ring {
     background-position: -200% 0;
   }
 }
+
+/* Unified skeleton line styling */
 .skel-line {
-  height: 10px;
+  height: 12px;
   background: linear-gradient(
     90deg,
     var(--ink3) 25%,
-    var(--ink4) 50%,
+    var(--ink4, rgba(200,168,75,.08)) 50%,
     var(--ink3) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: skel-shimmer 2s infinite;
   margin-bottom: 10px;
-  border-radius: 1px;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
 }
+
+.skel-line.w60 { width: 60%; }
+.skel-line.w80 { width: 80%; }
+.skel-line.w40 { width: 40%; }
 .cat-empty {
   grid-column: 1/-1;
   text-align: center;

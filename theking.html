@@ -8,7 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="/assets/js/components/header.js"></script>
+  <script src="/assets/js/components/header.js" defer></script>
 
   <!-- Anti-FOUC -->
   <style>
@@ -815,7 +815,7 @@ function wallDeny(opts={}) {
         </div>
         <h2 style="font-family:'Instrument Serif',serif;font-size:40px;color:rgba(254,252,248,.2);margin-bottom:12px">Accés Refusé</h2>
         <p style="font-size:13px;color:#7A7570;max-width:360px;line-height:1.6;margin-bottom:28px">${opts.reason||'Zone réservée aux administrateurs Sanhia.'}</p>
-        <a href="${opts.redirectUrl||'index.html'}" style="display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:#C8A84B;color:#0B0A08;font-family:'Unbounded',sans-serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;text-decoration:none">
+        <a href="${opts.redirectUrl||'/'}" style="display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:#C8A84B;color:#0B0A08;font-family:'Unbounded',sans-serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;text-decoration:none">
           ${opts.redirectLabel||"Retour à l'accueil"}
         </a>
       </div>`;

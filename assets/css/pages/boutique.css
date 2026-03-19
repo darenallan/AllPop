@@ -344,7 +344,7 @@ body {
 .drawer-link:hover i {
   transform: scale(1.15);
 }
-
+ 
 .mobile-drawer-overlay {
   position: fixed;
   inset: 0;

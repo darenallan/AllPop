@@ -115,7 +115,9 @@ async function handleProductFiles(files) {
   for (const file of Array.from(files)) {
     if (!file.type?.startsWith('image/')) continue;
     try {
-      productImages.push(await compressImageToBase64(file, maxW, maxH, q));
+      const compressedBlob = await window.compressImage(file);
+      const base64 = await window.blobToBase64(compressedBlob);
+      productImages.push(base64);
       renderProductGallery();
     } catch (err) { window.showToast('Image ignorée : ' + err.message, 'warning'); }
   }
@@ -126,7 +128,7 @@ function renderProductGallery() {
   if (!gallery) return;
   gallery.innerHTML = productImages.map((img, i) => `
     <div class="preview-item">
-      <img src="${img}" style="width:80px;height:80px;object-fit:cover;border-radius:4px">
+      <img src="${img}" loading="lazy" style="width:80px;height:80px;object-fit:cover;border-radius:4px">
       <button type="button" onclick="removeProductImage(${i})" style="position:absolute;top:2px;right:2px;background:#D94F4F;color:#fff;border:none;border-radius:50%;width:18px;height:18px;line-height:16px;cursor:pointer">×</button>
     </div>`).join('');
 }
@@ -143,9 +145,9 @@ function setupProfileUpload() {
       const file = input.files[0]; if (!file) return;
       const prev = document.getElementById(previewId);
       if (prev) prev.style.opacity = '0.5';
-      const { maxW, maxH, q } = IMAGE_LIMITS[type];
       try {
-        const b64 = await compressImageToBase64(file, maxW, maxH, q);
+        const compressedBlob = await window.compressImage(file);
+        const b64 = await window.blobToBase64(compressedBlob);
         if (type === 'logo')   logoBase64   = b64;
         if (type === 'banner') bannerBase64 = b64;
         if (prev) { prev.src = b64; prev.style.opacity = '1'; }
@@ -215,7 +217,7 @@ function listenToSellerProducts() {
       list.innerHTML = currentProducts.map(p => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid rgba(200,168,75,.08)">
           <div style="display:flex;gap:12px;align-items:center">
-            <img src="${p.image || 'assets/img/placeholder.png'}" style="width:48px;height:48px;object-fit:cover;border-radius:4px">
+            <img src="${p.image || 'assets/img/placeholder.png'}" loading="lazy" style="width:48px;height:48px;object-fit:cover;border-radius:4px">
             <div>
               <div style="font-weight:600">${p.name}</div>
               <div style="color:#C8A84B;font-size:12px">${window.formatFCFA(p.price)}</div>
@@ -246,7 +248,7 @@ async function loadSellerOrders(userEmail) {
   container.style.display = 'none';
 
   try {
-    const shopSnap = await window.db.collection('shops').where('ownerEmail', '==', userEmail).get();
+    const shopSnap = await window.db.collection('shops').where('ownerEmail', '==', userEmail).limit(1).get();
     if (shopSnap.empty) {
       list.innerHTML = '<p style="color:#D94F4F;padding:20px">Aucune boutique trouvée.</p>';
       if (loader) loader.style.display = 'none';
@@ -254,7 +256,7 @@ async function loadSellerOrders(userEmail) {
     }
     const shopId = shopSnap.docs[0].id;
 
-    const ordersSnap = await window.db.collection('orders').where('sellerId', '==', shopId).get();
+    const ordersSnap = await window.db.collection('orders').where('sellerId', '==', shopId).limit(50).get();
     const orders = ordersSnap.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => ((b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
@@ -318,7 +320,7 @@ function updateStatSales(orders = [], shopId) {
 async function loadSellerStats(shopId) {
   if (!shopId || !window.db) return;
   try {
-    const snap   = await window.db.collection('orders').where('sellerId', '==', shopId).get();
+    const snap   = await window.db.collection('orders').where('sellerId', '==', shopId).limit(50).get();
     const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     updateStatSales(orders, shopId);
   } catch (e) { console.warn('[admin.js] loadSellerStats:', e.message); }
@@ -333,6 +335,7 @@ window.loadPendingSellerOrders = function (shopId) {
   window.db.collection('orders')
     .where('sellerId', '==', shopId)
     .where('status', '==', 'pending_seller')
+    .limit(50)
     .onSnapshot(snap => {
       const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if (!orders.length) {
@@ -616,7 +619,7 @@ function initSellerDashboard() {
 
     // Chercher la boutique
     let shopSnap;
-    try { shopSnap = await window.db.collection('shops').where('ownerEmail', '==', user.email).get(); }
+    try { shopSnap = await window.db.collection('shops').where('ownerEmail', '==', user.email).limit(1).get(); }
     catch { shopSnap = { empty: true }; }
 
     const hasShop = !shopSnap.empty;
