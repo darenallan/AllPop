@@ -19,7 +19,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 (function () {
-  'use strict';
+  "use strict";
 
   if (window.__aurumHeaderInjected) return;
   window.__aurumHeaderInjected = true;
@@ -367,9 +367,9 @@
 
   /* ── Inject styles ───────────────────────────────────────────── */
   function injectStyles() {
-    if (document.getElementById('aurum-header-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'aurum-header-styles';
+    if (document.getElementById("aurum-header-styles")) return;
+    const style = document.createElement("style");
+    style.id = "aurum-header-styles";
     style.textContent = CSS;
     document.head.insertBefore(style, document.head.firstChild);
   }
@@ -511,97 +511,117 @@
 
   /* ── Active link ─────────────────────────────────────────────── */
   function setActiveLinks() {
-    const page = window.location.pathname.split('/').filter(Boolean)[0] || 'index';
-    document.querySelectorAll('[data-page]').forEach(el => {
-      el.classList.toggle('active', el.dataset.page === page);
+    const page =
+      window.location.pathname.split("/").filter(Boolean)[0] || "index";
+    document.querySelectorAll("[data-page]").forEach((el) => {
+      el.classList.toggle("active", el.dataset.page === page);
     });
   }
 
   /* ── Scroll effect ───────────────────────────────────────────── */
   function setupScroll() {
-    const header = document.getElementById('aurum-header');
+    const header = document.getElementById("aurum-header");
     if (!header) return;
     const check = () => {
-      header.classList.toggle('scrolled', window.scrollY > 50);
+      header.classList.toggle("scrolled", window.scrollY > 50);
     };
-    window.addEventListener('scroll', check, { passive: true });
+    window.addEventListener("scroll", check, { passive: true });
     check();
   }
 
   /* ── Cart badge ──────────────────────────────────────────────── */
   function updateCartCount() {
     try {
-      const raw = localStorage.getItem('ac_cart') || localStorage.getItem('cart') || '[]';
+      const raw =
+        localStorage.getItem("ac_cart") || localStorage.getItem("cart") || "[]";
       const cart = JSON.parse(raw);
-      const total = cart.reduce((s, i) => s + (parseInt(i.qty) || parseInt(i.quantity) || 1), 0);
-      const badge = document.getElementById('cart-count');
+      const total = cart.reduce(
+        (s, i) => s + (parseInt(i.qty) || parseInt(i.quantity) || 1),
+        0,
+      );
+      const badge = document.getElementById("cart-count");
       if (!badge) return;
-      badge.textContent = total > 99 ? '99+' : total;
-      badge.classList.toggle('show', total > 0);
+      badge.textContent = total > 99 ? "99+" : total;
+      badge.classList.toggle("show", total > 0);
     } catch (_) {}
   }
   window.refreshCartCount = updateCartCount;
 
   /* ── Messages badge (Firebase) ───────────────────────────────── */
   function setupMsgBadge(uid) {
-    if (typeof firebase === 'undefined' || !firebase.firestore) return;
+    if (typeof firebase === "undefined" || !firebase.firestore) return;
     try {
-      firebase.firestore()
-        .collection('conversations')
-        .where('participants', 'array-contains', uid)
-        .where('archived', '==', false)
+      firebase
+        .firestore()
+        .collection("conversations")
+        .where("participants", "array-contains", uid)
+        .where("archived", "==", false)
         .limit(100)
-        .onSnapshot(snap => {
-          const unread = snap.docs.reduce((acc, d) => {
-            const data = d.data();
-            return acc + (data.buyerId === uid ? (data.unreadBuyer || 0) : (data.unreadSeller || 0));
-          }, 0);
-          const badge = document.getElementById('header-msg-badge');
-          if (badge) badge.classList.toggle('show', unread > 0);
-        }, () => {});
+        .onSnapshot(
+          (snap) => {
+            const unread = snap.docs.reduce((acc, d) => {
+              const data = d.data();
+              return (
+                acc +
+                (data.buyerId === uid
+                  ? data.unreadBuyer || 0
+                  : data.unreadSeller || 0)
+              );
+            }, 0);
+            const badge = document.getElementById("header-msg-badge");
+            if (badge) badge.classList.toggle("show", unread > 0);
+          },
+          () => {},
+        );
     } catch (_) {}
   }
-  window.refreshMsgBadge = function() {};
+  window.refreshMsgBadge = function () {};
 
   /* ── Auth ────────────────────────────────────────────────────── */
   function setupAuth() {
-    if (typeof firebase === 'undefined' || !firebase.auth) return;
+    if (typeof firebase === "undefined" || !firebase.auth) return;
 
-    const loginLink   = document.getElementById('drawer-login-link');
-    const logoutLink  = document.getElementById('drawer-logout-link');
-    const profileBtn  = document.getElementById('header-profile-btn');
-    const userCard    = document.getElementById('drawer-user-card');
-    const userNameEl  = document.getElementById('drawer-user-name');
-    const userEmailEl = document.getElementById('drawer-user-email');
+    const loginLink = document.getElementById("drawer-login-link");
+    const logoutLink = document.getElementById("drawer-logout-link");
+    const profileBtn = document.getElementById("header-profile-btn");
+    const userCard = document.getElementById("drawer-user-card");
+    const userNameEl = document.getElementById("drawer-user-name");
+    const userEmailEl = document.getElementById("drawer-user-email");
 
-    firebase.auth().onAuthStateChanged(user => {
+    firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        if (loginLink)  loginLink.style.display  = 'none';
-        if (logoutLink) logoutLink.style.display  = 'flex';
-        if (profileBtn) profileBtn.href = 'profile.html';
+        if (loginLink) loginLink.style.display = "none";
+        if (logoutLink) logoutLink.style.display = "flex";
+        if (profileBtn) profileBtn.href = "/profile.html";
         if (userCard) {
-          userCard.style.display = 'block';
-          if (userNameEl)  userNameEl.textContent  = user.displayName || 'Mon compte';
-          if (userEmailEl) userEmailEl.textContent = user.email || '';
+          userCard.style.display = "block";
+          if (userNameEl)
+            userNameEl.textContent = user.displayName || "Mon compte";
+          if (userEmailEl) userEmailEl.textContent = user.email || "";
         }
         setupMsgBadge(user.uid);
         // Mettre à jour window.refreshMsgBadge
         window.refreshMsgBadge = () => setupMsgBadge(user.uid);
       } else {
-        if (loginLink)  loginLink.style.display  = 'flex';
-        if (logoutLink) logoutLink.style.display  = 'none';
-        if (profileBtn) profileBtn.href = 'login.html';
-        if (userCard)   userCard.style.display = 'none';
-        const badge = document.getElementById('header-msg-badge');
-        if (badge) badge.classList.remove('show');
+        if (loginLink) loginLink.style.display = "flex";
+        if (logoutLink) logoutLink.style.display = "none";
+        if (profileBtn) profileBtn.href = "/login.html";
+        if (userCard) userCard.style.display = "none";
+        const badge = document.getElementById("header-msg-badge");
+        if (badge) badge.classList.remove("show");
       }
     });
 
     if (logoutLink) {
-      logoutLink.addEventListener('click', e => {
+      logoutLink.addEventListener("click", (e) => {
         e.preventDefault();
-        if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-          firebase.auth().signOut().then(() => { window.location.href = '/'; });
+        if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
+          firebase
+            .auth()
+            .signOut()
+            .then(() => {
+              window.location.href = "/";
+            });
         }
       });
     }
@@ -609,54 +629,59 @@
 
   /* ── Mobile drawer ───────────────────────────────────────────── */
   function setupDrawer() {
-    const burger  = document.getElementById('mobile-burger-btn');
-    const closeBtn = document.getElementById('drawer-close-btn');
-    const drawer  = document.getElementById('mobile-drawer');
-    const overlay = document.getElementById('drawer-overlay');
+    const burger = document.getElementById("mobile-burger-btn");
+    const closeBtn = document.getElementById("drawer-close-btn");
+    const drawer = document.getElementById("mobile-drawer");
+    const overlay = document.getElementById("drawer-overlay");
 
     if (!burger || !drawer) return;
 
     const open = () => {
-      drawer.classList.add('active');
-      if (overlay) overlay.classList.add('active');
-      burger.classList.add('open');
-      burger.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
+      drawer.classList.add("active");
+      if (overlay) overlay.classList.add("active");
+      burger.classList.add("open");
+      burger.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden";
     };
     const close = () => {
-      drawer.classList.remove('active');
-      if (overlay) overlay.classList.remove('active');
-      burger.classList.remove('open');
-      burger.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+      drawer.classList.remove("active");
+      if (overlay) overlay.classList.remove("active");
+      burger.classList.remove("open");
+      burger.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = "";
     };
 
-    burger.addEventListener('click', () => drawer.classList.contains('active') ? close() : open());
-    if (closeBtn) closeBtn.addEventListener('click', close);
-    if (overlay)  overlay.addEventListener('click', close);
+    burger.addEventListener("click", () =>
+      drawer.classList.contains("active") ? close() : open(),
+    );
+    if (closeBtn) closeBtn.addEventListener("click", close);
+    if (overlay) overlay.addEventListener("click", close);
 
     // Fermer au clic sur un lien (sauf logout)
-    drawer.querySelectorAll('.drawer-link').forEach(link => {
-      link.addEventListener('click', e => {
-        if (link.id !== 'drawer-logout-link') close();
+    drawer.querySelectorAll(".drawer-link").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        if (link.id !== "drawer-logout-link") close();
       });
     });
 
     // Escape key
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && drawer.classList.contains('active')) close();
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && drawer.classList.contains("active")) close();
     });
   }
 
   /* ── Storage listener (panier depuis d'autres onglets) ──────── */
-  window.addEventListener('storage', e => {
-    if (e.key === 'ac_cart' || e.key === 'cart') updateCartCount();
+  window.addEventListener("storage", (e) => {
+    if (e.key === "ac_cart" || e.key === "cart") updateCartCount();
   });
 
   /* ── INJECT ──────────────────────────────────────────────────── */
   function injectHeader() {
-    const ph = document.getElementById('header-placeholder');
-    if (!ph) { console.warn('[Aurum Header] #header-placeholder introuvable.'); return; }
+    const ph = document.getElementById("header-placeholder");
+    if (!ph) {
+      console.warn("[Aurum Header] #header-placeholder introuvable.");
+      return;
+    }
 
     injectStyles();
     ph.innerHTML = buildHTML();
@@ -671,10 +696,9 @@
   window.injectHeader = injectHeader;
   window.refreshCartCount = updateCartCount;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectHeader);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", injectHeader);
   } else {
     injectHeader();
   }
-
 })();

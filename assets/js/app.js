@@ -22,6 +22,11 @@ function safeProductId(id) {
   return String(id || '').trim();
 }
 
+/// Affiche un toast (alerte temporaire) avec un message et un type (success, danger, warning)
+window.showToast = window.showToast || function(msg, type) {
+    console.log("TOAST (" + type + ") : " + msg);
+    alert(msg); // Un alert basique en attendant de refaire un beau design
+};
 // ── PANIER ────────────────────────────────────────────────────────
 
 function getCartItems() {

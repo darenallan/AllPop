@@ -35,10 +35,11 @@ window.auth = firebase.auth();
 window.db   = firebase.firestore();
 
 // ── FIRESTORE PERSISTENCE (Cache local, multi-onglets) ──
-firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(function(err) { 
-  if(err.code !== 'failed-precondition') console.warn("[Firestore] Persistence error:", err.code); 
+/*
+firebase.firestore().enableMultiTabIndexedDbPersistence().catch(function(err) {
+  if (err.code !== 'failed-precondition') console.warn('[Firestore] Persistence:', err.code);
 });
-
+*/
 // ── 2. STORE GLOBAL (remplacé par Firestore, garde pour compat) ──
 // window.Store est hydraté par data.js si présent.
 // Les modules app.js / admin.js doivent privilégier window.db.

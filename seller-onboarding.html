@@ -5,15 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Devenir Vendeur - Sanhia</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="/assets/js/config.js" defer></script>
+
+  <!-- Our scripts - LOAD ORDER MATTERS -->
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/global.utils.js"></script>
   <script src="/assets/js/components/header.js" defer></script>
+  <script src="/assets/js/components/footer.js" defer></script>
+  <script src="/assets/js/global.js" defer></script>
   <script src="/assets/js/app.js" defer></script>
 
-
   <link rel="stylesheet" href="/assets/css/pages/seller-onboarding.css" />
+  <link rel="stylesheet" href="/assets/css/sanhia-light.css" />
 
 </head>
 <body>
@@ -291,9 +301,7 @@
 </section>
 
 
-<script src="/assets/js/global.js" defer></script>
 <script src="/assets/js/pages/seller-onboarding.js" defer></script>
-<script src="/assets/js/footer.js" defer></script>
 </body>
 </html>
 

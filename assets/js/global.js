@@ -115,38 +115,6 @@ document.addEventListener('DOMContentLoaded', function() {
   })();
 
   /* ══════════════════════════════════════════════════════════
-     §2  TOAST NOTIFICATION SYSTEM
-     Accessible via window.showToast(message, type)
-     ══════════════════════════════════════════════════════════ */
-  window.showToast = function(message, type = 'info') {
-    // Guard : vérifier si window.showToast est déjà défini dans config.js
-    if (typeof window._originalShowToast === 'function') {
-      return window._originalShowToast(message, type);
-    }
-
-    // Version par défaut si pas de config.js
-    const toast = document.createElement('div');
-    toast.className = 'toast toast-' + (type || 'info');
-    toast.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: ${type === 'danger' ? '#D94F4F' : type === 'success' ? '#4A9E72' : '#C8A84B'};
-      color: #FEFCF8;
-      padding: 14px 20px;
-      border-radius: 6px;
-      font-family: Syne, sans-serif;
-      font-size: 13px;
-      z-index: 99999;
-      animation: slideIn .3s ease;
-    `;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => { toast.style.animation = 'slideOut .3s ease'; }, 3000);
-    setTimeout(() => { toast.remove(); }, 3300);
-  };
-
-  /* ══════════════════════════════════════════════════════════
      §3  MOBILE MENU TOGGLE (si présent)
      ══════════════════════════════════════════════════════════ */
   (function initMobileMenu() {

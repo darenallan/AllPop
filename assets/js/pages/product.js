@@ -40,6 +40,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const urlParams = new URLSearchParams(window.location.search);
   let idFromQuery = urlParams.get("id");
 
+  // Injecter le canonical link avec le slug
+  if (slug && slug !== "product") {
+    const canonicalLink = document.getElementById("canonical-link");
+    if (canonicalLink) {
+      canonicalLink.href = "https://sanhia.com/product/" + slug;
+    }
+  }
+
   // Si le slug contient --, c'est le format slug-ID avec -- comme séparateur
   let idFromSlug = null;
   if (slug && slug.includes("--")) {
@@ -350,7 +358,7 @@ document.addEventListener("DOMContentLoaded", function () {
       imgs[0] +
       '" alt="' +
       product.name +
-      ' - Achat en ligne Ouagadougou Sanhia" class="ax-gal-img" id="ax-main-img" onerror="this.src=\'assets/img/placeholder-product-1.svg\'" onload="document.getElementById(\'ax-gal\').classList.add(\'ld\')">+
+      ' - Achat en ligne Ouagadougou Sanhia" class="ax-gal-img" id="ax-main-img" onerror="this.src=\'assets/img/placeholder-product-1.svg\'" onload="document.getElementById(\'ax-gal\').classList.add(\'ld\')">'+
       (imgs.length > 1
         ? '<div class="ax-thumbs">' +
           imgs

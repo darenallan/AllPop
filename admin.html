@@ -10,7 +10,7 @@
 
     <link rel="stylesheet" href="/assets/css/styles.css" />
     <link rel="stylesheet" href="/assets/css/admin.css" />
-    <link rel="stylesheet" href="/assets/css/aurum-light.css" />
+    <link rel="stylesheet" href="/assets/css/sanhia-light.css" />
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -686,8 +686,8 @@
 
         if (!tbody) return;
 
-        // Filtrer les commandes avec statut pending_admin
-        const pendingOrders = Store.orders.filter(order => order.status === 'pending_admin');
+        // Filtrer les commandes avec statut pending ou pending_admin
+        const pendingOrders = Store.orders.filter(order => order.status === 'pending' || order.status === 'pending_admin');
 
         // Masquer le loader
         if (loader) loader.style.display = 'none';
@@ -1166,9 +1166,21 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
             if(window.innerWidth < 900) document.getElementById('admin-sidebar').classList.remove('mobile-open');
         };
 
+        // UTILITAIRES SLUGIFY
+        const slugify = (str) => {
+          return str
+            .toLowerCase()
+            .trim()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Enlever les accents
+            .replace(/[^a-z0-9 -]/g, '') // Enlever les caractères spéciaux
+            .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
+            .replace(/-+/g, '-'); // Éviter les doubles tirets
+        };
+
         // 7. ACTIONS FORMULAIRES
         document.getElementById('form-shop').onsubmit = async (e) => {
             e.preventDefault();
+            const shopName = document.getElementById('shop-name').value.trim();
             const durationDays = Number(document.getElementById('shop-duration').value) || 30;
             const expiresAt = new Date();
             expiresAt.setDate(expiresAt.getDate() + durationDays);
@@ -1184,8 +1196,21 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                 console.warn('Résolution UID vendeur impossible:', err);
             }
             
+            // Générer slug unique pour la boutique
+            const baseSlug = slugify(shopName);
+            let slug = baseSlug;
+            let counter = 1;
+            // Vérifier l'unicité du slug
+            let existing = await db.collection('shops').where('slug', '==', slug).limit(1).get();
+            while (!existing.empty) {
+                slug = baseSlug + '-' + counter;
+                counter++;
+                existing = await db.collection('shops').where('slug', '==', slug).limit(1).get();
+            }
+            
             await db.collection('shops').add({
-                name: document.getElementById('shop-name').value,
+                name: shopName,
+                slug: slug,
                 ownerEmail: ownerEmail,
                 ownerId: ownerUid || null,
                 sellerId: ownerUid || null,
@@ -1199,7 +1224,7 @@ ${order.deliveryAddress ? JSON.stringify(order.deliveryAddress, null, 2) : 'Non 
                 durationDays: durationDays
             });
             e.target.reset();
-            alert("Boutique ajoutée !");
+            alert("Boutique ajoutée ! (slug: " + slug + ")");
         };
 
         document.getElementById('form-seller').onsubmit = (e) => {

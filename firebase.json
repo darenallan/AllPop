@@ -3,24 +3,41 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "functions/**"],
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
+      { "source": "/product/**", "destination": "/product.html" },
+      { "source": "/boutique/**", "destination": "/boutique.html" },
+      { "source": "/seller", "destination": "/seller.html" },
+      { "source": "/delivery", "destination": "/delivery.html" },
+      { "source": "/profile", "destination": "/profile.html" },
+      { "source": "/cart", "destination": "/cart.html" },
+      { "source": "/wishlist", "destination": "/wishlist.html" },
+      { "source": "/messages", "destination": "/messages.html" },
+      { "source": "/login", "destination": "/login.html" },
+      { "source": "/register", "destination": "/register.html" },
+      { "source": "/catalogue", "destination": "/catalogue.html" },
+      { "source": "/boutique-list", "destination": "/boutique-list.html" },
+      { "source": "/about", "destination": "/about.html" },
+      { "source": "/informations", "destination": "/informations.html" },
+      { "source": "/contact", "destination": "/contact.html" },
+      { "source": "/invoice", "destination": "/invoice.html" },
       {
-        "source": "/product/**",
-        "destination": "/product.html"
+        "source": "/seller-onboarding",
+        "destination": "/seller-onboarding.html"
       },
       {
-        "source": "/boutique/**",
-        "destination": "/boutique.html"
-      }
+        "source": "/seller-application",
+        "destination": "/seller-application.html"
+      },
+      { "source": "/theking", "destination": "/theking.html" },
+      { "source": "**", "destination": "/404.html" }
     ]
   }
 }

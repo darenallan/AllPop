@@ -4,46 +4,69 @@
    ========================================================================== */
 
 @media (prefers-color-scheme: light) {
-  
   /* 1. REDÉFINITION DES VARIABLES */
-  #wl, #ab, #bl, #bp, #ct, #lg, #pr, #db, #rg, #sa, #so {
-    --i: #FAF8F5 !important;
-    --i2: #FFFFFF !important;
-    --i3: #EAE5D9 !important;
-    --w: #1A1916 !important;
-    --s: #6B6661 !important;
-    --g: #B59336 !important;
-    --g2: #8A6E28 !important;
+  #wl,
+  #ab,
+  #bl,
+  #bp,
+  #ct,
+  #lg,
+  #pr,
+  #db,
+  #rg,
+  #sa,
+  #so {
+    --i: #faf8f5 !important;
+    --i2: #ffffff !important;
+    --i3: #eae5d9 !important;
+    --w: #1a1916 !important;
+    --s: #6b6661 !important;
+    --g: #b59336 !important;
+    --g2: #8a6e28 !important;
   }
 
   /* 2. FOND DU BODY */
   body {
-    background: #FAF8F5 !important;
+    background: #faf8f5 !important;
   }
 
   /* 3. LE BRUIT DE FOND (NOISE) */
-  #wl-noise, #ab-noise, #bl-noise, #bp-noise, #ct-noise, 
-  #lg-noise, #pr-noise, #db-noise, #rg-noise, #sa-noise, #so-noise {
+  #wl-noise,
+  #ab-noise,
+  #bl-noise,
+  #bp-noise,
+  #ct-noise,
+  #lg-noise,
+  #pr-noise,
+  #db-noise,
+  #rg-noise,
+  #sa-noise,
+  #so-noise {
     opacity: 0.04 !important;
-    filter: invert(1) !important; 
+    filter: invert(1) !important;
   }
 
   /* 4. TEXTES GÉANTS EN ARRIÈRE-PLAN */
-  .ab-hero-bg-text, 
-  .bl-pghead::before, 
+  .ab-hero-bg-text,
+  .bl-pghead::before,
   .wl-pghead::before {
     color: rgba(26, 25, 22, 0.03) !important;
   }
 
   /* 5. CARTES ET OMBRES (Relief) */
-  .ab-card, .so-card, .db-card, .bl-card, .bp-card {
+  .ab-card,
+  .so-card,
+  .db-card,
+  .bl-card,
+  .bp-card {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
     border-color: rgba(181, 147, 54, 0.15) !important;
-    background: #FFFFFF !important;
+    background: #ffffff !important;
   }
 
   /* Login / Register cards : rester minimalistes et flottantes */
-  #lg .lg-card, #rg .rg-card {
+  #lg .lg-card,
+  #rg .rg-card {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -56,16 +79,25 @@
     border-color: transparent !important;
   }
 
-  .ab-card:hover, .so-card:hover, .bl-card:hover, .bp-card:hover {
+  .ab-card:hover,
+  .so-card:hover,
+  .bl-card:hover,
+  .bp-card:hover {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
     border-color: var(--g) !important;
   }
 
   /* 6. CHAMPS DE FORMULAIRE (Inputs) */
-  .lg-input, .rg-input, .sa-input, .db-input {
+  .lg-input,
+  .rg-input,
+  .sa-input,
+  .db-input {
     border-bottom: 1px solid rgba(26, 25, 22, 0.15) !important;
   }
-  .lg-input::placeholder, .rg-input::placeholder, .sa-input::placeholder, .db-input::placeholder {
+  .lg-input::placeholder,
+  .rg-input::placeholder,
+  .sa-input::placeholder,
+  .db-input::placeholder {
     color: rgba(26, 25, 22, 0.3) !important;
   }
 
@@ -87,43 +119,61 @@
   }
 
   /* Login / Register inputs : underline minimaliste, couleurs light mode */
-  #lg .lg-input, #rg .rg-input {
+  #lg .lg-input,
+  #rg .rg-input {
     background: transparent !important;
     border: none !important;
     border-bottom: 1px solid rgba(26, 25, 22, 0.15) !important;
     color: var(--w) !important;
     padding: 16px 0 !important;
   }
-  #lg .lg-input::placeholder, #rg .rg-input::placeholder {
+  #lg .lg-input::placeholder,
+  #rg .rg-input::placeholder {
     color: rgba(26, 25, 22, 0.3) !important;
   }
-  #lg .lg-input:focus, #rg .rg-input:focus {
+  #lg .lg-input:focus,
+  #rg .rg-input:focus {
     border-bottom-color: var(--g) !important;
     outline: none !important;
     box-shadow: none !important;
   }
 
   /* 7. COULEUR DES BOUTONS PRIMAIRES */
-  .ab-btn.primary, .lg-btn, .rg-btn, .sa-btn, .db-btn.primary {
-    color: #FFFFFF !important;
+  .ab-btn.primary,
+  .lg-btn,
+  .rg-btn,
+  .sa-btn,
+  .db-btn.primary {
+    color: #ffffff !important;
   }
-  .ab-btn.primary::before, .lg-btn::before, .rg-btn::before, .sa-btn::before, .db-btn.primary::before {
+  .ab-btn.primary::before,
+  .lg-btn::before,
+  .rg-btn::before,
+  .sa-btn::before,
+  .db-btn.primary::before {
     background: var(--w) !important;
   }
-  .ab-btn.primary:hover, .lg-btn:hover, .rg-btn:hover, .sa-btn:hover, .db-btn.primary:hover {
-    color: #FFFFFF !important;
+  .ab-btn.primary:hover,
+  .lg-btn:hover,
+  .rg-btn:hover,
+  .sa-btn:hover,
+  .db-btn.primary:hover {
+    color: #ffffff !important;
   }
 
   /* Login / Register buttons : style outline lisible en light mode */
-  #lg .lg-btn, #rg .rg-btn {
+  #lg .lg-btn,
+  #rg .rg-btn {
     background: transparent !important;
     color: var(--g) !important;
     border-color: rgba(181, 147, 54, 0.35) !important;
   }
-  #lg .lg-btn::before, #rg .rg-btn::before {
+  #lg .lg-btn::before,
+  #rg .rg-btn::before {
     background: var(--g) !important;
   }
-  #lg .lg-btn:hover, #rg .rg-btn:hover {
+  #lg .lg-btn:hover,
+  #rg .rg-btn:hover {
     color: var(--i) !important;
     border-color: var(--g) !important;
   }
@@ -144,7 +194,11 @@
 
   /* 9. FOND MODALES ET OVERLAYS */
   .bp-banner-overlay {
-    background: linear-gradient(to bottom, transparent 0%, #FAF8F5 100%) !important;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #faf8f5 100%
+    ) !important;
   }
   .modal {
     background: rgba(250, 248, 245, 0.9) !important;

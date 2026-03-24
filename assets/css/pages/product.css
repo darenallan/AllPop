@@ -644,10 +644,10 @@ body.cur-h #cur-ring {
 
 /* Exception rule: Heart icon in favoris button */
 .ax-bwish svg {
-  stroke: #FEFCF8 !important;
-  fill: #FEFCF8 !important;
+  stroke: #fefcf8 !important;
+  fill: #fefcf8 !important;
   stroke-width: 1 !important;
-  color: #FEFCF8 !important;
+  color: #fefcf8 !important;
   width: 24px !important;
   height: 24px !important;
   display: block !important;

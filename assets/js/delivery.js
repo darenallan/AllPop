@@ -155,16 +155,89 @@ function buildMapsUrl(deliveryAddress) {
   return null;
 }
 
-// ── Extract order details ─────────────────────────────────────────
-function extractPickupDetails(order) {
+// ── Extract ALL pickup details for parent orders ─────────────────
+async function extractAllPickupDetails(order) {
+  // If order has sellerIds (parent order), fetch ALL vendor details
+  if (Array.isArray(order.sellerIds) && order.sellerIds.length > 0) {
+    const pickups = [];
+    for (const sellerId of order.sellerIds) {
+      try {
+        const shopDoc = await db.collection('shops').doc(sellerId).get();
+        if (shopDoc.exists) {
+          const shopData = shopDoc.data();
+          const pickupAddr = shopData.address ? 
+            `${shopData.address.street || ''} ${shopData.address.neighborhood || ''} ${shopData.address.city || ''}`.trim()
+            : "Adresse non renseignée";
+          pickups.push({
+            name: shopData.name || "Boutique",
+            phone: shopData.phone || "—",
+            street: shopData.address?.street || "—",
+            city: shopData.address?.city || "",
+            address: pickupAddr
+          });
+        }
+      } catch (err) {
+        console.warn(`[Delivery] Erreur récupération shop ${sellerId}:`, err);
+        pickups.push({
+          name: `Boutique ${sellerId.slice(-4).toUpperCase()}`,
+          phone: "—",
+          street: "—",
+          city: "",
+          address: "Adresse non renseignée"
+        });
+      }
+    }
+    return pickups;
+  }
+  // Fallback for single seller orders
+  return [await extractPickupDetails(order)];
+}
+
+// ── Extract order details WITH Firestore lookup for vendor ───────────
+async function extractPickupDetails(order) {
+  // 1. Essayer d'utiliser les données existantes dans la commande
+  if (order.shopName && order.pickupAddress) {
+    return {
+      name: order.shopName,
+      phone: order.shopPhone || "—",
+      street: order.pickupAddress?.street || "—",
+      city: order.pickupAddress?.city || "",
+      address: order.pickupAddress 
+        ? `${order.pickupAddress.street || ''} ${order.pickupAddress.neighborhood || ''} ${order.pickupAddress.city || ''}`.trim() || "Adresse non renseignée"
+        : "Adresse non renseignée"
+    };
+  }
+  
+  // 2. Sinon, chercher le shop dans Firestore via sellerId
+  if (order.sellerId || order.shopId) {
+    try {
+      const sellerId = order.sellerId || order.shopId;
+      const shopDoc = await db.collection('shops').doc(sellerId).get();
+      if (shopDoc.exists) {
+        const shopData = shopDoc.data();
+        const pickupAddr = shopData.address ? 
+          `${shopData.address.street || ''} ${shopData.address.neighborhood || ''} ${shopData.address.city || ''}`.trim()
+          : "Adresse non renseignée";
+        return {
+          name: shopData.name || "Boutique",
+          phone: shopData.phone || "—",
+          street: shopData.address?.street || "—",
+          city: shopData.address?.city || "",
+          address: pickupAddr
+        };
+      }
+    } catch (err) {
+      console.warn('[Delivery] Erreur récupération shop:', err);
+    }
+  }
+  
+  // 3. Fallback
   return {
     name: order.shopName || order.sellerName || "Boutique",
     phone: order.shopPhone || "—",
-    street: order.pickupAddress?.street || order.pickupAddress?.address || "—",
+    street: order.pickupAddress?.street || "—",
     city: order.pickupAddress?.city || "",
-    address: order.pickupAddress 
-      ? `${order.pickupAddress.street || ''} ${order.pickupAddress.neighborhood || ''} ${order.pickupAddress.city || ''}`.trim() || "Adresse non renseignée"
-      : "Adresse non renseignée"
+    address: "Adresse non renseignée"
   };
 }
 
@@ -246,8 +319,8 @@ function buildRouteBox(pickup, delivery, mapsUrl) {
   </div>`;
 }
 
-// ── RENDER: Marketplace ───────────────────────────────────────────
-function renderMarketplace(orders) {
+// ── RENDER: Marketplace (Asynchrone pour charger infos vendeur) ─────
+async function renderMarketplace(orders) {
   const el = document.getElementById("marketplace-list");
   const badge = document.getElementById("badge-marketplace");
   const statEl = document.getElementById("stat-marketplace");
@@ -263,36 +336,86 @@ function renderMarketplace(orders) {
   }
 
   el.innerHTML = orders.map((o) => {
-    const pickup = extractPickupDetails(o);
-    const delivery = extractDeliveryDetails(o);
-    const items = (o.items || []).map((i) => `<li class="dv-item"><strong>${i.qty || 1}×</strong>&nbsp;${i.name}</li>`).join("");
-    const routeBox = buildRouteBox(pickup, delivery, delivery.mapsUrl);
-    
-    return `<div class="dv-order-card marketplace">
-      <div class="dv-order-head">
-        <div>
-          <div class="dv-order-ref">${ordRef(o)}</div>
-          <div class="dv-order-meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 16 14"/></svg>Depuis ${fmtDate(o.readyForDeliveryAt || o.updatedAt)}</span></div>
-        </div>
-        <div class="dv-order-right">
-          <div class="dv-order-total">${fmtMoney(o.total)}</div>
-          <span class="dv-chip marketplace">En bourse</span>
-        </div>
-      </div>
-      <div class="dv-order-body">
-        ${routeBox}
-
-        <!-- Articles -->
-        ${items ? `<div class="dv-items-section"><ul class="dv-items-list">${items}</ul></div>` : ""}
-
-        <!-- Bouton Accepter -->
-        <button class="dv-accept-btn" onclick="acceptDelivery('${o.id}', '${ordRef(o)}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>Accepter</span>
-        </button>
-      </div>
-    </div>`;
+    // Placeholder pendant le chargement async
+    return `<div class="dv-order-card marketplace" id="order-${o.id}"><div class="dv-loader">Chargement…</div></div>`;
   }).join("");
+
+  // Maintenant charger les infos de chaque commande
+  for (const o of orders) {
+    try {
+      const pickups = await extractAllPickupDetails(o);  // ← Get ALL pickup points
+      const delivery = extractDeliveryDetails(o);
+      const items = (o.items || []).map((i) => `<li class="dv-item"><strong>${i.qty || 1}×</strong>&nbsp;${i.name}</li>`).join("");
+      
+      // Build HTML for ALL pickup points
+      const pickupBoxes = pickups.map((pickup, idx) => {
+        const mapsUrl = pickup.address && delivery.address ?
+          `https://www.google.com/maps/dir/?api=1&waypoints=${encodeURIComponent(pickup.address)}&destination=${encodeURIComponent(delivery.address)}`
+          : null;
+        return `
+          <div class="dv-pickup-point" style="margin-bottom:12px;padding:10px;background:rgba(200,168,75,.05);border-radius:8px">
+            <div style="font-size:12px;font-weight:600;color:var(--g);margin-bottom:4px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:4px"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 16 14"/></svg>
+              Récupération ${pickups.length > 1 ? `(${idx + 1}/${pickups.length})` : ''}: <strong>${pickup.name}</strong>
+            </div>
+            <div style="font-size:11px;color:var(--s)">
+              ${pickup.address ? `📍 ${pickup.address}` : 'Adresse non renseignée'}<br/>
+              ${pickup.phone !== '—' ? `📞 ${pickup.phone}` : ''}
+            </div>
+          </div>
+        `;
+      }).join("");
+      
+      const routeBox = `
+        <div style="margin-bottom:16px">
+          ${pickupBoxes}
+          <div class="dv-delivery-point" style="padding:10px;background:rgba(200,168,75,.05);border-radius:8px">
+            <div style="font-size:12px;font-weight:600;color:var(--g);margin-bottom:4px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:4px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/></svg>
+              Livraison: <strong>${delivery.name}</strong>
+            </div>
+            <div style="font-size:11px;color:var(--s)">
+              ${delivery.address ? `📍 ${delivery.address}` : 'Adresse non renseignée'}<br/>
+              ${delivery.phone !== '—' ? `📞 ${delivery.phone}` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+      
+      const card = `<div class="dv-order-card marketplace">
+        <div class="dv-order-head">
+          <div>
+            <div class="dv-order-ref">${ordRef(o)}</div>
+            <div class="dv-order-meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 16 14"/></svg>Depuis ${fmtDate(o.readyForDeliveryAt || o.updatedAt)}</span></div>
+            ${pickups.length > 1 ? `<div class="dv-order-meta" style="font-weight:600;color:var(--g)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:4px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>${pickups.length} points de collecte</div>` : ''}
+          </div>
+          <div class="dv-order-right">
+            <div class="dv-order-total">${fmtMoney(o.total)}</div>
+            <span class="dv-chip marketplace">En bourse</span>
+          </div>
+        </div>
+        <div class="dv-order-body">
+          ${routeBox}
+
+          <!-- Articles -->
+          ${items ? `<div class="dv-items-section"><ul class="dv-items-list">${items}</ul></div>` : ""}
+
+          <!-- Bouton Accepter -->
+          <button class="dv-accept-btn" onclick="acceptDelivery('${o.id}', '${ordRef(o)}')" style="margin-top:12px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Accepter</span>
+          </button>
+        </div>
+      </div>`;
+      
+      const container = document.getElementById(`order-${o.id}`);
+      if (container) container.outerHTML = card;
+    } catch (err) {
+      console.error('[Delivery] Erreur rendu commande:', err);
+      const container = document.getElementById(`order-${o.id}`);
+      if (container) container.innerHTML = `<div class="dv-error">Erreur de chargement</div>`;
+    }
+  }
 
   // Réinitialiser les icônes Lucide
   if (typeof lucide !== "undefined") {
@@ -393,19 +516,69 @@ async function acceptDelivery(orderId, ref) {
   btn.disabled = true;
   btn.textContent = "En cours...";
   try {
+    const currentUser = auth.currentUser;
+    
+    // On met à jour UNIQUEMENT la commande globale
     await db.collection("orders").doc(orderId).update({
       status: "in_transit",
-      courierId: auth.currentUser.uid,
+      courierId: currentUser.uid,
       acceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
-    toast(`${ref} acceptée ✓`, "ok");
+    
+    toast(`${ref} acceptée ✓ (En route vers les boutiques)`, "ok");
   } catch (err) {
     toast("Erreur : " + err.message, "err");
     btn.disabled = false;
     btn.textContent = "Accepter";
   }
 }
+
+// ── Modal: Confirm Delivery (Parent + Sub-Orders) ────────────────
+let _pendingDeliveryOrderId = null;
+window.openModal = function(orderId, ref) {
+  _pendingDeliveryOrderId = orderId;
+  const refEl = document.getElementById("dv-modal-ref");
+  if (refEl) refEl.textContent = ref || orderId.slice(-6).toUpperCase();
+  const modal = document.getElementById("dv-modal");
+  if (modal) modal.classList.add("open");
+};
+window.closeModal = function() {
+  _pendingDeliveryOrderId = null;
+  const modal = document.getElementById("dv-modal");
+  if (modal) modal.classList.remove("open");
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  const modalOkBtn = document.getElementById("dv-modal-ok");
+  if (modalOkBtn) {
+    modalOkBtn.addEventListener("click", async () => {
+      if (!_pendingDeliveryOrderId) return;
+      modalOkBtn.disabled = true;
+      const span = modalOkBtn.querySelector("span");
+      const origText = span ? span.textContent : "Confirmer la livraison";
+      if (span) span.textContent = "En cours…";
+      try {
+        const currentUser = auth.currentUser;
+        
+        // On met à jour UNIQUEMENT la commande globale
+        await db.collection("orders").doc(_pendingDeliveryOrderId).update({
+          status: "delivered",
+          deliveredAt: firebase.firestore.FieldValue.serverTimestamp(),
+          deliveredBy: currentUser.uid,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        toast(`Livraison confirmée ✓ Client livré !`, "ok");
+        window.closeModal();
+      } catch (err) {
+        toast("Erreur : " + err.message, "err");
+        modalOkBtn.disabled = false;
+        if (span) span.textContent = origText;
+      }
+    });
+  }
+});
 
 // ── BOOTSTRAP ────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
@@ -437,43 +610,58 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }, 5000);
 
-      // Marketplace
-      db.collection("orders").where("status", "==", "ready_for_delivery").onSnapshot((snap) => {
-        const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        renderMarketplace(orders);
-      }, (err) => {
-        console.error("Marketplace error:", err);
-        document.getElementById("marketplace-list").innerHTML = `<div class="dv-empty"><div class="dv-empty-sub" style="color:var(--danger)">Erreur chargement: ${err.message}</div></div>`;
-      });
+      // Marketplace - PARENT orders with multiple pickups
+      db.collection("orders")
+        .where("isParent", "==", true)
+        .where("status", "==", "ready_for_delivery")
+        .limit(50)
+        .onSnapshot((snap) => {
+          const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          renderMarketplace(orders);
+        }, (err) => {
+          console.error("Marketplace error:", err);
+          document.getElementById("marketplace-list").innerHTML = `<div class="dv-empty"><div class="dv-empty-sub" style="color:var(--danger)">Erreur chargement: ${err.message}</div></div>`;
+        });
 
       // Active courses
-      db.collection("orders").where("status", "==", "in_transit").where("courierId", "==", user.uid).onSnapshot((snap) => {
-        const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        renderActive(orders);
-        if (!wallRevealed) {
-          wallRevealed = true;
-          clearTimeout(revealTimeout);
-          wallReveal();
-        }
-      }, (err) => {
-        console.error("Active courses error:", err);
-        document.getElementById("active-list").innerHTML = `<div class="dv-empty"><div class="dv-empty-sub" style="color:var(--danger)">Erreur: ${err.message}</div></div>`;
-        if (!wallRevealed) {
-          wallRevealed = true;
-          clearTimeout(revealTimeout);
-          wallReveal();
-        }
-      });
+      db.collection("orders")
+        .where("isParent", "==", true)
+        .where("status", "==", "in_transit")
+        .where("courierId", "==", user.uid)
+        .limit(100)
+        .onSnapshot((snap) => {
+          const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          renderActive(orders);
+          if (!wallRevealed) {
+            wallRevealed = true;
+            clearTimeout(revealTimeout);
+            wallReveal();
+          }
+        }, (err) => {
+          console.error("Active courses error:", err);
+          document.getElementById("active-list").innerHTML = `<div class="dv-empty"><div class="dv-empty-sub" style="color:var(--danger)">Erreur: ${err.message}</div></div>`;
+          if (!wallRevealed) {
+            wallRevealed = true;
+            clearTimeout(revealTimeout);
+            wallReveal();
+          }
+        });
 
       // History
-      db.collection("orders").where("status", "==", "delivered").where("courierId", "==", user.uid).orderBy("deliveredAt", "desc").limit(100).onSnapshot((snap) => {
-        const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const todayCount = orders.filter((o) => isToday(o.deliveredAt)).length;
-        renderHistory(orders, todayCount);
-      }, (err) => {
-        console.error(err);
-        document.getElementById("history-list").innerHTML = `<div class="dv-empty"><div class="dv-empty-sub" style="color:var(--danger)">Erreur: ${err.message}</div></div>`;
-      });
+      db.collection("orders")
+        .where("isParent", "==", true)
+        .where("status", "==", "delivered")
+        .where("courierId", "==", user.uid)
+        .orderBy("deliveredAt", "desc")
+        .limit(100)
+        .onSnapshot((snap) => {
+          const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          const todayCount = orders.filter((o) => isToday(o.deliveredAt)).length;
+          renderHistory(orders, todayCount);
+        }, (err) => {
+          console.error(err);
+          document.getElementById("history-list").innerHTML = `<div class="dv-empty"><div class="dv-empty-sub" style="color:var(--danger)">Erreur: ${err.message}</div></div>`;
+        });
 
       renderProfile(userData, user.email);
     } catch (err) {

@@ -322,7 +322,7 @@
         "theme": "Dark info"
       },
       {
-        "filename": "A.html",
+        "filename": "informations.html",
         "title": "Help / FAQ / Legal",
         "category": "Info",
         "scripts": [
@@ -554,7 +554,7 @@
           },
           {
             "number": 3,
-            "page": "A.html",
+            "page": "informations.html",
             "name": "FAQ Accordion",
             "features": [
               "Tab switching",
@@ -853,7 +853,7 @@
       },
       {
         "prefix": "hl-",
-        "page": "A.html (help/legal)",
+        "page": "informations.html (help/legal)",
         "scope": "FAQ and legal sections"
       },
       {

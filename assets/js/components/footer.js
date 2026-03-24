@@ -13,7 +13,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 (function () {
-  'use strict';
+  "use strict";
 
   if (window.__aurumFooterInjected) return;
   window.__aurumFooterInjected = true;
@@ -253,6 +253,8 @@
                 <li><a href="/catalogue">Catalogue</a></li>
                 <li><a href="/boutique-list">Nos Boutiques</a></li>
                 <li><a href="/seller-onboarding">Devenir Vendeur</a></li>
+                <li><a href="/seller">Espace Vendeur</a></li>
+                <li><a href="/delivery">Espace Livreur</a></li>
                 <li><a href="/about">À propos</a></li>
               </ul>
             </div>
@@ -261,9 +263,9 @@
             <div>
               <h4 class="footer-col-title">Informations</h4>
               <ul class="footer-links">
-                <li><a href="/a">CGU & FAQ</a></li>
-                <li><a href="/a">Mentions légales</a></li>
-                <li><a href="/a">Confidentialité</a></li>
+                <li><a href="/informations">CGU & FAQ</a></li>
+                <li><a href="/informations#mentions">Mentions légales</a></li>
+                <li><a href="/informations#confidentialite">Confidentialité</a></li>
                 <li><a href="/contact">Nous contacter</a></li>
               </ul>
             </div>
@@ -299,9 +301,9 @@
               &copy; <span id="footer-year"></span> Sanhia Marketplace — Ouagadougou, Burkina Faso
             </span>
             <div class="footer-bottom-links">
-              <a href="/a">CGU</a>
-              <a href="/a#confidentialite">Confidentialité</a>
-              <a href="/a#mentions">Mentions légales</a>
+              <a href="/informations">CGU</a>
+              <a href="/informations#confidentialite">Confidentialité</a>
+              <a href="/informations#mentions">Mentions légales</a>
               <a href="/contact">Contact</a>
             </div>
           </div>
@@ -313,43 +315,50 @@
 
   /* ── Newsletter ───────────────────────────────────────────────── */
   function setupNewsletter() {
-    const form  = document.getElementById('footer-newsletter-form');
-    const input = document.getElementById('footer-newsletter-email');
-    const btn   = document.getElementById('footer-newsletter-btn');
+    const form = document.getElementById("footer-newsletter-form");
+    const input = document.getElementById("footer-newsletter-email");
+    const btn = document.getElementById("footer-newsletter-btn");
     if (!form) return;
 
-    form.addEventListener('submit', async e => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = (input.value || '').trim().toLowerCase();
+      const email = (input.value || "").trim().toLowerCase();
       if (!email) return;
 
       const originalText = btn.textContent;
       btn.disabled = true;
-      btn.textContent = '…';
+      btn.textContent = "…";
 
       try {
         // Récupérer Firestore depuis window.db ou firebase global
-        const db = (window.db && typeof window.db.collection === 'function')
-          ? window.db
-          : (typeof firebase !== 'undefined' && firebase.firestore ? firebase.firestore() : null);
+        const db =
+          window.db && typeof window.db.collection === "function"
+            ? window.db
+            : typeof firebase !== "undefined" && firebase.firestore
+              ? firebase.firestore()
+              : null;
 
-        if (!db) throw new Error('Firestore non disponible');
+        if (!db) throw new Error("Firestore non disponible");
 
-        const existing = await db.collection('newsletter').where('email', '==', email).limit(1).get();
+        const existing = await db
+          .collection("newsletter")
+          .where("email", "==", email)
+          .limit(1)
+          .get();
         if (!existing.empty) {
-          _toast('Vous êtes déjà inscrit(e) !', 'warn');
+          _toast("Vous êtes déjà inscrit(e) !", "warn");
           return;
         }
-        await db.collection('newsletter').add({
+        await db.collection("newsletter").add({
           email,
           subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          status: 'active',
+          status: "active",
         });
-        _toast('Merci pour votre inscription ✓', 'ok');
-        input.value = '';
+        _toast("Merci pour votre inscription ✓", "ok");
+        input.value = "";
       } catch (err) {
-        console.error('[Aurum Footer] Newsletter:', err);
-        _toast('Une erreur est survenue. Réessayez.', 'err');
+        console.error("[Aurum Footer] Newsletter:", err);
+        _toast("Une erreur est survenue. Réessayez.", "err");
       } finally {
         btn.disabled = false;
         btn.textContent = originalText;
@@ -359,20 +368,24 @@
 
   /* ── Toast (lightweight, sans dépendance) ────────────────────── */
   function _toast(msg, type) {
-    if (window.showToast) { window.showToast(msg, type === 'ok' ? 'success' : type); return; }
+    if (window.showToast) {
+      window.showToast(msg, type === "ok" ? "success" : type);
+      return;
+    }
     // Fallback inline toast
-    const el = document.createElement('div');
+    const el = document.createElement("div");
     el.textContent = msg;
     el.style.cssText = `
       position:fixed;bottom:22px;right:22px;z-index:99990;
       padding:12px 20px;background:#1A1916;
-      border-left:3px solid ${type==='ok'?'#4A9E72':type==='warn'?'#C8A84B':'#D94F4F'};
+      border-left:3px solid ${type === "ok" ? "#4A9E72" : type === "warn" ? "#C8A84B" : "#D94F4F"};
       font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:#FEFCF8;
       box-shadow:0 14px 40px rgba(0,0,0,.5);
       animation:toastIn .3s ease both;
     `;
-    const style = document.createElement('style');
-    style.textContent = '@keyframes toastIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}';
+    const style = document.createElement("style");
+    style.textContent =
+      "@keyframes toastIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}";
     document.head.appendChild(style);
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 3500);
@@ -381,28 +394,27 @@
   /* ── Inject ───────────────────────────────────────────────────── */
   function injectFooter() {
     // Styles
-    if (!document.getElementById('aurum-footer-styles')) {
-      const style = document.createElement('style');
-      style.id = 'aurum-footer-styles';
+    if (!document.getElementById("aurum-footer-styles")) {
+      const style = document.createElement("style");
+      style.id = "aurum-footer-styles";
       style.textContent = CSS;
       document.head.appendChild(style);
     }
 
     // HTML
-    document.body.insertAdjacentHTML('beforeend', buildHTML());
+    document.body.insertAdjacentHTML("beforeend", buildHTML());
 
     // Année
-    const yr = document.getElementById('footer-year');
+    const yr = document.getElementById("footer-year");
     if (yr) yr.textContent = new Date().getFullYear();
 
     // Newsletter
     setupNewsletter();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectFooter);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", injectFooter);
   } else {
     injectFooter();
   }
-
 })();

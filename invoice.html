@@ -1,675 +1,196 @@
-﻿<!doctype html>
-<html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Votre Facture - Sanhia</title>
+<!doctype html>
+<html lang="fr"><head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Votre Facture — Sanhia</title>
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/assets/css/styles.css" />
-    <link rel="stylesheet" href="/assets/css/aurum-light.css" />
-    <link rel="stylesheet" href="/assets/css/prime.css" />
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Unbounded:wght@400;700;900&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <!-- External Libraries for PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- Configuration & Utilities -->
-    <script src="/assets/js/config.js" defer></script>
-    <script src="/assets/js/components/header.js" defer></script>
-    <!-- App Module -->
-    <script src="/assets/js/app.js" defer></script>
-  </head>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-  <body>
-    <div id="header-placeholder"></div>
+  <!-- Our scripts - LOAD ORDER MATTERS -->
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/global.utils.js"></script>
+  <script src="/assets/js/components/header.js" defer></script>
+  <script src="/assets/js/components/footer.js" defer></script>
+  <script src="/assets/js/global.js" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+  <script src="/assets/js/pages/messages.js" defer></script>
+  <script src="/assets/js/pages/invoice.js" defer></script> 
+  <link rel="stylesheet" href="/assets/css/pages/invoice.css" />
+   <style> 
+    /* ── LIGHT MODE ── */
+    @media (prefers-color-scheme: light) {
+      body { background: #F7F3ED; color: #1A1610; }
+      .inv-hero { background: #F7F3ED; border-bottom-color: rgba(168,135,58,.15); }
+      .inv-title { color: #1A1610; }
+      .inv-ref-num { color: var(--gold); }
+      .inv-hero-date { color: #5C5650; }
+      .inv-body { background: #F7F3ED; }
+    }
+  </style>
+</head>
 
-    <main class="invoice-container">
-      <div id="loading" style="text-align: center; padding: 100px">
-        <i
-          data-lucide="loader"
-          class="spin"
-          style="
-            animation: spin 1s linear infinite;
-            width: 40px;
-            height: 40px;
-            color: var(--gold);
-          "
-        ></i>
-        <p style="margin-top: 20px; color: #666">
-          Génération de votre facture...
-        </p>
+<body>
+  <!-- Loader initial -->
+  <div id="page-loader">
+    <div class="ldr-logo">SANHIA</div>
+    <div class="ldr-bar"></div>
+  </div>
+
+  <!-- Header injecté -->
+  <div id="header-placeholder"></div>
+
+  <main class="inv-page" id="inv-page" style="display:none;">
+
+    <!-- État chargement -->
+    <div id="inv-loading" class="inv-loading-state" style="display:none;">
+      <div class="inv-spin-ring"></div>
+      <p class="inv-loading-txt">Chargement de votre facture…</p>
+    </div>
+
+    <!-- Contenu facture -->
+    <div id="inv-content" style="display:none;">
+
+      <!-- Hero -->
+      <div class="inv-hero">
+        <div class="inv-hero-left">
+          <div class="inv-eyebrow">Sanhia — L'Éclat du Faso</div>
+          <h1 class="inv-title">Votre <em>facture</em></h1>
+        </div>
+        <div class="inv-hero-right">
+          <span class="inv-ref-label">Référence</span>
+          <span class="inv-ref-num" id="hero-ref">—</span>
+          <p class="inv-hero-date" id="hero-date">—</p>
+        </div>
       </div>
 
-      <div id="invoice-content" style="display: none">
-        <div class="success-banner">
-          <i
-            data-lucide="check-circle"
-            style="width: 32px; height: 32px; flex-shrink: 0"
-          ></i>
-          <div>
-            <h2 style="margin: 0 0 5px 0; font-size: 18px">
-              Commande confirmée !
-            </h2>
-            <p
-              style="margin: 0; opacity: 0.9; font-size: 14px; line-height: 1.5"
-            >
-              Votre commande a bien été enregistrée. Voici votre facture
-              officielle. Veuillez la télécharger et nous contacter pour
-              finaliser le paiement.
-            </p>
-          </div>
+      <!-- Banner succès -->
+      <div class="inv-success">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div>
+          <div class="inv-success-title">Commande confirmée !</div>
+          <div class="inv-success-sub">Votre commande a bien été enregistrée. Téléchargez votre facture ou envoyez-la sur WhatsApp pour finaliser le paiement.</div>
         </div>
+      </div>
 
-        <div class="invoice-card" id="invoice-document">
-          <div class="invoice-header">
+      <!-- Document facture à capturer -->
+      <div class="inv-body">
+        <div id="invoice-document">
+
+          <!-- En-tête -->
+          <div class="inv-doc-header">
             <div>
-              <h1
-                style="
-                  font-family: &quot;Playfair Display&quot;, serif;
-                  font-size: 32px;
-                  margin: 0;
-                  color: #d4af37;
-                "
-              >
-                SANHIA
-              </h1>
-              <p style="margin: 5px 0 0; color: #666; font-size: 13px">
-                Excellence à votre portée
-              </p>
-              <div
-                style="
-                  margin-top: 15px;
-                  font-size: 13px;
-                  color: #444;
-                  line-height: 1.6;
-                "
-              >
-                Ouagadougou, Burkina Faso<br />
-                Tél: +226 64 50 26 26<br />
-                Email: aurumcorporate.d@gmail.com
+              <div class="inv-doc-brand-name">SANHIA</div>
+              <div class="inv-doc-brand-tagline">L'Éclat du Faso</div>
+              <div class="inv-doc-brand-info">
+                Ouagadougou, Burkina Faso<br>
+                Tél : +226 64 50 26 26<br>
+                Email : aurumcorporate.d@gmail.com
               </div>
             </div>
-            <div style="text-align: right">
-              <div
-                style="
-                  font-size: 14px;
-                  color: #999;
-                  text-transform: uppercase;
-                  margin-bottom: 5px;
-                "
-              >
-                Facture Né
-              </div>
-              <div style="font-size: 20px; font-weight: 700" id="inv-ref">
-                ...
-              </div>
-              <div
-                style="margin-top: 5px; font-size: 14px; color: #666"
-                id="inv-date"
-              >
-                ...
-              </div>
+            <div class="inv-doc-ref-block">
+              <span class="inv-doc-ref-label">Facture N°</span>
+              <div class="inv-doc-ref-num" id="inv-ref">—</div>
+              <span class="inv-doc-date" id="inv-date">—</span>
             </div>
           </div>
 
-          <div class="invoice-body">
-            <div style="margin-bottom: 30px">
-              <h3
-                style="
-                  font-size: 14px;
-                  text-transform: uppercase;
-                  color: #999;
-                  margin-bottom: 10px;
-                "
-              >
-                Facturé à
-              </h3>
-              <div style="font-weight: 600; font-size: 16px" id="client-name">
-                ...
+          <!-- Corps -->
+          <div class="inv-doc-body">
+
+            <!-- Client -->
+            <div class="inv-client-block">
+              <span class="inv-client-label">Facturé à</span>
+              <div class="inv-client-name" id="client-name">—</div>
+              <div class="inv-client-detail">
+                <span id="client-phone">—</span><br>
+                <span id="client-email">—</span>
               </div>
-              <div style="color: #555; margin-top: 5px" id="client-phone">
-                ...
-              </div>
-              <div style="color: #555" id="client-email">...</div>
             </div>
 
-            <table class="invoice-table">
+            <!-- Articles -->
+            <table class="inv-table">
               <thead>
                 <tr>
                   <th>Description</th>
-                  <th style="text-align: center">Qté</th>
-                  <th>Prix Unit.</th>
-                  <th>Total</th>
+                  <th style="text-align:right;">Qté</th>
+                  <th style="text-align:right;">Prix unit.</th>
+                  <th style="text-align:right;">Total</th>
                 </tr>
               </thead>
               <tbody id="invoice-items"></tbody>
             </table>
 
-            <div style="display: flex; justify-content: flex-end">
-              <div class="invoice-total-section">
-                <div class="invoice-row">
-                  <span class="invoice-label">Sous-total</span>
-                  <span class="invoice-val" id="inv-subtotal">...</span>
+            <!-- Totaux -->
+            <div class="inv-totals">
+              <div class="inv-totals-inner">
+                <div class="inv-total-row">
+                  <span class="key">Sous-total</span>
+                  <span class="val" id="inv-subtotal">—</span>
                 </div>
-                <div class="invoice-row">
-                  <span class="invoice-label">Livraison</span>
-                  <span class="invoice-val">à calculer</span>
+                <div class="inv-total-row">
+                  <span class="key">Livraison</span>
+                  <span class="val">À calculer</span>
                 </div>
-                <div style="border-top: 1px solid #ddd; margin: 10px 0"></div>
-                <div class="invoice-row" style="margin-bottom: 0">
-                  <span
-                    class="invoice-label"
-                    style="font-size: 16px; color: #000"
-                    >Total à payer</span
-                  >
-                  <span
-                    class="invoice-val"
-                    style="font-size: 18px; color: #d4af37"
-                    id="inv-total"
-                    >...</span
-                  >
+                <div class="inv-total-row grand">
+                  <span class="key">Total à payer</span>
+                  <span class="val" id="inv-total">—</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="invoice-actions">
-            <button class="btn btn-gold" id="btn-download">
-              <i data-lucide="download"></i> Télécharger PDF
-            </button>
-            <button
-              class="btn btn-success"
-              id="btn-whatsapp"
-              style="background: #25d366; color: white; border: none"
-            >
-              <i data-lucide="send"></i> Envoyer sur WhatsApp
-            </button>
+          <!-- Pied -->
+          <div class="inv-doc-footer">
+            <p class="inv-doc-footer-note">
+              Merci pour votre confiance. Pour toute question concernant cette facture, contactez-nous au +226 64 50 26 26 ou sur WhatsApp. Le paiement se fait en espèces, via Mobile Money (Orange Money / Moov Money) ou virement.
+            </p>
+            <div class="inv-doc-footer-brand">SANHIA</div>
           </div>
+
+        </div><!-- fin #invoice-document -->
+
+        <!-- Boutons actions -->
+        <div class="inv-actions">
+          <button class="inv-btn inv-btn-dl" id="btn-download">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Télécharger PDF</span>
+          </button>
+
+          <button class="inv-btn inv-btn-wa" id="btn-whatsapp">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+            <span>Envoyer par WhatsApp</span>
+          </button>
         </div>
       </div>
-    </main>
+    </div>
+  </div>
 
-    <script>
-      function setupHeaderMenu() {
-        const menuToggle = document.getElementById("menu-toggle");
-        const closeBtn = document.getElementById("close-btn");
-        const drawer = document.getElementById("mobile-drawer");
-        const overlay = document.getElementById("menu-overlay");
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const btnDownload = document.getElementById('btn-download');
+      const btnWhatsApp = document.getElementById('btn-whatsapp');
 
-        const toggleMenu = () => {
-          if (!drawer || !overlay) return;
-          drawer.classList.toggle("active");
-          overlay.classList.toggle("active");
-          document.body.style.overflow = drawer.classList.contains("active")
-            ? "hidden"
-            : "";
-        };
-
-        if (menuToggle) menuToggle.addEventListener("click", toggleMenu);
-        if (closeBtn) closeBtn.addEventListener("click", toggleMenu);
-        if (overlay) overlay.addEventListener("click", toggleMenu);
-
-        const cart = JSON.parse(localStorage.getItem("ac_cart") || "[]");
-        const badge = document.getElementById("cart-badge");
-        if (badge) {
-          const count = cart.reduce((acc, item) => acc + (item.qty || 0), 0);
-          if (count > 0) {
-            badge.innerText = count;
-            badge.style.display = "flex";
-          } else {
-            badge.style.display = "none";
-          }
-        }
-
-        if (typeof lucide !== "undefined") lucide.createIcons();
-      }
-
-      // Fonction utilitaire pour afficher les erreurs
-      function showError(message, type = "error") {
-        console.error(`[${type}] ${message}`);
-        const loading = document.getElementById("loading");
-        const content = document.getElementById("invoice-content");
-        if (loading) loading.style.display = "none";
-        if (content) content.style.display = "block";
-
-        const errorBanner = document.createElement("div");
-        errorBanner.className = "error-banner";
-        errorBanner.style.cssText = `
-            background: #fee2e2;
-            border: 1px solid #fca5a5;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 12px;
-            color: #991b1b;
-            font-size: 14px;
-        `;
-        errorBanner.innerHTML = `
-            <i data-lucide="alert-circle" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
-            <div>
-                <strong>Erreur</strong>
-                <p style="margin: 5px 0 0 0;">${message}</p>
-            </div>
-        `;
-
-        const container = document.querySelector(".invoice-container");
-        if (container)
-          container.insertBefore(errorBanner, container.firstChild);
-        if (typeof lucide !== "undefined") lucide.createIcons();
-      }
-
-      async function getNextInvoiceNumber(db) {
-        const counterRef = db.collection("meta").doc("invoiceCounter");
-        try {
-          const next = await db.runTransaction(async (tx) => {
-            const snap = await tx.get(counterRef);
-            const current = snap.exists ? Number(snap.data().value || 0) : 0;
-            const value = current + 1;
-            tx.set(counterRef, { value }, { merge: true });
-            return value;
-          });
-          return next;
-        } catch (err) {
-          console.error("Erreur compteur facture (Firestore):", err);
-          const fallback =
-            Number(localStorage.getItem("ac_invoice_counter") || "0") + 1;
-          localStorage.setItem("ac_invoice_counter", String(fallback));
-          return fallback;
-        }
-      }
-      // Initialisation de la page
-      document.addEventListener("DOMContentLoaded", () => {
-        try {
-          setupHeaderMenu();
-
-          const yearSpan = document.getElementById("year");
-          if (yearSpan) {
-            yearSpan.innerText = new Date().getFullYear();
-          }
-
-          // Gestion de la déconnexion
-          const logoutBtn = document.getElementById("mobile-logout-btn");
-          if (logoutBtn) {
-            logoutBtn.addEventListener("click", (e) => {
-              e.preventDefault();
-              firebase
-                .auth()
-                .signOut()
-                .then(() => {
-                  window.location.href = "login.html";
-                })
-                .catch((err) => {
-                  console.error("Erreur déconnexion:", err);
-                  showError("Erreur lors de la déconnexion");
-                });
-            });
-          }
-
-          // Vérifier que jsPDF est disponible
-          if (!window.jspdf || !window.jspdf.jsPDF) {
-            throw new Error("Bibliothéque jsPDF non chargée");
-          }
-
-          // Vérifier que Firebase est disponible
-          if (!window.firebase || !firebase.firestore || !firebase.auth) {
-            throw new Error("Firebase non initialisé corrcectement");
-          }
-
-          const { jsPDF } = window.jspdf;
-          const db = firebase.firestore();
-          const auth = firebase.auth();
-
-          // Récupérer l'ID de la commande depuis l'URL
-          const params = new URLSearchParams(window.location.search);
-          const orderId = params.get("orderId");
-
-          // Si pas d'ID, on utilise le panier local pour simuler une facture (Checkout immédiat)
-          // Mais idéalement, il faut d'abord créer la commande dans Firebase.
-
-          // Simulation pour l'exemple si pas d'ID (à adapter avec ton flux réel)
-          // Ici on va chercher la commande réelle dans Firebase
-
-          auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-              showError("Vous devez étre connecté pour voir votre facture.");
-              setTimeout(() => (window.location.href = "login.html"), 2000);
-              return;
-            }
-
-            if (!orderId) {
-              try {
-                const localCheckout = JSON.parse(
-                  localStorage.getItem("ac_cart_checkout") || "null",
-                );
-                const localItems = Array.isArray(localCheckout)
-                  ? localCheckout
-                  : localCheckout && Array.isArray(localCheckout.items)
-                    ? localCheckout.items
-                    : null;
-                let localInvoiceNumber =
-                  !Array.isArray(localCheckout) && localCheckout
-                    ? localCheckout.invoiceNumber
-                    : null;
-
-                if (!localItems || localItems.length === 0) {
-                  showError(
-                    "Aucune commande en cours. Veuillez passer une nouvelle commande.",
-                  );
-                  setTimeout(() => (window.location.href = "cart.html"), 2000);
-                  return;
-                }
-
-                if (!localInvoiceNumber) {
-                  localInvoiceNumber = await getNextInvoiceNumber(db);
-                  localStorage.setItem(
-                    "ac_cart_checkout",
-                    JSON.stringify({
-                      items: localItems,
-                      invoiceNumber: localInvoiceNumber,
-                    }),
-                  );
-                }
-
-                const order = {
-                  userName: user?.displayName || user?.email || "Client",
-                  userEmail: user?.email || "",
-                  userPhone: "",
-                  createdAt: { seconds: Math.floor(Date.now() / 1000) },
-                  invoiceNumber: localInvoiceNumber,
-                  items: localItems.map((item) => ({
-                    id: item.id,
-                    name: item.name || "Produit",
-                    price: Number(item.price || 0),
-                    qty: Number(item.qty || item.quantity || 1),
-                  })),
-                };
-
-                renderInvoice(order, `LOCAL-${Date.now()}`);
-              } catch (err) {
-                console.error("Erreur chargement panier local:", err);
-                showError("Erreur lors du chargement des données du panier.");
-              }
-              return;
-            }
-
-            // Charger la commande depuis Firestore
-            db.collection("orders")
-              .doc(orderId)
-              .get()
-              .then((doc) => {
-                if (!doc.exists) {
-                  showError(
-                    "Commande introuvable. Veuillez vérifier votre référence.",
-                  );
-                  setTimeout(() => (window.location.href = "index.html"), 2000);
-                  return;
-                }
-
-                const order = doc.data();
-
-                // Validation des données
-                if (
-                  !order ||
-                  !Array.isArray(order.items) ||
-                  order.items.length === 0
-                ) {
-                  showError("Commande vide ou données corrompues.");
-                  return;
-                }
-
-                const ensureInvoiceNumber = async () => {
-                  if (order.invoiceNumber) return order.invoiceNumber;
-                  const next = await getNextInvoiceNumber(db);
-                  order.invoiceNumber = next;
-                  await db.collection("orders").doc(orderId).set(
-                    {
-                      invoiceNumber: next,
-                    },
-                    { merge: true },
-                  );
-                  return next;
-                };
-
-                ensureInvoiceNumber()
-                  .then(() => renderInvoice(order, doc.id))
-                  .catch((err) => {
-                    console.error("Erreur numérotation facture:", err);
-                    renderInvoice(order, doc.id);
-                  });
-              })
-              .catch((err) => {
-                console.error("Erreur Firestore:", err);
-
-                let message = "Erreur lors du chargement de la commande.";
-                if (err.code === "permission-denied") {
-                  message = "Vérifiez vos permissions d'accés.";
-                } else if (err.code === "unavailable") {
-                  message =
-                    "Service temporairement indisponible. Veuillez réessayer.";
-                }
-
-                showError(message);
-              });
-          });
-
-          function renderInvoice(order, id) {
-            try {
-              const loading = document.getElementById("loading");
-              const content = document.getElementById("invoice-content");
-
-              if (!loading || !content) {
-                throw new Error("éléments DOM manquants");
-              }
-
-              loading.style.display = "none";
-              content.style.display = "block";
-
-              // Validation des données de commande
-              if (!order || typeof order !== "object") {
-                throw new Error("Données de commande invalides");
-              }
-
-              if (!Array.isArray(order.items)) {
-                throw new Error("Liste des articles manquante ou invalide");
-              }
-
-              // Remplissage infos
-              const date = order.createdAt
-                ? new Date(order.createdAt.seconds * 1000).toLocaleDateString(
-                    "fr-FR",
-                  )
-                : new Date().toLocaleDateString("fr-FR");
-
-              const refElement = document.getElementById("inv-ref");
-              const dateElement = document.getElementById("inv-date");
-              const nameElement = document.getElementById("client-name");
-              const phoneElement = document.getElementById("client-phone");
-              const emailElement = document.getElementById("client-email");
-
-              if (
-                !refElement ||
-                !dateElement ||
-                !nameElement ||
-                !phoneElement ||
-                !emailElement
-              ) {
-                throw new Error("éléments de formulaire manquants");
-              }
-
-              const invoiceRef = order.invoiceNumber
-                ? `AUR-${order.invoiceNumber}`
-                : "AUR-" + String(id).substring(0, 6).toUpperCase();
-              refElement.innerText = invoiceRef;
-              dateElement.innerText = date;
-              nameElement.innerText = order.userName || "Client";
-              phoneElement.innerText = order.userPhone || "Non spécifié";
-              emailElement.innerText = order.userEmail || "Non spécifié";
-
-              // Items
-              const tbody = document.getElementById("invoice-items");
-              if (!tbody) {
-                throw new Error("élément tbody manquant");
-              }
-
-              tbody.innerHTML = "";
-              let total = 0;
-
-              order.items.forEach((item, index) => {
-                try {
-                  if (!item || typeof item !== "object") {
-                    console.warn(`Article invalide à l'index ${index}`);
-                    return;
-                  }
-
-                  const price = Number(item.price) || 0;
-                  const qty = Number(item.qty || item.quantity) || 1;
-
-                  if (price < 0 || qty < 0) {
-                    console.warn(
-                      `Valeurs négatives détectées pour l'article ${index}`,
-                    );
-                    return;
-                  }
-
-                  const lineTotal = price * qty;
-                  total += lineTotal;
-
-                  const tr = document.createElement("tr");
-                  tr.innerHTML = `
-                                <td>${String(item.name || "Produit").substring(0, 100)}</td>
-                                <td style="text-align:center;">${qty}</td>
-                                <td>${new Intl.NumberFormat("fr-FR").format(price)} FCFA</td>
-                                <td>${new Intl.NumberFormat("fr-FR").format(lineTotal)} FCFA</td>
-                            `;
-                  tbody.appendChild(tr);
-                } catch (err) {
-                  console.warn(`Erreur traitement article ${index}:`, err);
-                }
-              });
-
-              if (order.items.length === 0) {
-                throw new Error("Aucun article dans la commande");
-              }
-
-              const formattedTotal =
-                new Intl.NumberFormat("fr-FR").format(
-                  Math.round(total * 100) / 100,
-                ) + " FCFA";
-
-              const subtotalElement = document.getElementById("inv-subtotal");
-              const totalElement = document.getElementById("inv-total");
-
-              if (!subtotalElement || !totalElement) {
-                throw new Error("éléments total manquants");
-              }
-
-              subtotalElement.innerText = formattedTotal;
-              totalElement.innerText = formattedTotal;
-
-              // Setup Boutons
-              setupActions(order, invoiceRef, formattedTotal);
-
-              if (typeof lucide !== "undefined") {
-                lucide.createIcons();
-              }
-            } catch (err) {
-              console.error("Erreur rendu facture:", err);
-              showError(`Erreur lors du rendu de la facture: ${err.message}`);
-            }
-          }
-
-          function setupActions(order, invoiceRef, totalStr) {
-            const btnDownload = document.getElementById("btn-download");
-            const btnWhatsapp = document.getElementById("btn-whatsapp");
-
-            if (btnDownload) {
-              btnDownload.addEventListener("click", () => {
-                try {
-                  const content = document.getElementById("invoice-document");
-                  if (!content) {
-                    showError("élément facture non trouvé");
-                    return;
-                  }
-
-                  if (!window.jspdf || !window.jspdf.jsPDF) {
-                    throw new Error("jsPDF non disponible");
-                  }
-
-                  const doc = new jsPDF();
-                  btnDownload.disabled = true;
-                  btnDownload.innerText = "Génération...";
-
-                  doc.html(content, {
-                    callback: function (doc) {
-                      try {
-                        doc.save(`Facture_${invoiceRef}.pdf`);
-                        btnDownload.disabled = false;
-                        btnDownload.innerText = "Télécharger PDF";
-                      } catch (err) {
-                        console.error("Erreur lors de la sauvegarde PDF:", err);
-                        showError("Erreur lors du téléchargement du PDF");
-                        btnDownload.disabled = false;
-                        btnDownload.innerText = "Télécharger PDF";
-                      }
-                    },
-                    x: 10,
-                    y: 10,
-                    width: 190,
-                    windowWidth: 900,
-                  });
-                } catch (err) {
-                  console.error("Erreur génération PDF:", err);
-                  showError(
-                    `Erreur lors de la génération du PDF: ${err.message}`,
-                  );
-                  if (btnDownload) {
-                    btnDownload.disabled = false;
-                    btnDownload.innerText = "Télécharger PDF";
-                  }
-                }
-              });
-            }
-
-            if (btnWhatsapp) {
-              btnWhatsapp.addEventListener("click", () => {
-                try {
-                  const phone = "22664502626";
-                  if (!phone || !/^[0-9+]{7,}$/.test(phone)) {
-                    throw new Error("Numéro téléphone invalide");
-                  }
-
-                  const msg = `Bonjour Sanhia,\n\nJe viens de passer commande (Réf: ${invoiceRef}) pour un total de ${totalStr}.\n\nPouvez-vous me confirmer les moyens de paiement disponibles ?\n\nMerci.`;
-
-                  const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-                  if (!waUrl) {
-                    throw new Error("URL WhatsApp invalide");
-                  }
-
-                  window.open(waUrl, "_blank");
-                } catch (err) {
-                  console.error("Erreur WhatsApp:", err);
-                  showError("Erreur lors de l'ouverture de WhatsApp");
-                }
-              });
-            }
-          }
-        } catch (err) {
-          console.error("Erreur initialisation:", err);
-          showError(`Erreur initiale: ${err.message}`);
-        }
+      btnDownload.addEventListener('click', function() {
+        // Logique de téléchargement PDF
       });
-    </script>
-    <script src="/assets/js/prime-new.js" defer></script>
-    <script src="/assets/js/footer.js" defer></script>
+
+      btnWhatsApp.addEventListener('click', function() {
+        // Logique d'envoi par WhatsApp
+      });
+    });
+  </script>
   </body>
 </html>
-

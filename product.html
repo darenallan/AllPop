@@ -16,21 +16,30 @@
   <meta property="og:url" content="">
   <meta property="product:price:currency" content="XOF">
 
+  <link rel="canonical" id="canonical-link" href="">
+
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" id="tw-title" content="Produit Sanhia">
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet"/>
 
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="/assets/js/config.js" defer></script>
-  <script src="/assets/js/components/header.js" defer></script>
-  <script src="/assets/js/pages/messages.js" defer></script>
 
-  <link rel="stylesheet" href="/assets/css/styles.css" />
-  <link rel="stylesheet" href="/assets/css/global.css" />
+  <!-- Our scripts - LOAD ORDER MATTERS -->
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/global.utils.js"></script>
+  <script src="/assets/js/components/header.js" defer></script>
+  <script src="/assets/js/components/footer.js" defer></script>
+  <script src="/assets/js/global.js" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+
   <link rel="stylesheet" href="/assets/css/pages/product.css" />
-  <link rel="stylesheet" href="/assets/css/aurum-light.css" />
+  <link rel="stylesheet" href="/assets/css/sanhia-light.css" />
 </head>
 <body>
 <div id="cur-ring"></div>
@@ -49,7 +58,6 @@
 
 <div id="ax-toasts"></div>
 <div id="toast-container"></div>
-<script src="/assets/js/app.js" defer></script>
 
 <div class="aurum-chat-modal" id="aurum-chat-modal" role="dialog" aria-modal="true" aria-label="Messagerie sécurisée">
 <div class="aurum-chat-modal" id="aurum-chat-modal" role="dialog" aria-modal="true" aria-label="Messagerie sécurisée">
@@ -72,8 +80,6 @@
       </div>
     </form>
   </div>
-<script src="/assets/js/global.js" defer></script>
 <script src="/assets/js/pages/product.js" defer></script>
-<script src="/assets/js/footer.js" defer></script>
 </body>
 </html>

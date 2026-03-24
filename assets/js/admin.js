@@ -16,6 +16,7 @@ let productImages   = [];
 let logoBase64      = '';
 let bannerBase64    = '';
 let _unsubProducts  = null; // pour cleanup onSnapshot
+let _unsubOrders    = null; // pour cleanup seller orders listener
 
 // ── NAVIGATION ────────────────────────────────────────────────────
 // Défini UNE SEULE FOIS, accessible globalement
@@ -256,47 +257,64 @@ async function loadSellerOrders(userEmail) {
     }
     const shopId = shopSnap.docs[0].id;
 
-    const ordersSnap = await window.db.collection('orders').where('sellerId', '==', shopId).limit(50).get();
-    const orders = ordersSnap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => ((b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+    // REAL-TIME LISTENER with onSnapshot
+    if (_unsubOrders) _unsubOrders(); // Cleanup old listener
+    
+    _unsubOrders = window.db.collection('orders')
+      .where('sellerId', '==', shopId)
+      .limit(50)
+      .onSnapshot(
+        snap => {
+          const orders = snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .sort((a, b) => ((b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
 
-    if (!orders.length) {
-      list.innerHTML = `<div style="padding:40px;text-align:center;color:#7A7570">
-        <p>Aucune commande.</p><p>Vos ventes apparaîtront ici.</p></div>`;
-    } else {
-      list.innerHTML = orders.map(o => {
-        const date  = o.createdAt ? (o.createdAt.toDate?.() || new Date(o.createdAt)) : new Date();
-        const items = (o.items || []).filter(i => !shopId || i.shopId === shopId);
-        const sub   = items.reduce((s, i) => s + (i.price || 0) * (i.qty || 0), 0);
-        return `
-          <div style="padding:16px;border-left:3px solid #C8A84B;background:var(--ink2,#1A1916);margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-              <div>
-                <strong>#${o.id.slice(-6).toUpperCase()}</strong>
-                <div style="font-size:11px;color:#7A7570">${date.toLocaleDateString('fr-FR')}</div>
-                <div style="font-size:11px;color:#7A7570">${o.userEmail || '—'}</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-family:'Unbounded',sans-serif;font-size:13px;color:#C8A84B">${window.formatFCFA(o.total || sub)}</div>
-                <span style="font-size:10px;color:#7A7570">${window.translateOrderStatus?.(o.status) || o.status || '—'}</span>
-              </div>
-            </div>
-            <button data-oid="${o.id}" class="order-details-btn" style="background:#C8A84B;color:#0B0A08;border:none;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;width:100%">
-              Détails / Gérer
-            </button>
-          </div>`;
-      }).join('');
-    }
+          if (!orders.length) {
+            list.innerHTML = `<div style="padding:40px;text-align:center;color:#7A7570">
+              <p>Aucune commande.</p><p>Vos ventes apparaîtront ici.</p></div>`;
+          } else {
+            list.innerHTML = orders.map(o => {
+              const date  = o.createdAt ? (o.createdAt.toDate?.() || new Date(o.createdAt)) : new Date();
+              const items = (o.items || []).filter(i => !shopId || i.shopId === shopId);
+              const sub   = items.reduce((s, i) => s + (i.price || 0) * (i.qty || 0), 0);
+              return `
+                <div style="padding:16px;border-left:3px solid #C8A84B;background:var(--ink2,#1A1916);margin-bottom:8px">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+                    <div>
+                      <strong>#${o.id.slice(-6).toUpperCase()}</strong>
+                      <div style="font-size:11px;color:#7A7570">${date.toLocaleDateString('fr-FR')}</div>
+                      <div style="font-size:11px;color:#7A7570">${o.userEmail || '—'}</div>
+                    </div>
+                    <div style="text-align:right">
+                      <div style="font-family:'Unbounded',sans-serif;font-size:13px;color:#C8A84B">${window.formatFCFA(o.total || sub)}</div>
+                      <span style="font-size:10px;color:#7A7570">${window.translateOrderStatus?.(o.status) || o.status || '—'}</span>
+                    </div>
+                  </div>
+                  <button data-oid="${o.id}" class="order-details-btn" style="background:#C8A84B;color:#0B0A08;border:none;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;width:100%">
+                    Détails / Gérer
+                  </button>
+                </div>`;
+            }).join('');
+          }
 
-    updateStatSales(orders, shopId);
-    if (loader) loader.style.display = 'none';
-    container.style.display = 'block';
+          updateStatSales(orders, shopId);
+          if (loader) loader.style.display = 'none';
+          container.style.display = 'block';
 
-    list.querySelectorAll('.order-details-btn').forEach(btn =>
-      btn.addEventListener('click', () => window.showOrderDetails(btn.dataset.oid))
-    );
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+          list.querySelectorAll('.order-details-btn').forEach(btn =>
+            btn.addEventListener('click', () => window.showOrderDetails(btn.dataset.oid))
+          );
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+          
+          console.log('✅ [Admin] Seller orders real-time updated:', orders.length);
+        },
+        err => {
+          console.error('❌ [Admin] Seller orders listener error:', err);
+          if (loader) loader.style.display = 'none';
+          container.style.display = 'block';
+          list.innerHTML = '<p style="color:#D94F4F;padding:20px">Impossible de charger les commandes.</p>';
+        }
+      );
   } catch (err) {
     console.error('[admin.js] loadSellerOrders:', err);
     list.innerHTML = '<p style="color:#D94F4F;padding:20px">Impossible de charger les commandes.</p>';

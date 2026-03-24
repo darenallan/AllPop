@@ -39,13 +39,53 @@ document.addEventListener('DOMContentLoaded',()=>{
   btn?.addEventListener('click',go);
   input?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}});
 
-  /* Newsletter */
-  document.getElementById('nl-form')?.addEventListener('submit',e=>{
+  /* Newsletter "Cercle" */
+  document.getElementById('nl-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const em=e.target.querySelector('input').value;
-    if(em){
-      if(typeof window.showToast==='function') window.showToast('Merci pour votre inscription !','success');
-      e.target.reset();
+    const input = e.target.querySelector('input');
+    const email = (input?.value || '').trim().toLowerCase();
+    if (!email) {
+      if(typeof window.showToast==='function') window.showToast('Veuillez entrer un email','warn');
+      return;
+    }
+
+    const btn = e.target.querySelector('button');
+    const originalText = btn?.textContent || 'Je rejoins';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '…';
+    }
+
+    try {
+      // Vérifier que Firestore est disponible
+      if (!window.db || typeof window.db.collection !== 'function') {
+        throw new Error('Firestore non disponible');
+      }
+
+      // Vérifier si déjà inscrit
+      const existing = await window.db.collection('newsletter').where('email', '==', email).limit(1).get();
+      if (!existing.empty) {
+        if(typeof window.showToast==='function') window.showToast('Vous êtes déjà inscrit(e) !','warn');
+        return;
+      }
+
+      // Ajouter à newsletter
+      await window.db.collection('newsletter').add({
+        email,
+        subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'active',
+      });
+
+      if(typeof window.showToast==='function') window.showToast('Merci pour votre inscription ✓','success');
+      input.value = '';
+    } catch (err) {
+      console.error('[Newsletter] Erreur:', err);
+      if(typeof window.showToast==='function') window.showToast('Une erreur est survenue. Réessayez.','err');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
     }
   });
 

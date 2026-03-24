@@ -3,24 +3,31 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Espace Vendeur - Sanhia</title>
+    <title>Espace Vendeur — Sanhia</title>
 
     <link
       href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
 
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <script src="/assets/js/config.js" defer></script>
-    <script src="/assets/js/components/header.js" defer></script>
+
+    <!-- Our scripts - LOAD ORDER MATTERS -->
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/global.utils.js"></script>
+    <script src="/assets/js/global.js" defer></script>
     <script src="/assets/js/app.js" defer></script>
     <script src="/assets/js/pages/messages.js" defer></script>
 
-    
     <link rel="stylesheet" href="/assets/css/pages/seller.css" />
+    <link rel="stylesheet" href="/assets/css/sanhia-light.css" />
   </head>
   <body>
     <!-- Cursor -->
@@ -28,6 +35,8 @@
     <div id="sd-dot"></div>
     <div id="sd-noise"></div>
     <div id="sd-toasts"></div>
+
+    <div id="header-placeholder"></div>
 
     <div id="sd">
       <!-- ------------ SIDEBAR ------------ -->
@@ -840,4 +849,3 @@
     <script src="/assets/js/pages/seller.js" defer></script>
   </body>
 </html>
-

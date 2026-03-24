@@ -9,17 +9,26 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-  <script src="/assets/js/config.js" defer></script>
+
+  <!-- Our scripts - LOAD ORDER MATTERS -->
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/global.utils.js"></script>
   <script src="/assets/js/components/header.js" defer></script>
+  <script src="/assets/js/components/footer.js" defer></script>
+  <script src="/assets/js/global.js" defer></script>
   <script src="/assets/js/app.js" defer></script>
   <script src="/assets/js/pages/messages.js" defer></script>
 
-   <link rel="stylesheet" href="/assets/css/pages/profile.css" />
+  <link rel="stylesheet" href="/assets/css/pages/profile.css" />
+  <link rel="stylesheet" href="/assets/css/sanhia-light.css" />
 </head>
 
 <body>
@@ -209,7 +218,7 @@
         <input id="addr-phone" class="pr-input" type="tel" placeholder="+226 00 00 00 00" required>
       </div>
       <div class="pr-field full">
-        <label class="pr-label">Ville</label>
+        <label class="pr-label">Ville <button type="button" id="pr-geo-btn" style="margin-left:auto;background:none;border:none;cursor:pointer;padding:0;font-size:1rem">📍 Me géolocaliser</button></label>
         <select id="addr-city" class="pr-input" required style="background:transparent;color:var(--white)">
           <option value="" style="background:#1A1916">- Sélectionner -</option>
           <option value="Ouagadougou" style="background:#1A1916">Ouagadougou</option>
@@ -232,10 +241,8 @@
 </div>
 
 <!-- ---- SCRIPTS ---- -->
-<script src="/assets/js/global.js" defer></script>
 <script src="/assets/js/orders.js" defer></script>
 <script src="/assets/js/pages/profile.js" defer></script>
-<script src="/assets/js/footer.js" defer></script>
 </body>
 </html>
 

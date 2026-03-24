@@ -52,50 +52,146 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   let shippingRates=null, currentShippingFee=0, currentAddress=null;
   const addressById=new Map();
+  let appliedPromo=null; // {code: string, percent: number}
+
+  /* ── PROMO CODES ── */
+  async function applyPromo(code){
+    if(!code||typeof code!=='string'){ctToast('Code vide','error');return false;}
+    code=code.trim().toUpperCase();
+    try{
+      const snap=await db.collection('promos').where('code','==',code).limit(1).get();
+      if(snap.empty){ctToast('Code promo invalide','error');return false;}
+      const promo=snap.docs[0].data();
+      // Vérifier le statut et la date d'expiration
+      if(promo.status!=='active'){ctToast('Code promo expiré ou invalide','error');return false;}
+      const now=new Date();
+      if(promo.expires&&new Date(promo.expires).getTime()<now.getTime()){ctToast('Code promo expiré','error');return false;}
+      // Appliquer le promo
+      appliedPromo={code,percent:Number(promo.percent||0)};
+      ctToast(`Code appliqué : -${appliedPromo.percent}%`,'success');
+      recalcTotal();
+      return true;
+    }catch(err){
+      console.error('[Promo] Erreur:',err);
+      ctToast('Erreur lors de la vérification du code','error');
+      return false;
+    }
+  }
+  window.applyPromo=applyPromo;
+
+  // Attacher le bouton de promo
+  const promoBtn=document.querySelector('.ct-promo-btn');
+  const promoInput=document.querySelector('.ct-promo-input');
+  if(promoBtn&&promoInput){
+    promoBtn.addEventListener('click',async()=>{
+      const code=promoInput.value;
+      await applyPromo(code);
+    });
+    promoInput.addEventListener('keypress',(e)=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        applyPromo(promoInput.value);
+      }
+    });
+  }
 
   /* ── CHECKOUT ── */
   if(checkoutBtn){
     checkoutBtn.addEventListener('click',async()=>{
-      const user=(auth&&auth.currentUser)||(firebase.auth&&firebase.auth().currentUser)||null;
-      if(!user){alert('Veuillez vous connecter pour continuer.');window.location.href='/login';return;}
+      const user=auth?.currentUser||firebase.auth?.()?.currentUser||null;
+      if(!user){
+        if(window.showToast)window.showToast('Connectez-vous pour continuer.','danger');
+        else alert('Veuillez vous connecter pour continuer.');
+        window.location.href='/login?returnUrl='+encodeURIComponent('/cart');
+        return;
+      }
       try{
         checkoutBtn.disabled=true;
         checkoutBtn.querySelector('.btn-txt').textContent='Traitement…';
         const mainOrderRef='AUR-'+Math.random().toString(36).substr(2,6).toUpperCase();
         const invoiceNumber=await getNextInvoiceNumber(db);
         const subtotal=cartProductsData.reduce((acc,item)=>acc+item.price*item.qty,0);
-        const itemsBySeller={};
+        
+        // Collecter les vendeurs uniques
+        const sellerIdsSet=new Set();
         cartProductsData.forEach(item=>{
           const sid=item.shopId||item.sellerId||'unknown';
-          if(!itemsBySeller[sid])itemsBySeller[sid]=[];
-          itemsBySeller[sid].push(item);
+          sellerIdsSet.add(sid);
         });
-        const sellerIds=Object.keys(itemsBySeller);
-        const createdOrderIds=[];
-        for(let i=0;i<sellerIds.length;i++){
-          const sellerId=sellerIds[i];
-          const sellerItems=itemsBySeller[sellerId];
-          const subRef=sellerIds.length>1?`${mainOrderRef}-${i+1}`:mainOrderRef;
-          const sellerSubtotal=sellerItems.reduce((acc,item)=>acc+item.price*item.qty,0);
-          const sellerShippingFee=sellerIds.length>1?Math.round((sellerSubtotal/subtotal)*currentShippingFee):currentShippingFee;
-          const orderData={
-            reference:subRef, mainOrderRef, invoiceNumber,
-            userId:user.uid, userEmail:user.email, sellerId,
-            items:sellerItems.map(item=>({productId:item.id,shopId:item.shopId||item.sellerId||null,name:item.name,price:item.price,qty:item.qty,image:item.image||''})),
-            subtotal:sellerSubtotal, shippingFee:sellerShippingFee,
-            total:sellerSubtotal+sellerShippingFee,
-            deliveryAddress:currentAddress||null,
-            status:'pending_admin',
-            createdAt:firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
-          };
-          const docRef=await db.collection('orders').add(orderData);
-          createdOrderIds.push(docRef.id);
+        const sellerIds=Array.from(sellerIdsSet);
+        
+        // Calculer la réduction si un promo est appliqué
+        let discount=0;
+        if(appliedPromo&&appliedPromo.percent>0){
+          discount=Math.round((subtotal*appliedPromo.percent)/100);
         }
-        localStorage.setItem('ac_cart_checkout',JSON.stringify({orderId:createdOrderIds[0],mainOrderRef,items:cartProductsData,invoiceNumber,reference:mainOrderRef}));
+        const finalTotal=subtotal-discount+currentShippingFee;
+        
+        // Initialiser les statuts indépendants pour chaque vendeur (vides)
+        // L'admin peuple sellerStatuses lors de sa validation,
+        // ce qui déclenche la notification aux vendeurs.
+        // seller.js filtre sur 'validated' → les vendeurs ne voient
+        // les commandes QU'APRÈS validation admin.
+        const sellerStatusesInit = {};
+        
+        // === CRÉER UNE SEULE COMMANDE UNIFIÉE ===
+        const orderData={
+          isParent: true,
+          reference:mainOrderRef,
+          invoiceNumber,
+          userId:user.uid,
+          userEmail:user.email,
+          // TOUS les items avec leurs sellerId préservé
+          items:cartProductsData.map(item=>({
+            productId:item.id,
+            sellerId:item.shopId||item.sellerId||'unknown',
+            shopId:item.shopId||item.sellerId||null,
+            shopName:item.shopName||null,
+            shopAddress:item.shopAddress||null,
+            name:item.name,
+            price:item.price,
+            qty:item.qty,
+            image:item.image||''
+          })),
+          // Array de tous les vendeurs impliqués
+          sellerIds:sellerIds,
+          // Statuts indépendants par vendeur (vides — seront peuplés par l'admin lors de la validation)
+          sellerStatuses:{},
+          // Montants
+          subtotal:subtotal,
+          discount:discount,
+          shippingFee:currentShippingFee,
+          total:finalTotal,
+          // Promo appliqué (si any)
+          promoCode:appliedPromo?appliedPromo.code:null,
+          promoPercent:appliedPromo?appliedPromo.percent:0,
+          // Adresse de livraison
+          deliveryAddress:currentAddress||null,
+          // Status global pour pas d'ambiguité
+          status:'pending',
+          // Timestamps
+          createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
+        };
+        
+        // Sauvegarder la commande
+        const docRef=await db.collection('orders').add(orderData);
+        const orderId=docRef.id;
+        
+        // Optionnel : Commenter ou supprimer cette ligne si vous voulez dispatcher les commandes automatiquement
+        // TODO: Dispatch de "sous-commandes" vendeurs seulement APRÈS validation admin
+        
+        localStorage.setItem('ac_cart_checkout',JSON.stringify({
+          orderId:orderId,
+          mainOrderRef:mainOrderRef,
+          items:cartProductsData,
+          invoiceNumber:invoiceNumber,
+          reference:mainOrderRef
+        }));
         localStorage.removeItem('ac_cart');
-        window.location.href='/invoice?orderId='+createdOrderIds[0];
+        window.location.href='/invoice?orderId='+orderId;
       }catch(err){
+        console.error('[Checkout] Erreur:',err);
         ctToast('Erreur lors de la commande. Réessayez.','error');
         checkoutBtn.disabled=false;
         checkoutBtn.querySelector('.btn-txt').textContent='Procéder au paiement';
@@ -104,6 +200,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 
   async function getNextInvoiceNumber(db){
+    // Utilise la version globale de global.utils.js si disponible
+    if(typeof window.getNextInvoiceNumber==='function'&&window.getNextInvoiceNumber!==getNextInvoiceNumber){
+      return window.getNextInvoiceNumber(db);
+    }
+    // Fallback local
     const ref=db.collection('meta').doc('invoiceCounter');
     try{
       return await db.runTransaction(async t=>{
@@ -175,8 +276,18 @@ document.addEventListener('DOMContentLoaded',()=>{
       const qty=parseInt(qtyEl?qtyEl.textContent:'1',10)||1;
       total+=price*qty; count+=qty;
     });
-    if(subtotalEl)subtotalEl.textContent=ctFmt(total);
-    if(totalEl)totalEl.textContent=ctFmt(total+(Number(currentShippingFee)||0));
+    const subtotal=total;
+    const shippingFee=Number(currentShippingFee)||0;
+    // Appliquer la réduction du promo au sous-total
+    let finalTotal=subtotal+shippingFee;
+    if(appliedPromo&&appliedPromo.percent>0){
+      const discount=Math.round((subtotal*appliedPromo.percent)/100);
+      finalTotal=subtotal-discount+shippingFee;
+      if(subtotalEl)subtotalEl.textContent=ctFmt(subtotal)+` (−${appliedPromo.percent}% = −${ctFmt(discount).replace(' FCFA','')} FCFA)`;
+    }else{
+      if(subtotalEl)subtotalEl.textContent=ctFmt(subtotal);
+    }
+    if(totalEl)totalEl.textContent=ctFmt(finalTotal);
     if(countLabel)countLabel.textContent=count;
     if(checkoutBtn)checkoutBtn.disabled=count===0;
   }
@@ -204,7 +315,9 @@ document.addEventListener('DOMContentLoaded',()=>{
       div.setAttribute('data-price',price);
       div.setAttribute('data-stock',maxStock);
       // On définit l'URL SEO : Slug-ID pour SEO + facilité de récupération (avec -- comme séparateur)
-      const pUrl = p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id;
+      const pUrl = typeof window.buildProductUrl==='function'
+        ? window.buildProductUrl(p)
+        : (p.slug ? '/product/' + p.slug + '--' + p.id : '/product/' + (p.name ? p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'produit') + '--' + p.id);
 
       div.innerHTML=`
         <a href="${pUrl}" class="ct-item-img-wrap">

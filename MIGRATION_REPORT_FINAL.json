@@ -6,7 +6,7 @@
       "reason": "Remplacé inline   script (cursor) par global.js + pages/404.js"
     },
     {
-      "file": "A.html",
+      "file": "informations.html",
       "status": "updated",
       "reason": "Remplacé inline scripts par global.js + pages/A.js (avec logic: cursor, reveal, tabs, FAQ)"
     },
@@ -141,7 +141,7 @@
     "successfully_updated": 8,
     "files_updated": [
       "404.html",
-      "A.html",
+      "informations.html",
       "about.html",
       "boutique.html",
       "contact.html",
